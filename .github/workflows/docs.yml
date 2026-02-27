@@ -1,0 +1,47 @@
+name: Build and Deploy Docs
+
+on:
+  push:
+    paths:
+      - "woodpecker/fixes/**"
+      - "woodpecker/**"
+      - "scripts/**"
+      - "docs/**"
+      - "mkdocs.yml"
+      - "pyproject.toml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package + docs deps
+        run: |
+          pip install -e .
+          pip install -e ".[docs]"
+
+      - name: Generate fix catalog (MD/JSON)
+        run: python scripts/generate_fix_catalog.py
+
+      - name: Generate interactive fixes page
+        run: python scripts/generate_fix_webpage.py
+
+      - name: Build MkDocs site
+        run: mkdocs build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: site

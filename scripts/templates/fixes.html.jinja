@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Woodpecker Fixes</title>
+<style>
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; }
+  h1 { margin-bottom: 0.25rem; }
+  .hint { color: #555; margin-top: 0; margin-bottom: 1rem; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #ddd; padding: 0.5rem; vertical-align: top; }
+  th { background: #f7f7f7; position: sticky; top: 0; }
+  #search { margin: 1rem 0; padding: 0.6rem 0.75rem; width: min(520px, 100%); }
+  code { background: #f2f2f2; padding: 0.1rem 0.25rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1>Woodpecker Fix Codes</h1>
+<p class="hint">Search and click a code to get a stable anchor (useful for errata links).</p>
+
+<input type="text" id="search" placeholder="Search code / name / category / dataset..." />
+
+<table id="fixes-table">
+  <thead>
+    <tr>
+      <th>Code</th>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Categories</th>
+      <th>Dataset</th>
+      <th>Priority</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for f in fixes %}
+    <tr>
+      <td id="{{ f.code }}"><a href="#{{ f.code }}"><code>{{ f.code }}</code></a></td>
+      <td>{{ f.name }}</td>
+      <td>{{ f.description }}</td>
+      <td>{{ (f.categories or []) | join(', ') }}</td>
+      <td>{{ f.dataset or '' }}</td>
+      <td>{{ f.priority }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<script>
+  document.getElementById('search').addEventListener('input', function() {
+      const term = this.value.toLowerCase();
+      const rows = document.querySelectorAll('#fixes-table tbody tr');
+      rows.forEach(row => {
+          const text = row.innerText.toLowerCase();
+          row.style.display = text.includes(term) ? '' : 'none';
+      });
+  });
+</script>
+</body>
+</html>
