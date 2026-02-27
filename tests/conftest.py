@@ -11,7 +11,8 @@ from click.testing import CliRunner
 # We intentionally use tiny placeholder `.nc` files (plain text) to keep tests
 # fast and deterministic while still exercising filename-based matching/check/fix
 # logic. Use:
-# - `make_dummy_netcdf` for tmp_path unit tests
+# - path fixtures (e.g. `cmip6_member_file`) for simple unit tests
+# - `make_dummy_netcdf` for custom filenames
 # - `isolated_cli_workspace` for CLI tests that need a clean cwd
 
 
@@ -31,6 +32,16 @@ def make_dummy_netcdf(tmp_path: Path) -> Callable[[str], Path]:
         return path
 
     return _make
+
+
+@pytest.fixture
+def cmip6_member_file(make_dummy_netcdf: Callable[[str], Path]) -> Path:
+    return make_dummy_netcdf("cmip6_member.nc")
+
+
+@pytest.fixture
+def atlas_spaced_file(make_dummy_netcdf: Callable[[str], Path]) -> Path:
+    return make_dummy_netcdf("atlas sample.nc")
 
 
 @pytest.fixture
