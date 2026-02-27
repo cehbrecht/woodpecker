@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import Callable
 
 from click.testing import CliRunner
 
@@ -15,34 +16,37 @@ def test_list_fixes_contains_known_codes():
     assert "ATLAS01" in result.output
 
 
-def test_check_returns_zero_when_no_findings():
-    runner = CliRunner()
-    with runner.isolated_filesystem():
-        Path("cmip6_decadal_ok.nc").write_text("", encoding="utf-8")
-        result = runner.invoke(cli, ["check", ".", "--select", "CMIP6D01"])
+def test_check_returns_zero_when_no_findings(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("cmip6_decadal_ok.nc")
+    result = runner.invoke(cli, ["check", ".", "--select", "CMIP6D01"])
 
     assert result.exit_code == 0
     assert "No issues found" in result.output
 
 
-def test_check_returns_nonzero_when_findings_exist():
-    runner = CliRunner()
-    with runner.isolated_filesystem():
-        Path("cmip6_bad.nc").write_text("", encoding="utf-8")
-        result = runner.invoke(cli, ["check", ".", "--select", "CMIP6D01"])
+def test_check_returns_nonzero_when_findings_exist(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("cmip6_bad.nc")
+    result = runner.invoke(cli, ["check", ".", "--select", "CMIP6D01"])
 
     assert result.exit_code == 1
     assert "CMIP6D01" in result.output
 
 
-def test_check_json_output_structure():
-    runner = CliRunner()
-    with runner.isolated_filesystem():
-        Path("cmip6_bad.nc").write_text("", encoding="utf-8")
-        result = runner.invoke(
-            cli,
-            ["check", ".", "--select", "CMIP6D01", "--format", "json"],
-        )
+def test_check_json_output_structure(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("cmip6_bad.nc")
+    result = runner.invoke(
+        cli,
+        ["check", ".", "--select", "CMIP6D01", "--format", "json"],
+    )
 
     assert result.exit_code == 1
     payload = json.loads(result.output)
@@ -52,15 +56,15 @@ def test_check_json_output_structure():
     assert payload[0]["code"] == "CMIP6D01"
 
 
-def test_fix_write_applies_rename_for_cmip6_rule():
-    runner = CliRunner()
-    with runner.isolated_filesystem():
-        source = Path("cmip6_case.nc")
-        source.write_text("", encoding="utf-8")
+def test_fix_write_applies_rename_for_cmip6_rule(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    source = make_dummy_netcdf("cmip6_case.nc")
 
-        result = runner.invoke(cli, ["fix", ".", "--select", "CMIP6D01", "--write"])
+    result = runner.invoke(cli, ["fix", ".", "--select", "CMIP6D01", "--write"])
 
-        assert result.exit_code == 0
-        assert "1 files changed" in result.output
-        assert not source.exists()
-        assert Path("cmip6_case_decadal.nc").exists()
+    assert result.exit_code == 0
+    assert "1 files changed" in result.output
+    assert not source.exists()
+    assert Path("cmip6_case_decadal.nc").exists()
