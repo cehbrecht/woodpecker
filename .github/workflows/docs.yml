@@ -50,7 +50,7 @@ jobs:
         run: python scripts/generate_fix_webpage.py
 
       - name: Build MkDocs site
-        run: mkdocs build --strict
+        run: NO_MKDOCS_2_WARNING=1 mkdocs build --strict
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

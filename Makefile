@@ -27,12 +27,12 @@ test:
 docs:
 	python scripts/generate_fix_catalog.py
 	python scripts/generate_fix_webpage.py
-	mkdocs build --strict
+	NO_MKDOCS_2_WARNING=1 mkdocs build --strict
 
 docs-serve:
 	python scripts/generate_fix_catalog.py
 	python scripts/generate_fix_webpage.py
-	mkdocs serve
+	NO_MKDOCS_2_WARNING=1 mkdocs serve
 
 list-fixes:
 	woodpecker list-fixes
