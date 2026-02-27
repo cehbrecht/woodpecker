@@ -22,13 +22,20 @@ Conda environment (recommended):
 ```bash
 conda env create -f environment.yml
 conda activate woodpecker
-pip install -e .
-# optional: ensure docs extras from pyproject are installed
-pip install -e ".[docs]"
-woodpecker list-fixes
+make install
+make list-fixes
 ```
 
-Main requirements are tracked in `pyproject.toml`. After creating/activating the conda environment, install the package manually with `pip install -e .`.
+Main requirements are tracked in `pyproject.toml`. Use `make` targets after creating/activating the conda environment (the Makefile intentionally does not manage conda itself).
+
+Common tasks:
+
+```bash
+make install     # editable install
+make dev         # editable install + docs extras
+make docs        # generate docs artifacts + strict mkdocs build
+make docs-serve  # generate docs artifacts + run mkdocs serve
+```
 
 Pip-only setup (no conda):
 
@@ -40,9 +47,7 @@ woodpecker list-fixes
 Generate/update docs:
 
 ```bash
-python scripts/generate_fix_catalog.py
-python scripts/generate_fix_webpage.py
-mkdocs serve
+make docs-serve
 ```
 
 ## Future-proofing (without complexity today)
