@@ -1,5 +1,7 @@
 # Woodpecker
 
+**Woodpeckers** “fix” trees by pecking out small problem spots — exactly like this tool applies targeted fixes to datasets.
+
 Woodpecker is a small, **code-driven catalog of dataset fixes** for climate data workflows (CDS/WPS, ESMValTool, etc.).
 Fixes are identified by **stable short codes** (e.g. `CMIP6D01`) so external services (like an ESGF errata UI) can link to them.
 
