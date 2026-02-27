@@ -20,9 +20,15 @@ docs = [
 pydantic = [
   "pydantic>=2.0",
 ]
+test = [
+  "pytest>=8.0",
+]
 
 [project.scripts]
 woodpecker = "woodpecker.cli:cli"
 
 [tool.setuptools.packages.find]
 include = ["woodpecker*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

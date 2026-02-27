@@ -9,3 +9,4 @@ dependencies:
   - mkdocs<2
   - mkdocs-material>=9
   - jinja2>=3.1
+  - pytest>=8

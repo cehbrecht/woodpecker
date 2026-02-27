@@ -1,4 +1,4 @@
-.PHONY: help install dev check docs docs-serve list-fixes
+.PHONY: help install dev check test docs docs-serve list-fixes
 
 CHECK_PATH ?= .
 
@@ -7,6 +7,7 @@ help:
 	@echo "  make install    - install package in editable mode"
 	@echo "  make dev        - install package + docs extras"
 	@echo "  make check      - run fix checks (default path: .)"
+	@echo "  make test       - run pytest test suite"
 	@echo "  make docs       - generate docs artifacts and build site"
 	@echo "  make docs-serve - generate docs artifacts and serve MkDocs"
 	@echo "  make list-fixes - show registered fixes"
@@ -19,6 +20,9 @@ dev:
 
 check:
 	woodpecker check $(CHECK_PATH)
+
+test:
+	pytest -q
 
 docs:
 	python scripts/generate_fix_catalog.py

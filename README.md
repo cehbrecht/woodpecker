@@ -36,6 +36,7 @@ Common tasks:
 make install     # editable install
 make dev         # editable install + docs extras
 make check       # run checks (defaults to current directory)
+make test        # run pytest test suite
 make docs        # generate docs artifacts + strict mkdocs build
 make docs-serve  # generate docs artifacts + run mkdocs serve
 ```
