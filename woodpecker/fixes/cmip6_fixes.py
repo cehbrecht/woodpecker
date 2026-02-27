@@ -24,7 +24,18 @@ class CMIP6D01(Fix):
         return findings
 
     def apply(self, path: Path, dry_run: bool = True) -> bool:
-        return False
+        if "decadal" in path.name.lower():
+            return False
+
+        target = path.with_name(f"{path.stem}_decadal{path.suffix}")
+        if dry_run:
+            return True
+
+        if target.exists():
+            return False
+
+        path.rename(target)
+        return True
 
 
 @FixRegistry.register
@@ -46,4 +57,15 @@ class ATLAS01(Fix):
         return findings
 
     def apply(self, path: Path, dry_run: bool = True) -> bool:
-        return False
+        if " " not in path.name:
+            return False
+
+        target = path.with_name(path.name.replace(" ", "_"))
+        if dry_run:
+            return True
+
+        if target.exists():
+            return False
+
+        path.rename(target)
+        return True

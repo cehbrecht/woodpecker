@@ -50,3 +50,17 @@ def test_check_json_output_structure():
     assert payload
     assert {"path", "code", "name", "message"}.issubset(payload[0].keys())
     assert payload[0]["code"] == "CMIP6D01"
+
+
+def test_fix_write_applies_rename_for_cmip6_rule():
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        source = Path("cmip6_case.nc")
+        source.write_text("", encoding="utf-8")
+
+        result = runner.invoke(cli, ["fix", ".", "--select", "CMIP6D01", "--write"])
+
+        assert result.exit_code == 0
+        assert "1 files changed" in result.output
+        assert not source.exists()
+        assert Path("cmip6_case_decadal.nc").exists()
