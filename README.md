@@ -17,6 +17,21 @@ Fixes are identified by **stable short codes** (e.g. `CMIP6D01`) so external ser
 
 ## Quickstart
 
+Conda environment (recommended):
+
+```bash
+conda env create -f environment.yml
+conda activate woodpecker
+pip install -e .
+# optional: ensure docs extras from pyproject are installed
+pip install -e ".[docs]"
+woodpecker list-fixes
+```
+
+Main requirements are tracked in `pyproject.toml`. After creating/activating the conda environment, install the package manually with `pip install -e .`.
+
+Pip-only setup (no conda):
+
 ```bash
 pip install -e .
 woodpecker list-fixes
@@ -25,7 +40,6 @@ woodpecker list-fixes
 Generate/update docs:
 
 ```bash
-pip install -e ".[docs]"
 python scripts/generate_fix_catalog.py
 python scripts/generate_fix_webpage.py
 mkdocs serve
