@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional, Type
 import json
 
@@ -13,10 +13,10 @@ class Fix:
     elsewhere (e.g., WPS operator or future fix-engine modules).
     """
 
-    code: str
-    name: str
+    code: str = ""
+    name: str = ""
     description: str = ""
-    categories: List[str] = None  # e.g. ["metadata", "calendar", "structure"]
+    categories: List[str] = field(default_factory=list)  # e.g. ["metadata", "calendar", "structure"]
     priority: int = 10            # lower runs earlier
     dataset: Optional[str] = None # e.g. "CMIP6-decadal", "CORDEX", "ATLAS"
 
@@ -29,12 +29,22 @@ class FixRegistry:
       entry points or a DB/index without changing callers.
     """
 
-    _registry: Dict[str, Type[Fix]] = {}
+    _registry: Dict[str, Type[Any]] = {}
+
+    @staticmethod
+    def _from_fix_class(fix_cls: Type[Fix]) -> Fix:
+        return Fix(
+            code=getattr(fix_cls, "code", ""),
+            name=getattr(fix_cls, "name", ""),
+            description=getattr(fix_cls, "description", ""),
+            categories=list(getattr(fix_cls, "categories", []) or []),
+            priority=getattr(fix_cls, "priority", 10),
+            dataset=getattr(fix_cls, "dataset", None),
+        )
 
     @classmethod
-    def register(cls, fix_cls: Type[Fix]):
-        fix = fix_cls()  # instantiate to read metadata
-        code = getattr(fix, "code", None)
+    def register(cls, fix_cls: Type[Any]):
+        code = getattr(fix_cls, "code", None)
         if not code:
             raise ValueError(f"Fix {fix_cls.__name__} must define a non-empty 'code'")
 
@@ -52,7 +62,12 @@ class FixRegistry:
             FixRegistry.discover(filters={"dataset": "CMIP6-decadal"})
             FixRegistry.discover(filters={"categories": "metadata"})
         """
-        fixes = [fix_cls() for fix_cls in cls._registry.values()]
+        fixes = []
+        for fix_cls in cls._registry.values():
+            if issubclass(fix_cls, Fix):
+                fixes.append(cls._from_fix_class(fix_cls))
+            else:
+                fixes.append(fix_cls())
 
         if not filters:
             return sorted(fixes, key=lambda f: getattr(f, "priority", 10))

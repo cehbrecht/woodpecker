@@ -1,1 +1,68 @@
-<!-- run scripts/generate_fix_webpage.py to generate -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Woodpecker Fixes</title>
+<style>
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; }
+  h1 { margin-bottom: 0.25rem; }
+  .hint { color: #555; margin-top: 0; margin-bottom: 1rem; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #ddd; padding: 0.5rem; vertical-align: top; }
+  th { background: #f7f7f7; position: sticky; top: 0; }
+  #search { margin: 1rem 0; padding: 0.6rem 0.75rem; width: min(520px, 100%); }
+  code { background: #f2f2f2; padding: 0.1rem 0.25rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1>Woodpecker Fix Codes</h1>
+<p class="hint">Search and click a code to get a stable anchor (useful for errata links).</p>
+
+<input type="text" id="search" placeholder="Search code / name / category / dataset..." />
+
+<table id="fixes-table">
+  <thead>
+    <tr>
+      <th>Code</th>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Categories</th>
+      <th>Dataset</th>
+      <th>Priority</th>
+    </tr>
+  </thead>
+  <tbody>
+  
+    <tr>
+      <td id="CMIP6D01"><a href="#CMIP6D01"><code>CMIP6D01</code></a></td>
+      <td>Decadal metadata baseline</td>
+      <td>Fixes known CMIP6 decadal (CDS) metadata issues (baseline scaffolding).</td>
+      <td>metadata</td>
+      <td>CMIP6-decadal</td>
+      <td>10</td>
+    </tr>
+  
+    <tr>
+      <td id="ATLAS01"><a href="#ATLAS01"><code>ATLAS01</code></a></td>
+      <td>ATLAS encoding cleanup</td>
+      <td>Fixes common ATLAS encoding/deflation issues (baseline scaffolding).</td>
+      <td>encoding, metadata</td>
+      <td>ATLAS</td>
+      <td>20</td>
+    </tr>
+  
+  </tbody>
+</table>
+
+<script>
+  document.getElementById('search').addEventListener('input', function() {
+      const term = this.value.toLowerCase();
+      const rows = document.querySelectorAll('#fixes-table tbody tr');
+      rows.forEach(row => {
+          const text = row.innerText.toLowerCase();
+          row.style.display = text.includes(term) ? '' : 'none';
+      });
+  });
+</script>
+</body>
+</html>

@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "woodpecker"
 version = "0.0.0"
@@ -9,6 +13,7 @@ dependencies = [
 
 [project.optional-dependencies]
 docs = [
+  "mkdocs<2",
   "mkdocs-material>=9",
   "jinja2>=3.1",
 ]
@@ -18,3 +23,6 @@ pydantic = [
 
 [project.scripts]
 woodpecker = "woodpecker.cli:cli"
+
+[tool.setuptools.packages.find]
+include = ["woodpecker*"]
