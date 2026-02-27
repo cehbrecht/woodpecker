@@ -1,0 +1,7 @@
+site_name: Woodpecker Fixes
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - Fixes Catalog: FIXES.md
+  - Interactive Fixes: fixes.html

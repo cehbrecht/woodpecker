@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "woodpecker"
+version = "0.0.0"
+description = "Lightweight fix catalog + scaffolding for climate dataset fixes"
+requires-python = ">=3.10"
+dependencies = [
+  "click>=8.1",
+  "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+docs = [
+  "mkdocs<2",
+  "mkdocs-material>=9",
+  "jinja2>=3.1",
+]
+dev = [
+  "pytest>=8.0",
+]
+
+[project.scripts]
+woodpecker = "woodpecker.cli:cli"
+
+[tool.setuptools.packages.find]
+include = ["woodpecker*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
