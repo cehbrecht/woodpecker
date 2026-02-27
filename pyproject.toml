@@ -9,6 +9,7 @@ description = "Lightweight fix catalog + scaffolding for climate dataset fixes"
 requires-python = ">=3.10"
 dependencies = [
   "click>=8.1",
+  "pydantic>=2.0",
 ]
 
 [project.optional-dependencies]
@@ -17,10 +18,7 @@ docs = [
   "mkdocs-material>=9",
   "jinja2>=3.1",
 ]
-pydantic = [
-  "pydantic>=2.0",
-]
-test = [
+dev = [
   "pytest>=8.0",
 ]
 

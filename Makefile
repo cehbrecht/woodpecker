@@ -5,7 +5,7 @@ CHECK_PATH ?= .
 help:
 	@echo "Common targets (run after conda env is activated):"
 	@echo "  make install    - install package in editable mode"
-	@echo "  make dev        - install package + docs extras"
+	@echo "  make dev        - install package + docs + dev(test) extras"
 	@echo "  make check      - run fix checks (default path: .)"
 	@echo "  make test       - run pytest test suite"
 	@echo "  make docs       - generate docs artifacts and build site"
@@ -16,13 +16,13 @@ install:
 	pip install -e .
 
 dev:
-	pip install -e ".[docs]"
+	pip install -e ".[docs,dev]"
 
 check:
 	woodpecker check $(CHECK_PATH)
 
 test:
-	pytest -q
+	pytest -v
 
 docs:
 	python scripts/generate_fix_catalog.py

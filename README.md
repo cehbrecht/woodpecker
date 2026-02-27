@@ -34,7 +34,7 @@ Common tasks:
 
 ```bash
 make install     # editable install
-make dev         # editable install + docs extras
+make dev         # editable install + docs + pytest extras
 make check       # run checks (defaults to current directory)
 make test        # run pytest test suite
 make docs        # generate docs artifacts + strict mkdocs build
@@ -69,8 +69,8 @@ make docs-serve
 
 Woodpecker intentionally stays simple and “human-countable”, but the design leaves room to grow:
 
-- **Pydantic (optional)**: If fixes become numerous or contributed by multiple projects, Pydantic models can
-  validate fields, enforce code patterns, and simplify JSON serialization. See `woodpecker/fixes/fix_template.py`.
+- **Pydantic models**: Pydantic is part of core dependencies and can be used for stronger fix schema validation.
+  See `woodpecker/fixes/fix_template.py`.
 - **Pluggy (optional)**: If you want third-party packages to register fixes via entry points (like pytest plugins),
   the registry API can be backed by pluggy later with minimal changes to CLI/docs.
 - **Scaling docs/UI**: `FIXES.json` is a stable export format that can later feed search indexes or richer UIs.
