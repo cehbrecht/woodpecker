@@ -1,9 +1,12 @@
-.PHONY: help install dev docs docs-serve list-fixes
+.PHONY: help install dev check docs docs-serve list-fixes
+
+CHECK_PATH ?= .
 
 help:
 	@echo "Common targets (run after conda env is activated):"
 	@echo "  make install    - install package in editable mode"
 	@echo "  make dev        - install package + docs extras"
+	@echo "  make check      - run fix checks (default path: .)"
 	@echo "  make docs       - generate docs artifacts and build site"
 	@echo "  make docs-serve - generate docs artifacts and serve MkDocs"
 	@echo "  make list-fixes - show registered fixes"
@@ -13,6 +16,9 @@ install:
 
 dev:
 	pip install -e ".[docs]"
+
+check:
+	woodpecker check $(CHECK_PATH)
 
 docs:
 	python scripts/generate_fix_catalog.py

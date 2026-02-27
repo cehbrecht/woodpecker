@@ -9,6 +9,7 @@ Requires:
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import List, Optional
 
 try:
@@ -33,6 +34,15 @@ class FixModel(BaseModel):
     @classmethod
     def ensure_categories_list(cls, v):
         return v or []
+
+    def matches(self, path: Path) -> bool:
+        return path.suffix.lower() == ".nc"
+
+    def check(self, path: Path) -> List[str]:
+        return []
+
+    def apply(self, path: Path, dry_run: bool = True) -> bool:
+        return False
 
 
 @FixRegistry.register

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Type
 import json
 
 
-@dataclass(frozen=True)
+@dataclass
 class Fix:
     """Catalog metadata about a fix.
 
@@ -20,6 +21,15 @@ class Fix:
     priority: int = 10            # lower runs earlier
     dataset: Optional[str] = None # e.g. "CMIP6-decadal", "CORDEX", "ATLAS"
 
+    def matches(self, path: Path) -> bool:
+        return path.suffix.lower() == ".nc"
+
+    def check(self, path: Path) -> List[str]:
+        return []
+
+    def apply(self, path: Path, dry_run: bool = True) -> bool:
+        return False
+
 
 class FixRegistry:
     """Simple in-memory registry with a pluggy-ready public API.
@@ -32,15 +42,14 @@ class FixRegistry:
     _registry: Dict[str, Type[Any]] = {}
 
     @staticmethod
-    def _from_fix_class(fix_cls: Type[Fix]) -> Fix:
-        return Fix(
-            code=getattr(fix_cls, "code", ""),
-            name=getattr(fix_cls, "name", ""),
-            description=getattr(fix_cls, "description", ""),
-            categories=list(getattr(fix_cls, "categories", []) or []),
-            priority=getattr(fix_cls, "priority", 10),
-            dataset=getattr(fix_cls, "dataset", None),
-        )
+    def _instantiate_fix(fix_cls: Type[Any]) -> Any:
+        fix = fix_cls()
+        if isinstance(fix, Fix):
+            for attr in ("code", "name", "description", "categories", "priority", "dataset"):
+                if hasattr(fix_cls, attr):
+                    setattr(fix, attr, getattr(fix_cls, attr))
+            fix.categories = list(getattr(fix, "categories", []) or [])
+        return fix
 
     @classmethod
     def register(cls, fix_cls: Type[Any]):
@@ -62,12 +71,7 @@ class FixRegistry:
             FixRegistry.discover(filters={"dataset": "CMIP6-decadal"})
             FixRegistry.discover(filters={"categories": "metadata"})
         """
-        fixes = []
-        for fix_cls in cls._registry.values():
-            if issubclass(fix_cls, Fix):
-                fixes.append(cls._from_fix_class(fix_cls))
-            else:
-                fixes.append(fix_cls())
+        fixes = [cls._instantiate_fix(fix_cls) for fix_cls in cls._registry.values()]
 
         if not filters:
             return sorted(fixes, key=lambda f: getattr(f, "priority", 10))

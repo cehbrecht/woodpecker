@@ -9,6 +9,8 @@ Fixes are identified by **stable short codes** (e.g. `CMIP6D01`) so external ser
 - `woodpecker` CLI:
   - `woodpecker list-fixes`
   - `woodpecker list-fixes --format md|json`
+  - `woodpecker check <path>`
+  - `woodpecker fix <path> --write`
 - Documentation generation:
   - `docs/FIXES.md` (Markdown catalog)
   - `docs/FIXES.json` (machine-readable)
@@ -33,9 +35,21 @@ Common tasks:
 ```bash
 make install     # editable install
 make dev         # editable install + docs extras
+make check       # run checks (defaults to current directory)
 make docs        # generate docs artifacts + strict mkdocs build
 make docs-serve  # generate docs artifacts + run mkdocs serve
 ```
+
+Lint-style workflow (Ruff-like):
+
+```bash
+woodpecker check /path/to/netcdf/or/folder
+woodpecker check . --select CMIP6D01
+woodpecker fix . --select CMIP6D01        # dry-run by default
+woodpecker fix . --select CMIP6D01 --write
+```
+
+Fixes are Python classes with a stable code ID and description, and implement `matches()`, `check()`, and optional `apply()`.
 
 Pip-only setup (no conda):
 
