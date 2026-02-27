@@ -3,9 +3,9 @@
 **Woodpeckers** “fix” trees by pecking out small problem spots — exactly like this tool applies targeted fixes to datasets.
 
 Woodpecker is a small, **code-driven catalog of dataset fixes** for climate data workflows (CDS/WPS, ESMValTool, etc.).
-Fixes are identified by **stable short codes** (e.g. `CMIP6D01`) so external services (like an ESGF errata UI) can link to them.
+Each fix has a **stable short code** (e.g. `CMIP6D01`) so external services (like an ESGF errata UI) can reference it directly.
 
-## What’s in this starter
+## What This Demo Includes
 
 - `woodpecker.fixes.registry.FixRegistry`: in-memory registry (simple today, extensible tomorrow)
 - `woodpecker` CLI:
@@ -30,7 +30,18 @@ make install
 make list-fixes
 ```
 
-Main requirements are tracked in `pyproject.toml`. Use `make` targets after creating/activating the conda environment (the Makefile intentionally does not manage conda itself).
+Main requirements are tracked in `pyproject.toml`. Use `make` after creating/activating the conda environment (the Makefile intentionally does not manage conda itself).
+
+Pip-only setup (no conda):
+
+```bash
+pip install -e .
+woodpecker list-fixes
+```
+
+## Usage
+
+How it works (current demo): `discover fixes -> check findings -> apply selected fixes`.
 
 Common tasks:
 
@@ -52,22 +63,22 @@ woodpecker fix . --select CMIP6D01        # dry-run by default
 woodpecker fix . --select CMIP6D01 --write
 ```
 
-Fixes are Python classes with a stable code ID and description, and implement `matches()`, `check()`, and optional `apply()`.
+Fix author contract (minimal):
+- metadata: `code`, `name`, `description`, `categories`, `priority`, `dataset`
+- methods: `matches(path)`, `check(path) -> list[str]`, `apply(path, dry_run=True) -> bool`
+- reference template: `woodpecker/fixes/fix_template.py`
 
-Pip-only setup (no conda):
-
-```bash
-pip install -e .
-woodpecker list-fixes
-```
-
-Generate/update docs:
+## Example
 
 ```bash
-make docs-serve
+touch cmip6_case.nc
+woodpecker check . --select CMIP6D01
+woodpecker fix . --select CMIP6D01        # dry-run by default
+woodpecker fix . --select CMIP6D01 --write
+# cmip6_case.nc -> cmip6_case_decadal.nc
 ```
 
-## Future-proofing (without complexity today)
+## Design Direction
 
 Woodpecker intentionally stays simple and “human-countable”, but the design leaves room to grow:
 
@@ -76,6 +87,16 @@ Woodpecker intentionally stays simple and “human-countable”, but the design 
 - **Pluggy (optional)**: If you want third-party packages to register fixes via entry points (like pytest plugins),
   the registry API can be backed by pluggy later with minimal changes to CLI/docs.
 - **Scaling docs/UI**: `FIXES.json` is a stable export format that can later feed search indexes or richer UIs.
+
+## What This Demo Covers
+
+- file-level demo logic is intentionally lightweight (no heavy real-world NetCDF transforms yet)
+- checks/fixes focus on deterministic, explainable behavior for design discussions
+
+## Next Steps
+
+- add real NetCDF variable/attribute transformations per fix code
+- extend reporting (per-file summary, grouped findings, machine-readable outputs)
 
 ## GitHub Pages
 
