@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from woodpecker.data_input import DataInput
 from woodpecker.fixes.cmip6_fixes import ATLAS01, CMIP6D01
 
 
@@ -7,9 +8,10 @@ def test_cmip6d01_apply_dry_run_reports_change_without_renaming(
     cmip6_member_file: Path,
 ):
     source = cmip6_member_file
+    data_input = DataInput(source_path=source, name=source.name)
 
     fix = CMIP6D01()
-    changed = fix.apply(source, dry_run=True)
+    changed = fix.apply(data_input, dry_run=True)
 
     assert changed is True
     assert source.exists()
@@ -20,9 +22,10 @@ def test_cmip6d01_apply_write_renames_file(
     cmip6_member_file: Path,
 ):
     source = cmip6_member_file
+    data_input = DataInput(source_path=source, name=source.name)
 
     fix = CMIP6D01()
-    changed = fix.apply(source, dry_run=False)
+    changed = fix.apply(data_input, dry_run=False)
 
     assert changed is True
     assert not source.exists()
@@ -33,9 +36,10 @@ def test_atlas01_apply_write_replaces_spaces(
     atlas_spaced_file: Path,
 ):
     source = atlas_spaced_file
+    data_input = DataInput(source_path=source, name=source.name)
 
     fix = ATLAS01()
-    changed = fix.apply(source, dry_run=False)
+    changed = fix.apply(data_input, dry_run=False)
 
     assert changed is True
     assert not source.exists()

@@ -7,8 +7,9 @@ import click
 
 # Importing woodpecker.fixes registers built-in fixes.
 import woodpecker.fixes  # noqa: F401
+from woodpecker.data_input import normalize_inputs
 from woodpecker.fixes.registry import FixRegistry
-from woodpecker.runner import collect_netcdf_files, run_check, run_fix, select_fixes
+from woodpecker.runner import run_check, run_fix, select_fixes
 
 
 @click.group()
@@ -71,9 +72,9 @@ def check(
 ):
     """Check NetCDF files and report findings grouped by fix code."""
     target_paths = list(paths) or [Path.cwd()]
-    files = collect_netcdf_files(target_paths)
+    inputs = normalize_inputs(target_paths)
     fixes = select_fixes(dataset=dataset, categories=categories, codes=codes)
-    findings = run_check(files, fixes)
+    findings = run_check(inputs, fixes)
 
     if fmt == "json":
         click.echo(json.dumps(findings, indent=2))
@@ -83,7 +84,7 @@ def check(
 
     if not findings and fmt == "text":
         click.echo(
-            f"No issues found ({len(files)} NetCDF files scanned, {len(fixes)} fixes selected)."
+            f"No issues found ({len(inputs)} NetCDF files scanned, {len(fixes)} fixes selected)."
         )
 
     raise SystemExit(1 if findings else 0)
@@ -111,9 +112,9 @@ def fix(
 ):
     """Apply selected fixes to NetCDF files."""
     target_paths = list(paths) or [Path.cwd()]
-    files = collect_netcdf_files(target_paths)
+    inputs = normalize_inputs(target_paths)
     fixes = select_fixes(dataset=dataset, categories=categories, codes=codes)
-    stats = run_fix(files, fixes, dry_run=not write)
+    stats = run_fix(inputs, fixes, dry_run=not write)
     mode = "write" if write else "dry-run"
     click.echo(
         f"Fix run complete ({mode}): {stats['attempted']} fix applications attempted, {stats['changed']} files changed."

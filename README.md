@@ -84,6 +84,21 @@ woodpecker fix . --select CMIP6D01        # dry-run by default
 woodpecker fix . --select CMIP6D01 --write
 ```
 
+Library API (paths + xarray objects):
+
+```python
+import xarray as xr
+import woodpecker
+
+ds = xr.Dataset(attrs={"source_name": "cmip6_bad.nc"})
+
+findings = woodpecker.check(ds, codes=["CMIP6D01"])
+stats = woodpecker.fix(ds, codes=["CMIP6D01"], write=True)
+
+# Path input works as well
+findings_from_paths = woodpecker.check(["./data"], codes=["CMIP6D01"])
+```
+
 Fix author contract (minimal):
 - metadata: `code`, `name`, `description`, `categories`, `priority`, `dataset`
 - methods: `matches(path)`, `check(path) -> list[str]`, `apply(path, dry_run=True) -> bool`
