@@ -17,9 +17,11 @@ class Fix:
     code: str = ""
     name: str = ""
     description: str = ""
-    categories: List[str] = field(default_factory=list)  # e.g. ["metadata", "calendar", "structure"]
-    priority: int = 10            # lower runs earlier
-    dataset: Optional[str] = None # e.g. "CMIP6-decadal", "CORDEX", "ATLAS"
+    categories: List[str] = field(
+        default_factory=list
+    )  # e.g. ["metadata", "calendar", "structure"]
+    priority: int = 10  # lower runs earlier
+    dataset: Optional[str] = None  # e.g. "CMIP6-decadal", "CORDEX", "ATLAS"
 
     def matches(self, path: Path) -> bool:
         return path.suffix.lower() == ".nc"

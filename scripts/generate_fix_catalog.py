@@ -25,14 +25,16 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
         if hasattr(f, "model_dump"):
             json_list.append(f.model_dump())
         else:
-            json_list.append({
-                "code": f.code,
-                "name": f.name,
-                "description": f.description,
-                "categories": getattr(f, "categories", []) or [],
-                "dataset": f.dataset,
-                "priority": f.priority,
-            })
+            json_list.append(
+                {
+                    "code": f.code,
+                    "name": f.name,
+                    "description": f.description,
+                    "categories": getattr(f, "categories", []) or [],
+                    "dataset": f.dataset,
+                    "priority": f.priority,
+                }
+            )
 
     Path(md_path).write_text("\n".join(md_lines), encoding="utf-8")
     Path(json_path).write_text(json.dumps(json_list, indent=2), encoding="utf-8")

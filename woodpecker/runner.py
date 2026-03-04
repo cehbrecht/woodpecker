@@ -21,7 +21,9 @@ def _normalize_codes(codes: Sequence[str]) -> set[str]:
     return {code.strip().upper() for code in codes if code.strip()}
 
 
-def select_fixes(dataset: Optional[str] = None, categories: Sequence[str] = (), codes: Sequence[str] = ()) -> List[Any]:
+def select_fixes(
+    dataset: Optional[str] = None, categories: Sequence[str] = (), codes: Sequence[str] = ()
+) -> List[Any]:
     filters: Dict[str, Any] = {}
     if dataset:
         filters["dataset"] = dataset

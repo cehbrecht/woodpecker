@@ -38,10 +38,13 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install uv
+        run: python -m pip install --upgrade pip uv
+
       - name: Install package + docs deps
         run: |
-          pip install -e .
-          pip install -e ".[docs]"
+          PYTHON_BIN=$(python -c 'import sys; print(sys.executable)')
+          uv pip install --python "$PYTHON_BIN" -e ".[docs]"
 
       - name: Generate fix catalog (MD/JSON)
         run: python scripts/generate_fix_catalog.py

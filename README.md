@@ -66,7 +66,9 @@ make install     # editable install
 make install-uv  # editable install via uv
 make dev         # editable install + docs + pytest extras
 make dev-uv      # dev install via uv
+make format      # run Ruff formatter
 make lint        # run Ruff lint checks
+make lint-fix    # auto-fix Ruff lint issues
 make check       # run checks (defaults to current directory)
 make test        # run pytest test suite
 make docs        # generate docs artifacts + strict mkdocs build

@@ -15,9 +15,7 @@ from typing import List, Optional
 try:
     from pydantic import BaseModel, Field, field_validator
 except Exception as e:  # pragma: no cover
-    raise ImportError(
-        "Pydantic is not installed. Install with: pip install pydantic"
-    ) from e
+    raise ImportError("Pydantic is not installed. Install with: pip install pydantic") from e
 
 from .registry import FixRegistry
 
