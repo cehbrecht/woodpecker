@@ -1,5 +1,8 @@
 # Woodpecker
 
+[![CI](https://github.com/macpingu/woodpecker/actions/workflows/ci.yml/badge.svg)](https://github.com/macpingu/woodpecker/actions/workflows/ci.yml)
+[![Docs](https://github.com/macpingu/woodpecker/actions/workflows/docs.yml/badge.svg)](https://github.com/macpingu/woodpecker/actions/workflows/docs.yml)
+
 **Woodpeckers** “fix” trees by pecking out small problem spots — exactly like this tool applies targeted fixes to datasets.
 
 Woodpecker is a small, **code-driven catalog of dataset fixes** for climate data workflows (CDS/WPS, ESMValTool, etc.).
@@ -63,6 +66,7 @@ make install     # editable install
 make install-uv  # editable install via uv
 make dev         # editable install + docs + pytest extras
 make dev-uv      # dev install via uv
+make lint        # run Ruff lint checks
 make check       # run checks (defaults to current directory)
 make test        # run pytest test suite
 make docs        # generate docs artifacts + strict mkdocs build

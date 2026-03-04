@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+
 import click
 
 # Importing woodpecker.fixes registers built-in fixes.

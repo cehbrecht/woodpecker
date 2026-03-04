@@ -20,6 +20,7 @@ docs = [
 ]
 dev = [
   "pytest>=8.0",
+  "ruff>=0.6.0",
 ]
 
 [project.scripts]
@@ -30,3 +31,11 @@ include = ["woodpecker*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
