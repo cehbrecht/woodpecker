@@ -34,6 +34,17 @@ make list-fixes
 
 Main requirements are tracked in `pyproject.toml`. Use `make` after creating/activating the conda environment (the Makefile intentionally does not manage conda itself).
 
+Conda + uv workflow (optional, faster installer):
+
+```bash
+conda env create -f environment.yml
+conda activate woodpecker
+make install-uv
+make dev-uv
+```
+
+Default `make install`/`make dev` still use `pip`.
+
 Pip-only setup (no conda):
 
 ```bash
@@ -49,7 +60,9 @@ Common tasks:
 
 ```bash
 make install     # editable install
+make install-uv  # editable install via uv
 make dev         # editable install + docs + pytest extras
+make dev-uv      # dev install via uv
 make check       # run checks (defaults to current directory)
 make test        # run pytest test suite
 make docs        # generate docs artifacts + strict mkdocs build
