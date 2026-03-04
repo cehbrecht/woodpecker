@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type
-import json
 
 
 @dataclass
@@ -17,9 +17,11 @@ class Fix:
     code: str = ""
     name: str = ""
     description: str = ""
-    categories: List[str] = field(default_factory=list)  # e.g. ["metadata", "calendar", "structure"]
-    priority: int = 10            # lower runs earlier
-    dataset: Optional[str] = None # e.g. "CMIP6-decadal", "CORDEX", "ATLAS"
+    categories: List[str] = field(
+        default_factory=list
+    )  # e.g. ["metadata", "calendar", "structure"]
+    priority: int = 10  # lower runs earlier
+    dataset: Optional[str] = None  # e.g. "CMIP6-decadal", "CORDEX", "ATLAS"
 
     def matches(self, path: Path) -> bool:
         return path.suffix.lower() == ".nc"

@@ -1,11 +1,17 @@
-.PHONY: help install dev check test docs docs-serve list-fixes
+.PHONY: help install install-uv dev dev-uv format lint lint-fix check test docs docs-serve list-fixes
 
 CHECK_PATH ?= .
+PYTHON ?= $(shell python -c 'import sys; print(sys.executable)')
 
 help:
 	@echo "Common targets (run after conda env is activated):"
 	@echo "  make install    - install package in editable mode"
+	@echo "  make install-uv - install package in editable mode via uv"
 	@echo "  make dev        - install package + docs + dev(test) extras"
+	@echo "  make dev-uv     - dev install via uv"
+	@echo "  make format     - run Ruff formatter"
+	@echo "  make lint       - run Ruff lint checks"
+	@echo "  make lint-fix   - auto-fix Ruff lint issues"
 	@echo "  make check      - run fix checks (default path: .)"
 	@echo "  make test       - run pytest test suite"
 	@echo "  make docs       - generate docs artifacts and build site"
@@ -15,8 +21,23 @@ help:
 install:
 	pip install -e .
 
+install-uv:
+	uv pip install --python "$(PYTHON)" -e .
+
 dev:
 	pip install -e ".[docs,dev]"
+
+dev-uv:
+	uv pip install --python "$(PYTHON)" -e ".[docs,dev]"
+
+format:
+	ruff format .
+
+lint:
+	ruff check .
+
+lint-fix:
+	ruff check . --fix
 
 check:
 	woodpecker check $(CHECK_PATH)

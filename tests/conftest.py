@@ -45,8 +45,11 @@ def atlas_spaced_file(make_dummy_netcdf: Callable[[str], Path]) -> Path:
 
 
 @pytest.fixture
-def isolated_cli_workspace(cli_runner: CliRunner) -> Iterator[Tuple[CliRunner, Callable[[str], Path]]]:
+def isolated_cli_workspace(
+    cli_runner: CliRunner,
+) -> Iterator[Tuple[CliRunner, Callable[[str], Path]]]:
     with cli_runner.isolated_filesystem():
+
         def _make(filename: str) -> Path:
             path = Path(filename)
             path.write_text(DUMMY_NETCDF_CONTENT, encoding="utf-8")

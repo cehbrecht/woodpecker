@@ -53,7 +53,9 @@ class ATLAS01(Fix):
     def check(self, path: Path) -> list[str]:
         findings = []
         if path.name.lower().endswith(".nc") and " " in path.name:
-            findings.append("filename contains spaces; use underscores for stable downstream tooling")
+            findings.append(
+                "filename contains spaces; use underscores for stable downstream tooling"
+            )
         return findings
 
     def apply(self, path: Path, dry_run: bool = True) -> bool:

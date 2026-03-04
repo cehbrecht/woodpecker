@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  format:
+    name: Ruff Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dev dependencies
+        run: |
+          PYTHON_BIN=$(python -c 'import sys; print(sys.executable)')
+          uv pip install --python "$PYTHON_BIN" -e ".[dev]"
+
+      - name: Run Ruff format check
+        run: ruff format --check .
+
+  lint:
+    name: Ruff Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dev dependencies
+        run: |
+          PYTHON_BIN=$(python -c 'import sys; print(sys.executable)')
+          uv pip install --python "$PYTHON_BIN" -e ".[dev]"
+
+      - name: Run Ruff
+        run: make lint
+
+  tests:
+    name: Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dev dependencies
+        run: |
+          PYTHON_BIN=$(python -c 'import sys; print(sys.executable)')
+          uv pip install --python "$PYTHON_BIN" -e ".[dev]"
+
+      - name: Run tests
+        run: make test

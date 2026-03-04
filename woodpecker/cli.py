@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+
 import click
 
 # Importing woodpecker.fixes registers built-in fixes.
@@ -31,10 +32,7 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
     fixes = FixRegistry.discover(filters=filters or None)
 
     if fmt == "json":
-        payload = [
-            (f.model_dump() if hasattr(f, "model_dump") else f.__dict__)
-            for f in fixes
-        ]
+        payload = [(f.model_dump() if hasattr(f, "model_dump") else f.__dict__) for f in fixes]
         click.echo(json.dumps(payload, indent=2))
         return
 
@@ -43,22 +41,34 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
         click.echo("|------|------|-------------|------------|---------|---------|")
         for f in fixes:
             cats = ", ".join(getattr(f, "categories", []) or [])
-            click.echo(f"| {f.code} | {f.name} | {f.description} | {cats} | {f.dataset or ''} | {f.priority} |")
+            click.echo(
+                f"| {f.code} | {f.name} | {f.description} | {cats} | {f.dataset or ''} | {f.priority} |"
+            )
         return
 
     # text
     for f in fixes:
         cats = ", ".join(getattr(f, "categories", []) or [])
-        click.echo(f"{f.code}: {f.description} (cats: {cats}; dataset: {f.dataset or '-'}; priority: {f.priority})")
+        click.echo(
+            f"{f.code}: {f.description} (cats: {cats}; dataset: {f.dataset or '-'}; priority: {f.priority})"
+        )
 
 
 @cli.command("check")
 @click.argument("paths", nargs=-1, type=click.Path(exists=True, path_type=Path))
 @click.option("--dataset", default=None, help="Filter fixes by dataset.")
-@click.option("--category", "categories", multiple=True, help="Filter fixes by category (repeatable)")
+@click.option(
+    "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
+)
 @click.option("--select", "codes", multiple=True, help="Run only selected fix codes (repeatable)")
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
-def check(paths: tuple[Path, ...], dataset: str | None, categories: tuple[str, ...], codes: tuple[str, ...], fmt: str):
+def check(
+    paths: tuple[Path, ...],
+    dataset: str | None,
+    categories: tuple[str, ...],
+    codes: tuple[str, ...],
+    fmt: str,
+):
     """Check NetCDF files and report findings grouped by fix code."""
     target_paths = list(paths) or [Path.cwd()]
     files = collect_netcdf_files(target_paths)
@@ -72,7 +82,9 @@ def check(paths: tuple[Path, ...], dataset: str | None, categories: tuple[str, .
             click.echo(f"{item['path']}: {item['code']} {item['message']}")
 
     if not findings and fmt == "text":
-        click.echo(f"No issues found ({len(files)} NetCDF files scanned, {len(fixes)} fixes selected).")
+        click.echo(
+            f"No issues found ({len(files)} NetCDF files scanned, {len(fixes)} fixes selected)."
+        )
 
     raise SystemExit(1 if findings else 0)
 
@@ -80,10 +92,23 @@ def check(paths: tuple[Path, ...], dataset: str | None, categories: tuple[str, .
 @cli.command("fix")
 @click.argument("paths", nargs=-1, type=click.Path(exists=True, path_type=Path))
 @click.option("--dataset", default=None, help="Filter fixes by dataset.")
-@click.option("--category", "categories", multiple=True, help="Filter fixes by category (repeatable)")
+@click.option(
+    "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
+)
 @click.option("--select", "codes", multiple=True, help="Run only selected fix codes (repeatable)")
-@click.option("--write", is_flag=True, default=False, help="Apply changes. Without this flag, run in dry-run mode.")
-def fix(paths: tuple[Path, ...], dataset: str | None, categories: tuple[str, ...], codes: tuple[str, ...], write: bool):
+@click.option(
+    "--write",
+    is_flag=True,
+    default=False,
+    help="Apply changes. Without this flag, run in dry-run mode.",
+)
+def fix(
+    paths: tuple[Path, ...],
+    dataset: str | None,
+    categories: tuple[str, ...],
+    codes: tuple[str, ...],
+    write: bool,
+):
     """Apply selected fixes to NetCDF files."""
     target_paths = list(paths) or [Path.cwd()]
     files = collect_netcdf_files(target_paths)
