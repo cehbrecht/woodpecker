@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
-from woodpecker.inout import DataInput, get_output_adapter
 from woodpecker.fixes.registry import FixRegistry
+from woodpecker.inout import DataInput, get_output_adapter
 
 
 def _normalize_codes(codes: Sequence[str]) -> set[str]:

@@ -6,7 +6,6 @@ import xarray as xr
 from woodpecker.inout import PathInput, ZarrInput, ZarrOutputAdapter
 from woodpecker.inout.base import _netcdf_backend_available, _zarr_backend_available
 
-
 pytestmark = [
     pytest.mark.io_backend,
     pytest.mark.filterwarnings("ignore:.*NetCDF input backend unavailable.*"),

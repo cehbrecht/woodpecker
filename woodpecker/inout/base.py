@@ -10,7 +10,6 @@ from typing import Any, List, Sequence
 
 import xarray as xr
 
-
 _WARNED_MESSAGES: set[str] = set()
 
 

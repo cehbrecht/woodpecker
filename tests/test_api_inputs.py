@@ -6,8 +6,8 @@ import xarray as xr
 from woodpecker.api import check, fix
 from woodpecker.inout import (
     PathInput,
-    ZarrOutputAdapter,
     ZarrInput,
+    ZarrOutputAdapter,
     get_io_availability,
     get_output_adapter,
 )
