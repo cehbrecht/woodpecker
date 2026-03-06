@@ -50,9 +50,7 @@ class PathInput(DataInput):
         if dry_run:
             return False
         if not self.is_available:
-            warn_once(
-                f"NetCDF output backend unavailable for '{self.reference}'. Skipping write."
-            )
+            warn_once(f"NetCDF output backend unavailable for '{self.reference}'. Skipping write.")
             return False
         try:
             dataset.to_netcdf(self.source_path)

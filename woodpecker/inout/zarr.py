@@ -50,9 +50,7 @@ class ZarrInput(DataInput):
         if dry_run:
             return False
         if not self.is_available:
-            warn_once(
-                f"Zarr output backend unavailable for '{self.reference}'. Skipping write."
-            )
+            warn_once(f"Zarr output backend unavailable for '{self.reference}'. Skipping write.")
             return False
         try:
             dataset.to_zarr(self.source_path, mode="w")
