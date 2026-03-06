@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from os import PathLike
@@ -8,6 +9,9 @@ from pathlib import Path
 from typing import Any, List, Sequence
 
 import xarray as xr
+
+
+_WARNED_MESSAGES: set[str] = set()
 
 
 def _is_xarray_object(value: Any) -> bool:
@@ -40,6 +44,13 @@ def get_io_availability() -> dict[str, bool]:
         "netcdf_output": netcdf_available,
         "zarr_output": zarr_available,
     }
+
+
+def warn_once(message: str) -> None:
+    if message in _WARNED_MESSAGES:
+        return
+    _WARNED_MESSAGES.add(message)
+    warnings.warn(message, stacklevel=2)
 
 
 @dataclass

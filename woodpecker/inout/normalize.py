@@ -1,10 +1,15 @@
 from __future__ import annotations
 
-import warnings
 from pathlib import Path
 from typing import Any, Iterable, List
 
-from .base import DataInput, _is_pathlike, _is_xarray_object, _zarr_backend_available
+from .base import (
+    DataInput,
+    _is_pathlike,
+    _is_xarray_object,
+    _zarr_backend_available,
+    warn_once,
+)
 from .folder import FolderInput
 from .nc import NetCDFOutputAdapter, PathInput
 from .xr import XarrayInput
@@ -18,18 +23,12 @@ def get_output_adapter(output_format: str | None = None):
     if normalized in ("netcdf", "nc"):
         adapter = NetCDFOutputAdapter()
         if not adapter.is_available:
-            warnings.warn(
-                "NetCDF output format requested but no NetCDF backend is available.",
-                stacklevel=2,
-            )
+            warn_once("NetCDF output format requested but no NetCDF backend is available.")
         return adapter
     if normalized == "zarr":
         adapter = ZarrOutputAdapter()
         if not adapter.is_available:
-            warnings.warn(
-                "Zarr output format requested but zarr backend is not available.",
-                stacklevel=2,
-            )
+            warn_once("Zarr output format requested but zarr backend is not available.")
         return adapter
     raise ValueError(f"Unsupported output format: {output_format}")
 
@@ -44,10 +43,9 @@ def _as_data_input(value: Any) -> list[DataInput]:
             return FolderInput(source_path=path, name=path.name).expand()
         if path.suffix.lower() == ".zarr":
             if not _zarr_backend_available():
-                warnings.warn(
+                warn_once(
                     f"Zarr input '{path}' requested but zarr backend is not available."
-                    " Processing will continue with safe fallback behavior.",
-                    stacklevel=2,
+                    " Processing will continue with safe fallback behavior."
                 )
             return [ZarrInput(source_path=path, name=path.name)]
         if path.is_file() and path.suffix.lower() == ".nc":

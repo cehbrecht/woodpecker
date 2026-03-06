@@ -8,6 +8,7 @@ from woodpecker.inout.base import _netcdf_backend_available, _zarr_backend_avail
 
 
 pytestmark = [
+    pytest.mark.io_backend,
     pytest.mark.filterwarnings("ignore:.*NetCDF input backend unavailable.*"),
     pytest.mark.filterwarnings("ignore:.*Zarr input backend unavailable.*"),
 ]

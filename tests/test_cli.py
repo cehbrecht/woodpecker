@@ -32,11 +32,15 @@ def test_io_status_json_output_structure():
 
     assert result.exit_code == 0
     payload = json.loads(result.output)
-    assert "xarray_input" in payload
-    assert "netcdf_input" in payload
-    assert "zarr_input" in payload
-    assert "netcdf_output" in payload
-    assert "zarr_output" in payload
+    expected_keys = {
+        "xarray_input",
+        "netcdf_input",
+        "zarr_input",
+        "netcdf_output",
+        "zarr_output",
+    }
+    assert set(payload.keys()) == expected_keys
+    assert all(isinstance(payload[key], bool) for key in expected_keys)
 
 
 def test_check_returns_zero_when_no_findings(

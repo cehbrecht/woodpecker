@@ -42,6 +42,9 @@ include = ["woodpecker*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+  "io_backend: tests that require optional NetCDF/Zarr backends",
+]
 
 [tool.ruff]
 line-length = 100
