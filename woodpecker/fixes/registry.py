@@ -4,7 +4,7 @@ import json
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional, Type
 
-from woodpecker.data_input import DataInput
+import xarray as xr
 
 
 @dataclass
@@ -24,16 +24,13 @@ class Fix:
     priority: int = 10  # lower runs earlier
     dataset: Optional[str] = None  # e.g. "CMIP6-decadal", "CORDEX", "ATLAS"
 
-    def matches(self, data_input: DataInput) -> bool:
-        path = data_input.source_path
-        if path is None:
-            return True
-        return path.suffix.lower() == ".nc"
+    def matches(self, dataset: xr.Dataset) -> bool:
+        return isinstance(dataset, xr.Dataset)
 
-    def check(self, data_input: DataInput) -> List[str]:
+    def check(self, dataset: xr.Dataset) -> List[str]:
         return []
 
-    def apply(self, data_input: DataInput, dry_run: bool = True) -> bool:
+    def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
         return False
 
 

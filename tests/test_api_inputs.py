@@ -3,6 +3,7 @@ from pathlib import Path
 import xarray as xr
 
 from woodpecker.api import check, fix
+from woodpecker.data_input import PathInput, ZarrInput, get_output_adapter
 
 
 def test_check_supports_xarray_dataset_input():
@@ -31,3 +32,26 @@ def test_check_supports_path_input(make_dummy_netcdf):
 
     assert findings
     assert findings[0]["path"] == str(Path(source))
+
+
+def test_output_adapter_target_paths_for_path_inputs():
+    netcdf_adapter = get_output_adapter("netcdf")
+    zarr_adapter = get_output_adapter("zarr")
+
+    path_input = PathInput(source_path=Path("example.nc"), name="example.nc")
+    zarr_input = ZarrInput(source_path=Path("example.zarr"), name="example.zarr")
+
+    assert netcdf_adapter is not None
+    assert zarr_adapter is not None
+    assert netcdf_adapter.target_path(path_input) == Path("example.nc")
+    assert zarr_adapter.target_path(path_input) == Path("example.zarr")
+    assert netcdf_adapter.target_path(zarr_input) == Path("example.nc")
+
+
+def test_fix_accepts_explicit_output_format():
+    ds = xr.Dataset(attrs={"source_name": "atlas sample.nc"})
+
+    stats = fix(ds, codes=["ATLAS01"], write=True, output_format="netcdf")
+
+    assert stats["attempted"] == 1
+    assert stats["changed"] == 1

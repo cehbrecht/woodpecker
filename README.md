@@ -82,6 +82,10 @@ woodpecker check /path/to/netcdf/or/folder
 woodpecker check . --select CMIP6D01
 woodpecker fix . --select CMIP6D01        # dry-run by default
 woodpecker fix . --select CMIP6D01 --write
+woodpecker fix . --select CMIP6D01 --write --output-format zarr
+
+Write mode reports both fix changes and persistence status (`persisted` vs `failed to persist`) in text and JSON output.
+When `--write --format json` is used, Woodpecker exits with status `1` if any persistence operation fails.
 ```
 
 Library API (paths + xarray objects):
@@ -101,8 +105,11 @@ findings_from_paths = woodpecker.check(["./data"], codes=["CMIP6D01"])
 
 Fix author contract (minimal):
 - metadata: `code`, `name`, `description`, `categories`, `priority`, `dataset`
-- methods: `matches(path)`, `check(path) -> list[str]`, `apply(path, dry_run=True) -> bool`
+- methods: `matches(dataset)`, `check(dataset) -> list[str]`, `apply(dataset, dry_run=True) -> bool`
 - reference template: `woodpecker/fixes/fix_template.py`
+
+Input adapters (path/folder/xarray/zarr) are responsible for turning sources
+into xarray objects before running fixes.
 
 ## Example
 
@@ -111,7 +118,7 @@ touch cmip6_case.nc
 woodpecker check . --select CMIP6D01
 woodpecker fix . --select CMIP6D01        # dry-run by default
 woodpecker fix . --select CMIP6D01 --write
-# cmip6_case.nc -> cmip6_case_decadal.nc
+# dummy fix marks datasets in-memory/on write path (no filename renaming in this phase)
 ```
 
 ## Design Direction

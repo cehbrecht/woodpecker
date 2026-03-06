@@ -103,19 +103,45 @@ def check(
     default=False,
     help="Apply changes. Without this flag, run in dry-run mode.",
 )
+@click.option(
+    "--output-format",
+    type=click.Choice(["auto", "netcdf", "zarr"]),
+    default="auto",
+    show_default=True,
+    help="Output format for writes.",
+)
+@click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def fix(
     paths: tuple[Path, ...],
     dataset: str | None,
     categories: tuple[str, ...],
     codes: tuple[str, ...],
     write: bool,
+    output_format: str,
+    fmt: str,
 ):
     """Apply selected fixes to NetCDF files."""
     target_paths = list(paths) or [Path.cwd()]
     inputs = normalize_inputs(target_paths)
     fixes = select_fixes(dataset=dataset, categories=categories, codes=codes)
-    stats = run_fix(inputs, fixes, dry_run=not write)
+    stats = run_fix(inputs, fixes, dry_run=not write, output_format=output_format)
+    if fmt == "json":
+        payload = {
+            "mode": "write" if write else "dry-run",
+            "output_format": output_format,
+            **stats,
+        }
+        click.echo(json.dumps(payload, indent=2))
+        if write and stats.get("persist_failed", 0) > 0:
+            raise SystemExit(1)
+        return
+
     mode = "write" if write else "dry-run"
+    if write:
+        click.echo(
+            f"Fix run complete ({mode}): {stats['attempted']} fix applications attempted, {stats['changed']} files changed, {stats['persisted']} persisted, {stats['persist_failed']} failed to persist."
+        )
+        return
     click.echo(
         f"Fix run complete ({mode}): {stats['attempted']} fix applications attempted, {stats['changed']} files changed."
     )

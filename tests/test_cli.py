@@ -56,15 +56,96 @@ def test_check_json_output_structure(
     assert payload[0]["code"] == "CMIP6D01"
 
 
-def test_fix_write_applies_rename_for_cmip6_rule(
+def test_fix_write_applies_dummy_cmip6_rule(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
 ):
     runner, make_dummy_netcdf = isolated_cli_workspace
-    source = make_dummy_netcdf("cmip6_case.nc")
+    make_dummy_netcdf("cmip6_case.nc")
 
-    result = runner.invoke(cli, ["fix", ".", "--select", "CMIP6D01", "--write"])
+    result = runner.invoke(
+        cli,
+        ["fix", ".", "--select", "CMIP6D01", "--write", "--output-format", "netcdf"],
+    )
 
     assert result.exit_code == 0
     assert "1 files changed" in result.output
-    assert not source.exists()
-    assert Path("cmip6_case_decadal.nc").exists()
+
+
+def test_fix_json_output_contains_write_report(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    monkeypatch,
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("cmip6_case.nc")
+
+    def _fake_run_fix(*args, **kwargs):
+        return {
+            "attempted": 1,
+            "changed": 1,
+            "persist_attempted": 1,
+            "persisted": 1,
+            "persist_failed": 0,
+        }
+
+    monkeypatch.setattr("woodpecker.cli.run_fix", _fake_run_fix)
+
+    result = runner.invoke(
+        cli,
+        [
+            "fix",
+            ".",
+            "--select",
+            "CMIP6D01",
+            "--write",
+            "--output-format",
+            "netcdf",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert payload["mode"] == "write"
+    assert payload["output_format"] == "netcdf"
+    assert payload["attempted"] == 1
+    assert payload["changed"] == 1
+    assert payload["persist_attempted"] == 1
+    assert payload["persisted"] == 1
+    assert payload["persist_failed"] == 0
+
+
+def test_fix_json_write_exits_nonzero_on_persist_failure(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    monkeypatch,
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("cmip6_case.nc")
+
+    def _fake_run_fix(*args, **kwargs):
+        return {
+            "attempted": 1,
+            "changed": 1,
+            "persist_attempted": 1,
+            "persisted": 0,
+            "persist_failed": 1,
+        }
+
+    monkeypatch.setattr("woodpecker.cli.run_fix", _fake_run_fix)
+
+    result = runner.invoke(
+        cli,
+        [
+            "fix",
+            ".",
+            "--select",
+            "CMIP6D01",
+            "--write",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 1
+    payload = json.loads(result.output)
+    assert payload["persist_failed"] == 1

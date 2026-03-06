@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
-from woodpecker.data_input import DataInput
+from woodpecker.data_input import DataInput, get_output_adapter
 from woodpecker.fixes.registry import FixRegistry
 
 
@@ -30,10 +30,11 @@ def select_fixes(
 def run_check(inputs: Iterable[DataInput], fixes: Iterable[Any]) -> List[Dict[str, str]]:
     findings: List[Dict[str, str]] = []
     for data_input in inputs:
+        dataset = data_input.load()
         for fix in fixes:
-            if not fix.matches(data_input):
+            if not fix.matches(dataset):
                 continue
-            for message in fix.check(data_input):
+            for message in fix.check(dataset):
                 findings.append(
                     {
                         "path": data_input.reference,
@@ -42,19 +43,47 @@ def run_check(inputs: Iterable[DataInput], fixes: Iterable[Any]) -> List[Dict[st
                         "message": message,
                     }
                 )
+        close = getattr(dataset, "close", None)
+        if callable(close):
+            close()
     return findings
 
 
 def run_fix(
-    inputs: Iterable[DataInput], fixes: Iterable[Any], dry_run: bool = True
+    inputs: Iterable[DataInput],
+    fixes: Iterable[Any],
+    dry_run: bool = True,
+    output_format: str = "auto",
 ) -> Dict[str, int]:
     changed = 0
     attempted = 0
+    persist_attempted = 0
+    persisted = 0
+    persist_failed = 0
+    output_adapter = get_output_adapter(output_format)
     for data_input in inputs:
+        dataset = data_input.load()
+        dataset_changed = False
         for fix in fixes:
-            if not fix.matches(data_input):
+            if not fix.matches(dataset):
                 continue
             attempted += 1
-            if fix.apply(data_input, dry_run=dry_run):
+            if fix.apply(dataset, dry_run=dry_run):
                 changed += 1
-    return {"attempted": attempted, "changed": changed}
+                dataset_changed = True
+        if dataset_changed and not dry_run:
+            persist_attempted += 1
+            if data_input.save(dataset, dry_run=False, output_adapter=output_adapter):
+                persisted += 1
+            else:
+                persist_failed += 1
+        close = getattr(dataset, "close", None)
+        if callable(close):
+            close()
+    return {
+        "attempted": attempted,
+        "changed": changed,
+        "persist_attempted": persist_attempted,
+        "persisted": persisted,
+        "persist_failed": persist_failed,
+    }
