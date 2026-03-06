@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Sequence
 
 import woodpecker.fixes  # noqa: F401
-from woodpecker.data_input import normalize_inputs
+from woodpecker.inout import normalize_inputs
 from woodpecker.runner import run_check, run_fix, select_fixes
 
 

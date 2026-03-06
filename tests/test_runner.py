@@ -1,6 +1,6 @@
 import xarray as xr
 
-from woodpecker.data_input import DataInput
+from woodpecker.inout import DataInput
 from woodpecker.runner import run_fix
 
 
