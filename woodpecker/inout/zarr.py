@@ -30,7 +30,11 @@ class ZarrInput(DataInput):
             dataset.attrs.setdefault("source_name", self.source_name)
             return dataset
         try:
-            dataset = xr.open_zarr(self.source_path)
+            opened = xr.open_zarr(self.source_path)
+            dataset = opened.load()
+            close = getattr(opened, "close", None)
+            if callable(close):
+                close()
         except Exception as exc:
             warn_once(
                 f"Failed to read Zarr input '{self.reference}': {exc}. Falling back to empty dataset."

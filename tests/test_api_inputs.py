@@ -77,7 +77,8 @@ def test_io_availability_report_has_expected_keys():
 
 
 def test_zarr_output_adapter_warns_and_fails_when_backend_unavailable(monkeypatch):
-    monkeypatch.setattr("woodpecker.inout.base._zarr_backend_available", lambda: False)
+    monkeypatch.setattr("woodpecker.inout.zarr._zarr_backend_available", lambda: False)
+    monkeypatch.setattr("woodpecker.inout.base._WARNED_MESSAGES", set())
     adapter = ZarrOutputAdapter()
     ds = xr.Dataset(attrs={"source_name": "case.nc"})
     data_input = PathInput(source_path=Path("case.nc"), name="case.nc")
