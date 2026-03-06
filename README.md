@@ -55,6 +55,20 @@ pip install -e .
 woodpecker list-fixes
 ```
 
+Optional I/O extras (recommended when you need file backends):
+
+```bash
+pip install -e ".[io]"       # NetCDF backends (netCDF4/h5netcdf/scipy)
+pip install -e ".[zarr]"     # Zarr backend support
+pip install -e ".[io,zarr]"  # both
+```
+
+Note for contributors: backend integration tests (NetCDF/Zarr round-trips) run
+when corresponding backends are installed, and are skipped in minimal environments.
+
+If an unavailable backend is requested (for example Zarr without `.[zarr]`),
+Woodpecker fails safely with a warning and reports persistence failure in fix stats.
+
 ## Usage
 
 How it works (current demo): `discover fixes -> check findings -> apply selected fixes`.
@@ -64,8 +78,8 @@ Common tasks:
 ```bash
 make install     # editable install
 make install-uv  # editable install via uv
-make dev         # editable install + docs + pytest extras
-make dev-uv      # dev install via uv
+make dev         # editable install + docs + dev + io + zarr extras
+make dev-uv      # same as make dev via uv
 make format      # run Ruff formatter
 make lint        # run Ruff lint checks
 make lint-fix    # auto-fix Ruff lint issues
@@ -78,16 +92,40 @@ make docs-serve  # generate docs artifacts + run mkdocs serve
 Lint-style workflow (Ruff-like):
 
 ```bash
+woodpecker io-status
+woodpecker io-status --format json
 woodpecker check /path/to/netcdf/or/folder
 woodpecker check . --select CMIP6D01
 woodpecker fix . --select CMIP6D01        # dry-run by default
 woodpecker fix . --select CMIP6D01 --write
+woodpecker fix . --select CMIP6D01 --write --output-format zarr
+
+Write mode reports both fix changes and persistence status (`persisted` vs `failed to persist`) in text and JSON output.
+When `--write --format json` is used, Woodpecker exits with status `1` if any persistence operation fails.
+```
+
+Library API (paths + xarray objects):
+
+```python
+import xarray as xr
+import woodpecker
+
+ds = xr.Dataset(attrs={"source_name": "cmip6_bad.nc"})
+
+findings = woodpecker.check(ds, codes=["CMIP6D01"])
+stats = woodpecker.fix(ds, codes=["CMIP6D01"], write=True)
+
+# Path input works as well
+findings_from_paths = woodpecker.check(["./data"], codes=["CMIP6D01"])
 ```
 
 Fix author contract (minimal):
 - metadata: `code`, `name`, `description`, `categories`, `priority`, `dataset`
-- methods: `matches(path)`, `check(path) -> list[str]`, `apply(path, dry_run=True) -> bool`
+- methods: `matches(dataset)`, `check(dataset) -> list[str]`, `apply(dataset, dry_run=True) -> bool`
 - reference template: `woodpecker/fixes/fix_template.py`
+
+Input adapters (path/folder/xarray/zarr) are responsible for turning sources
+into xarray objects before running fixes.
 
 ## Example
 
@@ -96,7 +134,7 @@ touch cmip6_case.nc
 woodpecker check . --select CMIP6D01
 woodpecker fix . --select CMIP6D01        # dry-run by default
 woodpecker fix . --select CMIP6D01 --write
-# cmip6_case.nc -> cmip6_case_decadal.nc
+# dummy fix marks datasets in-memory/on write path (no filename renaming in this phase)
 ```
 
 ## Design Direction

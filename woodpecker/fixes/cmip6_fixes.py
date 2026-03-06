@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-from pathlib import Path
+import xarray as xr
 
 from .registry import Fix, FixRegistry
+
+
+def _lower_source_name(dataset: xr.Dataset) -> str:
+    return str(dataset.attrs.get("source_name", "")).lower()
 
 
 @FixRegistry.register
@@ -14,27 +18,23 @@ class CMIP6D01(Fix):
     priority = 10
     dataset = "CMIP6-decadal"
 
-    def matches(self, path: Path) -> bool:
-        return path.suffix.lower() == ".nc" and "cmip6" in path.name.lower()
+    def matches(self, dataset: xr.Dataset) -> bool:
+        source = _lower_source_name(dataset)
+        return source.endswith(".nc") and "cmip6" in source
 
-    def check(self, path: Path) -> list[str]:
+    def check(self, dataset: xr.Dataset) -> list[str]:
         findings = []
-        if "decadal" not in path.name.lower():
+        if "decadal" not in _lower_source_name(dataset):
             findings.append("expected CMIP6 decadal filename hint ('decadal') is missing")
         return findings
 
-    def apply(self, path: Path, dry_run: bool = True) -> bool:
-        if "decadal" in path.name.lower():
+    def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
+        if "decadal" in _lower_source_name(dataset):
             return False
 
-        target = path.with_name(f"{path.stem}_decadal{path.suffix}")
         if dry_run:
             return True
-
-        if target.exists():
-            return False
-
-        path.rename(target)
+        dataset.attrs["woodpecker_fix_CMIP6D01"] = "applied"
         return True
 
 
@@ -47,27 +47,25 @@ class ATLAS01(Fix):
     priority = 20
     dataset = "ATLAS"
 
-    def matches(self, path: Path) -> bool:
-        return path.suffix.lower() == ".nc" and "atlas" in path.name.lower()
+    def matches(self, dataset: xr.Dataset) -> bool:
+        source = _lower_source_name(dataset)
+        return source.endswith(".nc") and "atlas" in source
 
-    def check(self, path: Path) -> list[str]:
+    def check(self, dataset: xr.Dataset) -> list[str]:
         findings = []
-        if path.name.lower().endswith(".nc") and " " in path.name:
+        source_name = str(dataset.attrs.get("source_name", ""))
+        if source_name.lower().endswith(".nc") and " " in source_name:
             findings.append(
                 "filename contains spaces; use underscores for stable downstream tooling"
             )
         return findings
 
-    def apply(self, path: Path, dry_run: bool = True) -> bool:
-        if " " not in path.name:
+    def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
+        source_name = str(dataset.attrs.get("source_name", ""))
+        if " " not in source_name:
             return False
 
-        target = path.with_name(path.name.replace(" ", "_"))
         if dry_run:
             return True
-
-        if target.exists():
-            return False
-
-        path.rename(target)
+        dataset.attrs["woodpecker_fix_ATLAS01"] = "applied"
         return True

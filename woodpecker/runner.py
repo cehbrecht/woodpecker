@@ -1,20 +1,9 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
 from woodpecker.fixes.registry import FixRegistry
-
-
-def collect_netcdf_files(paths: Sequence[Path]) -> List[Path]:
-    files: List[Path] = []
-    for path in paths:
-        if path.is_file() and path.suffix.lower() == ".nc":
-            files.append(path)
-            continue
-        if path.is_dir():
-            files.extend(sorted(path.rglob("*.nc")))
-    return files
+from woodpecker.inout import DataInput, get_output_adapter
 
 
 def _normalize_codes(codes: Sequence[str]) -> set[str]:
@@ -38,32 +27,63 @@ def select_fixes(
     return [fix for fix in fixes if getattr(fix, "code", "").upper() in selected_codes]
 
 
-def run_check(files: Iterable[Path], fixes: Iterable[Any]) -> List[Dict[str, str]]:
+def run_check(inputs: Iterable[DataInput], fixes: Iterable[Any]) -> List[Dict[str, str]]:
     findings: List[Dict[str, str]] = []
-    for file_path in files:
+    for data_input in inputs:
+        dataset = data_input.load()
         for fix in fixes:
-            if not fix.matches(file_path):
+            if not fix.matches(dataset):
                 continue
-            for message in fix.check(file_path):
+            for message in fix.check(dataset):
                 findings.append(
                     {
-                        "path": str(file_path),
+                        "path": data_input.reference,
                         "code": fix.code,
                         "name": fix.name,
                         "message": message,
                     }
                 )
+        close = getattr(dataset, "close", None)
+        if callable(close):
+            close()
     return findings
 
 
-def run_fix(files: Iterable[Path], fixes: Iterable[Any], dry_run: bool = True) -> Dict[str, int]:
+def run_fix(
+    inputs: Iterable[DataInput],
+    fixes: Iterable[Any],
+    dry_run: bool = True,
+    output_format: str = "auto",
+) -> Dict[str, int]:
     changed = 0
     attempted = 0
-    for file_path in files:
+    persist_attempted = 0
+    persisted = 0
+    persist_failed = 0
+    output_adapter = get_output_adapter(output_format)
+    for data_input in inputs:
+        dataset = data_input.load()
+        dataset_changed = False
         for fix in fixes:
-            if not fix.matches(file_path):
+            if not fix.matches(dataset):
                 continue
             attempted += 1
-            if fix.apply(file_path, dry_run=dry_run):
+            if fix.apply(dataset, dry_run=dry_run):
                 changed += 1
-    return {"attempted": attempted, "changed": changed}
+                dataset_changed = True
+        if dataset_changed and not dry_run:
+            persist_attempted += 1
+            if data_input.save(dataset, dry_run=False, output_adapter=output_adapter):
+                persisted += 1
+            else:
+                persist_failed += 1
+        close = getattr(dataset, "close", None)
+        if callable(close):
+            close()
+    return {
+        "attempted": attempted,
+        "changed": changed,
+        "persist_attempted": persist_attempted,
+        "persisted": persisted,
+        "persist_failed": persist_failed,
+    }

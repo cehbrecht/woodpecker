@@ -10,9 +10,20 @@ requires-python = ">=3.10"
 dependencies = [
   "click>=8.1",
   "pydantic>=2.0",
+  "xarray>=2024.1.0",
 ]
 
 [project.optional-dependencies]
+io = [
+  "netCDF4>=1.6",
+  "h5netcdf>=1.3",
+  "scipy>=1.11",
+]
+zarr = [
+  "zarr>=2.13.0,<3.0",
+  "numcodecs>=0.12",
+  "fsspec>=2024.1.0",
+]
 docs = [
   "mkdocs<2",
   "mkdocs-material>=9",
@@ -31,6 +42,9 @@ include = ["woodpecker*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+  "io_backend: tests that require optional NetCDF/Zarr backends",
+]
 
 [tool.ruff]
 line-length = 100

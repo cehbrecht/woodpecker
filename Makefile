@@ -7,8 +7,8 @@ help:
 	@echo "Common targets (run after conda env is activated):"
 	@echo "  make install    - install package in editable mode"
 	@echo "  make install-uv - install package in editable mode via uv"
-	@echo "  make dev        - install package + docs + dev(test) extras"
-	@echo "  make dev-uv     - dev install via uv"
+	@echo "  make dev        - install package + docs + dev + io + zarr extras"
+	@echo "  make dev-uv     - dev install via uv (same extras as make dev)"
 	@echo "  make format     - run Ruff formatter"
 	@echo "  make lint       - run Ruff lint checks"
 	@echo "  make lint-fix   - auto-fix Ruff lint issues"
@@ -25,10 +25,10 @@ install-uv:
 	uv pip install --python "$(PYTHON)" -e .
 
 dev:
-	pip install -e ".[docs,dev]"
+	pip install -e ".[docs,dev,io,zarr]"
 
 dev-uv:
-	uv pip install --python "$(PYTHON)" -e ".[docs,dev]"
+	uv pip install --python "$(PYTHON)" -e ".[docs,dev,io,zarr]"
 
 format:
 	ruff format .

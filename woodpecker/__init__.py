@@ -1,3 +1,5 @@
 """Woodpecker: lightweight fix catalog + scaffolding for climate dataset fixes."""
 
-__all__ = ["fixes"]
+from .api import check, fix
+
+__all__ = ["fixes", "check", "fix"]

@@ -55,12 +55,18 @@ jobs:
         run: make lint
 
   tests:
-    name: Tests (Python ${{ matrix.python-version }})
+    name: Tests (${{ matrix.profile }}, Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
+        profile: ["minimal", "full"]
+        exclude:
+          - python-version: "3.11"
+            profile: "full"
+          - python-version: "3.13"
+            profile: "full"
 
     steps:
       - name: Checkout
@@ -74,10 +80,17 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@v6
 
-      - name: Install dev dependencies
+      - name: Install test dependencies (minimal)
+        if: matrix.profile == 'minimal'
         run: |
           PYTHON_BIN=$(python -c 'import sys; print(sys.executable)')
           uv pip install --python "$PYTHON_BIN" -e ".[dev]"
+
+      - name: Install test dependencies (full io)
+        if: matrix.profile == 'full'
+        run: |
+          PYTHON_BIN=$(python -c 'import sys; print(sys.executable)')
+          uv pip install --python "$PYTHON_BIN" -e ".[dev,io,zarr]"
 
       - name: Run tests
         run: make test

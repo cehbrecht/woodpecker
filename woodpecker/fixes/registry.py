@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass, field
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Type
+
+import xarray as xr
 
 
 @dataclass
@@ -23,13 +24,13 @@ class Fix:
     priority: int = 10  # lower runs earlier
     dataset: Optional[str] = None  # e.g. "CMIP6-decadal", "CORDEX", "ATLAS"
 
-    def matches(self, path: Path) -> bool:
-        return path.suffix.lower() == ".nc"
+    def matches(self, dataset: xr.Dataset) -> bool:
+        return isinstance(dataset, xr.Dataset)
 
-    def check(self, path: Path) -> List[str]:
+    def check(self, dataset: xr.Dataset) -> List[str]:
         return []
 
-    def apply(self, path: Path, dry_run: bool = True) -> bool:
+    def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
         return False
 
 

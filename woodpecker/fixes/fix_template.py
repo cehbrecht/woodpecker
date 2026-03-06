@@ -9,8 +9,9 @@ Requires:
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import List, Optional
+
+import xarray as xr
 
 try:
     from pydantic import BaseModel, Field, field_validator
@@ -33,13 +34,13 @@ class FixModel(BaseModel):
     def ensure_categories_list(cls, v):
         return v or []
 
-    def matches(self, path: Path) -> bool:
-        return path.suffix.lower() == ".nc"
+    def matches(self, dataset: xr.Dataset) -> bool:
+        return isinstance(dataset, xr.Dataset)
 
-    def check(self, path: Path) -> List[str]:
+    def check(self, dataset: xr.Dataset) -> List[str]:
         return []
 
-    def apply(self, path: Path, dry_run: bool = True) -> bool:
+    def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
         return False
 
 
