@@ -16,6 +16,29 @@ def test_list_fixes_contains_known_codes():
     assert "ATLAS01" in result.output
 
 
+def test_io_status_text_output_contains_expected_keys():
+    runner = CliRunner()
+    result = runner.invoke(cli, ["io-status"])
+
+    assert result.exit_code == 0
+    assert "xarray_input:" in result.output
+    assert "netcdf_input:" in result.output
+    assert "zarr_output:" in result.output
+
+
+def test_io_status_json_output_structure():
+    runner = CliRunner()
+    result = runner.invoke(cli, ["io-status", "--format", "json"])
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert "xarray_input" in payload
+    assert "netcdf_input" in payload
+    assert "zarr_input" in payload
+    assert "netcdf_output" in payload
+    assert "zarr_output" in payload
+
+
 def test_check_returns_zero_when_no_findings(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
 ):

@@ -1,9 +1,16 @@
 from pathlib import Path
 
+import pytest
 import xarray as xr
 
 from woodpecker.api import check, fix
-from woodpecker.data_input import PathInput, ZarrInput, get_output_adapter
+from woodpecker.data_input import (
+    PathInput,
+    ZarrOutputAdapter,
+    ZarrInput,
+    get_io_availability,
+    get_output_adapter,
+)
 
 
 def test_check_supports_xarray_dataset_input():
@@ -55,3 +62,27 @@ def test_fix_accepts_explicit_output_format():
 
     assert stats["attempted"] == 1
     assert stats["changed"] == 1
+
+
+def test_io_availability_report_has_expected_keys():
+    report = get_io_availability()
+
+    assert {
+        "xarray_input",
+        "netcdf_input",
+        "zarr_input",
+        "netcdf_output",
+        "zarr_output",
+    }.issubset(report.keys())
+
+
+def test_zarr_output_adapter_warns_and_fails_when_backend_unavailable(monkeypatch):
+    monkeypatch.setattr("woodpecker.data_input._zarr_backend_available", lambda: False)
+    adapter = ZarrOutputAdapter()
+    ds = xr.Dataset(attrs={"source_name": "case.nc"})
+    data_input = PathInput(source_path=Path("case.nc"), name="case.nc")
+
+    with pytest.warns(UserWarning, match="Zarr output backend unavailable"):
+        ok = adapter.save(ds, data_input, dry_run=False)
+
+    assert ok is False

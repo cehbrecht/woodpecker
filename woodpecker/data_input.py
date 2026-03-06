@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import importlib.util
+import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from os import PathLike
@@ -15,6 +17,30 @@ def _is_xarray_object(value: Any) -> bool:
 
 def _is_pathlike(value: Any) -> bool:
     return isinstance(value, (str, PathLike, Path))
+
+
+def _module_available(module_name: str) -> bool:
+    return importlib.util.find_spec(module_name) is not None
+
+
+def _netcdf_backend_available() -> bool:
+    return any(_module_available(name) for name in ("netCDF4", "h5netcdf", "scipy"))
+
+
+def _zarr_backend_available() -> bool:
+    return all(_module_available(name) for name in ("zarr", "numcodecs"))
+
+
+def get_io_availability() -> dict[str, bool]:
+    netcdf_available = _netcdf_backend_available()
+    zarr_available = _zarr_backend_available()
+    return {
+        "xarray_input": True,
+        "netcdf_input": netcdf_available,
+        "zarr_input": zarr_available,
+        "netcdf_output": netcdf_available,
+        "zarr_output": zarr_available,
+    }
 
 
 @dataclass
@@ -37,6 +63,10 @@ class DataInput(ABC):
 
     def expand(self) -> list[DataInput]:
         return [self]
+
+    @property
+    def is_available(self) -> bool:
+        return True
 
     @property
     def source_name(self) -> str:
@@ -87,10 +117,26 @@ class PathInput(DataInput):
         if not self.name:
             self.name = self.source_path.name
 
+    @property
+    def is_available(self) -> bool:
+        return _netcdf_backend_available()
+
     def load(self) -> xr.Dataset:
+        if not self.is_available:
+            warnings.warn(
+                f"NetCDF input backend unavailable for '{self.reference}'. Falling back to empty dataset.",
+                stacklevel=2,
+            )
+            dataset = xr.Dataset()
+            dataset.attrs.setdefault("source_name", self.source_name)
+            return dataset
         try:
             dataset = xr.open_dataset(self.source_path)
-        except Exception:
+        except Exception as exc:
+            warnings.warn(
+                f"Failed to read NetCDF input '{self.reference}': {exc}. Falling back to empty dataset.",
+                stacklevel=2,
+            )
             dataset = xr.Dataset()
         dataset.attrs.setdefault("source_name", self.source_name)
         return dataset
@@ -105,10 +151,20 @@ class PathInput(DataInput):
             return output_adapter.save(dataset, self, dry_run=dry_run)
         if dry_run:
             return False
+        if not self.is_available:
+            warnings.warn(
+                f"NetCDF output backend unavailable for '{self.reference}'. Skipping write.",
+                stacklevel=2,
+            )
+            return False
         try:
             dataset.to_netcdf(self.source_path)
             return True
-        except Exception:
+        except Exception as exc:
+            warnings.warn(
+                f"Failed to write NetCDF output '{self.reference}': {exc}.",
+                stacklevel=2,
+            )
             return False
 
 
@@ -121,10 +177,26 @@ class ZarrInput(DataInput):
         if not self.name:
             self.name = self.source_path.name
 
+    @property
+    def is_available(self) -> bool:
+        return _zarr_backend_available()
+
     def load(self) -> xr.Dataset:
+        if not self.is_available:
+            warnings.warn(
+                f"Zarr input backend unavailable for '{self.reference}'. Falling back to empty dataset.",
+                stacklevel=2,
+            )
+            dataset = xr.Dataset()
+            dataset.attrs.setdefault("source_name", self.source_name)
+            return dataset
         try:
             dataset = xr.open_zarr(self.source_path)
-        except Exception:
+        except Exception as exc:
+            warnings.warn(
+                f"Failed to read Zarr input '{self.reference}': {exc}. Falling back to empty dataset.",
+                stacklevel=2,
+            )
             dataset = xr.Dataset()
         dataset.attrs.setdefault("source_name", self.source_name)
         return dataset
@@ -139,10 +211,20 @@ class ZarrInput(DataInput):
             return output_adapter.save(dataset, self, dry_run=dry_run)
         if dry_run:
             return False
+        if not self.is_available:
+            warnings.warn(
+                f"Zarr output backend unavailable for '{self.reference}'. Skipping write.",
+                stacklevel=2,
+            )
+            return False
         try:
             dataset.to_zarr(self.source_path, mode="w")
             return True
-        except Exception:
+        except Exception as exc:
+            warnings.warn(
+                f"Failed to write Zarr output '{self.reference}': {exc}.",
+                stacklevel=2,
+            )
             return False
 
 
@@ -176,6 +258,10 @@ def collect_netcdf_files(paths: Sequence[Path]) -> List[Path]:
 class OutputAdapter(ABC):
     format_name: str
 
+    @property
+    def is_available(self) -> bool:
+        return True
+
     @abstractmethod
     def target_path(self, data_input: DataInput) -> Path:
         pass
@@ -188,6 +274,10 @@ class OutputAdapter(ABC):
 class NetCDFOutputAdapter(OutputAdapter):
     format_name = "netcdf"
 
+    @property
+    def is_available(self) -> bool:
+        return _netcdf_backend_available()
+
     def target_path(self, data_input: DataInput) -> Path:
         if data_input.source_path is None:
             raise ValueError("NetCDF output requires a path-based input")
@@ -196,16 +286,30 @@ class NetCDFOutputAdapter(OutputAdapter):
     def save(self, dataset: xr.Dataset, data_input: DataInput, dry_run: bool = True) -> bool:
         if dry_run:
             return False
+        if not self.is_available:
+            warnings.warn(
+                f"NetCDF output backend unavailable for '{data_input.reference}'. Skipping write.",
+                stacklevel=2,
+            )
+            return False
         target = self.target_path(data_input)
         try:
             dataset.to_netcdf(target)
             return True
-        except Exception:
+        except Exception as exc:
+            warnings.warn(
+                f"Failed to write NetCDF output '{target}': {exc}.",
+                stacklevel=2,
+            )
             return False
 
 
 class ZarrOutputAdapter(OutputAdapter):
     format_name = "zarr"
+
+    @property
+    def is_available(self) -> bool:
+        return _zarr_backend_available()
 
     def target_path(self, data_input: DataInput) -> Path:
         if data_input.source_path is None:
@@ -215,11 +319,21 @@ class ZarrOutputAdapter(OutputAdapter):
     def save(self, dataset: xr.Dataset, data_input: DataInput, dry_run: bool = True) -> bool:
         if dry_run:
             return False
+        if not self.is_available:
+            warnings.warn(
+                f"Zarr output backend unavailable for '{data_input.reference}'. Skipping write.",
+                stacklevel=2,
+            )
+            return False
         target = self.target_path(data_input)
         try:
             dataset.to_zarr(target, mode="w")
             return True
-        except Exception:
+        except Exception as exc:
+            warnings.warn(
+                f"Failed to write Zarr output '{target}': {exc}.",
+                stacklevel=2,
+            )
             return False
 
 
@@ -228,9 +342,21 @@ def get_output_adapter(output_format: str | None = None) -> OutputAdapter | None
         return None
     normalized = output_format.lower()
     if normalized in ("netcdf", "nc"):
-        return NetCDFOutputAdapter()
+        adapter = NetCDFOutputAdapter()
+        if not adapter.is_available:
+            warnings.warn(
+                "NetCDF output format requested but no NetCDF backend is available.",
+                stacklevel=2,
+            )
+        return adapter
     if normalized == "zarr":
-        return ZarrOutputAdapter()
+        adapter = ZarrOutputAdapter()
+        if not adapter.is_available:
+            warnings.warn(
+                "Zarr output format requested but zarr backend is not available.",
+                stacklevel=2,
+            )
+        return adapter
     raise ValueError(f"Unsupported output format: {output_format}")
 
 
@@ -243,6 +369,12 @@ def _as_data_input(value: Any) -> list[DataInput]:
         if path.is_dir():
             return FolderInput(source_path=path, name=path.name).expand()
         if path.suffix.lower() == ".zarr":
+            if not _zarr_backend_available():
+                warnings.warn(
+                    f"Zarr input '{path}' requested but zarr backend is not available."
+                    " Processing will continue with safe fallback behavior.",
+                    stacklevel=2,
+                )
             return [ZarrInput(source_path=path, name=path.name)]
         if path.is_file() and path.suffix.lower() == ".nc":
             return [PathInput(source_path=path, name=path.name)]

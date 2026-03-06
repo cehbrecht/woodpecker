@@ -7,7 +7,7 @@ import click
 
 # Importing woodpecker.fixes registers built-in fixes.
 import woodpecker.fixes  # noqa: F401
-from woodpecker.data_input import normalize_inputs
+from woodpecker.data_input import get_io_availability, normalize_inputs
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.runner import run_check, run_fix, select_fixes
 
@@ -88,6 +88,19 @@ def check(
         )
 
     raise SystemExit(1 if findings else 0)
+
+
+@cli.command("io-status")
+@click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
+def io_status(fmt: str):
+    """Report runtime availability of optional I/O backends."""
+    report = get_io_availability()
+    if fmt == "json":
+        click.echo(json.dumps(report, indent=2))
+        return
+
+    for key, value in report.items():
+        click.echo(f"{key}: {'available' if value else 'unavailable'}")
 
 
 @cli.command("fix")

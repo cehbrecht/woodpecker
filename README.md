@@ -55,6 +55,17 @@ pip install -e .
 woodpecker list-fixes
 ```
 
+Optional I/O extras (recommended when you need file backends):
+
+```bash
+pip install -e ".[io]"       # NetCDF backends (netCDF4/h5netcdf/scipy)
+pip install -e ".[zarr]"     # Zarr backend support
+pip install -e ".[io,zarr]"  # both
+```
+
+If an unavailable backend is requested (for example Zarr without `.[zarr]`),
+Woodpecker fails safely with a warning and reports persistence failure in fix stats.
+
 ## Usage
 
 How it works (current demo): `discover fixes -> check findings -> apply selected fixes`.
@@ -78,6 +89,8 @@ make docs-serve  # generate docs artifacts + run mkdocs serve
 Lint-style workflow (Ruff-like):
 
 ```bash
+woodpecker io-status
+woodpecker io-status --format json
 woodpecker check /path/to/netcdf/or/folder
 woodpecker check . --select CMIP6D01
 woodpecker fix . --select CMIP6D01        # dry-run by default
