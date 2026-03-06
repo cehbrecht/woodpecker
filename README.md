@@ -75,8 +75,8 @@ Common tasks:
 ```bash
 make install     # editable install
 make install-uv  # editable install via uv
-make dev         # editable install + docs + pytest extras
-make dev-uv      # dev install via uv
+make dev         # editable install + docs + dev + io + zarr extras
+make dev-uv      # same as make dev via uv
 make format      # run Ruff formatter
 make lint        # run Ruff lint checks
 make lint-fix    # auto-fix Ruff lint issues
