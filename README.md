@@ -63,6 +63,9 @@ pip install -e ".[zarr]"     # Zarr backend support
 pip install -e ".[io,zarr]"  # both
 ```
 
+Note for contributors: backend integration tests (NetCDF/Zarr round-trips) run
+when corresponding backends are installed, and are skipped in minimal environments.
+
 If an unavailable backend is requested (for example Zarr without `.[zarr]`),
 Woodpecker fails safely with a warning and reports persistence failure in fix stats.
 
