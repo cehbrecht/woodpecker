@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import xarray as xr
+from typing import TypeVar
 
 from .base import DatasetIdentity, DatasetIdentityResolver
 from .common import DefaultDatasetIdentityResolver
@@ -8,6 +9,7 @@ from .common import DefaultDatasetIdentityResolver
 
 _RESOLVERS: dict[str, DatasetIdentityResolver] = {}
 _DEFAULT_RESOLVER = DefaultDatasetIdentityResolver()
+_ResolverClass = TypeVar("_ResolverClass", bound=type[DatasetIdentityResolver])
 
 
 def register_dataset_identity_resolver(
@@ -20,6 +22,21 @@ def register_dataset_identity_resolver(
         raise ValueError(f"dataset identity resolver already registered for '{key}'")
     resolver.dataset_type = key
     _RESOLVERS[key] = resolver
+
+
+def register_dataset_identity(
+    dataset_type: str, *, override: bool = False
+) -> callable:
+    """Decorator to register a dataset identity resolver class.
+
+    The resolver class must be instantiable without required constructor args.
+    """
+
+    def _decorator(resolver_cls: _ResolverClass) -> _ResolverClass:
+        register_dataset_identity_resolver(dataset_type, resolver_cls(), override=override)
+        return resolver_cls
+
+    return _decorator
 
 
 def identify_dataset_type(dataset: xr.Dataset) -> str | None:

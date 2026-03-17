@@ -3,6 +3,7 @@ from .common import DefaultDatasetIdentityResolver, project_id_from_dataset_id
 from .registry import (
     dataset_type_matches_declared,
     identify_dataset_type,
+    register_dataset_identity,
     register_dataset_identity_resolver,
     resolve_dataset_identity,
 )
@@ -16,6 +17,7 @@ __all__ = [
     "DatasetIdentityResolver",
     "DefaultDatasetIdentityResolver",
     "project_id_from_dataset_id",
+    "register_dataset_identity",
     "register_dataset_identity_resolver",
     "identify_dataset_type",
     "resolve_dataset_identity",
