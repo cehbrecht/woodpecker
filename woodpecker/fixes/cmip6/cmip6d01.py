@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from .registry import Fix, FixRegistry
+from ..registry import Fix, FixRegistry
 
 
 def _lower_source_name(dataset: xr.Dataset) -> str:
@@ -36,5 +36,3 @@ class CMIP6D01(Fix):
             return True
         dataset.attrs["woodpecker_fix_CMIP6D01"] = "applied"
         return True
-
-

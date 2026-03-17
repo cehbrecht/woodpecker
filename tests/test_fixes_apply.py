@@ -1,7 +1,7 @@
 import xarray as xr
 
 from woodpecker.fixes.atlas import ATLAS01, ATLAS02
-from woodpecker.fixes.cmip6_fixes import CMIP6D01
+from woodpecker.fixes.cmip6 import CMIP6D01
 
 
 def test_cmip6d01_apply_dry_run_reports_change_without_writing_dataset_attrs():

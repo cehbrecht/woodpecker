@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
+from woodpecker.fixes.dataset_types import (
+    dataset_type_matches_declared,
+    identify_dataset_type,
+)
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.inout import DataInput, get_output_adapter
 
@@ -31,7 +35,12 @@ def run_check(inputs: Iterable[DataInput], fixes: Iterable[Any]) -> List[Dict[st
     findings: List[Dict[str, str]] = []
     for data_input in inputs:
         dataset = data_input.load()
+        detected_dataset_type = identify_dataset_type(dataset)
         for fix in fixes:
+            if not dataset_type_matches_declared(
+                getattr(fix, "dataset", None), detected_dataset_type
+            ):
+                continue
             if not fix.matches(dataset):
                 continue
             for message in fix.check(dataset):
@@ -63,8 +72,13 @@ def run_fix(
     output_adapter = get_output_adapter(output_format)
     for data_input in inputs:
         dataset = data_input.load()
+        detected_dataset_type = identify_dataset_type(dataset)
         dataset_changed = False
         for fix in fixes:
+            if not dataset_type_matches_declared(
+                getattr(fix, "dataset", None), detected_dataset_type
+            ):
+                continue
             if not fix.matches(dataset):
                 continue
             attempted += 1

@@ -5,6 +5,8 @@ from dataclasses import dataclass
 
 import xarray as xr
 
+from .dataset_types import identify_dataset_type
+
 
 @dataclass(frozen=True)
 class DatasetIdentity:
@@ -66,8 +68,10 @@ def register_dataset_identity_resolver(
 
 
 def resolve_dataset_identity(dataset: xr.Dataset, dataset_type: str | None = None) -> DatasetIdentity:
-    if dataset_type:
-        key = dataset_type.strip().lower()
+    effective_dataset_type = dataset_type.strip().lower() if dataset_type else identify_dataset_type(dataset)
+
+    if effective_dataset_type:
+        key = effective_dataset_type
         resolver = _RESOLVERS.get(key)
         if resolver is not None:
             identity = resolver.resolve(dataset)
@@ -81,7 +85,7 @@ def resolve_dataset_identity(dataset: xr.Dataset, dataset_type: str | None = Non
     return DatasetIdentity(
         dataset_id=identity.dataset_id,
         project_id=identity.project_id,
-        dataset_type=dataset_type.strip().lower() if dataset_type else None,
+        dataset_type=effective_dataset_type,
     )
 
 

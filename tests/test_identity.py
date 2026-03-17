@@ -33,3 +33,13 @@ def test_dataset_type_resolver_can_override_defaults():
     assert identity.dataset_id == "custom.ds"
     assert identity.project_id == "custom"
     assert identity.dataset_type == "unit-test-type"
+
+
+def test_identity_uses_detected_cmip6_decadal_dataset_type():
+    ds = xr.Dataset(attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc"})
+
+    identity = resolve_dataset_identity(ds)
+
+    assert identity.dataset_type == "cmip6-decadal"
+    assert identity.dataset_id == "c3s-cmip6-decadal.member.tas.nc"
+    assert identity.project_id == "c3s-cmip6-decadal"
