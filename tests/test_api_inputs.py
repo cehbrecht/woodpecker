@@ -23,13 +23,19 @@ def test_check_supports_xarray_dataset_input():
 
 
 def test_fix_supports_xarray_dataset_input_write_mode():
-    ds = xr.Dataset(attrs={"source_name": "atlas sample.nc"})
+    ds = xr.Dataset(
+        data_vars={"tas": ("time", [273.1, 274.2])},
+        coords={"time": [0, 1]},
+        attrs={"source_name": "c3s-ipcc-atlas.dataset.tas.nc"},
+    )
+    ds["tas"].encoding["complevel"] = 4
 
     stats = fix(ds, codes=["ATLAS01"], write=True)
 
     assert stats["attempted"] == 1
     assert stats["changed"] == 1
-    assert ds.attrs["woodpecker_fix_ATLAS01"] == "applied"
+    assert ds["tas"].encoding["complevel"] == 1
+    assert ds["tas"].encoding["zlib"] is True
 
 
 def test_check_supports_path_input(make_dummy_netcdf):
@@ -56,7 +62,12 @@ def test_output_adapter_target_paths_for_path_inputs():
 
 
 def test_fix_accepts_explicit_output_format():
-    ds = xr.Dataset(attrs={"source_name": "atlas sample.nc"})
+    ds = xr.Dataset(
+        data_vars={"tas": ("time", [273.1, 274.2])},
+        coords={"time": [0, 1]},
+        attrs={"source_name": "c3s-ipcc-atlas.dataset.tas.nc"},
+    )
+    ds["tas"].encoding["complevel"] = 4
 
     stats = fix(ds, codes=["ATLAS01"], write=True, output_format="netcdf")
 

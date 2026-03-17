@@ -7,5 +7,6 @@ additional fixes.
 
 # Import built-in fixes (keeps the project simple and human-scale).
 # If the number of built-in fix modules grows, you can switch to lazy imports.
+from . import atlas  # noqa: F401
 from . import cmip6_fixes  # noqa: F401
 from .registry import Fix, FixRegistry  # noqa: F401
