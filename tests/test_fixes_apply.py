@@ -5,23 +5,32 @@ from woodpecker.fixes.cmip6 import CMIP6D01
 
 
 def test_cmip6d01_apply_dry_run_reports_change_without_writing_dataset_attrs():
-    dataset = xr.Dataset(attrs={"source_name": "cmip6_member.nc"})
+    dataset = xr.Dataset(
+        coords={"time": [0, 1]},
+        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc", "realization_index": 2},
+    )
 
     fix = CMIP6D01()
     changed = fix.apply(dataset, dry_run=True)
 
     assert changed is True
-    assert "woodpecker_fix_CMIP6D01" not in dataset.attrs
+    assert dataset["time"].attrs.get("long_name") is None
+    assert "realization" not in dataset.data_vars
 
 
-def test_cmip6d01_apply_write_sets_dummy_marker_attr():
-    dataset = xr.Dataset(attrs={"source_name": "cmip6_member.nc"})
+def test_cmip6d01_apply_write_sets_simple_decadal_metadata_fixes():
+    dataset = xr.Dataset(
+        coords={"time": [0, 1]},
+        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc", "realization_index": "2"},
+    )
 
     fix = CMIP6D01()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
-    assert dataset.attrs["woodpecker_fix_CMIP6D01"] == "applied"
+    assert dataset["time"].attrs["long_name"] == "valid_time"
+    assert "realization" in dataset.data_vars
+    assert int(dataset["realization"].values) == 2
 
 
 def test_atlas01_apply_dry_run_reports_change_without_mutating_dataset():
