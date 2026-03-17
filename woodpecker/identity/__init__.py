@@ -2,6 +2,7 @@
 from . import (
     atlas,  # noqa: F401, E402
     cmip6,  # noqa: F401, E402
+    cmip6_decadal,  # noqa: F401, E402
 )
 from .base import DatasetIdentity, DatasetIdentityResolver
 from .common import DefaultDatasetIdentityResolver, project_id_from_dataset_id
