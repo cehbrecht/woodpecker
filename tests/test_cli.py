@@ -83,7 +83,7 @@ def test_check_json_output_structure(
     assert payload[0]["code"] == "CMIP6D01"
 
 
-def test_fix_write_applies_dummy_cmip6_rule(
+def test_fix_write_cmip6d01_reports_no_change_for_empty_fallback_dataset(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
 ):
     runner, make_dummy_netcdf = isolated_cli_workspace
@@ -95,7 +95,8 @@ def test_fix_write_applies_dummy_cmip6_rule(
     )
 
     assert result.exit_code == 0
-    assert "1 files changed" in result.output
+    assert "1 fix applications attempted" in result.output
+    assert "0 files changed" in result.output
 
 
 def test_fix_json_output_contains_write_report(

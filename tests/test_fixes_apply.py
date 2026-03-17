@@ -1,7 +1,18 @@
 import xarray as xr
 
 from woodpecker.fixes.atlas import ATLAS01, ATLAS02
-from woodpecker.fixes.cmip6 import CMIP6D01, CMIP6D02, CMIP6D03
+from woodpecker.fixes.cmip6 import CMIP601
+from woodpecker.fixes.cmip6_decadal import CMIP6D01, CMIP6D02, CMIP6D03
+
+
+def test_cmip601_dummy_apply_write_sets_dummy_marker_attr():
+    dataset = xr.Dataset(attrs={"source_name": "cmip6_member.nc"})
+
+    fix = CMIP601()
+    changed = fix.apply(dataset, dry_run=False)
+
+    assert changed is True
+    assert dataset.attrs["woodpecker_fix_CMIP601"] == "applied"
 
 
 def test_cmip6d01_apply_dry_run_reports_change_without_writing_dataset_attrs():

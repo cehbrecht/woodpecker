@@ -1,5 +1,6 @@
-"""CMIP6 dataset family helpers."""
+"""CMIP6 (non-decadal) fix namespace skeleton.
 
-from .cmip6d01 import CMIP6D01  # noqa: F401
-from .cmip6d02 import CMIP6D02  # noqa: F401
-from .cmip6d03 import CMIP6D03  # noqa: F401
+Use this package for future CMIP6-specific fixes that are not CMIP6-decadal.
+"""
+
+from .cmip601 import CMIP601  # noqa: F401
