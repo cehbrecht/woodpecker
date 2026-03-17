@@ -14,7 +14,9 @@ from woodpecker.inout import (
 
 
 def test_check_supports_xarray_dataset_input():
-    ds = xr.Dataset(coords={"time": [0, 1]}, attrs={"source_name": "cmip6_bad.nc"})
+    ds = xr.Dataset(
+        coords={"time": [0, 1]}, attrs={"source_name": "c3s-cmip6-decadal.bad.nc"}
+    )
     ds["time"].encoding["calendar"] = "proleptic_gregorian"
 
     findings = check(ds, codes=["CMIP6D01", "CMIP6D02"])
@@ -42,7 +44,7 @@ def test_fix_supports_xarray_dataset_input_write_mode():
 def test_check_supports_path_input(make_dummy_netcdf):
     source = make_dummy_netcdf("cmip6_bad.nc")
 
-    findings = check([source], codes=["CMIP6D01"])
+    findings = check([source], codes=["CMIP601"])
 
     assert findings
     assert findings[0]["path"] == str(Path(source))

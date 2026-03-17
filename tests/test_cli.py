@@ -59,10 +59,10 @@ def test_check_returns_nonzero_when_findings_exist(
 ):
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_bad.nc")
-    result = runner.invoke(cli, ["check", ".", "--select", "CMIP6D01"])
+    result = runner.invoke(cli, ["check", ".", "--select", "CMIP601"])
 
     assert result.exit_code == 1
-    assert "CMIP6D01" in result.output
+    assert "CMIP601" in result.output
 
 
 def test_check_json_output_structure(
@@ -72,7 +72,7 @@ def test_check_json_output_structure(
     make_dummy_netcdf("cmip6_bad.nc")
     result = runner.invoke(
         cli,
-        ["check", ".", "--select", "CMIP6D01", "--format", "json"],
+        ["check", ".", "--select", "CMIP601", "--format", "json"],
     )
 
     assert result.exit_code == 1
@@ -80,14 +80,14 @@ def test_check_json_output_structure(
     assert isinstance(payload, list)
     assert payload
     assert {"path", "code", "name", "message"}.issubset(payload[0].keys())
-    assert payload[0]["code"] == "CMIP6D01"
+    assert payload[0]["code"] == "CMIP601"
 
 
 def test_fix_write_cmip6d01_reports_no_change_for_empty_fallback_dataset(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
 ):
     runner, make_dummy_netcdf = isolated_cli_workspace
-    make_dummy_netcdf("cmip6_case.nc")
+    make_dummy_netcdf("c3s-cmip6-decadal.case.nc")
 
     result = runner.invoke(
         cli,
