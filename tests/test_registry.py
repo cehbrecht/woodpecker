@@ -6,5 +6,7 @@ def test_registry_discovers_builtins():
     codes = {fix.code for fix in fixes}
 
     assert "CMIP6D01" in codes
+    assert "CMIP6D02" in codes
+    assert "CMIP6D03" in codes
     assert "ATLAS01" in codes
     assert "ATLAS02" in codes

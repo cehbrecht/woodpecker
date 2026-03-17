@@ -3,32 +3,13 @@ from __future__ import annotations
 import xarray as xr
 
 from ..registry import Fix, FixRegistry
-
-
-def _lower_source_name(dataset: xr.Dataset) -> str:
-    return str(dataset.attrs.get("source_name", "")).lower()
+from .common import is_cmip6_netcdf, lower_source_name
 
 
 def _needs_time_long_name_fix(dataset: xr.Dataset) -> bool:
     if "time" not in dataset:
         return False
     return dataset["time"].attrs.get("long_name") != "valid_time"
-
-
-def _needs_realization_var_fix(dataset: xr.Dataset) -> bool:
-    if "realization" in dataset.data_vars:
-        return False
-    return "realization_index" in dataset.attrs
-
-
-def _needs_calendar_fix(dataset: xr.Dataset) -> bool:
-    if "time" not in dataset:
-        return False
-    time_coord = dataset["time"]
-    return (
-        time_coord.attrs.get("calendar") == "proleptic_gregorian"
-        or time_coord.encoding.get("calendar") == "proleptic_gregorian"
-    )
 
 
 def _apply_time_long_name_fix(dataset: xr.Dataset) -> bool:
@@ -38,77 +19,32 @@ def _apply_time_long_name_fix(dataset: xr.Dataset) -> bool:
     return True
 
 
-def _apply_realization_var_fix(dataset: xr.Dataset) -> bool:
-    if not _needs_realization_var_fix(dataset):
-        return False
-
-    raw_value = dataset.attrs.get("realization_index")
-    try:
-        realization_value = int(raw_value)
-    except (TypeError, ValueError):
-        return False
-
-    dataset["realization"] = xr.DataArray(realization_value)
-    dataset["realization"].attrs["long_name"] = "realization"
-    dataset["realization"].attrs[
-        "comment"
-    ] = "For more information on the ripf, refer to variant_label and global attributes."
-    return True
-
-
-def _apply_calendar_fix(dataset: xr.Dataset) -> bool:
-    if not _needs_calendar_fix(dataset):
-        return False
-
-    changed = False
-    time_coord = dataset["time"]
-    if time_coord.attrs.get("calendar") == "proleptic_gregorian":
-        time_coord.attrs["calendar"] = "standard"
-        changed = True
-    if time_coord.encoding.get("calendar") == "proleptic_gregorian":
-        time_coord.encoding["calendar"] = "standard"
-        changed = True
-    return changed
-
-
 @FixRegistry.register
 class CMIP6D01(Fix):
     code = "CMIP6D01"
-    name = "Decadal metadata baseline"
-    description = "Applies simple CMIP6-decadal metadata fixes inspired by rook utilities."
+    name = "Decadal time metadata"
+    description = "Ensures CMIP6-decadal time coordinate has long_name='valid_time'."
     categories = ["metadata"]
     priority = 10
     dataset = "CMIP6-decadal"
 
     def matches(self, dataset: xr.Dataset) -> bool:
-        source = _lower_source_name(dataset)
-        return source.endswith(".nc") and "cmip6" in source
+        return is_cmip6_netcdf(dataset)
 
     def check(self, dataset: xr.Dataset) -> list[str]:
         findings = []
-        if "decadal" not in _lower_source_name(dataset):
+        if "decadal" not in lower_source_name(dataset):
             findings.append("expected CMIP6 decadal filename hint ('decadal') is missing")
         if _needs_time_long_name_fix(dataset):
             findings.append("time coordinate long_name should be 'valid_time'")
-        if _needs_calendar_fix(dataset):
-            findings.append("time calendar should be normalized from 'proleptic_gregorian' to 'standard'")
-        if _needs_realization_var_fix(dataset):
-            findings.append("realization variable should be added from realization_index")
         return findings
 
     def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
-        needs_change = (
-            _needs_time_long_name_fix(dataset)
-            or _needs_calendar_fix(dataset)
-            or _needs_realization_var_fix(dataset)
-        )
+        needs_change = _needs_time_long_name_fix(dataset)
         if not needs_change:
             return False
 
         if dry_run:
             return True
 
-        changed = _apply_time_long_name_fix(dataset)
-        changed = _apply_calendar_fix(dataset) or changed
-        changed = _apply_realization_var_fix(dataset) or changed
-        return changed
+        return _apply_time_long_name_fix(dataset)

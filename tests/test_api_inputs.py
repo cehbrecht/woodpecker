@@ -14,12 +14,13 @@ from woodpecker.inout import (
 
 
 def test_check_supports_xarray_dataset_input():
-    ds = xr.Dataset(attrs={"source_name": "cmip6_bad.nc"})
+    ds = xr.Dataset(coords={"time": [0, 1]}, attrs={"source_name": "cmip6_bad.nc"})
+    ds["time"].encoding["calendar"] = "proleptic_gregorian"
 
-    findings = check(ds, codes=["CMIP6D01"])
+    findings = check(ds, codes=["CMIP6D01", "CMIP6D02"])
 
     assert findings
-    assert findings[0]["code"] == "CMIP6D01"
+    assert {entry["code"] for entry in findings}.issuperset({"CMIP6D01", "CMIP6D02"})
 
 
 def test_fix_supports_xarray_dataset_input_write_mode():

@@ -1,7 +1,7 @@
 import xarray as xr
 
 from woodpecker.fixes.atlas import ATLAS01, ATLAS02
-from woodpecker.fixes.cmip6 import CMIP6D01
+from woodpecker.fixes.cmip6 import CMIP6D01, CMIP6D02, CMIP6D03
 
 
 def test_cmip6d01_apply_dry_run_reports_change_without_writing_dataset_attrs():
@@ -9,14 +9,12 @@ def test_cmip6d01_apply_dry_run_reports_change_without_writing_dataset_attrs():
         coords={"time": [0, 1]},
         attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc", "realization_index": 2},
     )
-    dataset["time"].encoding["calendar"] = "proleptic_gregorian"
 
     fix = CMIP6D01()
     changed = fix.apply(dataset, dry_run=True)
 
     assert changed is True
     assert dataset["time"].attrs.get("long_name") is None
-    assert dataset["time"].encoding["calendar"] == "proleptic_gregorian"
     assert "realization" not in dataset.data_vars
 
 
@@ -25,14 +23,38 @@ def test_cmip6d01_apply_write_sets_simple_decadal_metadata_fixes():
         coords={"time": [0, 1]},
         attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc", "realization_index": "2"},
     )
-    dataset["time"].encoding["calendar"] = "proleptic_gregorian"
 
     fix = CMIP6D01()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
     assert dataset["time"].attrs["long_name"] == "valid_time"
+
+
+def test_cmip6d02_apply_write_normalizes_proleptic_calendar():
+    dataset = xr.Dataset(
+        coords={"time": [0, 1]},
+        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc"},
+    )
+    dataset["time"].encoding["calendar"] = "proleptic_gregorian"
+
+    fix = CMIP6D02()
+    changed = fix.apply(dataset, dry_run=False)
+
+    assert changed is True
     assert dataset["time"].encoding["calendar"] == "standard"
+
+
+def test_cmip6d03_apply_write_adds_realization_variable():
+    dataset = xr.Dataset(
+        coords={"time": [0, 1]},
+        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc", "realization_index": "2"},
+    )
+
+    fix = CMIP6D03()
+    changed = fix.apply(dataset, dry_run=False)
+
+    assert changed is True
     assert "realization" in dataset.data_vars
     assert int(dataset["realization"].values) == 2
 
