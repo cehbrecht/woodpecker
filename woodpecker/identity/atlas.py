@@ -16,4 +16,6 @@ class AtlasDatasetIdentityResolver(DefaultDatasetIdentityResolver):
         return source_name.endswith(".nc") and "atlas" in source_name
 
     def dataset_id(self, dataset: xr.Dataset) -> str:
-        return self._first_str_attr(dataset, ("ds_id", "dataset_id", "id", "source_id", "source_name"))
+        return self._first_str_attr(
+            dataset, ("ds_id", "dataset_id", "id", "source_id", "source_name")
+        )

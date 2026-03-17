@@ -24,9 +24,7 @@ def _register_dataset_identity_resolver(
     _RESOLVERS[key] = resolver
 
 
-def register_dataset_identity(
-    dataset_type: str, *, override: bool = False
-) -> callable:
+def register_dataset_identity(dataset_type: str, *, override: bool = False) -> callable:
     """Decorator to register a dataset identity resolver class.
 
     The resolver class must be instantiable without required constructor args.
@@ -47,7 +45,9 @@ def _identify_dataset_type(dataset: xr.Dataset) -> str | None:
     return None
 
 
-def dataset_type_matches_declared(fix_dataset: str | None, detected_dataset_type: str | None) -> bool:
+def dataset_type_matches_declared(
+    fix_dataset: str | None, detected_dataset_type: str | None
+) -> bool:
     if not fix_dataset or not detected_dataset_type:
         return True
     return fix_dataset.strip().lower() == detected_dataset_type.strip().lower()

@@ -95,7 +95,9 @@ class ATLAS01(Fix):
     def check(self, dataset: xr.Dataset) -> list[str]:
         findings = []
         if _needs_fillvalue_cleanup(dataset):
-            findings.append("encoding _FillValue cleanup is required for ATLAS coordinates/data vars")
+            findings.append(
+                "encoding _FillValue cleanup is required for ATLAS coordinates/data vars"
+            )
         if _needs_string_coord_encoding_cleanup(dataset):
             findings.append("ATLAS string coordinates still contain compression encoding options")
         if _needs_compression_level_cleanup(dataset):
