@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import xarray as xr
 from typing import TypeVar
+
+import xarray as xr
 
 from .base import DatasetIdentity, DatasetIdentityResolver
 from .common import DefaultDatasetIdentityResolver
-
 
 _RESOLVERS: dict[str, DatasetIdentityResolver] = {}
 _DEFAULT_RESOLVER = DefaultDatasetIdentityResolver()

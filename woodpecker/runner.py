@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
+from woodpecker.fixes.registry import FixRegistry
 from woodpecker.identity import (
     dataset_type_matches_declared,
     resolve_dataset_identity,
 )
-from woodpecker.fixes.registry import FixRegistry
 from woodpecker.inout import DataInput, get_output_adapter
 
 

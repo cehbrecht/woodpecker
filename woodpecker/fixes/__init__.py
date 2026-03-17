@@ -9,6 +9,8 @@ import woodpecker.identity  # noqa: F401
 
 # Import built-in fixes (keeps the project simple and human-scale).
 # If the number of built-in fix modules grows, you can switch to lazy imports.
-from . import atlas  # noqa: F401
-from . import cmip6  # noqa: F401
+from . import (
+    atlas,  # noqa: F401
+    cmip6,  # noqa: F401
+)
 from .registry import Fix, FixRegistry  # noqa: F401

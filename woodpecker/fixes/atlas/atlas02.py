@@ -3,6 +3,7 @@ from __future__ import annotations
 import xarray as xr
 
 from woodpecker.identity import resolve_dataset_identity
+
 from ..registry import Fix, FixRegistry
 from .common import lower_source_name
 
