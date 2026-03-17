@@ -4,7 +4,6 @@ from woodpecker.identity import (
     DatasetIdentity,
     DatasetIdentityResolver,
     register_dataset_identity,
-    register_dataset_identity_resolver,
     resolve_dataset_identity,
 )
 
@@ -21,6 +20,7 @@ def test_default_identity_resolver_derives_project_id_from_dataset_id():
 def test_dataset_type_resolver_can_override_defaults():
     ds = xr.Dataset(attrs={"source_name": "unit-test-type.dataset.nc"})
 
+    @register_dataset_identity("unit-test-type", override=True)
     class _Resolver(DatasetIdentityResolver):
         dataset_type = "unit-test-type"
         priority = 5
@@ -35,7 +35,6 @@ def test_dataset_type_resolver_can_override_defaults():
                 dataset_id="custom.ds", project_id="custom", dataset_type="custom"
             )
 
-    register_dataset_identity_resolver("unit-test-type", _Resolver(), override=True)
     identity = resolve_dataset_identity(ds)
 
     assert identity.dataset_id == "custom.ds"

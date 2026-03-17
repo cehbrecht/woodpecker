@@ -12,7 +12,7 @@ _DEFAULT_RESOLVER = DefaultDatasetIdentityResolver()
 _ResolverClass = TypeVar("_ResolverClass", bound=type[DatasetIdentityResolver])
 
 
-def register_dataset_identity_resolver(
+def _register_dataset_identity_resolver(
     dataset_type: str, resolver: DatasetIdentityResolver, *, override: bool = False
 ) -> None:
     key = dataset_type.strip().lower()
@@ -33,13 +33,13 @@ def register_dataset_identity(
     """
 
     def _decorator(resolver_cls: _ResolverClass) -> _ResolverClass:
-        register_dataset_identity_resolver(dataset_type, resolver_cls(), override=override)
+        _register_dataset_identity_resolver(dataset_type, resolver_cls(), override=override)
         return resolver_cls
 
     return _decorator
 
 
-def identify_dataset_type(dataset: xr.Dataset) -> str | None:
+def _identify_dataset_type(dataset: xr.Dataset) -> str | None:
     resolvers = sorted(_RESOLVERS.values(), key=lambda r: getattr(r, "priority", 100))
     for resolver in resolvers:
         if resolver.matches(dataset):
@@ -54,7 +54,7 @@ def dataset_type_matches_declared(fix_dataset: str | None, detected_dataset_type
 
 
 def resolve_dataset_identity(dataset: xr.Dataset) -> DatasetIdentity:
-    effective_dataset_type = identify_dataset_type(dataset)
+    effective_dataset_type = _identify_dataset_type(dataset)
 
     if effective_dataset_type:
         resolver = _RESOLVERS.get(effective_dataset_type)
