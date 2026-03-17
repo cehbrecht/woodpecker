@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
-from woodpecker.fixes.dataset_types import (
+from woodpecker.identity import (
     dataset_type_matches_declared,
     identify_dataset_type,
 )

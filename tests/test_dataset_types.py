@@ -2,7 +2,7 @@ import xarray as xr
 
 # Import side effects to ensure atlas detector registration.
 import woodpecker.fixes  # noqa: F401
-from woodpecker.fixes.dataset_types import identify_dataset_type
+from woodpecker.identity import identify_dataset_type
 
 
 def test_identify_dataset_type_detects_atlas_from_source_name():

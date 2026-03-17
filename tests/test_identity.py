@@ -1,6 +1,6 @@
 import xarray as xr
 
-from woodpecker.fixes.identity import (
+from woodpecker.identity import (
     DatasetIdentity,
     DatasetIdentityResolver,
     register_dataset_identity_resolver,
