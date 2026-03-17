@@ -21,6 +21,16 @@ def _needs_realization_var_fix(dataset: xr.Dataset) -> bool:
     return "realization_index" in dataset.attrs
 
 
+def _needs_calendar_fix(dataset: xr.Dataset) -> bool:
+    if "time" not in dataset:
+        return False
+    time_coord = dataset["time"]
+    return (
+        time_coord.attrs.get("calendar") == "proleptic_gregorian"
+        or time_coord.encoding.get("calendar") == "proleptic_gregorian"
+    )
+
+
 def _apply_time_long_name_fix(dataset: xr.Dataset) -> bool:
     if not _needs_time_long_name_fix(dataset):
         return False
@@ -46,6 +56,21 @@ def _apply_realization_var_fix(dataset: xr.Dataset) -> bool:
     return True
 
 
+def _apply_calendar_fix(dataset: xr.Dataset) -> bool:
+    if not _needs_calendar_fix(dataset):
+        return False
+
+    changed = False
+    time_coord = dataset["time"]
+    if time_coord.attrs.get("calendar") == "proleptic_gregorian":
+        time_coord.attrs["calendar"] = "standard"
+        changed = True
+    if time_coord.encoding.get("calendar") == "proleptic_gregorian":
+        time_coord.encoding["calendar"] = "standard"
+        changed = True
+    return changed
+
+
 @FixRegistry.register
 class CMIP6D01(Fix):
     code = "CMIP6D01"
@@ -65,12 +90,18 @@ class CMIP6D01(Fix):
             findings.append("expected CMIP6 decadal filename hint ('decadal') is missing")
         if _needs_time_long_name_fix(dataset):
             findings.append("time coordinate long_name should be 'valid_time'")
+        if _needs_calendar_fix(dataset):
+            findings.append("time calendar should be normalized from 'proleptic_gregorian' to 'standard'")
         if _needs_realization_var_fix(dataset):
             findings.append("realization variable should be added from realization_index")
         return findings
 
     def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
-        needs_change = _needs_time_long_name_fix(dataset) or _needs_realization_var_fix(dataset)
+        needs_change = (
+            _needs_time_long_name_fix(dataset)
+            or _needs_calendar_fix(dataset)
+            or _needs_realization_var_fix(dataset)
+        )
         if not needs_change:
             return False
 
@@ -78,5 +109,6 @@ class CMIP6D01(Fix):
             return True
 
         changed = _apply_time_long_name_fix(dataset)
+        changed = _apply_calendar_fix(dataset) or changed
         changed = _apply_realization_var_fix(dataset) or changed
         return changed
