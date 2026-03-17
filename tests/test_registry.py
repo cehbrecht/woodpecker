@@ -7,3 +7,4 @@ def test_registry_discovers_builtins():
 
     assert "CMIP6D01" in codes
     assert "ATLAS01" in codes
+    assert "ATLAS02" in codes
