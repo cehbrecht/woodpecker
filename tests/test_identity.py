@@ -3,7 +3,9 @@ import xarray as xr
 from woodpecker.identity import (
     DatasetIdentity,
     DatasetIdentityResolver,
+    DatasetTypeDetector,
     register_dataset_identity_resolver,
+    register_dataset_type_detector,
     resolve_dataset_identity,
 )
 
@@ -18,7 +20,7 @@ def test_default_identity_resolver_derives_project_id_from_dataset_id():
 
 
 def test_dataset_type_resolver_can_override_defaults():
-    ds = xr.Dataset(attrs={"dataset_id": "ignored.value"})
+    ds = xr.Dataset(attrs={"source_name": "unit-test-type.dataset.nc"})
 
     class _Resolver(DatasetIdentityResolver):
         def resolve(self, dataset: xr.Dataset) -> DatasetIdentity:
@@ -27,8 +29,17 @@ def test_dataset_type_resolver_can_override_defaults():
                 dataset_id="custom.ds", project_id="custom", dataset_type="custom"
             )
 
+    class _Detector(DatasetTypeDetector):
+        dataset_type = "unit-test-type"
+        priority = 5
+
+        def matches(self, dataset: xr.Dataset) -> bool:
+            source = str(dataset.attrs.get("source_name", "")).lower()
+            return source.endswith(".nc") and "unit-test-type" in source
+
     register_dataset_identity_resolver("unit-test-type", _Resolver(), override=True)
-    identity = resolve_dataset_identity(ds, dataset_type="unit-test-type")
+    register_dataset_type_detector(_Detector(), override=True)
+    identity = resolve_dataset_identity(ds)
 
     assert identity.dataset_id == "custom.ds"
     assert identity.project_id == "custom"

@@ -4,7 +4,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence
 
 from woodpecker.identity import (
     dataset_type_matches_declared,
-    identify_dataset_type,
+    resolve_dataset_identity,
 )
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.inout import DataInput, get_output_adapter
@@ -35,10 +35,10 @@ def run_check(inputs: Iterable[DataInput], fixes: Iterable[Any]) -> List[Dict[st
     findings: List[Dict[str, str]] = []
     for data_input in inputs:
         dataset = data_input.load()
-        detected_dataset_type = identify_dataset_type(dataset)
+        identity = resolve_dataset_identity(dataset)
         for fix in fixes:
             if not dataset_type_matches_declared(
-                getattr(fix, "dataset", None), detected_dataset_type
+                getattr(fix, "dataset", None), identity.dataset_type
             ):
                 continue
             if not fix.matches(dataset):
@@ -72,11 +72,11 @@ def run_fix(
     output_adapter = get_output_adapter(output_format)
     for data_input in inputs:
         dataset = data_input.load()
-        detected_dataset_type = identify_dataset_type(dataset)
+        identity = resolve_dataset_identity(dataset)
         dataset_changed = False
         for fix in fixes:
             if not dataset_type_matches_declared(
-                getattr(fix, "dataset", None), detected_dataset_type
+                getattr(fix, "dataset", None), identity.dataset_type
             ):
                 continue
             if not fix.matches(dataset):

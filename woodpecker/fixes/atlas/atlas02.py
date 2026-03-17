@@ -8,7 +8,7 @@ from .common import lower_source_name
 
 
 def _needs_project_id(dataset: xr.Dataset) -> bool:
-    identity = resolve_dataset_identity(dataset, dataset_type="atlas")
+    identity = resolve_dataset_identity(dataset)
     project_id = identity.project_id
     if not project_id:
         return False
@@ -16,7 +16,7 @@ def _needs_project_id(dataset: xr.Dataset) -> bool:
 
 
 def _apply_atlas_project_id(dataset: xr.Dataset) -> bool:
-    identity = resolve_dataset_identity(dataset, dataset_type="atlas")
+    identity = resolve_dataset_identity(dataset)
     project_id = identity.project_id
     if not project_id:
         return False

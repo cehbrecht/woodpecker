@@ -47,8 +47,8 @@ def dataset_type_matches_declared(fix_dataset: str | None, detected_dataset_type
     return fix_dataset.strip().lower() == detected_dataset_type.strip().lower()
 
 
-def resolve_dataset_identity(dataset: xr.Dataset, dataset_type: str | None = None) -> DatasetIdentity:
-    effective_dataset_type = dataset_type.strip().lower() if dataset_type else identify_dataset_type(dataset)
+def resolve_dataset_identity(dataset: xr.Dataset) -> DatasetIdentity:
+    effective_dataset_type = identify_dataset_type(dataset)
 
     if effective_dataset_type:
         resolver = _RESOLVERS.get(effective_dataset_type)
