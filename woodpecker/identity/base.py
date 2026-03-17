@@ -14,15 +14,13 @@ class DatasetIdentity:
 
 
 class DatasetIdentityResolver(ABC):
-    @abstractmethod
-    def resolve(self, dataset: xr.Dataset) -> DatasetIdentity:
-        pass
-
-
-class DatasetTypeDetector(ABC):
-    dataset_type: str
+    dataset_type: str = ""
     priority: int = 100
 
     @abstractmethod
     def matches(self, dataset: xr.Dataset) -> bool:
+        pass
+
+    @abstractmethod
+    def resolve(self, dataset: xr.Dataset) -> DatasetIdentity:
         pass

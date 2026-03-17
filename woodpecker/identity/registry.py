@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import xarray as xr
 
-from .base import DatasetIdentity, DatasetIdentityResolver, DatasetTypeDetector
+from .base import DatasetIdentity, DatasetIdentityResolver
 from .common import DefaultDatasetIdentityResolver
 
 
 _RESOLVERS: dict[str, DatasetIdentityResolver] = {}
-_DETECTORS: dict[str, DatasetTypeDetector] = {}
 _DEFAULT_RESOLVER = DefaultDatasetIdentityResolver()
 
 
@@ -19,25 +18,15 @@ def register_dataset_identity_resolver(
         raise ValueError("dataset_type must be a non-empty string")
     if key in _RESOLVERS and not override:
         raise ValueError(f"dataset identity resolver already registered for '{key}'")
+    resolver.dataset_type = key
     _RESOLVERS[key] = resolver
 
 
-def register_dataset_type_detector(
-    detector: DatasetTypeDetector, *, override: bool = False
-) -> None:
-    dataset_type = getattr(detector, "dataset_type", "").strip().lower()
-    if not dataset_type:
-        raise ValueError("dataset type detector must define a non-empty dataset_type")
-    if dataset_type in _DETECTORS and not override:
-        raise ValueError(f"dataset type detector already registered for '{dataset_type}'")
-    _DETECTORS[dataset_type] = detector
-
-
 def identify_dataset_type(dataset: xr.Dataset) -> str | None:
-    detectors = sorted(_DETECTORS.values(), key=lambda d: getattr(d, "priority", 100))
-    for detector in detectors:
-        if detector.matches(dataset):
-            return detector.dataset_type.strip().lower()
+    resolvers = sorted(_RESOLVERS.values(), key=lambda r: getattr(r, "priority", 100))
+    for resolver in resolvers:
+        if resolver.matches(dataset):
+            return resolver.dataset_type.strip().lower()
     return None
 
 

@@ -12,6 +12,13 @@ def project_id_from_dataset_id(dataset_id: str) -> str:
 
 
 class DefaultDatasetIdentityResolver(DatasetIdentityResolver):
+    dataset_type = ""
+    priority = 1000
+
+    def matches(self, dataset: xr.Dataset) -> bool:
+        _ = dataset
+        return False
+
     def _first_str_attr(self, dataset: xr.Dataset, keys: tuple[str, ...]) -> str:
         for key in keys:
             value = dataset.attrs.get(key)
