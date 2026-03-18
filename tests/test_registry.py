@@ -1,4 +1,5 @@
 from woodpecker.fixes.registry import FixRegistry
+from woodpecker.fixes.registry import GroupFix
 
 
 def test_registry_discovers_builtins():
@@ -28,3 +29,17 @@ def test_registry_discovers_builtins():
     # Atlas fix family
     assert "ATLAS01" in codes
     assert "ATLAS02" in codes
+
+    # Group fix
+    assert "CMIP6DG01" in codes
+
+
+def test_group_fix_is_group_fix_instance():
+    fixes = FixRegistry.discover()
+    group = next(f for f in fixes if f.code == "CMIP6DG01")
+    assert isinstance(group, GroupFix)
+    assert group.member_codes == [
+        "CMIP6D01", "CMIP6D02", "CMIP6D03", "CMIP6D04", "CMIP6D05",
+        "CMIP6D06", "CMIP6D07", "CMIP6D08", "CMIP6D09", "CMIP6D10",
+        "CMIP6D11", "CMIP6D12", "CMIP6D13", "CMIP6D14", "CMIP6D15",
+    ]

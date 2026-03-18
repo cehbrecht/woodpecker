@@ -15,3 +15,4 @@ from .cmip6d12 import CMIP6D12  # noqa: F401
 from .cmip6d13 import CMIP6D13  # noqa: F401
 from .cmip6d14 import CMIP6D14  # noqa: F401
 from .cmip6d15 import CMIP6D15  # noqa: F401
+from .cmip6dg01 import CMIP6DG01  # noqa: F401
