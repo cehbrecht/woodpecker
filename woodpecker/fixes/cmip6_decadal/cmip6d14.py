@@ -5,7 +5,7 @@ import xarray as xr
 
 from ..registry import Fix, FixRegistry
 from .common import is_cmip6_decadal_netcdf
-from .start_token_common import extract_start_year as _extract_start_year
+from .common import extract_start_year as _extract_start_year
 
 try:
     import cftime

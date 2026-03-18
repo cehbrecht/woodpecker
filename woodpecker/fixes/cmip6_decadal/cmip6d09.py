@@ -4,7 +4,7 @@ import xarray as xr
 
 from ..registry import Fix, FixRegistry
 from .common import is_cmip6_decadal_netcdf
-from .start_token_common import normalized_start_token as _normalized_start_token
+from .common import normalized_start_token as _normalized_start_token
 
 
 def _needs_start_token_fix(dataset: xr.Dataset) -> bool:
