@@ -3,7 +3,7 @@ from __future__ import annotations
 import xarray as xr
 
 from ..registry import Fix, FixRegistry
-from .common import is_cmip6_netcdf, lower_source_name
+from .common import is_cmip6_decadal_netcdf
 
 
 def _needs_time_long_name_fix(dataset: xr.Dataset) -> bool:
@@ -29,12 +29,12 @@ class CMIP6D01(Fix):
     dataset = "CMIP6-decadal"
 
     def matches(self, dataset: xr.Dataset) -> bool:
-        return is_cmip6_netcdf(dataset)
+        return is_cmip6_decadal_netcdf(dataset)
 
     def check(self, dataset: xr.Dataset) -> list[str]:
+        if not is_cmip6_decadal_netcdf(dataset):
+            return []
         findings = []
-        if "decadal" not in lower_source_name(dataset):
-            findings.append("expected CMIP6 decadal filename hint ('decadal') is missing")
         if _needs_time_long_name_fix(dataset):
             findings.append("time coordinate long_name should be 'valid_time'")
         return findings

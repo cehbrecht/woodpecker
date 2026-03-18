@@ -35,20 +35,56 @@
   
     <tr>
       <td id="CMIP6D01"><a href="#CMIP6D01"><code>CMIP6D01</code></a></td>
-      <td>Decadal metadata baseline</td>
-      <td>Fixes known CMIP6 decadal (CDS) metadata issues (baseline scaffolding).</td>
+      <td>Decadal time metadata</td>
+      <td>Ensures CMIP6-decadal time coordinate has long_name=&#39;valid_time&#39;.</td>
       <td>metadata</td>
       <td>CMIP6-decadal</td>
       <td>10</td>
     </tr>
   
     <tr>
+      <td id="CMIP6D02"><a href="#CMIP6D02"><code>CMIP6D02</code></a></td>
+      <td>Decadal calendar normalization</td>
+      <td>Normalizes CMIP6-decadal time calendar from proleptic_gregorian to standard.</td>
+      <td>metadata, calendar</td>
+      <td>CMIP6-decadal</td>
+      <td>11</td>
+    </tr>
+  
+    <tr>
+      <td id="CMIP6D03"><a href="#CMIP6D03"><code>CMIP6D03</code></a></td>
+      <td>Decadal realization variable</td>
+      <td>Adds realization data variable from realization_index for CMIP6-decadal datasets.</td>
+      <td>metadata</td>
+      <td>CMIP6-decadal</td>
+      <td>12</td>
+    </tr>
+  
+    <tr>
       <td id="ATLAS01"><a href="#ATLAS01"><code>ATLAS01</code></a></td>
       <td>ATLAS encoding cleanup</td>
-      <td>Fixes common ATLAS encoding/deflation issues (baseline scaffolding).</td>
-      <td>encoding, metadata</td>
+      <td>Applies rook-equivalent ATLAS deflation/encoding cleanup.</td>
+      <td>encoding</td>
       <td>ATLAS</td>
       <td>20</td>
+    </tr>
+  
+    <tr>
+      <td id="ATLAS02"><a href="#ATLAS02"><code>ATLAS02</code></a></td>
+      <td>ATLAS project_id normalization</td>
+      <td>Adds or normalizes ATLAS project_id from dataset identifier prefix.</td>
+      <td>metadata</td>
+      <td>ATLAS</td>
+      <td>21</td>
+    </tr>
+  
+    <tr>
+      <td id="CMIP601"><a href="#CMIP601"><code>CMIP601</code></a></td>
+      <td>CMIP6 dummy placeholder</td>
+      <td>Dummy placeholder for future non-decadal CMIP6 fixes.</td>
+      <td>metadata</td>
+      <td>cmip6</td>
+      <td>40</td>
     </tr>
   
   </tbody>

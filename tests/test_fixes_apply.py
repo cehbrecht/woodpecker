@@ -1,4 +1,5 @@
 import xarray as xr
+import pytest
 
 from woodpecker.fixes.atlas import ATLAS01, ATLAS02
 from woodpecker.fixes.cmip6 import CMIP601
@@ -68,6 +69,19 @@ def test_cmip6d03_apply_write_adds_realization_variable():
     assert changed is True
     assert "realization" in dataset.data_vars
     assert int(dataset["realization"].values) == 2
+
+
+@pytest.mark.parametrize("fix_cls", [CMIP6D01, CMIP6D02, CMIP6D03])
+def test_cmip6_decadal_fixes_do_not_match_non_decadal_cmip6(fix_cls):
+    dataset = xr.Dataset(
+        coords={"time": [0, 1]},
+        attrs={"source_name": "c3s-cmip6.member.tas.nc", "realization_index": "2"},
+    )
+
+    fix = fix_cls()
+
+    assert fix.matches(dataset) is False
+    assert fix.check(dataset) == []
 
 
 def test_atlas01_apply_dry_run_reports_change_without_mutating_dataset():

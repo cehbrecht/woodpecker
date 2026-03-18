@@ -10,3 +10,8 @@ def lower_source_name(dataset: xr.Dataset) -> str:
 def is_cmip6_netcdf(dataset: xr.Dataset) -> bool:
     source = lower_source_name(dataset)
     return source.endswith(".nc") and "cmip6" in source
+
+
+def is_cmip6_decadal_netcdf(dataset: xr.Dataset) -> bool:
+    source = lower_source_name(dataset)
+    return source.endswith(".nc") and "cmip6" in source and "decadal" in source

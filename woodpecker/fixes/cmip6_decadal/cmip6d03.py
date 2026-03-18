@@ -3,7 +3,7 @@ from __future__ import annotations
 import xarray as xr
 
 from ..registry import Fix, FixRegistry
-from .common import is_cmip6_netcdf
+from .common import is_cmip6_decadal_netcdf
 
 
 def _needs_realization_var_fix(dataset: xr.Dataset) -> bool:
@@ -40,9 +40,11 @@ class CMIP6D03(Fix):
     dataset = "CMIP6-decadal"
 
     def matches(self, dataset: xr.Dataset) -> bool:
-        return is_cmip6_netcdf(dataset)
+        return is_cmip6_decadal_netcdf(dataset)
 
     def check(self, dataset: xr.Dataset) -> list[str]:
+        if not is_cmip6_decadal_netcdf(dataset):
+            return []
         if _needs_realization_var_fix(dataset):
             return ["realization variable should be added from realization_index"]
         return []
