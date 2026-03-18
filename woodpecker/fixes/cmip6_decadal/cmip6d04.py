@@ -44,9 +44,7 @@ class CMIP6D04(Fix):
         vars_to_fix = _vars_requiring_coordinates_cleanup(dataset)
         if not vars_to_fix:
             return []
-        return [
-            "coordinates encoding should be removed from variables: " + ", ".join(vars_to_fix)
-        ]
+        return ["coordinates encoding should be removed from variables: " + ", ".join(vars_to_fix)]
 
     def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
         if not is_cmip6_decadal_netcdf(dataset):

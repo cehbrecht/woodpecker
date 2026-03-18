@@ -4,10 +4,10 @@ import re
 
 import xarray as xr
 
-
 # ---------------------------------------------------------------------------
 # Source-name helpers
 # ---------------------------------------------------------------------------
+
 
 def lower_source_name(dataset: xr.Dataset) -> str:
     return str(dataset.attrs.get("source_name", "")).lower()

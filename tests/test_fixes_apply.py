@@ -1,10 +1,26 @@
-import xarray as xr
-import pytest
 import numpy as np
+import pytest
+import xarray as xr
 
 from woodpecker.fixes.atlas import ATLAS01, ATLAS02
 from woodpecker.fixes.cmip6 import CMIP601
-from woodpecker.fixes.cmip6_decadal import CMIP6D01, CMIP6D02, CMIP6D03, CMIP6D04, CMIP6D05, CMIP6D06, CMIP6D07, CMIP6D08, CMIP6D09, CMIP6D10, CMIP6D11, CMIP6D12, CMIP6D13, CMIP6D14, CMIP6D15
+from woodpecker.fixes.cmip6_decadal import (
+    CMIP6D01,
+    CMIP6D02,
+    CMIP6D03,
+    CMIP6D04,
+    CMIP6D05,
+    CMIP6D06,
+    CMIP6D07,
+    CMIP6D08,
+    CMIP6D09,
+    CMIP6D10,
+    CMIP6D11,
+    CMIP6D12,
+    CMIP6D13,
+    CMIP6D14,
+    CMIP6D15,
+)
 
 
 def test_cmip601_dummy_apply_write_sets_dummy_marker_attr():
@@ -93,7 +109,26 @@ def test_cmip6d03_apply_write_adds_realization_variable():
     assert int(dataset["realization"].values) == 2
 
 
-@pytest.mark.parametrize("fix_cls", [CMIP6D01, CMIP6D02, CMIP6D03, CMIP6D04, CMIP6D05, CMIP6D06, CMIP6D07, CMIP6D08, CMIP6D09, CMIP6D10, CMIP6D11, CMIP6D12, CMIP6D13, CMIP6D14, CMIP6D15])
+@pytest.mark.parametrize(
+    "fix_cls",
+    [
+        CMIP6D01,
+        CMIP6D02,
+        CMIP6D03,
+        CMIP6D04,
+        CMIP6D05,
+        CMIP6D06,
+        CMIP6D07,
+        CMIP6D08,
+        CMIP6D09,
+        CMIP6D10,
+        CMIP6D11,
+        CMIP6D12,
+        CMIP6D13,
+        CMIP6D14,
+        CMIP6D15,
+    ],
+)
 def test_cmip6_decadal_fixes_do_not_match_non_decadal_cmip6(fix_cls):
     dataset = xr.Dataset(
         coords={"time": [0, 1]},
@@ -294,7 +329,9 @@ def test_cmip6d13_apply_write_sets_model_specific_global_attrs():
     assert changed is True
     assert dataset.attrs["forcing_description"] == "f1, CMIP6 historical forcings"
     assert dataset.attrs["physics_description"].startswith("physics from the standard model")
-    assert dataset.attrs["initialization_description"].startswith("Atmosphere initialization based on full-fields")
+    assert dataset.attrs["initialization_description"].startswith(
+        "Atmosphere initialization based on full-fields"
+    )
 
 
 def test_cmip6d14_apply_write_adds_reftime_coordinate():

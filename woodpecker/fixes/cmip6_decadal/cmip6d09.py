@@ -37,8 +37,7 @@ class CMIP6D09(Fix):
     code = "CMIP6D09"
     name = "Decadal start token normalization"
     description = (
-        "Normalizes CMIP6-decadal startdate and sub_experiment_id to the canonical "
-        "sYYYY11 token."
+        "Normalizes CMIP6-decadal startdate and sub_experiment_id to the canonical sYYYY11 token."
     )
     categories = ["metadata"]
     priority = 18

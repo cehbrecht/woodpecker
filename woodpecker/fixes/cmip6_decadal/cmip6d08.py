@@ -7,7 +7,6 @@ import xarray as xr
 from ..registry import Fix, FixRegistry
 from .common import is_cmip6_decadal_netcdf
 
-
 _MALFORMED_URL_VARIANT_PATTERN = re.compile(r"(\.s\d{4})-(r\d+i\d+p\d+f\d+)")
 
 
@@ -25,7 +24,9 @@ def _needs_further_info_url_fix(dataset: xr.Dataset) -> bool:
 def _apply_further_info_url_fix(dataset: xr.Dataset) -> bool:
     if not _needs_further_info_url_fix(dataset):
         return False
-    dataset.attrs["further_info_url"] = _normalized_further_info_url(dataset.attrs["further_info_url"])
+    dataset.attrs["further_info_url"] = _normalized_further_info_url(
+        dataset.attrs["further_info_url"]
+    )
     return True
 
 
@@ -34,8 +35,7 @@ class CMIP6D08(Fix):
     code = "CMIP6D08"
     name = "Decadal further_info_url normalization"
     description = (
-        "Normalizes malformed CMIP6-decadal further_info_url variant separators "
-        "from '-' to '.'."
+        "Normalizes malformed CMIP6-decadal further_info_url variant separators from '-' to '.'."
     )
     categories = ["metadata"]
     priority = 17

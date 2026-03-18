@@ -24,9 +24,9 @@ def _apply_realization_var_fix(dataset: xr.Dataset) -> bool:
 
     dataset["realization"] = xr.DataArray(realization_value)
     dataset["realization"].attrs["long_name"] = "realization"
-    dataset["realization"].attrs[
-        "comment"
-    ] = "For more information on the ripf, refer to variant_label and global attributes."
+    dataset["realization"].attrs["comment"] = (
+        "For more information on the ripf, refer to variant_label and global attributes."
+    )
     return True
 
 
@@ -34,7 +34,9 @@ def _apply_realization_var_fix(dataset: xr.Dataset) -> bool:
 class CMIP6D03(Fix):
     code = "CMIP6D03"
     name = "Decadal realization variable"
-    description = "Adds realization data variable from realization_index for CMIP6-decadal datasets."
+    description = (
+        "Adds realization data variable from realization_index for CMIP6-decadal datasets."
+    )
     categories = ["metadata"]
     priority = 12
     dataset = "CMIP6-decadal"

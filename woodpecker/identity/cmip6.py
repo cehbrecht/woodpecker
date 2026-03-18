@@ -15,4 +15,6 @@ class CMIP6DatasetIdentityResolver(DefaultDatasetIdentityResolver):
 
     def matches(self, dataset: xr.Dataset) -> bool:
         source_name = str(dataset.attrs.get("source_name", "")).lower()
-        return source_name.endswith(".nc") and "cmip6" in source_name and "decadal" not in source_name
+        return (
+            source_name.endswith(".nc") and "cmip6" in source_name and "decadal" not in source_name
+        )

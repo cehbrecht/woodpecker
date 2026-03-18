@@ -4,8 +4,8 @@ import numpy as np
 import xarray as xr
 
 from ..registry import Fix, FixRegistry
-from .common import is_cmip6_decadal_netcdf
 from .common import extract_start_year as _extract_start_year
+from .common import is_cmip6_decadal_netcdf
 
 try:
     import cftime
@@ -16,7 +16,11 @@ except Exception:  # pragma: no cover
 def _target_calendar(dataset: xr.Dataset) -> str:
     if "time" in dataset:
         return (
-            str(dataset["time"].encoding.get("calendar") or dataset["time"].attrs.get("calendar") or "standard")
+            str(
+                dataset["time"].encoding.get("calendar")
+                or dataset["time"].attrs.get("calendar")
+                or "standard"
+            )
             .strip()
             .lower()
         )

@@ -5,7 +5,6 @@ import xarray as xr
 from ..registry import Fix, FixRegistry
 from .common import is_cmip6_decadal_netcdf
 
-
 EXPECTED_REALIZATION_COMMENT = (
     "For more information on the ripf, refer to the variant_label, "
     "initialization_description, physics_description and forcing_description "
@@ -30,9 +29,7 @@ def _apply_realization_comment_fix(dataset: xr.Dataset) -> bool:
 class CMIP6D05(Fix):
     code = "CMIP6D05"
     name = "Decadal realization comment normalization"
-    description = (
-        "Normalizes realization comment to the full CMIP6-decadal ripf guidance text."
-    )
+    description = "Normalizes realization comment to the full CMIP6-decadal ripf guidance text."
     categories = ["metadata"]
     priority = 14
     dataset = "CMIP6-decadal"

@@ -14,9 +14,7 @@ from woodpecker.inout import (
 
 
 def test_check_supports_xarray_dataset_input():
-    ds = xr.Dataset(
-        coords={"time": [0, 1]}, attrs={"source_name": "c3s-cmip6-decadal.bad.nc"}
-    )
+    ds = xr.Dataset(coords={"time": [0, 1]}, attrs={"source_name": "c3s-cmip6-decadal.bad.nc"})
     ds["time"].encoding["calendar"] = "proleptic_gregorian"
 
     findings = check(ds, codes=["CMIP6D01", "CMIP6D02"])

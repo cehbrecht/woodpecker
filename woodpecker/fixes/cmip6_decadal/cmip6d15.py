@@ -4,8 +4,7 @@ import numpy as np
 import xarray as xr
 
 from ..registry import Fix, FixRegistry
-from .common import is_cmip6_decadal_netcdf
-from .common import apply_leadtime_metadata, leadtime_metadata_invalid
+from .common import apply_leadtime_metadata, is_cmip6_decadal_netcdf, leadtime_metadata_invalid
 
 try:
     import cftime
@@ -82,7 +81,9 @@ def _apply_leadtime_fix(dataset: xr.Dataset) -> bool:
 class CMIP6D15(Fix):
     code = "CMIP6D15"
     name = "Decadal leadtime coordinate"
-    description = "Adds or normalizes CMIP6-decadal leadtime coordinate values from time and reftime."
+    description = (
+        "Adds or normalizes CMIP6-decadal leadtime coordinate values from time and reftime."
+    )
     categories = ["metadata", "structure"]
     priority = 24
     dataset = "CMIP6-decadal"

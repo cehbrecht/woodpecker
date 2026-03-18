@@ -31,7 +31,19 @@ class CMIP6DG01(GroupFix):
     priority = 99
     dataset = "CMIP6-decadal"
     members = [
-        CMIP6D01, CMIP6D02, CMIP6D03, CMIP6D04, CMIP6D05,
-        CMIP6D06, CMIP6D07, CMIP6D08, CMIP6D09, CMIP6D10,
-        CMIP6D11, CMIP6D12, CMIP6D13, CMIP6D14, CMIP6D15,
+        CMIP6D01,
+        CMIP6D02,
+        CMIP6D03,
+        CMIP6D04,
+        CMIP6D05,
+        CMIP6D06,
+        CMIP6D07,
+        CMIP6D08,
+        CMIP6D09,
+        CMIP6D10,
+        CMIP6D11,
+        CMIP6D12,
+        CMIP6D13,
+        CMIP6D14,
+        CMIP6D15,
     ]

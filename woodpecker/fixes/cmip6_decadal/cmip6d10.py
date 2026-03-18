@@ -23,7 +23,9 @@ def _apply_realization_long_name_fix(dataset: xr.Dataset) -> bool:
 class CMIP6D10(Fix):
     code = "CMIP6D10"
     name = "Decadal realization long_name normalization"
-    description = "Normalizes realization long_name metadata to 'realization' for CMIP6-decadal datasets."
+    description = (
+        "Normalizes realization long_name metadata to 'realization' for CMIP6-decadal datasets."
+    )
     categories = ["metadata"]
     priority = 19
     dataset = "CMIP6-decadal"
