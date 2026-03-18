@@ -5,11 +5,20 @@ import xarray as xr
 from ..registry import Fix, FixRegistry
 from .common import is_cmip6_decadal_netcdf
 
+try:
+    import cftime
+except Exception:  # pragma: no cover
+    cftime = None
+
 
 def _needs_calendar_fix(dataset: xr.Dataset) -> bool:
     if "time" not in dataset:
         return False
     time_coord = dataset["time"]
+    if cftime is not None and time_coord.dtype == object and time_coord.size > 0:
+        first = time_coord.values.flat[0]
+        if isinstance(first, cftime.DatetimeProlepticGregorian):
+            return True
     return (
         time_coord.attrs.get("calendar") == "proleptic_gregorian"
         or time_coord.encoding.get("calendar") == "proleptic_gregorian"
@@ -22,6 +31,29 @@ def _apply_calendar_fix(dataset: xr.Dataset) -> bool:
 
     changed = False
     time_coord = dataset["time"]
+
+    if cftime is not None and time_coord.dtype == object and time_coord.size > 0:
+        values = time_coord.values
+        if isinstance(values.flat[0], cftime.DatetimeProlepticGregorian):
+            converted = [
+                cftime.DatetimeGregorian(
+                    value.year,
+                    value.month,
+                    value.day,
+                    value.hour,
+                    value.minute,
+                    value.second,
+                    value.microsecond,
+                    has_year_zero=getattr(value, "has_year_zero", None),
+                )
+                for value in values
+            ]
+            new_time = xr.DataArray(converted, dims=time_coord.dims, attrs=dict(time_coord.attrs))
+            new_time.encoding = dict(time_coord.encoding)
+            dataset["time"] = new_time
+            time_coord = dataset["time"]
+            changed = True
+
     if time_coord.attrs.get("calendar") == "proleptic_gregorian":
         time_coord.attrs["calendar"] = "standard"
         changed = True

@@ -42,6 +42,68 @@
     "priority": 13
   },
   {
+    "code": "CMIP6D05",
+    "name": "Decadal realization comment normalization",
+    "description": "Normalizes realization comment to the full CMIP6-decadal ripf guidance text.",
+    "categories": [
+      "metadata"
+    ],
+    "dataset": "CMIP6-decadal",
+    "priority": 14
+  },
+  {
+    "code": "CMIP6D06",
+    "name": "Decadal realization dtype normalization",
+    "description": "Normalizes realization data variable dtype to int32 for CMIP6-decadal datasets.",
+    "categories": [
+      "metadata",
+      "structure"
+    ],
+    "dataset": "CMIP6-decadal",
+    "priority": 15
+  },
+  {
+    "code": "CMIP6D07",
+    "name": "Decadal _FillValue encoding cleanup",
+    "description": "Removes stale '_FillValue' encoding entries from realization and bounds variables in CMIP6-decadal datasets.",
+    "categories": [
+      "encoding",
+      "metadata"
+    ],
+    "dataset": "CMIP6-decadal",
+    "priority": 16
+  },
+  {
+    "code": "CMIP6D08",
+    "name": "Decadal further_info_url normalization",
+    "description": "Normalizes malformed CMIP6-decadal further_info_url variant separators from '-' to '.'.",
+    "categories": [
+      "metadata"
+    ],
+    "dataset": "CMIP6-decadal",
+    "priority": 17
+  },
+  {
+    "code": "CMIP6D09",
+    "name": "Decadal start token normalization",
+    "description": "Normalizes CMIP6-decadal startdate and sub_experiment_id to the canonical sYYYY11 token.",
+    "categories": [
+      "metadata"
+    ],
+    "dataset": "CMIP6-decadal",
+    "priority": 18
+  },
+  {
+    "code": "CMIP6D10",
+    "name": "Decadal realization long_name normalization",
+    "description": "Normalizes realization long_name metadata to 'realization' for CMIP6-decadal datasets.",
+    "categories": [
+      "metadata"
+    ],
+    "dataset": "CMIP6-decadal",
+    "priority": 19
+  },
+  {
     "code": "ATLAS01",
     "name": "ATLAS encoding cleanup",
     "description": "Applies rook-equivalent ATLAS deflation/encoding cleanup.",
@@ -49,6 +111,16 @@
       "encoding"
     ],
     "dataset": "ATLAS",
+    "priority": 20
+  },
+  {
+    "code": "CMIP6D11",
+    "name": "Decadal realization_index normalization",
+    "description": "Normalizes CMIP6-decadal realization_index global attribute to integer type.",
+    "categories": [
+      "metadata"
+    ],
+    "dataset": "CMIP6-decadal",
     "priority": 20
   },
   {
@@ -60,6 +132,48 @@
     ],
     "dataset": "ATLAS",
     "priority": 21
+  },
+  {
+    "code": "CMIP6D12",
+    "name": "Decadal leadtime metadata normalization",
+    "description": "Normalizes CMIP6-decadal leadtime metadata (units, long_name, standard_name).",
+    "categories": [
+      "metadata"
+    ],
+    "dataset": "CMIP6-decadal",
+    "priority": 21
+  },
+  {
+    "code": "CMIP6D13",
+    "name": "Decadal model global attributes",
+    "description": "Normalizes model-specific global metadata fields for CMIP6-decadal datasets.",
+    "categories": [
+      "metadata"
+    ],
+    "dataset": "CMIP6-decadal",
+    "priority": 22
+  },
+  {
+    "code": "CMIP6D14",
+    "name": "Decadal reftime coordinate",
+    "description": "Adds or normalizes CMIP6-decadal scalar reftime coordinate and metadata.",
+    "categories": [
+      "metadata",
+      "structure"
+    ],
+    "dataset": "CMIP6-decadal",
+    "priority": 23
+  },
+  {
+    "code": "CMIP6D15",
+    "name": "Decadal leadtime coordinate",
+    "description": "Adds or normalizes CMIP6-decadal leadtime coordinate values from time and reftime.",
+    "categories": [
+      "metadata",
+      "structure"
+    ],
+    "dataset": "CMIP6-decadal",
+    "priority": 24
   },
   {
     "code": "CMIP601",
