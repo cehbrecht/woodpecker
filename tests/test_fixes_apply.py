@@ -3,7 +3,7 @@ import pytest
 
 from woodpecker.fixes.atlas import ATLAS01, ATLAS02
 from woodpecker.fixes.cmip6 import CMIP601
-from woodpecker.fixes.cmip6_decadal import CMIP6D01, CMIP6D02, CMIP6D03
+from woodpecker.fixes.cmip6_decadal import CMIP6D01, CMIP6D02, CMIP6D03, CMIP6D04
 
 
 def test_cmip601_dummy_apply_write_sets_dummy_marker_attr():
@@ -71,7 +71,7 @@ def test_cmip6d03_apply_write_adds_realization_variable():
     assert int(dataset["realization"].values) == 2
 
 
-@pytest.mark.parametrize("fix_cls", [CMIP6D01, CMIP6D02, CMIP6D03])
+@pytest.mark.parametrize("fix_cls", [CMIP6D01, CMIP6D02, CMIP6D03, CMIP6D04])
 def test_cmip6_decadal_fixes_do_not_match_non_decadal_cmip6(fix_cls):
     dataset = xr.Dataset(
         coords={"time": [0, 1]},
@@ -82,6 +82,32 @@ def test_cmip6_decadal_fixes_do_not_match_non_decadal_cmip6(fix_cls):
 
     assert fix.matches(dataset) is False
     assert fix.check(dataset) == []
+
+
+def test_cmip6d04_apply_write_removes_coordinates_encoding_from_decadal_vars():
+    dataset = xr.Dataset(
+        data_vars={
+            "realization": xr.DataArray(2),
+            "lon_bnds": (("x", "bnds"), [[0.0, 1.0]]),
+            "lat_bnds": (("x", "bnds"), [[10.0, 11.0]]),
+            "time_bnds": (("time", "bnds"), [[0.0, 1.0]]),
+        },
+        coords={"time": [0], "x": [0], "bnds": [0, 1]},
+        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc"},
+    )
+    dataset["realization"].encoding["coordinates"] = "time"
+    dataset["lon_bnds"].encoding["coordinates"] = "lon lat"
+    dataset["lat_bnds"].encoding["coordinates"] = "lat lon"
+    dataset["time_bnds"].encoding["coordinates"] = "time"
+
+    fix = CMIP6D04()
+    changed = fix.apply(dataset, dry_run=False)
+
+    assert changed is True
+    assert dataset["realization"].encoding.get("coordinates") is None
+    assert dataset["lon_bnds"].encoding.get("coordinates") is None
+    assert dataset["lat_bnds"].encoding.get("coordinates") is None
+    assert dataset["time_bnds"].encoding.get("coordinates") is None
 
 
 def test_atlas01_apply_dry_run_reports_change_without_mutating_dataset():

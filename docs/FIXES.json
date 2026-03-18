@@ -31,6 +31,17 @@
     "priority": 12
   },
   {
+    "code": "CMIP6D04",
+    "name": "Decadal coordinates encoding cleanup",
+    "description": "Removes stale 'coordinates' encoding entries from realization and bounds variables in CMIP6-decadal datasets.",
+    "categories": [
+      "encoding",
+      "metadata"
+    ],
+    "dataset": "CMIP6-decadal",
+    "priority": 13
+  },
+  {
     "code": "ATLAS01",
     "name": "ATLAS encoding cleanup",
     "description": "Applies rook-equivalent ATLAS deflation/encoding cleanup.",
