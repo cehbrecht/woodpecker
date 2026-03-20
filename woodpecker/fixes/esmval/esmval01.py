@@ -40,9 +40,7 @@ def _apply_kelvin_conversion(dataset: xr.Dataset) -> bool:
 class ESMVAL01(Fix):
     code = "ESMVAL01"
     name = "Normalize tas-like units to Kelvin"
-    description = (
-        "Prototype ESMVal-style fix: converts tas/temp from Celsius-like units to Kelvin."
-    )
+    description = "Prototype ESMVal-style fix: converts tas/temp from Celsius-like units to Kelvin."
     categories = ["metadata", "units"]
     priority = 40
     dataset = "ESMVal"
