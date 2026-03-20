@@ -186,6 +186,59 @@
     "priority": 40
   },
   {
+    "code": "ESMVAL01",
+    "name": "Normalize tas-like units to Kelvin",
+    "description": "Prototype ESMVal-style fix: converts tas/temp from Celsius-like units to Kelvin.",
+    "categories": [
+      "metadata",
+      "units"
+    ],
+    "dataset": "ESMVal",
+    "priority": 40
+  },
+  {
+    "code": "ESMVAL02",
+    "name": "Ensure project_id is present",
+    "description": "Sets project_id from dataset identifier metadata when missing.",
+    "categories": [
+      "metadata"
+    ],
+    "dataset": "ESMVal",
+    "priority": 41
+  },
+  {
+    "code": "ESMVAL03",
+    "name": "Rename temp variable to tas",
+    "description": "Renames data variable temp to tas when tas is missing.",
+    "categories": [
+      "structure",
+      "metadata"
+    ],
+    "dataset": "ESMVal",
+    "priority": 42
+  },
+  {
+    "code": "ESMVAL04",
+    "name": "Ensure latitude is increasing",
+    "description": "Flips datasets with decreasing latitude coordinates to increasing order.",
+    "categories": [
+      "structure"
+    ],
+    "dataset": "ESMVal",
+    "priority": 43
+  },
+  {
+    "code": "ESMVAL05",
+    "name": "Remove coordinate FillValue encodings",
+    "description": "Removes _FillValue encoding entries from common coordinate variables.",
+    "categories": [
+      "metadata",
+      "structure"
+    ],
+    "dataset": "ESMVal",
+    "priority": 44
+  },
+  {
     "code": "CMIP6DG01",
     "name": "CMIP6 Decadal: full fix suite",
     "description": "Applies all CMIP6-decadal fixes (CMIP6D01\u2013CMIP6D15) in sequence: calendar, encoding, realization metadata, start-token normalisation, model-specific global attributes, and leadtime/reftime coordinates.",

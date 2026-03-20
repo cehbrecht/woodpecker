@@ -18,4 +18,9 @@
 | CMIP6D14 | Decadal reftime coordinate | Adds or normalizes CMIP6-decadal scalar reftime coordinate and metadata. | metadata, structure | CMIP6-decadal | 23 |
 | CMIP6D15 | Decadal leadtime coordinate | Adds or normalizes CMIP6-decadal leadtime coordinate values from time and reftime. | metadata, structure | CMIP6-decadal | 24 |
 | CMIP601 | CMIP6 dummy placeholder | Dummy placeholder for future non-decadal CMIP6 fixes. | metadata | cmip6 | 40 |
+| ESMVAL01 | Normalize tas-like units to Kelvin | Prototype ESMVal-style fix: converts tas/temp from Celsius-like units to Kelvin. | metadata, units | ESMVal | 40 |
+| ESMVAL02 | Ensure project_id is present | Sets project_id from dataset identifier metadata when missing. | metadata | ESMVal | 41 |
+| ESMVAL03 | Rename temp variable to tas | Renames data variable temp to tas when tas is missing. | structure, metadata | ESMVal | 42 |
+| ESMVAL04 | Ensure latitude is increasing | Flips datasets with decreasing latitude coordinates to increasing order. | structure | ESMVal | 43 |
+| ESMVAL05 | Remove coordinate FillValue encodings | Removes _FillValue encoding entries from common coordinate variables. | metadata, structure | ESMVal | 44 |
 | CMIP6DG01 | CMIP6 Decadal: full fix suite | Applies all CMIP6-decadal fixes (CMIP6D01–CMIP6D15) in sequence: calendar, encoding, realization metadata, start-token normalisation, model-specific global attributes, and leadtime/reftime coordinates. | metadata, calendar, encoding, structure | CMIP6-decadal | 99 |
