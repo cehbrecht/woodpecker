@@ -12,6 +12,9 @@
   th { background: #f7f7f7; position: sticky; top: 0; }
   #search { margin: 1rem 0; padding: 0.6rem 0.75rem; width: min(520px, 100%); }
   code { background: #f2f2f2; padding: 0.1rem 0.25rem; border-radius: 4px; }
+  .group-badge { background: #e0edff; color: #0050c8; font-size: 0.7rem; font-weight: 600;
+    padding: 0.1rem 0.35rem; border-radius: 3px; margin-left: 0.3rem; vertical-align: middle; }
+  .member-codes { margin-top: 0.35rem; font-size: 0.78rem; color: #555; }
 </style>
 </head>
 <body>
@@ -36,7 +39,7 @@
     <tr>
       <td id="{{ f.code }}"><a href="#{{ f.code }}"><code>{{ f.code }}</code></a></td>
       <td>{{ f.name }}</td>
-      <td>{{ f.description }}</td>
+      <td>{{ f.description }}{% if f.get('member_codes') %}<div class="member-codes">Members: {% for mc in f.member_codes %}<code>{{ mc }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</div>{% endif %}</td>
       <td>{{ (f.categories or []) | join(', ') }}</td>
       <td>{{ f.dataset or '' }}</td>
       <td>{{ f.priority }}</td>

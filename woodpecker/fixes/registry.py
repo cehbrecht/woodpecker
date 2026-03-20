@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, ClassVar, Dict, List, Optional, Type
 
 import xarray as xr
 
@@ -32,6 +32,43 @@ class Fix:
 
     def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
         return False
+
+
+@dataclass
+class GroupFix(Fix):
+    """A Fix that chains multiple member fixes, applying them in sequence.
+
+    Subclasses declare a ``members`` class variable listing the :class:`Fix`
+    subclasses to run.  The group is recognisable because its code ends with
+    the letter ``G`` (e.g. ``CMIP6DG01``).  It satisfies the same interface
+    as :class:`Fix` and can be registered, discovered, and applied identically.
+    """
+
+    members: ClassVar[List[Type[Any]]] = []
+    member_codes: List[str] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        if not self.member_codes and self.members:
+            self.member_codes = [getattr(cls, "code", "") for cls in self.members]
+
+    def matches(self, dataset: xr.Dataset) -> bool:
+        return any(cls().matches(dataset) for cls in self.members)
+
+    def check(self, dataset: xr.Dataset) -> List[str]:
+        issues: List[str] = []
+        for cls in self.members:
+            fix = cls()
+            if fix.matches(dataset):
+                issues.extend(fix.check(dataset))
+        return issues
+
+    def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
+        applied = False
+        for cls in sorted(self.members, key=lambda c: getattr(c, "priority", 10)):
+            fix = cls()
+            if fix.apply(dataset, dry_run=dry_run):
+                applied = True
+        return applied
 
 
 class FixRegistry:

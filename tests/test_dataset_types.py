@@ -27,3 +27,11 @@ def test_identify_dataset_type_detects_cmip6_decadal_from_source_name():
     detected = resolve_dataset_identity(ds).dataset_type
 
     assert detected == "cmip6-decadal"
+
+
+def test_identify_dataset_type_detects_cmip6_from_source_name():
+    ds = xr.Dataset(attrs={"source_name": "c3s-cmip6.member.tas.nc"})
+
+    detected = resolve_dataset_identity(ds).dataset_type
+
+    assert detected == "cmip6"
