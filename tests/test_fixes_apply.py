@@ -21,6 +21,7 @@ from woodpecker.fixes.cmip6_decadal import (
     CMIP6D14,
     CMIP6D15,
 )
+from woodpecker.fixes.esmval import ESMVAL01
 
 
 def test_cmip601_dummy_apply_write_sets_dummy_marker_attr():
@@ -430,3 +431,33 @@ def test_atlas02_apply_write_sets_project_id_only():
     assert changed is True
     assert dataset.attrs["project_id"] == "c3s-ipcc-atlas"
     assert dataset["tas"].encoding["complevel"] == 4
+
+
+def test_esmval01_apply_dry_run_reports_change_without_mutating_dataset():
+    dataset = xr.Dataset(
+        data_vars={"tas": ("time", np.array([10.0, 11.0], dtype=np.float32))},
+        coords={"time": [0, 1]},
+    )
+    dataset["tas"].attrs["units"] = "degreeC"
+
+    fix = ESMVAL01()
+    changed = fix.apply(dataset, dry_run=True)
+
+    assert changed is True
+    assert dataset["tas"].attrs["units"] == "degreeC"
+    np.testing.assert_allclose(dataset["tas"].values, [10.0, 11.0])
+
+
+def test_esmval01_apply_write_converts_celsius_to_kelvin_for_tas_variable():
+    dataset = xr.Dataset(
+        data_vars={"tas": ("time", np.array([0.0, 2.0], dtype=np.float32))},
+        coords={"time": [0, 1]},
+    )
+    dataset["tas"].attrs["units"] = "degreeC"
+
+    fix = ESMVAL01()
+    changed = fix.apply(dataset, dry_run=False)
+
+    assert changed is True
+    assert dataset["tas"].attrs["units"] == "K"
+    np.testing.assert_allclose(dataset["tas"].values, [273.15, 275.15])

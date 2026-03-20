@@ -29,6 +29,13 @@ def test_registry_discovers_builtins():
     assert "ATLAS01" in codes
     assert "ATLAS02" in codes
 
+    # ESMVal example fix family
+    assert "ESMVAL01" in codes
+    assert "ESMVAL02" in codes
+    assert "ESMVAL03" in codes
+    assert "ESMVAL04" in codes
+    assert "ESMVAL05" in codes
+
     # Group fix
     assert "CMIP6DG01" in codes
 

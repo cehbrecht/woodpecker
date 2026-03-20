@@ -199,6 +199,51 @@
     </tr>
   
     <tr>
+      <td id="ESMVAL01"><a href="#ESMVAL01"><code>ESMVAL01</code></a></td>
+      <td>Normalize tas-like units to Kelvin</td>
+      <td>Prototype ESMVal-style fix: converts tas/temp from Celsius-like units to Kelvin.</td>
+      <td>metadata, units</td>
+      <td>ESMVal</td>
+      <td>40</td>
+    </tr>
+  
+    <tr>
+      <td id="ESMVAL02"><a href="#ESMVAL02"><code>ESMVAL02</code></a></td>
+      <td>Ensure project_id is present</td>
+      <td>Sets project_id from dataset identifier metadata when missing.</td>
+      <td>metadata</td>
+      <td>ESMVal</td>
+      <td>41</td>
+    </tr>
+  
+    <tr>
+      <td id="ESMVAL03"><a href="#ESMVAL03"><code>ESMVAL03</code></a></td>
+      <td>Rename temp variable to tas</td>
+      <td>Renames data variable temp to tas when tas is missing.</td>
+      <td>structure, metadata</td>
+      <td>ESMVal</td>
+      <td>42</td>
+    </tr>
+  
+    <tr>
+      <td id="ESMVAL04"><a href="#ESMVAL04"><code>ESMVAL04</code></a></td>
+      <td>Ensure latitude is increasing</td>
+      <td>Flips datasets with decreasing latitude coordinates to increasing order.</td>
+      <td>structure</td>
+      <td>ESMVal</td>
+      <td>43</td>
+    </tr>
+  
+    <tr>
+      <td id="ESMVAL05"><a href="#ESMVAL05"><code>ESMVAL05</code></a></td>
+      <td>Remove coordinate FillValue encodings</td>
+      <td>Removes _FillValue encoding entries from common coordinate variables.</td>
+      <td>metadata, structure</td>
+      <td>ESMVal</td>
+      <td>44</td>
+    </tr>
+  
+    <tr>
       <td id="CMIP6DG01"><a href="#CMIP6DG01"><code>CMIP6DG01</code></a></td>
       <td>CMIP6 Decadal: full fix suite</td>
       <td>Applies all CMIP6-decadal fixes (CMIP6D01–CMIP6D15) in sequence: calendar, encoding, realization metadata, start-token normalisation, model-specific global attributes, and leadtime/reftime coordinates.<div class="member-codes">Members: <code>CMIP6D01</code>, <code>CMIP6D02</code>, <code>CMIP6D03</code>, <code>CMIP6D04</code>, <code>CMIP6D05</code>, <code>CMIP6D06</code>, <code>CMIP6D07</code>, <code>CMIP6D08</code>, <code>CMIP6D09</code>, <code>CMIP6D10</code>, <code>CMIP6D11</code>, <code>CMIP6D12</code>, <code>CMIP6D13</code>, <code>CMIP6D14</code>, <code>CMIP6D15</code></div></td>

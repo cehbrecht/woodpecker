@@ -13,6 +13,7 @@ The design is inspired by Ruff: fast, rule-based checks with optional targeted a
 ## What This Demo Includes
 
 - `woodpecker.fixes.registry.FixRegistry`: in-memory registry (simple today, extensible tomorrow)
+- Built-in fix families grouped by domain subpackage (`cmip6_decadal`, `atlas`, `esmval`, ...)
 - `woodpecker` CLI:
   - `woodpecker list-fixes`
   - `woodpecker list-fixes --format md|json`
@@ -151,6 +152,7 @@ Woodpecker intentionally stays simple and “human-countable”, but the design 
 
 - file-level demo logic is intentionally lightweight (no heavy real-world NetCDF transforms yet)
 - checks/fixes focus on deterministic, explainable behavior for design discussions
+- includes a prototype-inspired `ESMVAL01` example fix (tas/temp Celsius -> Kelvin)
 
 ## Next Steps
 
