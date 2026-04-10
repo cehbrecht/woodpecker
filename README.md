@@ -18,7 +18,7 @@ The design is inspired by Ruff: fast, rule-based checks with optional targeted a
   - `woodpecker list-fixes`
   - `woodpecker list-fixes --format md|json`
   - `woodpecker check <path>`
-  - `woodpecker fix <path> --write`
+  - `woodpecker fix <path>`
 - Documentation generation:
   - `docs/FIXES.md` (Markdown catalog)
   - `docs/FIXES.json` (machine-readable)
@@ -99,15 +99,15 @@ woodpecker io-status
 woodpecker io-status --format json
 woodpecker check /path/to/netcdf/or/folder
 woodpecker check . --select CMIP6D_0001
-woodpecker fix . --select CMIP6D_0001        # dry-run by default
-woodpecker fix . --select CMIP6D_0001 --write
-woodpecker fix . --select CMIP6D_0001 --write --output-format zarr
+woodpecker fix . --select CMIP6D_0001
+woodpecker fix . --select CMIP6D_0001 --dry-run
+woodpecker fix . --select CMIP6D_0001 --output-format zarr
 woodpecker check --workflow workflow.json
-woodpecker fix --workflow workflow.json --write
+woodpecker fix --workflow workflow.json
 ```
 
 Write mode reports both fix changes and persistence status (`persisted` vs `failed to persist`) in text and JSON output.
-When `--write --format json` is used, Woodpecker exits with status `1` if any persistence operation fails.
+When `--format json` is used in write mode (default), Woodpecker exits with status `1` if any persistence operation fails.
 
 Selected fix codes are validated strictly: unknown `--select` codes fail fast with a clear error (same behavior in the Python API).
 
@@ -198,8 +198,8 @@ into xarray objects before running fixes.
 ```bash
 touch cmip6_case.nc
 woodpecker check . --select CMIP6D_0001
-woodpecker fix . --select CMIP6D_0001        # dry-run by default
-woodpecker fix . --select CMIP6D_0001 --write
+woodpecker fix . --select CMIP6D_0001
+woodpecker fix . --select CMIP6D_0001 --dry-run
 # dummy fix marks datasets in-memory/on write path (no filename renaming in this phase)
 ```
 

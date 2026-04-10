@@ -147,10 +147,10 @@ def io_status(fmt: str):
 )
 @click.option("--select", "codes", multiple=True, help="Run only selected fix codes (repeatable)")
 @click.option(
-    "--write",
+    "--dry-run",
     is_flag=True,
     default=False,
-    help="Apply changes. Without this flag, run in dry-run mode.",
+    help="Preview changes without writing outputs.",
 )
 @click.option(
     "--output-format",
@@ -185,7 +185,7 @@ def fix(
     dataset: str | None,
     categories: tuple[str, ...],
     codes: tuple[str, ...],
-    write: bool,
+    dry_run: bool,
     output_format: str,
     provenance: bool,
     provenance_path: Path,
@@ -229,10 +229,10 @@ def fix(
         )
         run_id = f"woodpecker-{Path.cwd().name}"
         run_fix_kwargs = {
-            "dry_run": not write,
+            "dry_run": dry_run,
             "output_format": resolved_output_format,
         }
-        if embed_provenance_metadata and write:
+        if embed_provenance_metadata and not dry_run:
             run_fix_kwargs["embed_provenance_metadata"] = True
             run_fix_kwargs["provenance_run_id"] = run_id
         stats = run_fix(inputs, fixes, **run_fix_kwargs)
@@ -244,7 +244,7 @@ def fix(
             inputs=inputs,
             selected_codes=[getattr(fix, "code", "") for fix in fixes],
             stats=stats,
-            mode="write" if write else "dry-run",
+            mode="dry-run" if dry_run else "write",
             output_format=resolved_output_format,
             workflow=str(workflow) if workflow else None,
         )
@@ -252,18 +252,18 @@ def fix(
 
     if fmt == "json":
         payload = {
-            "mode": "write" if write else "dry-run",
+            "mode": "dry-run" if dry_run else "write",
             "output_format": resolved_output_format,
             "provenance": str(provenance_path) if provenance else None,
             **stats,
         }
         click.echo(json.dumps(payload, indent=2))
-        if write and stats.get("persist_failed", 0) > 0:
+        if not dry_run and stats.get("persist_failed", 0) > 0:
             raise SystemExit(1)
         return
 
-    mode = "write" if write else "dry-run"
-    if write:
+    mode = "dry-run" if dry_run else "write"
+    if not dry_run:
         click.echo(
             f"Fix run complete ({mode}): {stats['attempted']} fix applications attempted, {stats['changed']} files changed, {stats['persisted']} persisted, {stats['persist_failed']} failed to persist."
         )

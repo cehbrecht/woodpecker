@@ -91,7 +91,7 @@ def test_fix_write_cmip6d01_reports_no_change_for_empty_fallback_dataset(
 
     result = runner.invoke(
         cli,
-        ["fix", ".", "--select", "CMIP6D_0001", "--write", "--output-format", "netcdf"],
+        ["fix", ".", "--select", "CMIP6D_0001", "--output-format", "netcdf"],
     )
 
     assert result.exit_code == 0
@@ -124,7 +124,6 @@ def test_fix_json_output_contains_write_report(
             ".",
             "--select",
             "CMIP6D_0001",
-            "--write",
             "--output-format",
             "netcdf",
             "--format",
@@ -168,7 +167,6 @@ def test_fix_json_write_exits_nonzero_on_persist_failure(
             ".",
             "--select",
             "CMIP6D_0001",
-            "--write",
             "--format",
             "json",
         ],
@@ -233,7 +231,7 @@ def test_fix_uses_workflow_output_format_when_auto(
 
     result = runner.invoke(
         cli,
-        ["fix", "--workflow", "workflow.json", "--write", "--format", "json"],
+        ["fix", "--workflow", "workflow.json", "--format", "json"],
     )
 
     assert result.exit_code == 0
