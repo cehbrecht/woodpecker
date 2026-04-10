@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "name": "Simple CMIP6 workflow",
+  "dataset": "cmip6",
+  "datasets": {
+    "*cmip6*.nc": {
+      "steps": [
+        {
+          "code": "CMIP6_0001",
+          "options": {
+            "message": "cmip6 workflow check",
+            "marker_attr": "cmip6_workflow",
+            "marker_value": "applied"
+          }
+        }
+      ]
+    }
+  },
+  "output_format": "netcdf"
+}

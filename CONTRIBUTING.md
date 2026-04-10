@@ -9,7 +9,7 @@ Recommended:
 ```bash
 conda env create -f environment.yml
 conda activate woodpecker
-make install
+make dev
 ```
 
 Optional uv workflow:
@@ -17,7 +17,7 @@ Optional uv workflow:
 ```bash
 conda env create -f environment.yml
 conda activate woodpecker
-make install-uv
+make dev-uv
 ```
 
 Pip-only setup:

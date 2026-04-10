@@ -1,0 +1,162 @@
+{
+  "version": 1,
+  "name": "ESA CCI workflow equivalent to fixer-prototype fixes.yaml",
+  "dataset": "CMIP7",
+  "datasets": {
+    "ESACCI-WATERVAPOUR-L3C-TCWV-meris-005deg-2002-2017-fv3.2.zarr": {
+      "steps": [
+        {
+          "code": "CMIP7_0003",
+          "options": {
+            "realm": "atmos",
+            "branded_variable": "prw_tavg-u-hxy-u",
+            "dim_map": {"bnds": "nv"},
+            "variable_map": {"prw": "tcwv"},
+            "keep_global_attrs": true
+          }
+        },
+        {"code": "COMMON_0002"}
+      ]
+    },
+    "ESACCI-WATERVAPOUR-L3C-TCWV-meris-005deg-200207-201712-fv3.2-kr1.1": {
+      "steps": [
+        {
+          "code": "CMIP7_0003",
+          "options": {
+            "realm": "atmos",
+            "branded_variable": "prw_tavg-u-hxy-u",
+            "dim_map": {"bnds": "nv"},
+            "variable_map": {"prw": "tcwv"},
+            "keep_global_attrs": true
+          }
+        },
+        {"code": "COMMON_0002"}
+      ]
+    },
+    "ESACCI-WATERVAPOUR-L3C-TCWV-meris-005deg-20020701-20171231-fv3.2-kr1.1": {
+      "steps": [
+        {
+          "code": "CMIP7_0003",
+          "options": {
+            "realm": "atmos",
+            "branded_variable": "prw_tavg-u-hxy-u",
+            "dim_map": {"bnds": "nv"},
+            "variable_map": {"prw": "tcwv"},
+            "keep_global_attrs": true
+          }
+        },
+        {"code": "COMMON_0002"}
+      ]
+    },
+    "ESACCI-WATERVAPOUR-L3C-TCWV-meris-05deg-200207-201712-fv3.2-kr1.1": {
+      "steps": [
+        {
+          "code": "CMIP7_0003",
+          "options": {
+            "realm": "atmos",
+            "branded_variable": "prw_tavg-u-hxy-u",
+            "dim_map": {"bnds": "nv"},
+            "variable_map": {"prw": "tcwv"},
+            "keep_global_attrs": true
+          }
+        },
+        {"code": "COMMON_0002"}
+      ]
+    },
+    "ESACCI-WATERVAPOUR-L3C-TCWV-meris-05deg-20020701-20171231-fv3.2-kr1.1": {
+      "steps": [
+        {
+          "code": "CMIP7_0003",
+          "options": {
+            "realm": "atmos",
+            "branded_variable": "prw_tavg-u-hxy-u",
+            "dim_map": {"bnds": "nv"},
+            "variable_map": {"prw": "tcwv"},
+            "keep_global_attrs": true
+          }
+        },
+        {"code": "COMMON_0002"}
+      ]
+    },
+    "esacci.WATERVAPOUR.day.L3S.TCWV.multi-sensor.multi-platform.TCWV_land_005deg.3-2.r1": {
+      "steps": [
+        {
+          "code": "COMMON_0004",
+          "options": {
+            "dims": ["bnds", "nv"]
+          }
+        },
+        {
+          "code": "CMIP7_0003",
+          "options": {
+            "realm": "atmos",
+            "branded_variable": "prw_tavg-u-hxy-u",
+            "variable_map": {"prw": "tcwv"},
+            "keep_global_attrs": true
+          }
+        },
+        {"code": "COMMON_0002"}
+      ]
+    },
+    "esacci.WATERVAPOUR.day.L3S.TCWV.multi-sensor.multi-platform.TCWV_land_05deg.3-2.r1": {
+      "steps": [
+        {
+          "code": "COMMON_0004",
+          "options": {
+            "dims": ["bnds", "nv"]
+          }
+        },
+        {
+          "code": "CMIP7_0003",
+          "options": {
+            "realm": "atmos",
+            "branded_variable": "prw_tavg-u-hxy-u",
+            "variable_map": {"prw": "tcwv"},
+            "keep_global_attrs": true
+          }
+        },
+        {"code": "COMMON_0002"}
+      ]
+    },
+    "esacci.WATERVAPOUR.mon.L3S.TCWV.multi-sensor.multi-platform.TCWV_land_005deg.3-2.r1": {
+      "steps": [
+        {
+          "code": "COMMON_0004",
+          "options": {
+            "dims": ["bnds", "nv"]
+          }
+        },
+        {
+          "code": "CMIP7_0003",
+          "options": {
+            "realm": "atmos",
+            "branded_variable": "prw_tavg-u-hxy-u",
+            "variable_map": {"prw": "tcwv"},
+            "keep_global_attrs": true
+          }
+        },
+        {"code": "COMMON_0002"}
+      ]
+    },
+    "esacci.WATERVAPOUR.mon.L3S.TCWV.multi-sensor.multi-platform.TCWV_land_05deg.3-2.r1": {
+      "steps": [
+        {
+          "code": "COMMON_0004",
+          "options": {
+            "dims": ["bnds", "nv"]
+          }
+        },
+        {
+          "code": "CMIP7_0003",
+          "options": {
+            "realm": "atmos",
+            "branded_variable": "prw_tavg-u-hxy-u",
+            "variable_map": {"prw": "tcwv"},
+            "keep_global_attrs": true
+          }
+        },
+        {"code": "COMMON_0002"}
+      ]
+    }
+  }
+}
