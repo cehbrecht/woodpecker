@@ -18,8 +18,6 @@
 | CMIP6D14 | Decadal reftime coordinate | Adds or normalizes CMIP6-decadal scalar reftime coordinate and metadata. | metadata, structure | CMIP6-decadal | 23 |
 | CMIP6D15 | Decadal leadtime coordinate | Adds or normalizes CMIP6-decadal leadtime coordinate values from time and reftime. | metadata, structure | CMIP6-decadal | 24 |
 | COMMON01 | Normalize tas-like units to Kelvin | Converts tas/temp from Celsius-like units to Kelvin. | metadata, units |  | 30 |
-| COMMON02 | Ensure project_id is present | Sets project_id from dataset identifier metadata when missing. | metadata |  | 31 |
-| COMMON03 | Rename temp variable to tas | Renames data variable temp to tas when tas is missing. | structure, metadata |  | 32 |
 | COMMON04 | Ensure latitude is increasing | Flips datasets with decreasing latitude coordinates to increasing order. | structure |  | 33 |
 | COMMON05 | Remove coordinate FillValue encodings | Removes _FillValue encoding entries from common coordinate variables. | metadata, structure |  | 34 |
 | CMIP601 | CMIP6 dummy placeholder | Dummy placeholder for future non-decadal CMIP6 fixes. | metadata | cmip6 | 40 |

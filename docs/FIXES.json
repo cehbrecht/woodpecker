@@ -187,27 +187,6 @@
     "priority": 30
   },
   {
-    "code": "COMMON02",
-    "name": "Ensure project_id is present",
-    "description": "Sets project_id from dataset identifier metadata when missing.",
-    "categories": [
-      "metadata"
-    ],
-    "dataset": null,
-    "priority": 31
-  },
-  {
-    "code": "COMMON03",
-    "name": "Rename temp variable to tas",
-    "description": "Renames data variable temp to tas when tas is missing.",
-    "categories": [
-      "structure",
-      "metadata"
-    ],
-    "dataset": null,
-    "priority": 32
-  },
-  {
     "code": "COMMON04",
     "name": "Ensure latitude is increasing",
     "description": "Flips datasets with decreasing latitude coordinates to increasing order.",
