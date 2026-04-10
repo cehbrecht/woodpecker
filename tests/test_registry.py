@@ -39,11 +39,8 @@ def test_registry_discovers_builtins():
     assert "COMMON05" in codes
 
     # CMIP7 fix family
-    assert "CMIP701" in codes
     assert "CMIP702" in codes
     assert "CMIP703" in codes
-    assert "CMIP704" in codes
-    assert "CMIP705" in codes
 
     # Group fix
     assert "CMIP6DG01" in codes

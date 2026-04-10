@@ -23,9 +23,6 @@
 | COMMON04 | Ensure latitude is increasing | Flips datasets with decreasing latitude coordinates to increasing order. | structure |  | 33 |
 | COMMON05 | Remove coordinate FillValue encodings | Removes _FillValue encoding entries from common coordinate variables. | metadata, structure |  | 34 |
 | CMIP601 | CMIP6 dummy placeholder | Dummy placeholder for future non-decadal CMIP6 fixes. | metadata | cmip6 | 40 |
-| CMIP701 | Normalize tas-like units to Kelvin | Converts tas/temp from Celsius-like units to Kelvin. | metadata, units | CMIP7 | 40 |
 | CMIP702 | Ensure project_id is present | Sets project_id from dataset identifier metadata when missing. | metadata | CMIP7 | 41 |
 | CMIP703 | Rename temp variable to tas | Renames data variable temp to tas when tas is missing. | structure, metadata | CMIP7 | 42 |
-| CMIP704 | Ensure latitude is increasing | Flips datasets with decreasing latitude coordinates to increasing order. | structure | CMIP7 | 43 |
-| CMIP705 | Remove coordinate FillValue encodings | Removes _FillValue encoding entries from common coordinate variables. | metadata, structure | CMIP7 | 44 |
 | CMIP6DG01 | CMIP6 Decadal: full fix suite | Applies all CMIP6-decadal fixes (CMIP6D01–CMIP6D15) in sequence: calendar, encoding, realization metadata, start-token normalisation, model-specific global attributes, and leadtime/reftime coordinates. | metadata, calendar, encoding, structure | CMIP6-decadal | 99 |

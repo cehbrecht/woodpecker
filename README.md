@@ -153,11 +153,11 @@ ESA CCI as workflow usage of CMIP7 fixes:
   "datasets": {
     "*ESA_CCI*.nc": {
       "steps": [
-        {"code": "CMIP701"},
+        {"code": "COMMON01"},
         {"code": "CMIP702"},
         {"code": "CMIP703"},
-        {"code": "CMIP704"},
-        {"code": "CMIP705"}
+        {"code": "COMMON04"},
+        {"code": "COMMON05"}
       ]
     }
   }
@@ -217,7 +217,7 @@ Woodpecker intentionally stays simple and “human-countable”, but the design 
 
 - file-level demo logic is intentionally lightweight (no heavy real-world NetCDF transforms yet)
 - checks/fixes focus on deterministic, explainable behavior for design discussions
-- includes prototype-inspired `CMIP701` fix (tas/temp Celsius -> Kelvin)
+- includes prototype-inspired `COMMON01` fix (tas/temp Celsius -> Kelvin) and CMIP7-specific wrappers (`CMIP702`, `CMIP703`)
 
 ## Next Steps
 

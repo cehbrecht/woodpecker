@@ -21,7 +21,7 @@ from woodpecker.fixes.cmip6_decadal import (
     CMIP6D14,
     CMIP6D15,
 )
-from woodpecker.fixes.cmip7 import CMIP701
+from woodpecker.fixes.common import COMMON01
 
 
 def test_cmip601_dummy_apply_write_sets_dummy_marker_attr():
@@ -433,14 +433,14 @@ def test_atlas02_apply_write_sets_project_id_only():
     assert dataset["tas"].encoding["complevel"] == 4
 
 
-def test_cmip701_apply_dry_run_reports_change_without_mutating_dataset():
+def test_common01_apply_dry_run_reports_change_without_mutating_dataset():
     dataset = xr.Dataset(
         data_vars={"tas": ("time", np.array([10.0, 11.0], dtype=np.float32))},
         coords={"time": [0, 1]},
     )
     dataset["tas"].attrs["units"] = "degreeC"
 
-    fix = CMIP701()
+    fix = COMMON01()
     changed = fix.apply(dataset, dry_run=True)
 
     assert changed is True
@@ -448,14 +448,14 @@ def test_cmip701_apply_dry_run_reports_change_without_mutating_dataset():
     np.testing.assert_allclose(dataset["tas"].values, [10.0, 11.0])
 
 
-def test_cmip701_apply_write_converts_celsius_to_kelvin_for_tas_variable():
+def test_common01_apply_write_converts_celsius_to_kelvin_for_tas_variable():
     dataset = xr.Dataset(
         data_vars={"tas": ("time", np.array([0.0, 2.0], dtype=np.float32))},
         coords={"time": [0, 1]},
     )
     dataset["tas"].attrs["units"] = "degreeC"
 
-    fix = CMIP701()
+    fix = COMMON01()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
