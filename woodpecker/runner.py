@@ -14,6 +14,18 @@ def _normalize_codes(codes: Sequence[str]) -> set[str]:
     return {code.strip().upper() for code in codes if code.strip()}
 
 
+def _normalize_ordered_codes(codes: Sequence[str]) -> list[str]:
+    out: list[str] = []
+    seen: set[str] = set()
+    for raw in codes:
+        code = raw.strip().upper()
+        if not code or code in seen:
+            continue
+        out.append(code)
+        seen.add(code)
+    return out
+
+
 def _validate_selected_codes(selected_codes: set[str]) -> None:
     available = {code.upper() for code in FixRegistry.registered_codes()}
     unknown = sorted(code for code in selected_codes if code not in available)
@@ -42,6 +54,7 @@ def select_fixes(
     codes: Sequence[str] = (),
     strict_codes: bool = False,
     fix_options: dict[str, dict[str, Any]] | None = None,
+    ordered_codes: Sequence[str] = (),
 ) -> List[Any]:
     filters: Dict[str, Any] = {}
     if dataset:
@@ -51,13 +64,25 @@ def select_fixes(
 
     fixes = FixRegistry.discover(filters=filters or None)
     selected_codes = _normalize_codes(codes)
+    ordered = _normalize_ordered_codes(ordered_codes)
     normalized_fix_options = _normalize_fix_options(fix_options)
     configured_codes = set(normalized_fix_options.keys())
 
     if strict_codes and configured_codes:
         _validate_selected_codes(configured_codes)
 
-    if not selected_codes:
+    if ordered:
+        if strict_codes:
+            _validate_selected_codes(set(ordered))
+        by_code = {getattr(fix, "code", "").upper(): fix for fix in fixes}
+        missing = [code for code in ordered if code not in by_code]
+        if strict_codes and missing:
+            raise ValueError(
+                "Selected fix code(s) not available with current dataset/category filters: "
+                + ", ".join(missing)
+            )
+        selected = [by_code[code] for code in ordered if code in by_code]
+    elif not selected_codes:
         selected = fixes
     else:
         if strict_codes:

@@ -82,18 +82,26 @@ def check(
             resolved_paths = [Path(item) for item in workflow_spec.inputs]
         target_paths = resolved_paths or [Path.cwd()]
 
-        resolved_dataset = dataset or (workflow_spec.dataset if workflow_spec else None)
-        resolved_categories = categories or tuple(workflow_spec.categories if workflow_spec else [])
-        resolved_codes = codes or tuple(workflow_spec.codes if workflow_spec else [])
-        resolved_fix_options = workflow_spec.fixes if workflow_spec else {}
-
         inputs = normalize_inputs(target_paths)
+        resolution = workflow_spec.resolve([item.reference for item in inputs]) if workflow_spec else None
+
+        resolved_dataset = dataset or (resolution.dataset if resolution else None)
+        resolved_categories = categories or tuple(resolution.categories if resolution else [])
+        resolved_codes = codes or tuple(resolution.codes if resolution else [])
+        resolved_fix_options = resolution.fixes if resolution else {}
+        resolved_ordered_codes = (
+            tuple(code.strip().upper() for code in codes if code.strip())
+            if codes
+            else tuple(resolution.ordered_codes if resolution else [])
+        )
+
         fixes = select_fixes(
             dataset=resolved_dataset,
             categories=resolved_categories,
             codes=resolved_codes,
             strict_codes=True,
             fix_options=resolved_fix_options,
+            ordered_codes=resolved_ordered_codes,
         )
     except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
@@ -168,25 +176,33 @@ def fix(
             resolved_paths = [Path(item) for item in workflow_spec.inputs]
         target_paths = resolved_paths or [Path.cwd()]
 
-        resolved_dataset = dataset or (workflow_spec.dataset if workflow_spec else None)
-        resolved_categories = categories or tuple(workflow_spec.categories if workflow_spec else [])
-        resolved_codes = codes or tuple(workflow_spec.codes if workflow_spec else [])
-        resolved_fix_options = workflow_spec.fixes if workflow_spec else {}
+        inputs = normalize_inputs(target_paths)
+        resolution = workflow_spec.resolve([item.reference for item in inputs]) if workflow_spec else None
+
+        resolved_dataset = dataset or (resolution.dataset if resolution else None)
+        resolved_categories = categories or tuple(resolution.categories if resolution else [])
+        resolved_codes = codes or tuple(resolution.codes if resolution else [])
+        resolved_fix_options = resolution.fixes if resolution else {}
+        resolved_ordered_codes = (
+            tuple(code.strip().upper() for code in codes if code.strip())
+            if codes
+            else tuple(resolution.ordered_codes if resolution else [])
+        )
         resolved_output_format = output_format
         if (
-            workflow_spec
-            and workflow_spec.output_format
+            resolution
+            and resolution.output_format
             and output_format == "auto"
         ):
-            resolved_output_format = workflow_spec.output_format
+            resolved_output_format = resolution.output_format
 
-        inputs = normalize_inputs(target_paths)
         fixes = select_fixes(
             dataset=resolved_dataset,
             categories=resolved_categories,
             codes=resolved_codes,
             strict_codes=True,
             fix_options=resolved_fix_options,
+            ordered_codes=resolved_ordered_codes,
         )
         stats = run_fix(inputs, fixes, dry_run=not write, output_format=resolved_output_format)
     except (TypeError, ValueError) as exc:

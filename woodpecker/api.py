@@ -15,6 +15,7 @@ def check(
     categories: Sequence[str] = (),
     codes: Sequence[str] = (),
     fix_options: dict[str, dict[str, Any]] | None = None,
+    ordered_codes: Sequence[str] = (),
 ) -> list[dict[str, str]]:
     normalized = normalize_inputs(inputs)
     fixes = select_fixes(
@@ -23,6 +24,7 @@ def check(
         codes=codes,
         strict_codes=True,
         fix_options=fix_options,
+        ordered_codes=ordered_codes,
     )
     return run_check(normalized, fixes)
 
@@ -35,6 +37,7 @@ def fix(
     write: bool = False,
     output_format: str = "auto",
     fix_options: dict[str, dict[str, Any]] | None = None,
+    ordered_codes: Sequence[str] = (),
 ) -> dict[str, int]:
     normalized = normalize_inputs(inputs)
     fixes = select_fixes(
@@ -43,6 +46,7 @@ def fix(
         codes=codes,
         strict_codes=True,
         fix_options=fix_options,
+        ordered_codes=ordered_codes,
     )
     return run_fix(normalized, fixes, dry_run=not write, output_format=output_format)
 
@@ -56,16 +60,25 @@ def check_workflow(
 ) -> list[dict[str, str]]:
     workflow_spec = load_workflow(Path(workflow_path))
     resolved_inputs = inputs if inputs is not None else workflow_spec.inputs
-    resolved_dataset = dataset or workflow_spec.dataset
-    resolved_categories = categories or tuple(workflow_spec.categories)
-    resolved_codes = codes or tuple(workflow_spec.codes)
-    resolved_fix_options = workflow_spec.fixes
+    normalized = normalize_inputs(resolved_inputs)
+    resolution = workflow_spec.resolve([item.reference for item in normalized])
+
+    resolved_dataset = dataset or resolution.dataset
+    resolved_categories = categories or tuple(resolution.categories)
+    resolved_codes = codes or tuple(resolution.codes)
+    resolved_fix_options = resolution.fixes
+    resolved_ordered_codes = (
+        tuple(code.strip().upper() for code in codes if code.strip())
+        if codes
+        else tuple(resolution.ordered_codes)
+    )
     return check(
-        resolved_inputs,
+        normalized,
         dataset=resolved_dataset,
         categories=resolved_categories,
         codes=resolved_codes,
         fix_options=resolved_fix_options,
+        ordered_codes=resolved_ordered_codes,
     )
 
 
@@ -80,19 +93,28 @@ def fix_workflow(
 ) -> dict[str, int]:
     workflow_spec = load_workflow(Path(workflow_path))
     resolved_inputs = inputs if inputs is not None else workflow_spec.inputs
-    resolved_dataset = dataset or workflow_spec.dataset
-    resolved_categories = categories or tuple(workflow_spec.categories)
-    resolved_codes = codes or tuple(workflow_spec.codes)
-    resolved_fix_options = workflow_spec.fixes
+    normalized = normalize_inputs(resolved_inputs)
+    resolution = workflow_spec.resolve([item.reference for item in normalized])
+
+    resolved_dataset = dataset or resolution.dataset
+    resolved_categories = categories or tuple(resolution.categories)
+    resolved_codes = codes or tuple(resolution.codes)
+    resolved_fix_options = resolution.fixes
+    resolved_ordered_codes = (
+        tuple(code.strip().upper() for code in codes if code.strip())
+        if codes
+        else tuple(resolution.ordered_codes)
+    )
     resolved_output = (
-        workflow_spec.output_format if output_format == "auto" and workflow_spec.output_format else output_format
+        resolution.output_format if output_format == "auto" and resolution.output_format else output_format
     )
     return fix(
-        resolved_inputs,
+        normalized,
         dataset=resolved_dataset,
         categories=resolved_categories,
         codes=resolved_codes,
         write=write,
         output_format=resolved_output,
         fix_options=resolved_fix_options,
+        ordered_codes=resolved_ordered_codes,
     )

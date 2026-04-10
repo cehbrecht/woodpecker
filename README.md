@@ -130,6 +130,21 @@ Workflow file (building block):
 CLI options override workflow defaults when both are provided.
 Use `fixes` to pass per-fix options while keeping Woodpecker itself generic.
 
+Selector + ordered steps variant:
+
+```json
+{
+  "datasets": {
+    "*cmip6*.nc": [
+      {"code": "CMIP601", "options": {"message": "cmip6 check path"}},
+      {"code": "ATLAS01"}
+    ]
+  }
+}
+```
+
+This lets workflows choose a fix sequence per dataset pattern while still reusing common Python fix implementations.
+
 Library API (paths + xarray objects):
 
 ```python

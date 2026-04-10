@@ -1,7 +1,7 @@
 import xarray as xr
 
 from woodpecker.inout import DataInput
-from woodpecker.runner import run_fix
+from woodpecker.runner import run_fix, select_fixes
 
 
 class DummyInput(DataInput):
@@ -69,3 +69,10 @@ def test_run_fix_skips_fixes_for_other_dataset_types():
 
     assert stats["attempted"] == 0
     assert stats["changed"] == 0
+
+
+def test_select_fixes_respects_ordered_codes_sequence():
+    fixes = select_fixes(ordered_codes=["CMIP601", "ATLAS01"], strict_codes=True)
+    ordered = [fix.code for fix in fixes]
+
+    assert ordered[:2] == ["CMIP601", "ATLAS01"]

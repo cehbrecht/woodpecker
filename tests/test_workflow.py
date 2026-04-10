@@ -58,3 +58,29 @@ def test_load_workflow_fixes_normalized_to_uppercase(tmp_path: Path):
 
     assert set(workflow.fixes.keys()) == {"CMIP601", "ATLAS01"}
     assert workflow.fixes["CMIP601"]["marker_attr"] == "my_marker"
+
+
+def test_workflow_resolve_matches_dataset_selector_and_steps(tmp_path: Path):
+    workflow_path = tmp_path / "workflow.json"
+    workflow_path.write_text(
+        json.dumps(
+            {
+                "codes": ["ATLAS01"],
+                "datasets": {
+                    "*cmip6*.nc": {
+                        "steps": [
+                            {"code": "CMIP601", "options": {"message": "selector message"}}
+                        ]
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    workflow = load_workflow(workflow_path)
+    resolution = workflow.resolve(["/tmp/c3s-cmip6.member.nc"])
+
+    assert resolution.codes == ["CMIP601"]
+    assert resolution.ordered_codes == ["CMIP601"]
+    assert resolution.fixes["CMIP601"]["message"] == "selector message"
