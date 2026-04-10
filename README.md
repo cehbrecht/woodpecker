@@ -28,14 +28,17 @@ Core commands:
 ```bash
 woodpecker list-fixes
 woodpecker check . --select CMIP6D_0001
-woodpecker fix . --select CMIP6D_0001
 woodpecker fix . --select CMIP6D_0001 --dry-run
+woodpecker fix . --select CMIP6D_0001
 ```
 
-Workflow and force-apply (short):
+Workflow option:
 
-- `--workflow`: load fix selection/options from a JSON workflow file.
-- `--force-apply`: skip `matches()` prefiltering and force selected fixes to run.
+- `--workflow` loads fix selection and options from a JSON workflow file.
+
+Force-apply option:
+
+- `--force-apply` skips pre-check execution before applying fixes to run faster.
 - Safety rule: `--force-apply` requires explicit fix selection (`--select` or workflow codes).
 
 More advanced workflow patterns are in `CONTRIBUTING.md`.
@@ -45,8 +48,8 @@ More advanced workflow patterns are in `CONTRIBUTING.md`.
 ```bash
 touch cmip6_case.nc
 woodpecker check . --select CMIP6D_0001
-woodpecker fix . --select CMIP6D_0001
 woodpecker fix . --select CMIP6D_0001 --dry-run
+woodpecker fix . --select CMIP6D_0001
 ```
 
 ## Workflow Example
