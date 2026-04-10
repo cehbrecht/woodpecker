@@ -8,7 +8,7 @@ from ..common.helpers import (
     vars_with_compression_above_level,
 )
 from ..registry import Fix, FixRegistry
-from .common import lower_source_name
+from ..common.helpers import lower_source_name
 
 
 def _atlas_vars_to_check(dataset: xr.Dataset) -> list[str]:

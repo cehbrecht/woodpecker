@@ -3,8 +3,8 @@ from __future__ import annotations
 import xarray as xr
 
 from ..registry import Fix, FixRegistry
-from .common import is_cmip6_decadal_netcdf
-from .common import normalized_start_token as _normalized_start_token
+from ..common.helpers import is_cmip6_decadal_netcdf
+from ..common.helpers import normalized_start_token as _normalized_start_token
 
 
 def _needs_start_token_fix(dataset: xr.Dataset) -> bool:

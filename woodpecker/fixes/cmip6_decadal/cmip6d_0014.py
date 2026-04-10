@@ -3,9 +3,9 @@ from __future__ import annotations
 import numpy as np
 import xarray as xr
 
+from ..common.helpers import extract_start_year as _extract_start_year
+from ..common.helpers import is_cmip6_decadal_netcdf
 from ..registry import Fix, FixRegistry
-from .common import extract_start_year as _extract_start_year
-from .common import is_cmip6_decadal_netcdf
 
 try:
     import cftime

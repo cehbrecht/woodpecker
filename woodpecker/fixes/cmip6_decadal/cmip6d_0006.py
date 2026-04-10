@@ -4,7 +4,7 @@ import numpy as np
 import xarray as xr
 
 from ..registry import Fix, FixRegistry
-from .common import is_cmip6_decadal_netcdf
+from ..common.helpers import is_cmip6_decadal_netcdf
 
 
 def _needs_realization_dtype_fix(dataset: xr.Dataset) -> bool:
