@@ -2,6 +2,11 @@ from __future__ import annotations
 
 import xarray as xr
 
+from ..common.helpers import (
+    normalize_compression_settings,
+    vars_with_encoding_key,
+    vars_with_compression_above_level,
+)
 from ..registry import Fix, FixRegistry
 from .common import lower_source_name
 
@@ -37,11 +42,7 @@ def _needs_string_coord_encoding_cleanup(dataset: xr.Dataset) -> bool:
 
 
 def _needs_compression_level_cleanup(dataset: xr.Dataset) -> bool:
-    for var in dataset.data_vars:
-        complevel = dataset[var].encoding.get("complevel", 0)
-        if isinstance(complevel, (int, float)) and complevel > 1:
-            return True
-    return False
+    return bool(vars_with_compression_above_level(dataset, list(dataset.data_vars), max_level=1))
 
 
 def _apply_atlas_encoding_cleanup(dataset: xr.Dataset) -> bool:
@@ -52,7 +53,7 @@ def _apply_atlas_encoding_cleanup(dataset: xr.Dataset) -> bool:
             dataset[var].encoding["_FillValue"] = None
             changed = True
 
-    for cvar in (
+    coord_candidates = (
         "member_id",
         "gcm_variant",
         "gcm_model",
@@ -60,21 +61,17 @@ def _apply_atlas_encoding_cleanup(dataset: xr.Dataset) -> bool:
         "rcm_variant",
         "rcm_model",
         "rcm_institution",
-    ):
-        if cvar not in dataset:
-            continue
-        for en in ("zlib", "shuffle", "complevel"):
-            if en in dataset[cvar].encoding:
-                del dataset[cvar].encoding[en]
-                changed = True
+    )
 
-    for var in dataset.data_vars:
-        complevel = dataset[var].encoding.get("complevel", 0)
-        if isinstance(complevel, (int, float)) and complevel > 1:
-            dataset[var].encoding["complevel"] = 1
-            dataset[var].encoding["zlib"] = True
-            dataset[var].encoding["shuffle"] = True
+    for en in ("zlib", "shuffle", "complevel"):
+        cvars_to_fix = vars_with_encoding_key(dataset, coord_candidates, en)
+        for cvar in cvars_to_fix:
+            del dataset[cvar].encoding[en]
             changed = True
+
+    vars_to_fix = vars_with_compression_above_level(dataset, list(dataset.data_vars), max_level=1)
+    if normalize_compression_settings(dataset, vars_to_fix, level=1, zlib=True, shuffle=True):
+        changed = True
 
     return changed
 

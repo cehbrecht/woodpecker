@@ -2,25 +2,22 @@ from __future__ import annotations
 
 import xarray as xr
 
+from ..common.helpers import remove_encoding_key, vars_with_encoding_key
 from ..registry import Fix, FixRegistry
 from .common import is_cmip6_decadal_netcdf
 
 
 def _vars_requiring_coordinates_cleanup(dataset: xr.Dataset) -> list[str]:
     candidates = ("realization", "lon_bnds", "lat_bnds", "time_bnds")
-    needs_cleanup = []
-    for var_name in candidates:
-        if var_name in dataset and "coordinates" in dataset[var_name].encoding:
-            needs_cleanup.append(var_name)
-    return needs_cleanup
+    return vars_with_encoding_key(dataset, candidates, "coordinates")
 
 
 def _apply_coordinates_encoding_cleanup(dataset: xr.Dataset) -> bool:
-    changed = False
-    for var_name in _vars_requiring_coordinates_cleanup(dataset):
-        del dataset[var_name].encoding["coordinates"]
-        changed = True
-    return changed
+    return remove_encoding_key(
+        dataset,
+        _vars_requiring_coordinates_cleanup(dataset),
+        "coordinates",
+    )
 
 
 @FixRegistry.register

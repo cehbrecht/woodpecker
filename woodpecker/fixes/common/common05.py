@@ -3,27 +3,20 @@ from __future__ import annotations
 import xarray as xr
 
 from ..registry import Fix, FixRegistry
+from .helpers import remove_encoding_key, vars_with_encoding_key
 
 _COORDS = ("time", "lat", "latitude", "lon", "longitude")
 
 
 def _needs_coord_fillvalue_cleanup(dataset: xr.Dataset) -> bool:
-    for name in _COORDS:
-        if name in dataset.coords and "_FillValue" in dataset[name].encoding:
-            return True
-    return False
+    candidates = [name for name in _COORDS if name in dataset.coords]
+    return bool(vars_with_encoding_key(dataset, candidates, "_FillValue"))
 
 
 def _apply_coord_fillvalue_cleanup(dataset: xr.Dataset) -> bool:
-    changed = False
-    for name in _COORDS:
-        if name not in dataset.coords:
-            continue
-        encoding = dataset[name].encoding
-        if "_FillValue" in encoding:
-            encoding.pop("_FillValue", None)
-            changed = True
-    return changed
+    candidates = [name for name in _COORDS if name in dataset.coords]
+    vars_to_fix = vars_with_encoding_key(dataset, candidates, "_FillValue")
+    return remove_encoding_key(dataset, vars_to_fix, "_FillValue")
 
 
 @FixRegistry.register
