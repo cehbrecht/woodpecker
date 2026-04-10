@@ -21,7 +21,7 @@ def _apply_coord_fillvalue_cleanup(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class COMMON05(Fix):
-    code = "COMMON05"
+    code = "COMMON_0003"
     name = "Remove coordinate FillValue encodings"
     description = "Removes _FillValue encoding entries from common coordinate variables."
     categories = ["metadata", "structure"]

@@ -176,7 +176,7 @@
     "priority": 24
   },
   {
-    "code": "COMMON01",
+    "code": "COMMON_0001",
     "name": "Normalize tas-like units to Kelvin",
     "description": "Converts tas/temp from Celsius-like units to Kelvin.",
     "categories": [
@@ -187,7 +187,7 @@
     "priority": 30
   },
   {
-    "code": "COMMON04",
+    "code": "COMMON_0002",
     "name": "Ensure latitude is increasing",
     "description": "Flips datasets with decreasing latitude coordinates to increasing order.",
     "categories": [
@@ -197,7 +197,7 @@
     "priority": 33
   },
   {
-    "code": "COMMON05",
+    "code": "COMMON_0003",
     "name": "Remove coordinate FillValue encodings",
     "description": "Removes _FillValue encoding entries from common coordinate variables.",
     "categories": [

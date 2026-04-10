@@ -5,11 +5,11 @@
   "datasets": {
     "*ESA_CCI*.nc": {
       "steps": [
-        {"code": "COMMON01"},
+        {"code": "COMMON_0001"},
         {"code": "CMIP7_0001"},
         {"code": "CMIP7_0002"},
-        {"code": "COMMON04"},
-        {"code": "COMMON05"}
+        {"code": "COMMON_0002"},
+        {"code": "COMMON_0003"}
       ]
     }
   }

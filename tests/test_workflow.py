@@ -93,11 +93,17 @@ def test_esa_cci_example_workflow_uses_cmip7_fix_codes_in_order():
     resolution = workflow.resolve(["/tmp/ESA_CCI.test.tas.nc"])
 
     assert resolution.dataset == "CMIP7"
-    assert resolution.codes == ["COMMON01", "CMIP7_0001", "CMIP7_0002", "COMMON04", "COMMON05"]
-    assert resolution.ordered_codes == [
-        "COMMON01",
+    assert resolution.codes == [
+        "COMMON_0001",
         "CMIP7_0001",
         "CMIP7_0002",
-        "COMMON04",
-        "COMMON05",
+        "COMMON_0002",
+        "COMMON_0003",
+    ]
+    assert resolution.ordered_codes == [
+        "COMMON_0001",
+        "CMIP7_0001",
+        "CMIP7_0002",
+        "COMMON_0002",
+        "COMMON_0003",
     ]
