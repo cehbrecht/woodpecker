@@ -4,7 +4,7 @@ import xarray as xr
 
 from ..common.helpers import remove_encoding_key, vars_with_encoding_key
 from ..registry import Fix, FixRegistry
-from ..common.helpers import is_cmip6_decadal_netcdf
+from .helpers import is_cmip6_decadal_netcdf
 
 
 def _vars_requiring_coordinates_cleanup(dataset: xr.Dataset) -> list[str]:

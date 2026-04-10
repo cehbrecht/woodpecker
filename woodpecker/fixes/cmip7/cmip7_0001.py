@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from ..common.helpers import project_id_from_dataset
+from .helpers import project_id_from_dataset
 from ..registry import Fix, FixRegistry
 
 

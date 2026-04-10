@@ -4,7 +4,7 @@ import numpy as np
 import xarray as xr
 
 from ..registry import Fix, FixRegistry
-from ..common.helpers import apply_leadtime_metadata, is_cmip6_decadal_netcdf, leadtime_metadata_invalid
+from .helpers import apply_leadtime_metadata, is_cmip6_decadal_netcdf, leadtime_metadata_invalid
 
 try:
     import cftime

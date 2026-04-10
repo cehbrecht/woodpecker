@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import xarray as xr
 
+from ..common.helpers import lower_source_name
 from ..registry import Fix, FixRegistry
-from ..common.helpers import is_cmip6_decadal_netcdf, lower_source_name
+from .helpers import is_cmip6_decadal_netcdf
 
 MODEL_SPECIFIC_GLOBAL_ATTRS: dict[str, dict[str, str]] = {
     "cmcc-cm2-sr5": {

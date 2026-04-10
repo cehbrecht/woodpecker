@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from ..common.helpers import is_cmip6_decadal_netcdf
+from .helpers import is_cmip6_decadal_netcdf
 from ..registry import Fix, FixRegistry
 
 

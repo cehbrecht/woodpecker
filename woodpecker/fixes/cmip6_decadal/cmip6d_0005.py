@@ -3,7 +3,7 @@ from __future__ import annotations
 import xarray as xr
 
 from ..registry import Fix, FixRegistry
-from ..common.helpers import is_cmip6_decadal_netcdf
+from .helpers import is_cmip6_decadal_netcdf
 
 EXPECTED_REALIZATION_COMMENT = (
     "For more information on the ripf, refer to the variant_label, "
