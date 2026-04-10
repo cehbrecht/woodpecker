@@ -32,7 +32,13 @@ woodpecker fix . --select CMIP6D_0001
 woodpecker fix . --select CMIP6D_0001 --dry-run
 ```
 
-Advanced options (`--workflow`, `--force-apply`, output formats, JSON output) are in `CONTRIBUTING.md`.
+Workflow and force-apply (short):
+
+- `--workflow`: load fix selection/options from a JSON workflow file.
+- `--force-apply`: skip `matches()` prefiltering and force selected fixes to run.
+- Safety rule: `--force-apply` requires explicit fix selection (`--select` or workflow codes).
+
+More advanced workflow patterns are in `CONTRIBUTING.md`.
 
 ## Example
 
@@ -41,6 +47,26 @@ touch cmip6_case.nc
 woodpecker check . --select CMIP6D_0001
 woodpecker fix . --select CMIP6D_0001
 woodpecker fix . --select CMIP6D_0001 --dry-run
+```
+
+## Workflow Example
+
+`workflow.json`:
+
+```json
+{
+	"version": 1,
+	"inputs": ["."],
+	"codes": ["CMIP6D_0001"],
+	"output_format": "netcdf"
+}
+```
+
+Run it:
+
+```bash
+woodpecker fix --workflow workflow.json
+woodpecker fix --workflow workflow.json --force-apply
 ```
 
 ## GitHub Pages
