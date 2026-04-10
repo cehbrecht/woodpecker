@@ -6,8 +6,8 @@
     "*ESA_CCI*.nc": {
       "steps": [
         {"code": "COMMON01"},
-        {"code": "CMIP702"},
-        {"code": "CMIP703"},
+        {"code": "CMIP7_0001"},
+        {"code": "CMIP7_0002"},
         {"code": "COMMON04"},
         {"code": "COMMON05"}
       ]

@@ -95,7 +95,7 @@ class FixRegistry:
     """
 
     _registry: Dict[str, Type[Any]] = {}
-    _code_pattern = re.compile(r"^[A-Z0-9]{4,12}$")
+    _code_pattern = re.compile(r"^[A-Z0-9_]{4,16}$")
 
     @staticmethod
     def _instantiate_fix(fix_cls: Type[Any]) -> Any:
@@ -125,7 +125,7 @@ class FixRegistry:
         if not cls._code_pattern.fullmatch(code):
             raise ValueError(
                 f"Fix {fix_cls.__name__} has invalid code '{code}'. "
-                "Expected pattern: ^[A-Z0-9]{4,12}$"
+                "Expected pattern: ^[A-Z0-9_]{4,16}$"
             )
         if not name:
             raise ValueError(f"Fix {fix_cls.__name__} must define a non-empty 'name'")

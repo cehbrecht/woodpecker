@@ -218,7 +218,7 @@
     "priority": 40
   },
   {
-    "code": "CMIP702",
+    "code": "CMIP7_0001",
     "name": "Ensure project_id is present",
     "description": "Sets project_id from dataset identifier metadata when missing.",
     "categories": [
@@ -228,7 +228,7 @@
     "priority": 41
   },
   {
-    "code": "CMIP703",
+    "code": "CMIP7_0002",
     "name": "Rename temp variable to tas",
     "description": "Renames data variable temp to tas when tas is missing.",
     "categories": [

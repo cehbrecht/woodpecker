@@ -23,7 +23,7 @@ def _apply_project_id(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class CMIP702(Fix):
-    code = "CMIP702"
+    code = "CMIP7_0001"
     name = "Ensure project_id is present"
     description = "Sets project_id from dataset identifier metadata when missing."
     categories = ["metadata"]
