@@ -59,12 +59,15 @@ woodpecker fix . --select CMIP6D_0001
 ```json
 {
 	"version": 1,
+	"comment": "Workflow notes: see fixes overview at https://macpingu.github.io/woodpecker/fixes.html",
 	"dataset": "cmip7",
 	"datasets": {
 		"*esa_cci_a*.nc": {
+			"comment": "ESA CCI file group A",
 			"steps": [
 				{
 					"code": "CMIP7_0003",
+					"comment": "CMIP7_0003: configurable reformat bridge",
 					"options": {
 						"variable_map": {"prw": "tcwv"},
 						"dim_map": {"bnds": "nv"},
@@ -75,9 +78,11 @@ woodpecker fix . --select CMIP6D_0001
 			]
 		},
 		"*esa_cci_b*.nc": {
+			"comment": "ESA CCI file group B",
 			"steps": [
 				{
 					"code": "CMIP7_0003",
+					"comment": "CMIP7_0003 with variable_map + realm",
 					"options": {
 						"variable_map": {"prw": "tcwv"},
 						"realm": "atmos"
@@ -86,9 +91,11 @@ woodpecker fix . --select CMIP6D_0001
 			]
 		},
 		"*esa_cci_c*.nc": {
+			"comment": "ESA CCI file group C",
 			"steps": [
 				{
 					"code": "CMIP7_0003",
+					"comment": "CMIP7_0003 with branded variable metadata",
 					"options": {
 						"variable_map": {"prw": "tcwv"},
 						"branded_variable": "prw_tavg-u-hxy-u"

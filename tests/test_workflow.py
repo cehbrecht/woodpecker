@@ -86,6 +86,37 @@ def test_workflow_resolve_matches_dataset_selector_and_steps(tmp_path: Path):
     assert resolution.fixes["CMIP6_0001"]["message"] == "selector message"
 
 
+def test_workflow_comment_fields_are_parsed(tmp_path: Path):
+    workflow_path = tmp_path / "workflow.json"
+    workflow_path.write_text(
+        json.dumps(
+            {
+                "comment": "Top-level note",
+                "datasets": {
+                    "*cmip6*.nc": {
+                        "comment": "Dataset selector note",
+                        "steps": [
+                            {
+                                "code": "CMIP6_0001",
+                                "comment": "Fix note with docs link",
+                                "options": {"message": "selector message"},
+                            }
+                        ],
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    workflow = load_workflow(workflow_path)
+
+    assert workflow.comment == "Top-level note"
+    block = workflow.datasets["*cmip6*.nc"]
+    assert block.comment == "Dataset selector note"
+    assert block.steps[0].comment == "Fix note with docs link"
+
+
 def test_esa_cci_example_workflow_uses_cmip7_fix_codes_in_order():
     workflow_path = Path("workflows/examples/esa_cci.json")
 
