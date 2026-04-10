@@ -261,3 +261,19 @@ def test_check_workflow_applies_fix_options_to_message(
 
     assert result.exit_code == 1
     assert "configured check message" in result.output
+
+
+def test_fix_writes_provenance_file_by_default(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("cmip6_case.nc")
+
+    result = runner.invoke(cli, ["fix", ".", "--select", "CMIP601"])
+
+    assert result.exit_code == 0
+    prov_path = Path("woodpecker.prov.json")
+    assert prov_path.exists()
+    payload = json.loads(prov_path.read_text(encoding="utf-8"))
+    assert "activity" in payload
+    assert "entity" in payload

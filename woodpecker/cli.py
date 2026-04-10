@@ -9,6 +9,7 @@ import click
 import woodpecker.fixes  # noqa: F401
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.inout import get_io_availability, normalize_inputs
+from woodpecker.provenance import build_prov_document, write_prov_document
 from woodpecker.runner import run_check, run_fix, select_fixes
 from woodpecker.workflow import load_workflow
 
@@ -156,6 +157,25 @@ def io_status(fmt: str):
     show_default=True,
     help="Output format for writes.",
 )
+@click.option(
+    "--provenance/--no-provenance",
+    default=True,
+    show_default=True,
+    help="Write W3C PROV-JSON provenance output file.",
+)
+@click.option(
+    "--provenance-path",
+    type=click.Path(path_type=Path),
+    default=Path("woodpecker.prov.json"),
+    show_default=True,
+    help="Output path for provenance JSON.",
+)
+@click.option(
+    "--embed-provenance-metadata",
+    is_flag=True,
+    default=False,
+    help="Embed per-dataset provenance metadata into output dataset attrs on write.",
+)
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def fix(
     paths: tuple[Path, ...],
@@ -165,6 +185,9 @@ def fix(
     codes: tuple[str, ...],
     write: bool,
     output_format: str,
+    provenance: bool,
+    provenance_path: Path,
+    embed_provenance_metadata: bool,
     fmt: str,
 ):
     """Apply selected fixes to NetCDF files."""
@@ -204,14 +227,34 @@ def fix(
             fix_options=resolved_fix_options,
             ordered_codes=resolved_ordered_codes,
         )
-        stats = run_fix(inputs, fixes, dry_run=not write, output_format=resolved_output_format)
+        run_id = f"woodpecker-{Path.cwd().name}"
+        run_fix_kwargs = {
+            "dry_run": not write,
+            "output_format": resolved_output_format,
+        }
+        if embed_provenance_metadata and write:
+            run_fix_kwargs["embed_provenance_metadata"] = True
+            run_fix_kwargs["provenance_run_id"] = run_id
+        stats = run_fix(inputs, fixes, **run_fix_kwargs)
     except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
+
+    if provenance:
+        prov = build_prov_document(
+            inputs=inputs,
+            selected_codes=[getattr(fix, "code", "") for fix in fixes],
+            stats=stats,
+            mode="write" if write else "dry-run",
+            output_format=resolved_output_format,
+            workflow=str(workflow) if workflow else None,
+        )
+        write_prov_document(prov, provenance_path)
 
     if fmt == "json":
         payload = {
             "mode": "write" if write else "dry-run",
             "output_format": resolved_output_format,
+            "provenance": str(provenance_path) if provenance else None,
             **stats,
         }
         click.echo(json.dumps(payload, indent=2))

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
 from woodpecker.fixes.registry import FixRegistry
@@ -131,6 +133,8 @@ def run_fix(
     fixes: Iterable[Any],
     dry_run: bool = True,
     output_format: str = "auto",
+    embed_provenance_metadata: bool = False,
+    provenance_run_id: str | None = None,
 ) -> Dict[str, int]:
     changed = 0
     attempted = 0
@@ -142,6 +146,7 @@ def run_fix(
         dataset = data_input.load()
         identity = resolve_dataset_identity(dataset)
         dataset_changed = False
+        applied_codes: list[str] = []
         for fix in fixes:
             if not dataset_type_matches_declared(
                 getattr(fix, "dataset", None), identity.dataset_type
@@ -153,7 +158,18 @@ def run_fix(
             if fix.apply(dataset, dry_run=dry_run):
                 changed += 1
                 dataset_changed = True
+                applied_codes.append(getattr(fix, "code", ""))
         if dataset_changed and not dry_run:
+            if embed_provenance_metadata:
+                dataset.attrs["woodpecker_provenance"] = json.dumps(
+                    {
+                        "run_id": provenance_run_id or "",
+                        "generated_at": datetime.now(timezone.utc).isoformat(),
+                        "source": data_input.reference,
+                        "applied_codes": applied_codes,
+                    },
+                    sort_keys=True,
+                )
             persist_attempted += 1
             if data_input.save(dataset, dry_run=False, output_adapter=output_adapter):
                 persisted += 1

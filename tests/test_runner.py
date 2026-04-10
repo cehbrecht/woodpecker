@@ -9,6 +9,7 @@ class DummyInput(DataInput):
         super().__init__(name="dummy")
         self._dataset = dataset
         self._save_ok = save_ok
+        self.saved_attrs = None
 
     def load(self) -> xr.Dataset:
         return self._dataset
@@ -16,6 +17,7 @@ class DummyInput(DataInput):
     def save(self, dataset: xr.Dataset, dry_run: bool = True, output_adapter=None) -> bool:
         if dry_run:
             return False
+        self.saved_attrs = dict(dataset.attrs)
         return self._save_ok
 
 
@@ -76,3 +78,21 @@ def test_select_fixes_respects_ordered_codes_sequence():
     ordered = [fix.code for fix in fixes]
 
     assert ordered[:2] == ["CMIP601", "ATLAS01"]
+
+
+def test_run_fix_can_embed_provenance_metadata_on_write():
+    ds = xr.Dataset(attrs={"source_name": "dummy.nc"})
+    data_input = DummyInput(dataset=ds, save_ok=True)
+
+    stats = run_fix(
+        [data_input],
+        [DummyFix()],
+        dry_run=False,
+        output_format="auto",
+        embed_provenance_metadata=True,
+        provenance_run_id="run-123",
+    )
+
+    assert stats["changed"] == 1
+    assert data_input.saved_attrs is not None
+    assert "woodpecker_provenance" in data_input.saved_attrs
