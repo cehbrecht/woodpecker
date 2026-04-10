@@ -75,6 +75,19 @@ Use existing fixes as examples and keep behavior deterministic.
 
 ## Workflow Files
 
+Workflow fields quick reference:
+
+| Field | Level | Type | Purpose |
+|---|---|---|---|
+| `comment` | root / dataset / step | string | Human-readable notes or links |
+| `datasets` | root | mapping | Selector-based workflow blocks (`fnmatch`) |
+| `steps` | root / dataset | list | Ordered fix execution |
+| `code` | step | string | Fix code to run |
+| `options` | step | mapping | Parameters passed to fix via `configure()` |
+| `fixes` | root / dataset | mapping | Per-code options map merged with step options |
+| `dataset` | root / dataset | string | Dataset-family filter |
+| `output_format` | root | string | Output backend (`auto`, `netcdf`, `zarr`) |
+
 Minimal workflow example:
 
 ```json

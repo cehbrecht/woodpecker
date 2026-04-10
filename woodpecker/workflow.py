@@ -33,6 +33,7 @@ def _merge_fix_options(*maps: dict[str, dict[str, Any]]) -> dict[str, dict[str, 
 
 class WorkflowStep(BaseModel):
     code: str
+    comment: Optional[str] = None
     options: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("code", mode="before")
@@ -52,13 +53,30 @@ class WorkflowStep(BaseModel):
             raise ValueError("step options must be an object/mapping")
         return dict(value)
 
+    @field_validator("comment", mode="before")
+    @classmethod
+    def _normalize_comment(cls, value: Any) -> str | None:
+        if value is None:
+            return None
+        text = str(value).strip()
+        return text or None
+
 
 class DatasetWorkflow(BaseModel):
     dataset: Optional[str] = None
+    comment: Optional[str] = None
     categories: List[str] = Field(default_factory=list)
     codes: List[str] = Field(default_factory=list)
     steps: List[WorkflowStep] = Field(default_factory=list)
     fixes: dict[str, dict[str, Any]] = Field(default_factory=dict)
+
+    @field_validator("comment", mode="before")
+    @classmethod
+    def _normalize_comment(cls, value: Any) -> str | None:
+        if value is None:
+            return None
+        text = str(value).strip()
+        return text or None
 
     @field_validator("categories", mode="before")
     @classmethod
@@ -111,6 +129,7 @@ class WorkflowSpec(BaseModel):
 
     version: int = 1
     name: str = ""
+    comment: Optional[str] = None
     inputs: List[str] = Field(default_factory=list)
     dataset: Optional[str] = None
     categories: List[str] = Field(default_factory=list)
@@ -129,6 +148,14 @@ class WorkflowSpec(BaseModel):
         if isinstance(value, str):
             return [value]
         return list(value)
+
+    @field_validator("comment", mode="before")
+    @classmethod
+    def _normalize_comment(cls, value: Any) -> str | None:
+        if value is None:
+            return None
+        text = str(value).strip()
+        return text or None
 
     @field_validator("codes", mode="before")
     @classmethod
