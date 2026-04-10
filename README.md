@@ -126,6 +126,51 @@ woodpecker fix . --select CMIP6D_0001 --provenance-path run_01.prov.json
 woodpecker fix . --select CMIP6D_0001 --no-provenance
 ```
 
+Example `woodpecker.prov.json` (shortened):
+
+```json
+{
+	"prefix": {
+		"default": "urn:woodpecker:",
+		"woodpecker": "https://github.com/macpingu/woodpecker#"
+	},
+	"activity": {
+		"activity-woodpecker-run-123": {
+			"prov:type": "woodpecker:FixRun",
+			"mode": "write",
+			"output_format": "netcdf",
+			"selected_codes": "[\"CMIP6D_0001\"]",
+			"stats": "{\"attempted\": 1, \"changed\": 1}"
+		}
+	},
+	"entity": {
+		"entity-input-0": {
+			"prov:type": "prov:Entity",
+			"reference": "./cmip6_case.nc",
+			"target_reference": "./cmip6_case.nc"
+		}
+	},
+	"agent": {
+		"agent-woodpecker": {
+			"prov:type": "prov:SoftwareAgent",
+			"name": "woodpecker"
+		}
+	},
+	"wasAssociatedWith": {
+		"_:id1": {
+			"prov:activity": "activity-woodpecker-run-123",
+			"prov:agent": "agent-woodpecker"
+		}
+	},
+	"used": {
+		"_:id2": {
+			"prov:activity": "activity-woodpecker-run-123",
+			"prov:entity": "entity-input-0"
+		}
+	}
+}
+```
+
 ## GitHub Pages
 
 This repository includes a workflow that builds and deploys the MkDocs site to GitHub Pages.
