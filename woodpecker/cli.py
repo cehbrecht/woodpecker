@@ -84,7 +84,9 @@ def check(
         target_paths = resolved_paths or [Path.cwd()]
 
         inputs = normalize_inputs(target_paths)
-        resolution = workflow_spec.resolve([item.reference for item in inputs]) if workflow_spec else None
+        resolution = (
+            workflow_spec.resolve([item.reference for item in inputs]) if workflow_spec else None
+        )
 
         resolved_dataset = dataset or (resolution.dataset if resolution else None)
         resolved_categories = categories or tuple(resolution.categories if resolution else [])
@@ -200,7 +202,9 @@ def fix(
         target_paths = resolved_paths or [Path.cwd()]
 
         inputs = normalize_inputs(target_paths)
-        resolution = workflow_spec.resolve([item.reference for item in inputs]) if workflow_spec else None
+        resolution = (
+            workflow_spec.resolve([item.reference for item in inputs]) if workflow_spec else None
+        )
 
         resolved_dataset = dataset or (resolution.dataset if resolution else None)
         resolved_categories = categories or tuple(resolution.categories if resolution else [])
@@ -212,11 +216,7 @@ def fix(
             else tuple(resolution.ordered_codes if resolution else [])
         )
         resolved_output_format = output_format
-        if (
-            resolution
-            and resolution.output_format
-            and output_format == "auto"
-        ):
+        if resolution and resolution.output_format and output_format == "auto":
             resolved_output_format = resolution.output_format
 
         fixes = select_fixes(

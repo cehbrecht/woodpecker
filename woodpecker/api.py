@@ -106,7 +106,9 @@ def fix_workflow(
         else tuple(resolution.ordered_codes)
     )
     resolved_output = (
-        resolution.output_format if output_format == "auto" and resolution.output_format else output_format
+        resolution.output_format
+        if output_format == "auto" and resolution.output_format
+        else output_format
     )
     return fix(
         normalized,

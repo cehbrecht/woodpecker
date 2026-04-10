@@ -62,7 +62,9 @@ class GroupFix(Fix):
 
     def __post_init__(self) -> None:
         if not self.members:
-            raise ValueError(f"GroupFix '{self.code or self.__class__.__name__}' must define non-empty members")
+            raise ValueError(
+                f"GroupFix '{self.code or self.__class__.__name__}' must define non-empty members"
+            )
         if not self.member_codes and self.members:
             self.member_codes = [getattr(cls, "code", "") for cls in self.members]
 
