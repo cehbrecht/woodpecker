@@ -239,59 +239,6 @@
     "priority": 44
   },
   {
-    "code": "ESACCI01",
-    "name": "ESA CCI normalize tas-like units to Kelvin",
-    "description": "ESA CCI bridge fix reusing CMIP701 Celsius-to-Kelvin conversion logic.",
-    "categories": [
-      "metadata",
-      "units"
-    ],
-    "dataset": "ESA-CCI",
-    "priority": 60
-  },
-  {
-    "code": "ESACCI02",
-    "name": "ESA CCI ensure project_id is present",
-    "description": "ESA CCI bridge fix reusing CMIP702 project_id derivation logic.",
-    "categories": [
-      "metadata"
-    ],
-    "dataset": "ESA-CCI",
-    "priority": 61
-  },
-  {
-    "code": "ESACCI03",
-    "name": "ESA CCI rename temp variable to tas",
-    "description": "ESA CCI bridge fix reusing CMIP703 temp-to-tas rename logic.",
-    "categories": [
-      "structure",
-      "metadata"
-    ],
-    "dataset": "ESA-CCI",
-    "priority": 62
-  },
-  {
-    "code": "ESACCI04",
-    "name": "ESA CCI ensure latitude is increasing",
-    "description": "ESA CCI bridge fix reusing CMIP704 latitude-order normalization logic.",
-    "categories": [
-      "structure"
-    ],
-    "dataset": "ESA-CCI",
-    "priority": 63
-  },
-  {
-    "code": "ESACCI05",
-    "name": "ESA CCI remove coordinate FillValue encodings",
-    "description": "ESA CCI bridge fix reusing CMIP705 coordinate encoding cleanup logic.",
-    "categories": [
-      "metadata",
-      "structure"
-    ],
-    "dataset": "ESA-CCI",
-    "priority": 64
-  },
-  {
     "code": "CMIP6DG01",
     "name": "CMIP6 Decadal: full fix suite",
     "description": "Applies all CMIP6-decadal fixes (CMIP6D01\u2013CMIP6D15) in sequence: calendar, encoding, realization metadata, start-token normalisation, model-specific global attributes, and leadtime/reftime coordinates.",

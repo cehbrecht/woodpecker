@@ -5,7 +5,7 @@
 
 **Woodpeckers** “fix” trees by pecking out small problem spots — exactly like this tool applies targeted fixes to datasets.
 
-Woodpecker is a small, **code-driven catalog of dataset fixes** for climate data workflows (CDS/WPS, CMIP/ESA-CCI bridging, etc.).
+Woodpecker is a small, **code-driven catalog of dataset fixes** for climate data workflows (CDS/WPS, CMIP pipelines, etc.).
 Each fix has a **stable short code** (e.g. `CMIP6D01`) so external services (like an ESGF errata UI) can reference it directly.
 
 The design is inspired by Ruff: fast, rule-based checks with optional targeted auto-fixes.
@@ -13,7 +13,7 @@ The design is inspired by Ruff: fast, rule-based checks with optional targeted a
 ## What This Demo Includes
 
 - `woodpecker.fixes.registry.FixRegistry`: in-memory registry (simple today, extensible tomorrow)
-- Built-in fix families grouped by domain subpackage (`cmip6_decadal`, `cmip7`, `esa_cci`, `atlas`, ...)
+- Built-in fix families grouped by domain subpackage (`cmip6_decadal`, `cmip7`, `atlas`, ...)
 - `woodpecker` CLI:
   - `woodpecker list-fixes`
   - `woodpecker list-fixes --format md|json`
@@ -145,6 +145,27 @@ Selector + ordered steps variant:
 
 This lets workflows choose a fix sequence per dataset pattern while still reusing common Python fix implementations.
 
+ESA CCI as workflow usage of CMIP7 fixes:
+
+```json
+{
+  "dataset": "CMIP7",
+  "datasets": {
+    "*ESA_CCI*.nc": {
+      "steps": [
+        {"code": "CMIP701"},
+        {"code": "CMIP702"},
+        {"code": "CMIP703"},
+        {"code": "CMIP704"},
+        {"code": "CMIP705"}
+      ]
+    }
+  }
+}
+```
+
+See the ready-to-use example at `workflows/examples/esa_cci_to_cmip7.json`.
+
 Library API (paths + xarray objects):
 
 ```python
@@ -196,7 +217,7 @@ Woodpecker intentionally stays simple and “human-countable”, but the design 
 
 - file-level demo logic is intentionally lightweight (no heavy real-world NetCDF transforms yet)
 - checks/fixes focus on deterministic, explainable behavior for design discussions
-- includes prototype-inspired `CMIP701` and `ESACCI01` fixes (tas/temp Celsius -> Kelvin)
+- includes prototype-inspired `CMIP701` fix (tas/temp Celsius -> Kelvin)
 
 ## Next Steps
 

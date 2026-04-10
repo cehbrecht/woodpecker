@@ -3,8 +3,6 @@ import xarray as xr
 
 from woodpecker.fixes.cmip7 import CMIP701, CMIP702, CMIP703, CMIP704, CMIP705
 from woodpecker.fixes.cmip7.common import get_data_unit, is_celsius_unit, project_id_from_dataset
-from woodpecker.fixes.esa_cci import ESACCI01, ESACCI02, ESACCI03, ESACCI04, ESACCI05
-from woodpecker.fixes.registry import FixRegistry
 
 
 def test_cmip7_common_is_celsius_unit_accepts_supported_spellings():
@@ -103,32 +101,3 @@ def test_cmip705_apply_write_removes_fillvalue_from_common_coords():
     assert "_FillValue" not in dataset["time"].encoding
     assert "_FillValue" not in dataset["lat"].encoding
     assert "_FillValue" not in dataset["lon"].encoding
-
-
-def test_esa_cci_fixes_reuse_cmip7_fix_behavior():
-    dataset = xr.Dataset(
-        data_vars={"temp": ("time", np.array([0.0, 1.0], dtype=np.float32))},
-        coords={"time": [0, 1]},
-        attrs={"source_name": "ESA_CCI.Model.member.temp.nc"},
-    )
-    dataset["temp"].attrs["units"] = "degC"
-
-    assert ESACCI01().apply(dataset, dry_run=False) is True
-    assert ESACCI02().apply(dataset, dry_run=False) is True
-    assert ESACCI03().apply(dataset, dry_run=False) is True
-    assert dataset["tas"].attrs["units"] == "K"
-    assert dataset.attrs["project_id"] == "ESA_CCI"
-
-
-def test_esa_cci_fix_metadata_is_distinct_and_cmip7_derived():
-    fixes_by_code = {fix.code: fix for fix in FixRegistry.discover()}
-    fix = fixes_by_code["ESACCI04"]
-
-    assert fix.code == "ESACCI04"
-    assert fix.dataset == "ESA-CCI"
-    assert isinstance(fix, CMIP704)
-
-    cleanup_fix = fixes_by_code["ESACCI05"]
-    assert cleanup_fix.code == "ESACCI05"
-    assert cleanup_fix.dataset == "ESA-CCI"
-    assert isinstance(cleanup_fix, CMIP705)

@@ -23,9 +23,4 @@
 | CMIP703 | Rename temp variable to tas | Renames data variable temp to tas when tas is missing. | structure, metadata | CMIP7 | 42 |
 | CMIP704 | Ensure latitude is increasing | Flips datasets with decreasing latitude coordinates to increasing order. | structure | CMIP7 | 43 |
 | CMIP705 | Remove coordinate FillValue encodings | Removes _FillValue encoding entries from common coordinate variables. | metadata, structure | CMIP7 | 44 |
-| ESACCI01 | ESA CCI normalize tas-like units to Kelvin | ESA CCI bridge fix reusing CMIP701 Celsius-to-Kelvin conversion logic. | metadata, units | ESA-CCI | 60 |
-| ESACCI02 | ESA CCI ensure project_id is present | ESA CCI bridge fix reusing CMIP702 project_id derivation logic. | metadata | ESA-CCI | 61 |
-| ESACCI03 | ESA CCI rename temp variable to tas | ESA CCI bridge fix reusing CMIP703 temp-to-tas rename logic. | structure, metadata | ESA-CCI | 62 |
-| ESACCI04 | ESA CCI ensure latitude is increasing | ESA CCI bridge fix reusing CMIP704 latitude-order normalization logic. | structure | ESA-CCI | 63 |
-| ESACCI05 | ESA CCI remove coordinate FillValue encodings | ESA CCI bridge fix reusing CMIP705 coordinate encoding cleanup logic. | metadata, structure | ESA-CCI | 64 |
 | CMIP6DG01 | CMIP6 Decadal: full fix suite | Applies all CMIP6-decadal fixes (CMIP6D01–CMIP6D15) in sequence: calendar, encoding, realization metadata, start-token normalisation, model-specific global attributes, and leadtime/reftime coordinates. | metadata, calendar, encoding, structure | CMIP6-decadal | 99 |
