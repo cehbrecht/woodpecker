@@ -13,7 +13,7 @@ The design is inspired by Ruff: fast, rule-based checks with optional targeted a
 ## What This Demo Includes
 
 - `woodpecker.fixes.registry.FixRegistry`: in-memory registry (simple today, extensible tomorrow)
-- Built-in fix families grouped by domain subpackage (`cmip6_decadal`, `cmip7`, `atlas`, ...)
+- Built-in fix families grouped by domain subpackage (`common`, `cmip6_decadal`, `cmip7`, `atlas`, ...)
 - `woodpecker` CLI:
   - `woodpecker list-fixes`
   - `woodpecker list-fixes --format md|json`

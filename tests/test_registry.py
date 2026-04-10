@@ -31,6 +31,13 @@ def test_registry_discovers_builtins():
     assert "ATLAS01" in codes
     assert "ATLAS02" in codes
 
+    # Common non-project fix family
+    assert "COMMON01" in codes
+    assert "COMMON02" in codes
+    assert "COMMON03" in codes
+    assert "COMMON04" in codes
+    assert "COMMON05" in codes
+
     # CMIP7 fix family
     assert "CMIP701" in codes
     assert "CMIP702" in codes

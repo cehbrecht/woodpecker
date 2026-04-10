@@ -190,6 +190,51 @@
     </tr>
   
     <tr>
+      <td id="COMMON01"><a href="#COMMON01"><code>COMMON01</code></a></td>
+      <td>Normalize tas-like units to Kelvin</td>
+      <td>Converts tas/temp from Celsius-like units to Kelvin.</td>
+      <td>metadata, units</td>
+      <td></td>
+      <td>30</td>
+    </tr>
+  
+    <tr>
+      <td id="COMMON02"><a href="#COMMON02"><code>COMMON02</code></a></td>
+      <td>Ensure project_id is present</td>
+      <td>Sets project_id from dataset identifier metadata when missing.</td>
+      <td>metadata</td>
+      <td></td>
+      <td>31</td>
+    </tr>
+  
+    <tr>
+      <td id="COMMON03"><a href="#COMMON03"><code>COMMON03</code></a></td>
+      <td>Rename temp variable to tas</td>
+      <td>Renames data variable temp to tas when tas is missing.</td>
+      <td>structure, metadata</td>
+      <td></td>
+      <td>32</td>
+    </tr>
+  
+    <tr>
+      <td id="COMMON04"><a href="#COMMON04"><code>COMMON04</code></a></td>
+      <td>Ensure latitude is increasing</td>
+      <td>Flips datasets with decreasing latitude coordinates to increasing order.</td>
+      <td>structure</td>
+      <td></td>
+      <td>33</td>
+    </tr>
+  
+    <tr>
+      <td id="COMMON05"><a href="#COMMON05"><code>COMMON05</code></a></td>
+      <td>Remove coordinate FillValue encodings</td>
+      <td>Removes _FillValue encoding entries from common coordinate variables.</td>
+      <td>metadata, structure</td>
+      <td></td>
+      <td>34</td>
+    </tr>
+  
+    <tr>
       <td id="CMIP601"><a href="#CMIP601"><code>CMIP601</code></a></td>
       <td>CMIP6 dummy placeholder</td>
       <td>Dummy placeholder for future non-decadal CMIP6 fixes.</td>
