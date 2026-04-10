@@ -45,7 +45,7 @@ class GroupFix(Fix):
 
     Subclasses declare a ``members`` class variable listing the :class:`Fix`
     subclasses to run.  The group is recognisable because its code ends with
-    the letter ``G`` (e.g. ``CMIP6DG01``).  It satisfies the same interface
+    the letter ``G`` (e.g. ``CMIP6DG_0001``).  It satisfies the same interface
     as :class:`Fix` and can be registered, discovered, and applied identically.
     """
 

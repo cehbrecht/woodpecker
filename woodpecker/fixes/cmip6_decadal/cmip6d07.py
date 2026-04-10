@@ -21,8 +21,8 @@ def _apply_fillvalue_encoding_cleanup(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class CMIP6D07(Fix):
-    code = "CMIP6D07"
+class CMIP6D_0007(Fix):
+    code = "CMIP6D_0007"
     name = "Decadal _FillValue encoding cleanup"
     description = (
         "Removes stale '_FillValue' encoding entries from realization and bounds variables "

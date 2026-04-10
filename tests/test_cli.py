@@ -12,8 +12,8 @@ def test_list_fixes_contains_known_codes():
     result = runner.invoke(cli, ["list-fixes", "--format", "text"])
 
     assert result.exit_code == 0
-    assert "CMIP6D01" in result.output
-    assert "ATLAS01" in result.output
+    assert "CMIP6D_0001" in result.output
+    assert "ATLAS_0001" in result.output
 
 
 def test_io_status_text_output_contains_expected_keys():
@@ -48,7 +48,7 @@ def test_check_returns_zero_when_no_findings(
 ):
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_decadal_ok.nc")
-    result = runner.invoke(cli, ["check", ".", "--select", "CMIP6D01"])
+    result = runner.invoke(cli, ["check", ".", "--select", "CMIP6D_0001"])
 
     assert result.exit_code == 0
     assert "No issues found" in result.output
@@ -59,10 +59,10 @@ def test_check_returns_nonzero_when_findings_exist(
 ):
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_bad.nc")
-    result = runner.invoke(cli, ["check", ".", "--select", "CMIP601"])
+    result = runner.invoke(cli, ["check", ".", "--select", "CMIP6_0001"])
 
     assert result.exit_code == 1
-    assert "CMIP601" in result.output
+    assert "CMIP6_0001" in result.output
 
 
 def test_check_json_output_structure(
@@ -72,7 +72,7 @@ def test_check_json_output_structure(
     make_dummy_netcdf("cmip6_bad.nc")
     result = runner.invoke(
         cli,
-        ["check", ".", "--select", "CMIP601", "--format", "json"],
+        ["check", ".", "--select", "CMIP6_0001", "--format", "json"],
     )
 
     assert result.exit_code == 1
@@ -80,7 +80,7 @@ def test_check_json_output_structure(
     assert isinstance(payload, list)
     assert payload
     assert {"path", "code", "name", "message"}.issubset(payload[0].keys())
-    assert payload[0]["code"] == "CMIP601"
+    assert payload[0]["code"] == "CMIP6_0001"
 
 
 def test_fix_write_cmip6d01_reports_no_change_for_empty_fallback_dataset(
@@ -91,7 +91,7 @@ def test_fix_write_cmip6d01_reports_no_change_for_empty_fallback_dataset(
 
     result = runner.invoke(
         cli,
-        ["fix", ".", "--select", "CMIP6D01", "--write", "--output-format", "netcdf"],
+        ["fix", ".", "--select", "CMIP6D_0001", "--write", "--output-format", "netcdf"],
     )
 
     assert result.exit_code == 0
@@ -123,7 +123,7 @@ def test_fix_json_output_contains_write_report(
             "fix",
             ".",
             "--select",
-            "CMIP6D01",
+            "CMIP6D_0001",
             "--write",
             "--output-format",
             "netcdf",
@@ -167,7 +167,7 @@ def test_fix_json_write_exits_nonzero_on_persist_failure(
             "fix",
             ".",
             "--select",
-            "CMIP6D01",
+            "CMIP6D_0001",
             "--write",
             "--format",
             "json",
@@ -197,14 +197,14 @@ def test_check_uses_workflow_defaults(
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_bad.nc")
     Path("workflow.json").write_text(
-        json.dumps({"inputs": ["."], "codes": ["CMIP601"]}),
+        json.dumps({"inputs": ["."], "codes": ["CMIP6_0001"]}),
         encoding="utf-8",
     )
 
     result = runner.invoke(cli, ["check", "--workflow", "workflow.json"])
 
     assert result.exit_code == 1
-    assert "CMIP601" in result.output
+    assert "CMIP6_0001" in result.output
 
 
 def test_fix_uses_workflow_output_format_when_auto(
@@ -214,7 +214,7 @@ def test_fix_uses_workflow_output_format_when_auto(
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_case.nc")
     Path("workflow.json").write_text(
-        json.dumps({"inputs": ["."], "codes": ["CMIP6D01"], "output_format": "zarr"}),
+        json.dumps({"inputs": ["."], "codes": ["CMIP6D_0001"], "output_format": "zarr"}),
         encoding="utf-8",
     )
 
@@ -250,8 +250,8 @@ def test_check_workflow_applies_fix_options_to_message(
         json.dumps(
             {
                 "inputs": ["."],
-                "codes": ["CMIP601"],
-                "fixes": {"CMIP601": {"message": "configured check message"}},
+                "codes": ["CMIP6_0001"],
+                "fixes": {"CMIP6_0001": {"message": "configured check message"}},
             }
         ),
         encoding="utf-8",
@@ -269,7 +269,7 @@ def test_fix_writes_provenance_file_by_default(
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_case.nc")
 
-    result = runner.invoke(cli, ["fix", ".", "--select", "CMIP601"])
+    result = runner.invoke(cli, ["fix", ".", "--select", "CMIP6_0001"])
 
     assert result.exit_code == 0
     prov_path = Path("woodpecker.prov.json")

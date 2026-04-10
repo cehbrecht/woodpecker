@@ -77,8 +77,8 @@ def _apply_atlas_encoding_cleanup(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class ATLAS01(Fix):
-    code = "ATLAS01"
+class ATLAS_0001(Fix):
+    code = "ATLAS_0001"
     name = "ATLAS encoding cleanup"
     description = "Applies rook-equivalent ATLAS deflation/encoding cleanup."
     categories = ["encoding"]

@@ -20,8 +20,8 @@ def _apply_realization_long_name_fix(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class CMIP6D10(Fix):
-    code = "CMIP6D10"
+class CMIP6D_0010(Fix):
+    code = "CMIP6D_0010"
     name = "Decadal realization long_name normalization"
     description = (
         "Normalizes realization long_name metadata to 'realization' for CMIP6-decadal datasets."

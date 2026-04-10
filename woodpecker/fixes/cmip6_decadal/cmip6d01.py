@@ -20,8 +20,8 @@ def _apply_time_long_name_fix(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class CMIP6D01(Fix):
-    code = "CMIP6D01"
+class CMIP6D_0001(Fix):
+    code = "CMIP6D_0001"
     name = "Decadal time metadata"
     description = "Ensures CMIP6-decadal time coordinate has long_name='valid_time'."
     categories = ["metadata"]

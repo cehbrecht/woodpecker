@@ -28,8 +28,8 @@ def _apply_atlas_project_id(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class ATLAS02(Fix):
-    code = "ATLAS02"
+class ATLAS_0002(Fix):
+    code = "ATLAS_0002"
     name = "ATLAS project_id normalization"
     description = "Adds or normalizes ATLAS project_id from dataset identifier prefix."
     categories = ["metadata"]

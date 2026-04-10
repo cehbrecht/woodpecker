@@ -31,8 +31,8 @@ def _apply_further_info_url_fix(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class CMIP6D08(Fix):
-    code = "CMIP6D08"
+class CMIP6D_0008(Fix):
+    code = "CMIP6D_0008"
     name = "Decadal further_info_url normalization"
     description = (
         "Normalizes malformed CMIP6-decadal further_info_url variant separators from '-' to '.'."

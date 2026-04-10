@@ -20,8 +20,8 @@ def _apply_leadtime_metadata_fix(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class CMIP6D12(Fix):
-    code = "CMIP6D12"
+class CMIP6D_0012(Fix):
+    code = "CMIP6D_0012"
     name = "Decadal leadtime metadata normalization"
     description = "Normalizes CMIP6-decadal leadtime metadata (units, long_name, standard_name)."
     categories = ["metadata"]

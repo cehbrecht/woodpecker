@@ -26,8 +26,8 @@ def _apply_realization_comment_fix(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class CMIP6D05(Fix):
-    code = "CMIP6D05"
+class CMIP6D_0005(Fix):
+    code = "CMIP6D_0005"
     name = "Decadal realization comment normalization"
     description = "Normalizes realization comment to the full CMIP6-decadal ripf guidance text."
     categories = ["metadata"]

@@ -18,10 +18,10 @@ def test_check_supports_xarray_dataset_input():
     ds = xr.Dataset(coords={"time": [0, 1]}, attrs={"source_name": "c3s-cmip6-decadal.bad.nc"})
     ds["time"].encoding["calendar"] = "proleptic_gregorian"
 
-    findings = check(ds, codes=["CMIP6D01", "CMIP6D02"])
+    findings = check(ds, codes=["CMIP6D_0001", "CMIP6D_0002"])
 
     assert findings
-    assert {entry["code"] for entry in findings}.issuperset({"CMIP6D01", "CMIP6D02"})
+    assert {entry["code"] for entry in findings}.issuperset({"CMIP6D_0001", "CMIP6D_0002"})
 
 
 def test_fix_supports_xarray_dataset_input_write_mode():
@@ -32,7 +32,7 @@ def test_fix_supports_xarray_dataset_input_write_mode():
     )
     ds["tas"].encoding["complevel"] = 4
 
-    stats = fix(ds, codes=["ATLAS01"], write=True)
+    stats = fix(ds, codes=["ATLAS_0001"], write=True)
 
     assert stats["attempted"] == 1
     assert stats["changed"] == 1
@@ -43,7 +43,7 @@ def test_fix_supports_xarray_dataset_input_write_mode():
 def test_check_supports_path_input(make_dummy_netcdf):
     source = make_dummy_netcdf("cmip6_bad.nc")
 
-    findings = check([source], codes=["CMIP601"])
+    findings = check([source], codes=["CMIP6_0001"])
 
     assert findings
     assert findings[0]["path"] == str(Path(source))
@@ -71,7 +71,7 @@ def test_fix_accepts_explicit_output_format():
     )
     ds["tas"].encoding["complevel"] = 4
 
-    stats = fix(ds, codes=["ATLAS01"], write=True, output_format="netcdf")
+    stats = fix(ds, codes=["ATLAS_0001"], write=True, output_format="netcdf")
 
     assert stats["attempted"] == 1
     assert stats["changed"] == 1
@@ -113,14 +113,14 @@ def test_api_check_workflow_uses_codes_from_workflow(tmp_path: Path, make_dummy_
     source = make_dummy_netcdf("cmip6_bad.nc")
     workflow_path = tmp_path / "workflow.json"
     workflow_path.write_text(
-        '{"codes": ["CMIP601"]}',
+        '{"codes": ["CMIP6_0001"]}',
         encoding="utf-8",
     )
 
     findings = check_workflow(workflow_path, inputs=[source])
 
     assert findings
-    assert findings[0]["code"] == "CMIP601"
+    assert findings[0]["code"] == "CMIP6_0001"
 
 
 def test_api_fix_workflow_uses_output_format_from_workflow(tmp_path: Path, monkeypatch):
@@ -131,7 +131,7 @@ def test_api_fix_workflow_uses_output_format_from_workflow(tmp_path: Path, monke
     )
     workflow_path = tmp_path / "workflow.json"
     workflow_path.write_text(
-        '{"codes": ["ATLAS01"], "output_format": "netcdf"}',
+        '{"codes": ["ATLAS_0001"], "output_format": "netcdf"}',
         encoding="utf-8",
     )
 
@@ -159,7 +159,7 @@ def test_api_fix_workflow_applies_fix_options_to_dataset_attrs(tmp_path: Path):
     ds = xr.Dataset(attrs={"source_name": "c3s-cmip6.member.tas.nc"})
     workflow_path = tmp_path / "workflow.json"
     workflow_path.write_text(
-        '{"codes": ["CMIP601"], "fixes": {"CMIP601": {"marker_attr": "custom_marker", "marker_value": "ok"}}}',
+        '{"codes": ["CMIP6_0001"], "fixes": {"CMIP6_0001": {"marker_attr": "custom_marker", "marker_value": "ok"}}}',
         encoding="utf-8",
     )
 

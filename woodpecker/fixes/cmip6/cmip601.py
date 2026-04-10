@@ -11,8 +11,8 @@ def _is_cmip6_non_decadal(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class CMIP601(Fix):
-    code = "CMIP601"
+class CMIP6_0001(Fix):
+    code = "CMIP6_0001"
     name = "CMIP6 dummy placeholder"
     description = "Dummy placeholder for future non-decadal CMIP6 fixes."
     categories = ["metadata"]
@@ -35,7 +35,7 @@ class CMIP601(Fix):
         if dry_run:
             return True
         config = getattr(self, "config", {}) or {}
-        marker_attr = str(config.get("marker_attr", "woodpecker_fix_CMIP601"))
+        marker_attr = str(config.get("marker_attr", "woodpecker_fix_CMIP6_0001"))
         marker_value = str(config.get("marker_value", "applied"))
         dataset.attrs[marker_attr] = marker_value
         return True

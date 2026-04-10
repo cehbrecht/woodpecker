@@ -19,7 +19,7 @@ def _apply_temp_to_tas_rename(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class CMIP703(Fix):
+class CMIP7_0002(Fix):
     code = "CMIP7_0002"
     name = "Rename temp variable to tas"
     description = "Renames data variable temp to tas when tas is missing."

@@ -52,7 +52,7 @@ def _apply_lat_flip(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class COMMON04(Fix):
+class COMMON_0002(Fix):
     code = "COMMON_0002"
     name = "Ensure latitude is increasing"
     description = "Flips datasets with decreasing latitude coordinates to increasing order."

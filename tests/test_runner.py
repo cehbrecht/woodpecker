@@ -74,10 +74,10 @@ def test_run_fix_skips_fixes_for_other_dataset_types():
 
 
 def test_select_fixes_respects_ordered_codes_sequence():
-    fixes = select_fixes(ordered_codes=["CMIP601", "ATLAS01"], strict_codes=True)
+    fixes = select_fixes(ordered_codes=["CMIP6_0001", "ATLAS_0001"], strict_codes=True)
     ordered = [fix.code for fix in fixes]
 
-    assert ordered[:2] == ["CMIP601", "ATLAS01"]
+    assert ordered[:2] == ["CMIP6_0001", "ATLAS_0001"]
 
 
 def test_run_fix_can_embed_provenance_metadata_on_write():

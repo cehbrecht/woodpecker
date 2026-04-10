@@ -21,8 +21,8 @@ def _apply_coordinates_encoding_cleanup(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class CMIP6D04(Fix):
-    code = "CMIP6D04"
+class CMIP6D_0004(Fix):
+    code = "CMIP6D_0004"
     name = "Decadal coordinates encoding cleanup"
     description = (
         "Removes stale 'coordinates' encoding entries from realization and bounds variables "

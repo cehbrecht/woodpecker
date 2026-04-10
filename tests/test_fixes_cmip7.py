@@ -1,7 +1,7 @@
 import numpy as np
 import xarray as xr
 
-from woodpecker.fixes.cmip7 import CMIP702, CMIP703
+from woodpecker.fixes.cmip7 import CMIP7_0001, CMIP7_0002
 from woodpecker.fixes.cmip7.common import get_data_unit, is_celsius_unit, project_id_from_dataset
 
 
@@ -36,7 +36,7 @@ def test_cmip7_common_project_id_from_dataset_prefers_first_identifier_token():
 def test_cmip702_apply_write_sets_project_id_from_source_name_when_missing():
     dataset = xr.Dataset(attrs={"source_name": "CMIP7.Model.member.tas.nc"})
 
-    changed = CMIP702().apply(dataset, dry_run=False)
+    changed = CMIP7_0001().apply(dataset, dry_run=False)
 
     assert changed is True
     assert dataset.attrs["project_id"] == "CMIP7"
@@ -48,7 +48,7 @@ def test_cmip703_apply_write_renames_temp_to_tas_when_tas_missing():
         coords={"time": [0, 1]},
     )
 
-    changed = CMIP703().apply(dataset, dry_run=False)
+    changed = CMIP7_0002().apply(dataset, dry_run=False)
 
     assert changed is True
     assert "tas" in dataset.data_vars

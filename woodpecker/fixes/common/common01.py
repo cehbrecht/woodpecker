@@ -30,7 +30,7 @@ def _apply_kelvin_conversion(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class COMMON01(Fix):
+class COMMON_0001(Fix):
     code = "COMMON_0001"
     name = "Normalize tas-like units to Kelvin"
     description = "Converts tas/temp from Celsius-like units to Kelvin."

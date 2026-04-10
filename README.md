@@ -6,7 +6,7 @@
 **Woodpeckers** “fix” trees by pecking out small problem spots — exactly like this tool applies targeted fixes to datasets.
 
 Woodpecker is a small, **code-driven catalog of dataset fixes** for climate data workflows (CDS/WPS, CMIP pipelines, etc.).
-Each fix has a **stable short code** (e.g. `CMIP6D01`) so external services (like an ESGF errata UI) can reference it directly.
+Each fix has a **stable short code** (e.g. `CMIP6D_0001`) so external services (like an ESGF errata UI) can reference it directly.
 
 The design is inspired by Ruff: fast, rule-based checks with optional targeted auto-fixes.
 
@@ -22,7 +22,7 @@ The design is inspired by Ruff: fast, rule-based checks with optional targeted a
 - Documentation generation:
   - `docs/FIXES.md` (Markdown catalog)
   - `docs/FIXES.json` (machine-readable)
-  - `docs/fixes.html` (small interactive page with anchors, ideal for linking `#CMIP6D01`)
+  - `docs/fixes.html` (small interactive page with anchors, ideal for linking `#CMIP6D_0001`)
 - MkDocs site (Material theme) + GitHub Pages workflow
 
 ## Quickstart
@@ -98,10 +98,10 @@ Lint-style workflow (Ruff-like):
 woodpecker io-status
 woodpecker io-status --format json
 woodpecker check /path/to/netcdf/or/folder
-woodpecker check . --select CMIP6D01
-woodpecker fix . --select CMIP6D01        # dry-run by default
-woodpecker fix . --select CMIP6D01 --write
-woodpecker fix . --select CMIP6D01 --write --output-format zarr
+woodpecker check . --select CMIP6D_0001
+woodpecker fix . --select CMIP6D_0001        # dry-run by default
+woodpecker fix . --select CMIP6D_0001 --write
+woodpecker fix . --select CMIP6D_0001 --write --output-format zarr
 woodpecker check --workflow workflow.json
 woodpecker fix --workflow workflow.json --write
 ```
@@ -117,10 +117,10 @@ Workflow file (building block):
 {
   "version": 1,
   "inputs": ["./data"],
-  "codes": ["CMIP601", "ATLAS01"],
+  "codes": ["CMIP6_0001", "ATLAS_0001"],
   "fixes": {
-    "CMIP601": {"marker_attr": "custom_marker", "marker_value": "ok"},
-    "ATLAS01": {}
+    "CMIP6_0001": {"marker_attr": "custom_marker", "marker_value": "ok"},
+    "ATLAS_0001": {}
   },
   "output_format": "netcdf",
   "requires": ["io"]
@@ -136,8 +136,8 @@ Selector + ordered steps variant:
 {
   "datasets": {
     "*cmip6*.nc": [
-      {"code": "CMIP601", "options": {"message": "cmip6 check path"}},
-      {"code": "ATLAS01"}
+      {"code": "CMIP6_0001", "options": {"message": "cmip6 check path"}},
+      {"code": "ATLAS_0001"}
     ]
   }
 }
@@ -174,15 +174,15 @@ import woodpecker
 
 ds = xr.Dataset(attrs={"source_name": "cmip6_bad.nc"})
 
-findings = woodpecker.check(ds, codes=["CMIP6D01"])
-stats = woodpecker.fix(ds, codes=["CMIP6D01"], write=True)
+findings = woodpecker.check(ds, codes=["CMIP6D_0001"])
+stats = woodpecker.fix(ds, codes=["CMIP6D_0001"], write=True)
 
 # Workflow helpers
 findings_wf = woodpecker.check_workflow("workflow.json", inputs=["./data"])
 stats_wf = woodpecker.fix_workflow("workflow.json", inputs=ds, write=True)
 
 # Path input works as well
-findings_from_paths = woodpecker.check(["./data"], codes=["CMIP6D01"])
+findings_from_paths = woodpecker.check(["./data"], codes=["CMIP6D_0001"])
 ```
 
 Fix author contract (minimal):
@@ -197,9 +197,9 @@ into xarray objects before running fixes.
 
 ```bash
 touch cmip6_case.nc
-woodpecker check . --select CMIP6D01
-woodpecker fix . --select CMIP6D01        # dry-run by default
-woodpecker fix . --select CMIP6D01 --write
+woodpecker check . --select CMIP6D_0001
+woodpecker fix . --select CMIP6D_0001        # dry-run by default
+woodpecker fix . --select CMIP6D_0001 --write
 # dummy fix marks datasets in-memory/on write path (no filename renaming in this phase)
 ```
 
@@ -227,5 +227,5 @@ Woodpecker intentionally stays simple and “human-countable”, but the design 
 ## GitHub Pages
 
 This repo includes a workflow that builds and deploys the MkDocs site to GitHub Pages on pushes that touch fixes/docs/scripts.
-After enabling GitHub Pages (Settings → Pages), your fix codes become clickable URLs (e.g. `.../fixes.html#CMIP6D01`),
+After enabling GitHub Pages (Settings → Pages), your fix codes become clickable URLs (e.g. `.../fixes.html#CMIP6D_0001`),
 which an errata service can reference.

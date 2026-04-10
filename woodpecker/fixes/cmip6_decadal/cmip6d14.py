@@ -84,8 +84,8 @@ def _apply_reftime_fix(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class CMIP6D14(Fix):
-    code = "CMIP6D14"
+class CMIP6D_0014(Fix):
+    code = "CMIP6D_0014"
     name = "Decadal reftime coordinate"
     description = "Adds or normalizes CMIP6-decadal scalar reftime coordinate and metadata."
     categories = ["metadata", "structure"]

@@ -1,7 +1,7 @@
 import numpy as np
 import xarray as xr
 
-from woodpecker.fixes.common import COMMON01
+from woodpecker.fixes.common import COMMON_0001
 
 
 def test_common01_apply_write_converts_temperature_units_to_kelvin():
@@ -11,7 +11,7 @@ def test_common01_apply_write_converts_temperature_units_to_kelvin():
     )
     dataset["temp"].attrs["units"] = "degC"
 
-    changed = COMMON01().apply(dataset, dry_run=False)
+    changed = COMMON_0001().apply(dataset, dry_run=False)
 
     assert changed is True
     assert dataset["temp"].attrs["units"] == "K"
