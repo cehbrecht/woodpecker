@@ -153,6 +153,12 @@ def io_status(fmt: str):
     help="Preview changes without writing outputs.",
 )
 @click.option(
+    "--force-apply",
+    is_flag=True,
+    default=False,
+    help="Apply selected fixes without evaluating matches().",
+)
+@click.option(
     "--output-format",
     type=click.Choice(["auto", "netcdf", "zarr"]),
     default="auto",
@@ -186,6 +192,7 @@ def fix(
     categories: tuple[str, ...],
     codes: tuple[str, ...],
     dry_run: bool,
+    force_apply: bool,
     output_format: str,
     provenance: bool,
     provenance_path: Path,
@@ -215,6 +222,10 @@ def fix(
             if codes
             else tuple(resolution.ordered_codes if resolution else [])
         )
+        if force_apply and not resolved_codes:
+            raise click.ClickException(
+                "--force-apply requires explicit fix selection via --select or workflow codes."
+            )
         resolved_output_format = output_format
         if resolution and resolution.output_format and output_format == "auto":
             resolved_output_format = resolution.output_format
@@ -232,6 +243,8 @@ def fix(
             "dry_run": dry_run,
             "output_format": resolved_output_format,
         }
+        if force_apply:
+            run_fix_kwargs["force_apply"] = True
         if embed_provenance_metadata and not dry_run:
             run_fix_kwargs["embed_provenance_metadata"] = True
             run_fix_kwargs["provenance_run_id"] = run_id
@@ -253,6 +266,7 @@ def fix(
     if fmt == "json":
         payload = {
             "mode": "dry-run" if dry_run else "write",
+            "force_apply": force_apply,
             "output_format": resolved_output_format,
             "provenance": str(provenance_path) if provenance else None,
             **stats,

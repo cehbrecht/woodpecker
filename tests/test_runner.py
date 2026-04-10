@@ -50,6 +50,20 @@ class DeclaredCmipFix:
         return True
 
 
+class NonMatchingFix:
+    code = "DUMMY02"
+    name = "Non matching fix"
+
+    def matches(self, dataset: xr.Dataset) -> bool:
+        return False
+
+    def check(self, dataset: xr.Dataset) -> list[str]:
+        return []
+
+    def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
+        return True
+
+
 def test_run_fix_reports_failed_persistence():
     ds = xr.Dataset(attrs={"source_name": "dummy.nc"})
     data_input = DummyInput(dataset=ds, save_ok=False)
@@ -96,3 +110,35 @@ def test_run_fix_can_embed_provenance_metadata_on_write():
     assert stats["changed"] == 1
     assert data_input.saved_attrs is not None
     assert "woodpecker_provenance" in data_input.saved_attrs
+
+
+def test_run_fix_force_apply_bypasses_matches():
+    ds = xr.Dataset(attrs={"source_name": "dummy.nc"})
+    data_input = DummyInput(dataset=ds, save_ok=True)
+
+    stats = run_fix(
+        [data_input],
+        [NonMatchingFix()],
+        dry_run=False,
+        force_apply=True,
+        output_format="auto",
+    )
+
+    assert stats["attempted"] == 1
+    assert stats["changed"] == 1
+
+
+def test_run_fix_without_force_apply_respects_matches():
+    ds = xr.Dataset(attrs={"source_name": "dummy.nc"})
+    data_input = DummyInput(dataset=ds, save_ok=True)
+
+    stats = run_fix(
+        [data_input],
+        [NonMatchingFix()],
+        dry_run=False,
+        force_apply=False,
+        output_format="auto",
+    )
+
+    assert stats["attempted"] == 0
+    assert stats["changed"] == 0

@@ -101,6 +101,7 @@ woodpecker check /path/to/netcdf/or/folder
 woodpecker check . --select CMIP6D_0001
 woodpecker fix . --select CMIP6D_0001
 woodpecker fix . --select CMIP6D_0001 --dry-run
+woodpecker fix . --select CMIP6D_0001 --force-apply
 woodpecker fix . --select CMIP6D_0001 --output-format zarr
 woodpecker check --workflow workflow.json
 woodpecker fix --workflow workflow.json
@@ -108,6 +109,8 @@ woodpecker fix --workflow workflow.json
 
 Write mode reports both fix changes and persistence status (`persisted` vs `failed to persist`) in text and JSON output.
 When `--format json` is used in write mode (default), Woodpecker exits with status `1` if any persistence operation fails.
+Use `--force-apply` only when you intentionally want to bypass `matches()` prefiltering for selected fixes.
+For safety, `--force-apply` requires explicit fix selection (`--select` or workflow-provided codes).
 
 Selected fix codes are validated strictly: unknown `--select` codes fail fast with a clear error (same behavior in the Python API).
 
@@ -190,6 +193,10 @@ Fix author contract (minimal):
 - methods: `matches(dataset)`, `check(dataset) -> list[str]`, `apply(dataset, dry_run=True) -> bool`
 - reference template: `woodpecker/fixes/fix_template.py`
 
+Performance guideline for fix authors:
+- keep `matches()` fast and deterministic (metadata-only checks where possible)
+- put expensive validation logic in `check()` and expensive mutation logic in `apply()`
+
 Input adapters (path/folder/xarray/zarr) are responsible for turning sources
 into xarray objects before running fixes.
 
@@ -200,6 +207,7 @@ touch cmip6_case.nc
 woodpecker check . --select CMIP6D_0001
 woodpecker fix . --select CMIP6D_0001
 woodpecker fix . --select CMIP6D_0001 --dry-run
+woodpecker fix . --select CMIP6D_0001 --force-apply
 # dummy fix marks datasets in-memory/on write path (no filename renaming in this phase)
 ```
 

@@ -22,7 +22,7 @@ from .registry import FixRegistry
 
 
 class FixModel(BaseModel):
-    code: str = Field(..., pattern=r"^[A-Z0-9]{4,12}$", description="Unique fix code")
+    code: str = Field(..., pattern=r"^[A-Z0-9_]{4,16}$", description="Unique fix code")
     name: str
     description: str = ""
     categories: List[str] = []
@@ -35,6 +35,7 @@ class FixModel(BaseModel):
         return v or []
 
     def matches(self, dataset: xr.Dataset) -> bool:
+        # Keep this prefilter lightweight. Reserve expensive operations for check/apply.
         return isinstance(dataset, xr.Dataset)
 
     def check(self, dataset: xr.Dataset) -> List[str]:

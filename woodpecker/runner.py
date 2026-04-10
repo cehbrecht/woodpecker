@@ -132,6 +132,7 @@ def run_fix(
     inputs: Iterable[DataInput],
     fixes: Iterable[Any],
     dry_run: bool = True,
+    force_apply: bool = False,
     output_format: str = "auto",
     embed_provenance_metadata: bool = False,
     provenance_run_id: str | None = None,
@@ -152,7 +153,7 @@ def run_fix(
                 getattr(fix, "dataset", None), identity.dataset_type
             ):
                 continue
-            if not fix.matches(dataset):
+            if not force_apply and not fix.matches(dataset):
                 continue
             attempted += 1
             if fix.apply(dataset, dry_run=dry_run):

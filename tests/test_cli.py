@@ -140,6 +140,7 @@ def test_fix_json_output_contains_write_report(
     assert payload["persist_attempted"] == 1
     assert payload["persisted"] == 1
     assert payload["persist_failed"] == 0
+    assert payload["force_apply"] is False
 
 
 def test_fix_json_write_exits_nonzero_on_persist_failure(
@@ -275,3 +276,46 @@ def test_fix_writes_provenance_file_by_default(
     payload = json.loads(prov_path.read_text(encoding="utf-8"))
     assert "activity" in payload
     assert "entity" in payload
+
+
+def test_fix_force_apply_is_forwarded_to_runner(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    monkeypatch,
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("cmip6_case.nc")
+
+    captured = {}
+
+    def _fake_run_fix(*args, **kwargs):
+        captured.update(kwargs)
+        return {
+            "attempted": 1,
+            "changed": 1,
+            "persist_attempted": 1,
+            "persisted": 1,
+            "persist_failed": 0,
+        }
+
+    monkeypatch.setattr("woodpecker.cli.run_fix", _fake_run_fix)
+
+    result = runner.invoke(
+        cli,
+        ["fix", ".", "--select", "CMIP6_0001", "--force-apply", "--format", "json"],
+    )
+
+    assert result.exit_code == 0
+    assert captured.get("force_apply") is True
+    payload = json.loads(result.output)
+    assert payload["force_apply"] is True
+
+
+def test_fix_force_apply_requires_selected_codes(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, _ = isolated_cli_workspace
+
+    result = runner.invoke(cli, ["fix", ".", "--force-apply"])
+
+    assert result.exit_code != 0
+    assert "--force-apply requires explicit fix selection" in result.output
