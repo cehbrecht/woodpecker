@@ -108,6 +108,24 @@ woodpecker fix --workflow workflow.json
 woodpecker fix --workflow workflow.json --force-apply
 ```
 
+## Provenance
+
+Woodpecker writes a PROV-JSON provenance file by default when you run `fix`.
+Default output file: `woodpecker.prov.json`.
+
+Examples:
+
+```bash
+# default provenance file
+woodpecker fix . --select CMIP6D_0001
+
+# custom provenance output path
+woodpecker fix . --select CMIP6D_0001 --provenance-path run_01.prov.json
+
+# disable provenance output
+woodpecker fix . --select CMIP6D_0001 --no-provenance
+```
+
 ## GitHub Pages
 
 This repository includes a workflow that builds and deploys the MkDocs site to GitHub Pages.
