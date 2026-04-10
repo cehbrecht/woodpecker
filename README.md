@@ -103,6 +103,8 @@ woodpecker fix . --select CMIP6D01 --write --output-format zarr
 
 Write mode reports both fix changes and persistence status (`persisted` vs `failed to persist`) in text and JSON output.
 When `--write --format json` is used, Woodpecker exits with status `1` if any persistence operation fails.
+
+Selected fix codes are validated strictly: unknown `--select` codes fail fast with a clear error (same behavior in the Python API).
 ```
 
 Library API (paths + xarray objects):

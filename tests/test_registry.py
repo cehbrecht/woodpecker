@@ -1,3 +1,5 @@
+import pytest
+
 from woodpecker.fixes.registry import FixRegistry, GroupFix
 
 
@@ -61,3 +63,31 @@ def test_group_fix_is_group_fix_instance():
         "CMIP6D14",
         "CMIP6D15",
     ]
+
+
+def test_registry_rejects_invalid_code_pattern():
+    with pytest.raises(ValueError, match="invalid code"):
+
+        class _InvalidCodeFix:
+            code = "bad-code"
+            name = "Invalid code"
+            description = ""
+            categories = ["metadata"]
+            priority = 10
+            dataset = None
+
+        FixRegistry.register(_InvalidCodeFix)
+
+
+def test_registry_rejects_missing_name():
+    with pytest.raises(ValueError, match="non-empty 'name'"):
+
+        class _MissingNameFix:
+            code = "ABCD01"
+            name = ""
+            description = ""
+            categories = ["metadata"]
+            priority = 10
+            dataset = None
+
+        FixRegistry.register(_MissingNameFix)

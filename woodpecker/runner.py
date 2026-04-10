@@ -14,8 +14,19 @@ def _normalize_codes(codes: Sequence[str]) -> set[str]:
     return {code.strip().upper() for code in codes if code.strip()}
 
 
+def _validate_selected_codes(selected_codes: set[str]) -> None:
+    available = {code.upper() for code in FixRegistry.registered_codes()}
+    unknown = sorted(code for code in selected_codes if code not in available)
+    if unknown:
+        unknown_text = ", ".join(unknown)
+        raise ValueError(f"Unknown fix code(s): {unknown_text}")
+
+
 def select_fixes(
-    dataset: Optional[str] = None, categories: Sequence[str] = (), codes: Sequence[str] = ()
+    dataset: Optional[str] = None,
+    categories: Sequence[str] = (),
+    codes: Sequence[str] = (),
+    strict_codes: bool = False,
 ) -> List[Any]:
     filters: Dict[str, Any] = {}
     if dataset:
@@ -27,6 +38,9 @@ def select_fixes(
     selected_codes = _normalize_codes(codes)
     if not selected_codes:
         return fixes
+
+    if strict_codes:
+        _validate_selected_codes(selected_codes)
 
     return [fix for fix in fixes if getattr(fix, "code", "").upper() in selected_codes]
 

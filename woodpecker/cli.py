@@ -71,9 +71,18 @@ def check(
     fmt: str,
 ):
     """Check NetCDF files and report findings grouped by fix code."""
-    target_paths = list(paths) or [Path.cwd()]
-    inputs = normalize_inputs(target_paths)
-    fixes = select_fixes(dataset=dataset, categories=categories, codes=codes)
+    try:
+        target_paths = list(paths) or [Path.cwd()]
+        inputs = normalize_inputs(target_paths)
+        fixes = select_fixes(
+            dataset=dataset,
+            categories=categories,
+            codes=codes,
+            strict_codes=True,
+        )
+    except (TypeError, ValueError) as exc:
+        raise click.ClickException(str(exc)) from exc
+
     findings = run_check(inputs, fixes)
 
     if fmt == "json":
@@ -134,10 +143,19 @@ def fix(
     fmt: str,
 ):
     """Apply selected fixes to NetCDF files."""
-    target_paths = list(paths) or [Path.cwd()]
-    inputs = normalize_inputs(target_paths)
-    fixes = select_fixes(dataset=dataset, categories=categories, codes=codes)
-    stats = run_fix(inputs, fixes, dry_run=not write, output_format=output_format)
+    try:
+        target_paths = list(paths) or [Path.cwd()]
+        inputs = normalize_inputs(target_paths)
+        fixes = select_fixes(
+            dataset=dataset,
+            categories=categories,
+            codes=codes,
+            strict_codes=True,
+        )
+        stats = run_fix(inputs, fixes, dry_run=not write, output_format=output_format)
+    except (TypeError, ValueError) as exc:
+        raise click.ClickException(str(exc)) from exc
+
     if fmt == "json":
         payload = {
             "mode": "write" if write else "dry-run",

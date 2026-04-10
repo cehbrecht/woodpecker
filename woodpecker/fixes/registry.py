@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import asdict, dataclass, field
 from typing import Any, ClassVar, Dict, List, Optional, Type
 
@@ -48,6 +49,8 @@ class GroupFix(Fix):
     member_codes: List[str] = field(default_factory=list)
 
     def __post_init__(self) -> None:
+        if not self.members:
+            raise ValueError(f"GroupFix '{self.code or self.__class__.__name__}' must define non-empty members")
         if not self.member_codes and self.members:
             self.member_codes = [getattr(cls, "code", "") for cls in self.members]
 
@@ -80,10 +83,17 @@ class FixRegistry:
     """
 
     _registry: Dict[str, Type[Any]] = {}
+    _code_pattern = re.compile(r"^[A-Z0-9]{4,12}$")
 
     @staticmethod
     def _instantiate_fix(fix_cls: Type[Any]) -> Any:
-        fix = fix_cls()
+        try:
+            fix = fix_cls()
+        except Exception as exc:  # pragma: no cover - defensive guard
+            raise ValueError(
+                f"Fix {fix_cls.__name__} could not be instantiated. "
+                "Ensure default metadata values are provided on the class."
+            ) from exc
         if isinstance(fix, Fix):
             for attr in ("code", "name", "description", "categories", "priority", "dataset"):
                 if hasattr(fix_cls, attr):
@@ -92,10 +102,39 @@ class FixRegistry:
         return fix
 
     @classmethod
-    def register(cls, fix_cls: Type[Any]):
-        code = getattr(fix_cls, "code", None)
+    def _validate_fix_definition(cls, fix: Any, fix_cls: Type[Any]) -> None:
+        code = str(getattr(fix, "code", "") or "").strip()
+        name = str(getattr(fix, "name", "") or "").strip()
+        categories = getattr(fix, "categories", []) or []
+        priority = getattr(fix, "priority", 10)
+
         if not code:
             raise ValueError(f"Fix {fix_cls.__name__} must define a non-empty 'code'")
+        if not cls._code_pattern.fullmatch(code):
+            raise ValueError(
+                f"Fix {fix_cls.__name__} has invalid code '{code}'. "
+                "Expected pattern: ^[A-Z0-9]{4,12}$"
+            )
+        if not name:
+            raise ValueError(f"Fix {fix_cls.__name__} must define a non-empty 'name'")
+        if not isinstance(priority, int):
+            raise ValueError(f"Fix {fix_cls.__name__} must define 'priority' as an integer")
+        if not isinstance(categories, list) or any(
+            (not isinstance(item, str) or not item.strip()) for item in categories
+        ):
+            raise ValueError(
+                f"Fix {fix_cls.__name__} must define 'categories' as a list of non-empty strings"
+            )
+
+    @classmethod
+    def registered_codes(cls) -> List[str]:
+        return sorted(cls._registry.keys())
+
+    @classmethod
+    def register(cls, fix_cls: Type[Any]):
+        fix = cls._instantiate_fix(fix_cls)
+        cls._validate_fix_definition(fix, fix_cls)
+        code = getattr(fix, "code", None)
 
         if code in cls._registry:
             raise ValueError(f"Duplicate fix code '{code}' (already registered)")

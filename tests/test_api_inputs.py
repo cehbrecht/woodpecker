@@ -99,3 +99,10 @@ def test_zarr_output_adapter_warns_and_fails_when_backend_unavailable(monkeypatc
         ok = adapter.save(ds, data_input, dry_run=False)
 
     assert ok is False
+
+
+def test_api_check_raises_on_unknown_fix_code(make_dummy_netcdf):
+    source = make_dummy_netcdf("cmip6_bad.nc")
+
+    with pytest.raises(ValueError, match=r"Unknown fix code\(s\): DOESNOTEXIST"):
+        check([source], codes=["DOESNOTEXIST"])

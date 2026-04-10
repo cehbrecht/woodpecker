@@ -177,3 +177,15 @@ def test_fix_json_write_exits_nonzero_on_persist_failure(
     assert result.exit_code == 1
     payload = json.loads(result.output)
     assert payload["persist_failed"] == 1
+
+
+def test_check_unknown_fix_code_returns_click_error(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("cmip6_case.nc")
+
+    result = runner.invoke(cli, ["check", ".", "--select", "DOESNOTEXIST"])
+
+    assert result.exit_code != 0
+    assert "Unknown fix code(s): DOESNOTEXIST" in result.output
