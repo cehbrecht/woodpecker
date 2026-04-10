@@ -87,23 +87,13 @@ def test_workflow_resolve_matches_dataset_selector_and_steps(tmp_path: Path):
 
 
 def test_esa_cci_example_workflow_uses_cmip7_fix_codes_in_order():
-    workflow_path = Path("workflows/examples/esa_cci_to_cmip7.json")
+    workflow_path = Path("workflows/examples/esa_cci.json")
 
     workflow = load_workflow(workflow_path)
-    resolution = workflow.resolve(["/tmp/ESA_CCI.test.tas.nc"])
+    resolution = workflow.resolve(
+        ["/tmp/ESACCI-WATERVAPOUR-L3C-TCWV-meris-005deg-2002-2017-fv3.2.zarr"]
+    )
 
     assert resolution.dataset == "CMIP7"
-    assert resolution.codes == [
-        "COMMON_0001",
-        "CMIP7_0001",
-        "CMIP7_0002",
-        "COMMON_0002",
-        "COMMON_0003",
-    ]
-    assert resolution.ordered_codes == [
-        "COMMON_0001",
-        "CMIP7_0001",
-        "CMIP7_0002",
-        "COMMON_0002",
-        "COMMON_0003",
-    ]
+    assert resolution.codes == ["CMIP7_0003", "COMMON_0002"]
+    assert resolution.ordered_codes == ["CMIP7_0003", "COMMON_0002"]
