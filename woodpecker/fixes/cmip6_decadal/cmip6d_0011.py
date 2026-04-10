@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import xarray as xr
 
-from .helpers import is_cmip6_decadal_netcdf
 from ..registry import Fix, FixRegistry
+from .helpers import is_cmip6_decadal_netcdf
 
 
 def _normalized_realization_index(dataset: xr.Dataset) -> int | None:

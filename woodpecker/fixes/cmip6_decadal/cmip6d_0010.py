@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import xarray as xr
 
-from .helpers import is_cmip6_decadal_netcdf
 from ..registry import Fix, FixRegistry
+from .helpers import is_cmip6_decadal_netcdf
 
 
 def _needs_realization_long_name_fix(dataset: xr.Dataset) -> bool:

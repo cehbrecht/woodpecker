@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import xarray as xr
 
-from .helpers import project_id_from_dataset
 from ..registry import Fix, FixRegistry
+from .helpers import project_id_from_dataset
 
 
 def _needs_project_id(dataset: xr.Dataset) -> bool:

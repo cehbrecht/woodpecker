@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from fnmatch import fnmatch
-import json
 from pathlib import Path
 from typing import Any, List, Optional, Sequence
 

@@ -3,12 +3,12 @@ from __future__ import annotations
 import xarray as xr
 
 from ..common.helpers import (
+    lower_source_name,
     normalize_compression_settings,
-    vars_with_encoding_key,
     vars_with_compression_above_level,
+    vars_with_encoding_key,
 )
 from ..registry import Fix, FixRegistry
-from ..common.helpers import lower_source_name
 
 
 def _atlas_vars_to_check(dataset: xr.Dataset) -> list[str]:

@@ -3,8 +3,7 @@ from pathlib import Path
 import pytest
 import xarray as xr
 
-from woodpecker.api import check, fix
-from woodpecker.api import check_workflow, fix_workflow
+from woodpecker.api import check, check_workflow, fix, fix_workflow
 from woodpecker.inout import (
     PathInput,
     ZarrInput,

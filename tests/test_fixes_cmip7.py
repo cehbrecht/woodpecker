@@ -2,8 +2,8 @@ import numpy as np
 import xarray as xr
 
 from woodpecker.fixes.cmip7 import CMIP7_0001, CMIP7_0002
-from woodpecker.fixes.common.helpers import get_data_unit, is_celsius_unit
 from woodpecker.fixes.cmip7.helpers import project_id_from_dataset
+from woodpecker.fixes.common.helpers import get_data_unit, is_celsius_unit
 
 
 def test_cmip7_common_is_celsius_unit_accepts_supported_spellings():
