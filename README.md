@@ -38,7 +38,7 @@ Workflow option:
 
 Force-apply option:
 
-- `--force-apply` skips pre-check execution before applying fixes to run faster.
+- `--force-apply` skips `matches()` prefiltering before `apply()` to run faster.
 - Safety rule: `--force-apply` requires explicit fix selection (`--select` or workflow codes).
 
 More advanced workflow patterns are in `CONTRIBUTING.md`.
