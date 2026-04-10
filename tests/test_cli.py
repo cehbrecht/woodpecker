@@ -189,3 +189,75 @@ def test_check_unknown_fix_code_returns_click_error(
 
     assert result.exit_code != 0
     assert "Unknown fix code(s): DOESNOTEXIST" in result.output
+
+
+def test_check_uses_workflow_defaults(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("cmip6_bad.nc")
+    Path("workflow.json").write_text(
+        json.dumps({"inputs": ["."], "codes": ["CMIP601"]}),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(cli, ["check", "--workflow", "workflow.json"])
+
+    assert result.exit_code == 1
+    assert "CMIP601" in result.output
+
+
+def test_fix_uses_workflow_output_format_when_auto(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    monkeypatch,
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("cmip6_case.nc")
+    Path("workflow.json").write_text(
+        json.dumps({"inputs": ["."], "codes": ["CMIP6D01"], "output_format": "zarr"}),
+        encoding="utf-8",
+    )
+
+    def _fake_run_fix(inputs, fixes, dry_run, output_format):
+        _ = (inputs, fixes, dry_run)
+        assert output_format == "zarr"
+        return {
+            "attempted": 1,
+            "changed": 1,
+            "persist_attempted": 1,
+            "persisted": 1,
+            "persist_failed": 0,
+        }
+
+    monkeypatch.setattr("woodpecker.cli.run_fix", _fake_run_fix)
+
+    result = runner.invoke(
+        cli,
+        ["fix", "--workflow", "workflow.json", "--write", "--format", "json"],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert payload["output_format"] == "zarr"
+
+
+def test_check_workflow_applies_fix_options_to_message(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("c3s-cmip6.member.nc")
+    Path("workflow.json").write_text(
+        json.dumps(
+            {
+                "inputs": ["."],
+                "codes": ["CMIP601"],
+                "fixes": {"CMIP601": {"message": "configured check message"}},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(cli, ["check", "--workflow", "workflow.json"])
+
+    assert result.exit_code == 1
+    assert "configured check message" in result.output

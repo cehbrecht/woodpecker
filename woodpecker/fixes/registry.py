@@ -28,6 +28,10 @@ class Fix:
     def matches(self, dataset: xr.Dataset) -> bool:
         return isinstance(dataset, xr.Dataset)
 
+    def configure(self, config: dict[str, Any] | None = None) -> Fix:
+        self.config = dict(config or {})
+        return self
+
     def check(self, dataset: xr.Dataset) -> List[str]:
         return []
 
@@ -48,6 +52,14 @@ class GroupFix(Fix):
     members: ClassVar[List[Type[Any]]] = []
     member_codes: List[str] = field(default_factory=list)
 
+    def _member_config(self, code: str) -> dict[str, Any]:
+        config = getattr(self, "config", {}) or {}
+        members = config.get("members", {}) if isinstance(config, dict) else {}
+        if not isinstance(members, dict):
+            return {}
+        value = members.get(code, {})
+        return value if isinstance(value, dict) else {}
+
     def __post_init__(self) -> None:
         if not self.members:
             raise ValueError(f"GroupFix '{self.code or self.__class__.__name__}' must define non-empty members")
@@ -60,7 +72,7 @@ class GroupFix(Fix):
     def check(self, dataset: xr.Dataset) -> List[str]:
         issues: List[str] = []
         for cls in self.members:
-            fix = cls()
+            fix = cls().configure(self._member_config(getattr(cls, "code", "")))
             if fix.matches(dataset):
                 issues.extend(fix.check(dataset))
         return issues
@@ -68,7 +80,7 @@ class GroupFix(Fix):
     def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
         applied = False
         for cls in sorted(self.members, key=lambda c: getattr(c, "priority", 10)):
-            fix = cls()
+            fix = cls().configure(self._member_config(getattr(cls, "code", "")))
             if fix.apply(dataset, dry_run=dry_run):
                 applied = True
         return applied

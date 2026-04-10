@@ -74,6 +74,8 @@ Woodpecker fails safely with a warning and reports persistence failure in fix st
 
 How it works (current demo): `discover fixes -> check findings -> apply selected fixes`.
 
+Woodpecker stays a thin layer: fix families can carry different requirements, while workflows provide a shared way to select and run fix sets.
+
 Common tasks:
 
 ```bash
@@ -100,12 +102,33 @@ woodpecker check . --select CMIP6D01
 woodpecker fix . --select CMIP6D01        # dry-run by default
 woodpecker fix . --select CMIP6D01 --write
 woodpecker fix . --select CMIP6D01 --write --output-format zarr
+woodpecker check --workflow workflow.json
+woodpecker fix --workflow workflow.json --write
+```
 
 Write mode reports both fix changes and persistence status (`persisted` vs `failed to persist`) in text and JSON output.
 When `--write --format json` is used, Woodpecker exits with status `1` if any persistence operation fails.
 
 Selected fix codes are validated strictly: unknown `--select` codes fail fast with a clear error (same behavior in the Python API).
+
+Workflow file (building block):
+
+```json
+{
+  "version": 1,
+  "inputs": ["./data"],
+  "codes": ["CMIP601", "ATLAS01"],
+  "fixes": {
+    "CMIP601": {"marker_attr": "custom_marker", "marker_value": "ok"},
+    "ATLAS01": {}
+  },
+  "output_format": "netcdf",
+  "requires": ["io"]
+}
 ```
+
+CLI options override workflow defaults when both are provided.
+Use `fixes` to pass per-fix options while keeping Woodpecker itself generic.
 
 Library API (paths + xarray objects):
 
@@ -117,6 +140,10 @@ ds = xr.Dataset(attrs={"source_name": "cmip6_bad.nc"})
 
 findings = woodpecker.check(ds, codes=["CMIP6D01"])
 stats = woodpecker.fix(ds, codes=["CMIP6D01"], write=True)
+
+# Workflow helpers
+findings_wf = woodpecker.check_workflow("workflow.json", inputs=["./data"])
+stats_wf = woodpecker.fix_workflow("workflow.json", inputs=ds, write=True)
 
 # Path input works as well
 findings_from_paths = woodpecker.check(["./data"], codes=["CMIP6D01"])

@@ -22,11 +22,26 @@ def _validate_selected_codes(selected_codes: set[str]) -> None:
         raise ValueError(f"Unknown fix code(s): {unknown_text}")
 
 
+def _normalize_fix_options(
+    fix_options: dict[str, dict[str, Any]] | None,
+) -> dict[str, dict[str, Any]]:
+    if not fix_options:
+        return {}
+    normalized: dict[str, dict[str, Any]] = {}
+    for code, options in fix_options.items():
+        key = str(code).strip().upper()
+        if not key:
+            continue
+        normalized[key] = dict(options or {})
+    return normalized
+
+
 def select_fixes(
     dataset: Optional[str] = None,
     categories: Sequence[str] = (),
     codes: Sequence[str] = (),
     strict_codes: bool = False,
+    fix_options: dict[str, dict[str, Any]] | None = None,
 ) -> List[Any]:
     filters: Dict[str, Any] = {}
     if dataset:
@@ -36,13 +51,27 @@ def select_fixes(
 
     fixes = FixRegistry.discover(filters=filters or None)
     selected_codes = _normalize_codes(codes)
+    normalized_fix_options = _normalize_fix_options(fix_options)
+    configured_codes = set(normalized_fix_options.keys())
+
+    if strict_codes and configured_codes:
+        _validate_selected_codes(configured_codes)
+
     if not selected_codes:
-        return fixes
+        selected = fixes
+    else:
+        if strict_codes:
+            _validate_selected_codes(selected_codes)
 
-    if strict_codes:
-        _validate_selected_codes(selected_codes)
+        selected = [fix for fix in fixes if getattr(fix, "code", "").upper() in selected_codes]
 
-    return [fix for fix in fixes if getattr(fix, "code", "").upper() in selected_codes]
+    if normalized_fix_options:
+        for fix in selected:
+            options = normalized_fix_options.get(getattr(fix, "code", "").upper())
+            if options and hasattr(fix, "configure"):
+                fix.configure(options)
+
+    return selected
 
 
 def run_check(inputs: Iterable[DataInput], fixes: Iterable[Any]) -> List[Dict[str, str]]:

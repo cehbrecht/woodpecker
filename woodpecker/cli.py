@@ -10,6 +10,7 @@ import woodpecker.fixes  # noqa: F401
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.inout import get_io_availability, normalize_inputs
 from woodpecker.runner import run_check, run_fix, select_fixes
+from woodpecker.workflow import load_workflow
 
 
 @click.group()
@@ -57,6 +58,7 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
 
 @cli.command("check")
 @click.argument("paths", nargs=-1, type=click.Path(exists=True, path_type=Path))
+@click.option("--workflow", type=click.Path(exists=True, path_type=Path), default=None)
 @click.option("--dataset", default=None, help="Filter fixes by dataset.")
 @click.option(
     "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
@@ -65,6 +67,7 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def check(
     paths: tuple[Path, ...],
+    workflow: Path | None,
     dataset: str | None,
     categories: tuple[str, ...],
     codes: tuple[str, ...],
@@ -72,13 +75,25 @@ def check(
 ):
     """Check NetCDF files and report findings grouped by fix code."""
     try:
-        target_paths = list(paths) or [Path.cwd()]
+        workflow_spec = load_workflow(workflow) if workflow else None
+
+        resolved_paths = list(paths)
+        if not resolved_paths and workflow_spec and workflow_spec.inputs:
+            resolved_paths = [Path(item) for item in workflow_spec.inputs]
+        target_paths = resolved_paths or [Path.cwd()]
+
+        resolved_dataset = dataset or (workflow_spec.dataset if workflow_spec else None)
+        resolved_categories = categories or tuple(workflow_spec.categories if workflow_spec else [])
+        resolved_codes = codes or tuple(workflow_spec.codes if workflow_spec else [])
+        resolved_fix_options = workflow_spec.fixes if workflow_spec else {}
+
         inputs = normalize_inputs(target_paths)
         fixes = select_fixes(
-            dataset=dataset,
-            categories=categories,
-            codes=codes,
+            dataset=resolved_dataset,
+            categories=resolved_categories,
+            codes=resolved_codes,
             strict_codes=True,
+            fix_options=resolved_fix_options,
         )
     except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
@@ -114,6 +129,7 @@ def io_status(fmt: str):
 
 @cli.command("fix")
 @click.argument("paths", nargs=-1, type=click.Path(exists=True, path_type=Path))
+@click.option("--workflow", type=click.Path(exists=True, path_type=Path), default=None)
 @click.option("--dataset", default=None, help="Filter fixes by dataset.")
 @click.option(
     "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
@@ -135,6 +151,7 @@ def io_status(fmt: str):
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def fix(
     paths: tuple[Path, ...],
+    workflow: Path | None,
     dataset: str | None,
     categories: tuple[str, ...],
     codes: tuple[str, ...],
@@ -144,22 +161,41 @@ def fix(
 ):
     """Apply selected fixes to NetCDF files."""
     try:
-        target_paths = list(paths) or [Path.cwd()]
+        workflow_spec = load_workflow(workflow) if workflow else None
+
+        resolved_paths = list(paths)
+        if not resolved_paths and workflow_spec and workflow_spec.inputs:
+            resolved_paths = [Path(item) for item in workflow_spec.inputs]
+        target_paths = resolved_paths or [Path.cwd()]
+
+        resolved_dataset = dataset or (workflow_spec.dataset if workflow_spec else None)
+        resolved_categories = categories or tuple(workflow_spec.categories if workflow_spec else [])
+        resolved_codes = codes or tuple(workflow_spec.codes if workflow_spec else [])
+        resolved_fix_options = workflow_spec.fixes if workflow_spec else {}
+        resolved_output_format = output_format
+        if (
+            workflow_spec
+            and workflow_spec.output_format
+            and output_format == "auto"
+        ):
+            resolved_output_format = workflow_spec.output_format
+
         inputs = normalize_inputs(target_paths)
         fixes = select_fixes(
-            dataset=dataset,
-            categories=categories,
-            codes=codes,
+            dataset=resolved_dataset,
+            categories=resolved_categories,
+            codes=resolved_codes,
             strict_codes=True,
+            fix_options=resolved_fix_options,
         )
-        stats = run_fix(inputs, fixes, dry_run=not write, output_format=output_format)
+        stats = run_fix(inputs, fixes, dry_run=not write, output_format=resolved_output_format)
     except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
 
     if fmt == "json":
         payload = {
             "mode": "write" if write else "dry-run",
-            "output_format": output_format,
+            "output_format": resolved_output_format,
             **stats,
         }
         click.echo(json.dumps(payload, indent=2))

@@ -24,7 +24,9 @@ class CMIP601(Fix):
 
     def check(self, dataset: xr.Dataset) -> list[str]:
         if _is_cmip6_non_decadal(dataset):
-            return ["dummy CMIP6 placeholder fix candidate"]
+            config = getattr(self, "config", {}) or {}
+            message = config.get("message", "dummy CMIP6 placeholder fix candidate")
+            return [str(message)]
         return []
 
     def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
@@ -32,5 +34,8 @@ class CMIP601(Fix):
             return False
         if dry_run:
             return True
-        dataset.attrs["woodpecker_fix_CMIP601"] = "applied"
+        config = getattr(self, "config", {}) or {}
+        marker_attr = str(config.get("marker_attr", "woodpecker_fix_CMIP601"))
+        marker_value = str(config.get("marker_value", "applied"))
+        dataset.attrs[marker_attr] = marker_value
         return True
