@@ -171,6 +171,20 @@ Example `woodpecker.prov.json` (shortened):
 }
 ```
 
+Embedded provenance metadata (NetCDF output):
+
+```bash
+woodpecker fix . --select CMIP6D_0001 --embed-provenance-metadata --output-format netcdf
+```
+
+This writes a global attribute named `woodpecker_provenance` to the output dataset.
+
+Example attribute value (JSON string):
+
+```text
+{"applied_codes": ["CMIP6D_0001"], "generated_at": "2026-04-11T10:22:33.123456+00:00", "run_id": "woodpecker-woodpecker", "source": "./cmip6_case.nc"}
+```
+
 ## GitHub Pages
 
 This repository includes a workflow that builds and deploys the MkDocs site to GitHub Pages.
