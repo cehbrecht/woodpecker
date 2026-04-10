@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
+from prov.model import ProvDocument
+
 from woodpecker.inout import DataInput, get_output_adapter
 
 
@@ -27,11 +29,35 @@ def build_prov_document(
 
     output_adapter = get_output_adapter(output_format)
 
-    entities: dict[str, dict[str, Any]] = {}
-    used: dict[str, dict[str, Any]] = {}
+    doc = ProvDocument()
+    doc.set_default_namespace("urn:woodpecker:")
+    doc.add_namespace("woodpecker", "https://github.com/macpingu/woodpecker#")
+
+    activity_id = f"activity-{run_id}"
+    activity_attrs: dict[str, Any] = {
+        "prov:type": "woodpecker:FixRun",
+        "generatedAtTime": generated_at,
+        "mode": mode,
+        "output_format": output_format,
+        "selected_codes": json.dumps(selected_codes, sort_keys=True),
+        "stats": json.dumps(stats, sort_keys=True),
+    }
+    if workflow:
+        activity_attrs["workflow"] = workflow
+
+    doc.activity(activity_id, None, None, activity_attrs)
+    agent_id = "agent-woodpecker"
+    doc.agent(
+        agent_id,
+        {
+            "prov:type": "prov:SoftwareAgent",
+            "name": "woodpecker",
+        },
+    )
+    doc.wasAssociatedWith(activity_id, agent_id)
 
     for idx, data_input in enumerate(inputs):
-        entity_id = f"entity:input:{idx}"
+        entity_id = f"entity-input-{idx}"
         target_reference = data_input.reference
         if output_adapter is not None and data_input.source_path is not None:
             try:
@@ -39,50 +65,17 @@ def build_prov_document(
             except Exception:
                 target_reference = data_input.reference
 
-        entities[entity_id] = {
-            "prov:type": "prov:Entity",
-            "reference": data_input.reference,
-            "target_reference": target_reference,
-        }
-        used[f"used:{idx}"] = {
-            "prov:activity": f"activity:{run_id}",
-            "prov:entity": entity_id,
-        }
+        doc.entity(
+            entity_id,
+            {
+                "prov:type": "prov:Entity",
+                "reference": data_input.reference,
+                "target_reference": target_reference,
+            },
+        )
+        doc.used(activity_id, entity_id)
 
-    activity_attrs: dict[str, Any] = {
-        "prov:type": "woodpecker:FixRun",
-        "generatedAtTime": generated_at,
-        "mode": mode,
-        "output_format": output_format,
-        "selected_codes": selected_codes,
-        "stats": stats,
-    }
-    if workflow:
-        activity_attrs["workflow"] = workflow
-
-    return {
-        "prefix": {
-            "prov": "http://www.w3.org/ns/prov#",
-            "woodpecker": "https://github.com/macpingu/woodpecker#",
-        },
-        "entity": entities,
-        "activity": {
-            f"activity:{run_id}": activity_attrs,
-        },
-        "agent": {
-            "agent:woodpecker": {
-                "prov:type": "prov:SoftwareAgent",
-                "name": "woodpecker",
-            }
-        },
-        "wasAssociatedWith": {
-            f"association:{run_id}": {
-                "prov:activity": f"activity:{run_id}",
-                "prov:agent": "agent:woodpecker",
-            }
-        },
-        "used": used,
-    }
+    return json.loads(doc.serialize(format="json"))
 
 
 def write_prov_document(document: dict[str, Any], path: Path) -> None:
