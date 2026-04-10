@@ -10,31 +10,14 @@ Contributor and developer docs live in `CONTRIBUTING.md`.
 
 ## Quickstart
 
-Recommended setup:
+Conda setup:
 
 ```bash
 conda env create -f environment.yml
 conda activate woodpecker
-make install
+make dev
 make list-fixes
 ```
-
-Pip-only setup:
-
-```bash
-pip install -e .
-woodpecker list-fixes
-```
-
-Optional extras:
-
-```bash
-pip install -e ".[io]"       # NetCDF backends
-pip install -e ".[zarr]"     # Zarr backend
-pip install -e ".[io,zarr]"  # both
-```
-
-If a backend is missing (for example Zarr without `.[zarr]`), Woodpecker warns and reports persistence failure in fix stats.
 
 ## Usage
 
