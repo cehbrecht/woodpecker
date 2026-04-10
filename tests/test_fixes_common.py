@@ -1,7 +1,7 @@
 import numpy as np
 import xarray as xr
 
-from woodpecker.fixes.common import COMMON_0001
+from woodpecker.fixes.common import COMMON_0001, COMMON_0004
 
 
 def test_common01_apply_write_converts_temperature_units_to_kelvin():
@@ -16,3 +16,20 @@ def test_common01_apply_write_converts_temperature_units_to_kelvin():
     assert changed is True
     assert dataset["temp"].attrs["units"] == "K"
     np.testing.assert_allclose(dataset["temp"].values, [273.15, 274.15])
+
+
+def test_common04_apply_write_merges_equivalent_dims():
+    dataset = xr.Dataset(
+        data_vars={"tcwv": (("time", "bnds"), np.array([[1.0, 2.0]], dtype=np.float32))},
+        coords={
+            "time": [0],
+            "bnds": [0, 1],
+            "nv": [0, 1],
+        },
+    )
+
+    changed = COMMON_0004().configure({"dims": ["bnds", "nv"]}).apply(dataset, dry_run=False)
+
+    assert changed is True
+    assert "bnds" in dataset["tcwv"].dims
+    assert "nv" not in dataset["tcwv"].dims

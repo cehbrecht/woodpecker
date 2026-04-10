@@ -59,8 +59,44 @@ woodpecker fix . --select CMIP6D_0001
 ```json
 {
 	"version": 1,
-	"inputs": ["."],
-	"codes": ["CMIP6D_0001"],
+	"dataset": "cmip7",
+	"datasets": {
+		"*esa_cci_a*.nc": {
+			"steps": [
+				{
+					"code": "CMIP7_0003",
+					"options": {
+						"variable_map": {"prw": "tcwv"},
+						"dim_map": {"bnds": "nv"},
+						"realm": "atmos",
+						"branded_variable": "prw_tavg-u-hxy-u"
+					}
+				}
+			]
+		},
+		"*esa_cci_b*.nc": {
+			"steps": [
+				{
+					"code": "CMIP7_0003",
+					"options": {
+						"variable_map": {"prw": "tcwv"},
+						"realm": "atmos"
+					}
+				}
+			]
+		},
+		"*esa_cci_c*.nc": {
+			"steps": [
+				{
+					"code": "CMIP7_0003",
+					"options": {
+						"variable_map": {"prw": "tcwv"},
+						"branded_variable": "prw_tavg-u-hxy-u"
+					}
+				}
+			]
+		}
+	},
 	"output_format": "netcdf"
 }
 ```
