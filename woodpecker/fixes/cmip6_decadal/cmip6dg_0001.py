@@ -1,21 +1,21 @@
 from __future__ import annotations
 
 from ..registry import FixRegistry, GroupFix
-from .cmip6d01 import CMIP6D_0001
-from .cmip6d02 import CMIP6D_0002
-from .cmip6d03 import CMIP6D_0003
-from .cmip6d04 import CMIP6D_0004
-from .cmip6d05 import CMIP6D_0005
-from .cmip6d06 import CMIP6D_0006
-from .cmip6d07 import CMIP6D_0007
-from .cmip6d08 import CMIP6D_0008
-from .cmip6d09 import CMIP6D_0009
-from .cmip6d10 import CMIP6D_0010
-from .cmip6d11 import CMIP6D_0011
-from .cmip6d12 import CMIP6D_0012
-from .cmip6d13 import CMIP6D_0013
-from .cmip6d14 import CMIP6D_0014
-from .cmip6d15 import CMIP6D_0015
+from .cmip6d_0001 import CMIP6D_0001
+from .cmip6d_0002 import CMIP6D_0002
+from .cmip6d_0003 import CMIP6D_0003
+from .cmip6d_0004 import CMIP6D_0004
+from .cmip6d_0005 import CMIP6D_0005
+from .cmip6d_0006 import CMIP6D_0006
+from .cmip6d_0007 import CMIP6D_0007
+from .cmip6d_0008 import CMIP6D_0008
+from .cmip6d_0009 import CMIP6D_0009
+from .cmip6d_0010 import CMIP6D_0010
+from .cmip6d_0011 import CMIP6D_0011
+from .cmip6d_0012 import CMIP6D_0012
+from .cmip6d_0013 import CMIP6D_0013
+from .cmip6d_0014 import CMIP6D_0014
+from .cmip6d_0015 import CMIP6D_0015
 
 
 @FixRegistry.register
