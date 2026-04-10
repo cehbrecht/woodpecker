@@ -115,6 +115,28 @@ woodpecker fix --workflow workflow.json
 woodpecker fix --workflow workflow.json --force-apply
 ```
 
+Same idea in YAML:
+
+```yaml
+version: 1
+comment: "Workflow notes: see fixes overview at https://macpingu.github.io/woodpecker/fixes.html"
+dataset: cmip7
+datasets:
+	"*esa_cci_a*.nc":
+		comment: "ESA CCI file group A"
+		steps:
+			- code: CMIP7_0003
+				comment: "CMIP7_0003: configurable reformat bridge"
+				options:
+					variable_map:
+						prw: tcwv
+					dim_map:
+						bnds: nv
+					realm: atmos
+					branded_variable: prw_tavg-u-hxy-u
+output_format: netcdf
+```
+
 ## Provenance
 
 Woodpecker writes a PROV-JSON provenance file by default when you run `fix`.
