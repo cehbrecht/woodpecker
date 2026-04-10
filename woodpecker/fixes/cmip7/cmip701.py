@@ -37,13 +37,13 @@ def _apply_kelvin_conversion(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class ESMVAL01(Fix):
-    code = "ESMVAL01"
+class CMIP701(Fix):
+    code = "CMIP701"
     name = "Normalize tas-like units to Kelvin"
-    description = "Prototype ESMVal-style fix: converts tas/temp from Celsius-like units to Kelvin."
+    description = "Converts tas/temp from Celsius-like units to Kelvin."
     categories = ["metadata", "units"]
     priority = 40
-    dataset = "ESMVal"
+    dataset = "CMIP7"
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _needs_kelvin_conversion(dataset)
@@ -52,7 +52,7 @@ class ESMVAL01(Fix):
         if not _needs_kelvin_conversion(dataset):
             return []
         variable_name = _target_variable(dataset)
-        return [f"{variable_name} should use Kelvin units (K) for ESMVal workflows"]
+        return [f"{variable_name} should use Kelvin units (K) for CMIP7 workflows"]
 
     def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
         if not _needs_kelvin_conversion(dataset):

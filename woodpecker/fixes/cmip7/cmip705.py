@@ -27,13 +27,13 @@ def _apply_coord_fillvalue_cleanup(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class ESMVAL05(Fix):
-    code = "ESMVAL05"
+class CMIP705(Fix):
+    code = "CMIP705"
     name = "Remove coordinate FillValue encodings"
     description = "Removes _FillValue encoding entries from common coordinate variables."
     categories = ["metadata", "structure"]
     priority = 44
-    dataset = "ESMVal"
+    dataset = "CMIP7"
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _needs_coord_fillvalue_cleanup(dataset)

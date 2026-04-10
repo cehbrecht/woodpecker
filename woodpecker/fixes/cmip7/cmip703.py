@@ -19,13 +19,13 @@ def _apply_temp_to_tas_rename(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class ESMVAL03(Fix):
-    code = "ESMVAL03"
+class CMIP703(Fix):
+    code = "CMIP703"
     name = "Rename temp variable to tas"
     description = "Renames data variable temp to tas when tas is missing."
     categories = ["structure", "metadata"]
     priority = 42
-    dataset = "ESMVal"
+    dataset = "CMIP7"
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _needs_temp_to_tas_rename(dataset)

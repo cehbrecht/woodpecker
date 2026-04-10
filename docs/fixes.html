@@ -199,48 +199,93 @@
     </tr>
   
     <tr>
-      <td id="ESMVAL01"><a href="#ESMVAL01"><code>ESMVAL01</code></a></td>
+      <td id="CMIP701"><a href="#CMIP701"><code>CMIP701</code></a></td>
       <td>Normalize tas-like units to Kelvin</td>
-      <td>Prototype ESMVal-style fix: converts tas/temp from Celsius-like units to Kelvin.</td>
+      <td>Converts tas/temp from Celsius-like units to Kelvin.</td>
       <td>metadata, units</td>
-      <td>ESMVal</td>
+      <td>CMIP7</td>
       <td>40</td>
     </tr>
   
     <tr>
-      <td id="ESMVAL02"><a href="#ESMVAL02"><code>ESMVAL02</code></a></td>
+      <td id="CMIP702"><a href="#CMIP702"><code>CMIP702</code></a></td>
       <td>Ensure project_id is present</td>
       <td>Sets project_id from dataset identifier metadata when missing.</td>
       <td>metadata</td>
-      <td>ESMVal</td>
+      <td>CMIP7</td>
       <td>41</td>
     </tr>
   
     <tr>
-      <td id="ESMVAL03"><a href="#ESMVAL03"><code>ESMVAL03</code></a></td>
+      <td id="CMIP703"><a href="#CMIP703"><code>CMIP703</code></a></td>
       <td>Rename temp variable to tas</td>
       <td>Renames data variable temp to tas when tas is missing.</td>
       <td>structure, metadata</td>
-      <td>ESMVal</td>
+      <td>CMIP7</td>
       <td>42</td>
     </tr>
   
     <tr>
-      <td id="ESMVAL04"><a href="#ESMVAL04"><code>ESMVAL04</code></a></td>
+      <td id="CMIP704"><a href="#CMIP704"><code>CMIP704</code></a></td>
       <td>Ensure latitude is increasing</td>
       <td>Flips datasets with decreasing latitude coordinates to increasing order.</td>
       <td>structure</td>
-      <td>ESMVal</td>
+      <td>CMIP7</td>
       <td>43</td>
     </tr>
   
     <tr>
-      <td id="ESMVAL05"><a href="#ESMVAL05"><code>ESMVAL05</code></a></td>
+      <td id="CMIP705"><a href="#CMIP705"><code>CMIP705</code></a></td>
       <td>Remove coordinate FillValue encodings</td>
       <td>Removes _FillValue encoding entries from common coordinate variables.</td>
       <td>metadata, structure</td>
-      <td>ESMVal</td>
+      <td>CMIP7</td>
       <td>44</td>
+    </tr>
+  
+    <tr>
+      <td id="ESACCI01"><a href="#ESACCI01"><code>ESACCI01</code></a></td>
+      <td>ESA CCI normalize tas-like units to Kelvin</td>
+      <td>ESA CCI bridge fix reusing CMIP701 Celsius-to-Kelvin conversion logic.</td>
+      <td>metadata, units</td>
+      <td>ESA-CCI</td>
+      <td>60</td>
+    </tr>
+  
+    <tr>
+      <td id="ESACCI02"><a href="#ESACCI02"><code>ESACCI02</code></a></td>
+      <td>ESA CCI ensure project_id is present</td>
+      <td>ESA CCI bridge fix reusing CMIP702 project_id derivation logic.</td>
+      <td>metadata</td>
+      <td>ESA-CCI</td>
+      <td>61</td>
+    </tr>
+  
+    <tr>
+      <td id="ESACCI03"><a href="#ESACCI03"><code>ESACCI03</code></a></td>
+      <td>ESA CCI rename temp variable to tas</td>
+      <td>ESA CCI bridge fix reusing CMIP703 temp-to-tas rename logic.</td>
+      <td>structure, metadata</td>
+      <td>ESA-CCI</td>
+      <td>62</td>
+    </tr>
+  
+    <tr>
+      <td id="ESACCI04"><a href="#ESACCI04"><code>ESACCI04</code></a></td>
+      <td>ESA CCI ensure latitude is increasing</td>
+      <td>ESA CCI bridge fix reusing CMIP704 latitude-order normalization logic.</td>
+      <td>structure</td>
+      <td>ESA-CCI</td>
+      <td>63</td>
+    </tr>
+  
+    <tr>
+      <td id="ESACCI05"><a href="#ESACCI05"><code>ESACCI05</code></a></td>
+      <td>ESA CCI remove coordinate FillValue encodings</td>
+      <td>ESA CCI bridge fix reusing CMIP705 coordinate encoding cleanup logic.</td>
+      <td>metadata, structure</td>
+      <td>ESA-CCI</td>
+      <td>64</td>
     </tr>
   
     <tr>

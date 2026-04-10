@@ -52,13 +52,13 @@ def _apply_lat_flip(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class ESMVAL04(Fix):
-    code = "ESMVAL04"
+class CMIP704(Fix):
+    code = "CMIP704"
     name = "Ensure latitude is increasing"
     description = "Flips datasets with decreasing latitude coordinates to increasing order."
     categories = ["structure"]
     priority = 43
-    dataset = "ESMVal"
+    dataset = "CMIP7"
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _needs_lat_flip(dataset)

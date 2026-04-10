@@ -22,13 +22,13 @@ def _apply_project_id(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class ESMVAL02(Fix):
-    code = "ESMVAL02"
+class CMIP702(Fix):
+    code = "CMIP702"
     name = "Ensure project_id is present"
     description = "Sets project_id from dataset identifier metadata when missing."
     categories = ["metadata"]
     priority = 41
-    dataset = "ESMVal"
+    dataset = "CMIP7"
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _needs_project_id(dataset)
