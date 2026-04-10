@@ -9,7 +9,9 @@ import click
 import woodpecker.fixes  # noqa: F401
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.inout import get_io_availability, normalize_inputs
+from woodpecker.provenance import build_prov_document, write_prov_document
 from woodpecker.runner import run_check, run_fix, select_fixes
+from woodpecker.workflow import load_workflow
 
 
 @click.group()
@@ -57,6 +59,7 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
 
 @cli.command("check")
 @click.argument("paths", nargs=-1, type=click.Path(exists=True, path_type=Path))
+@click.option("--workflow", type=click.Path(exists=True, path_type=Path), default=None)
 @click.option("--dataset", default=None, help="Filter fixes by dataset.")
 @click.option(
     "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
@@ -65,15 +68,47 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def check(
     paths: tuple[Path, ...],
+    workflow: Path | None,
     dataset: str | None,
     categories: tuple[str, ...],
     codes: tuple[str, ...],
     fmt: str,
 ):
     """Check NetCDF files and report findings grouped by fix code."""
-    target_paths = list(paths) or [Path.cwd()]
-    inputs = normalize_inputs(target_paths)
-    fixes = select_fixes(dataset=dataset, categories=categories, codes=codes)
+    try:
+        workflow_spec = load_workflow(workflow) if workflow else None
+
+        resolved_paths = list(paths)
+        if not resolved_paths and workflow_spec and workflow_spec.inputs:
+            resolved_paths = [Path(item) for item in workflow_spec.inputs]
+        target_paths = resolved_paths or [Path.cwd()]
+
+        inputs = normalize_inputs(target_paths)
+        resolution = (
+            workflow_spec.resolve([item.reference for item in inputs]) if workflow_spec else None
+        )
+
+        resolved_dataset = dataset or (resolution.dataset if resolution else None)
+        resolved_categories = categories or tuple(resolution.categories if resolution else [])
+        resolved_codes = codes or tuple(resolution.codes if resolution else [])
+        resolved_fix_options = resolution.fixes if resolution else {}
+        resolved_ordered_codes = (
+            tuple(code.strip().upper() for code in codes if code.strip())
+            if codes
+            else tuple(resolution.ordered_codes if resolution else [])
+        )
+
+        fixes = select_fixes(
+            dataset=resolved_dataset,
+            categories=resolved_categories,
+            codes=resolved_codes,
+            strict_codes=True,
+            fix_options=resolved_fix_options,
+            ordered_codes=resolved_ordered_codes,
+        )
+    except (TypeError, ValueError) as exc:
+        raise click.ClickException(str(exc)) from exc
+
     findings = run_check(inputs, fixes)
 
     if fmt == "json":
@@ -105,6 +140,7 @@ def io_status(fmt: str):
 
 @cli.command("fix")
 @click.argument("paths", nargs=-1, type=click.Path(exists=True, path_type=Path))
+@click.option("--workflow", type=click.Path(exists=True, path_type=Path), default=None)
 @click.option("--dataset", default=None, help="Filter fixes by dataset.")
 @click.option(
     "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
@@ -123,25 +159,102 @@ def io_status(fmt: str):
     show_default=True,
     help="Output format for writes.",
 )
+@click.option(
+    "--provenance/--no-provenance",
+    default=True,
+    show_default=True,
+    help="Write W3C PROV-JSON provenance output file.",
+)
+@click.option(
+    "--provenance-path",
+    type=click.Path(path_type=Path),
+    default=Path("woodpecker.prov.json"),
+    show_default=True,
+    help="Output path for provenance JSON.",
+)
+@click.option(
+    "--embed-provenance-metadata",
+    is_flag=True,
+    default=False,
+    help="Embed per-dataset provenance metadata into output dataset attrs on write.",
+)
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def fix(
     paths: tuple[Path, ...],
+    workflow: Path | None,
     dataset: str | None,
     categories: tuple[str, ...],
     codes: tuple[str, ...],
     write: bool,
     output_format: str,
+    provenance: bool,
+    provenance_path: Path,
+    embed_provenance_metadata: bool,
     fmt: str,
 ):
     """Apply selected fixes to NetCDF files."""
-    target_paths = list(paths) or [Path.cwd()]
-    inputs = normalize_inputs(target_paths)
-    fixes = select_fixes(dataset=dataset, categories=categories, codes=codes)
-    stats = run_fix(inputs, fixes, dry_run=not write, output_format=output_format)
+    try:
+        workflow_spec = load_workflow(workflow) if workflow else None
+
+        resolved_paths = list(paths)
+        if not resolved_paths and workflow_spec and workflow_spec.inputs:
+            resolved_paths = [Path(item) for item in workflow_spec.inputs]
+        target_paths = resolved_paths or [Path.cwd()]
+
+        inputs = normalize_inputs(target_paths)
+        resolution = (
+            workflow_spec.resolve([item.reference for item in inputs]) if workflow_spec else None
+        )
+
+        resolved_dataset = dataset or (resolution.dataset if resolution else None)
+        resolved_categories = categories or tuple(resolution.categories if resolution else [])
+        resolved_codes = codes or tuple(resolution.codes if resolution else [])
+        resolved_fix_options = resolution.fixes if resolution else {}
+        resolved_ordered_codes = (
+            tuple(code.strip().upper() for code in codes if code.strip())
+            if codes
+            else tuple(resolution.ordered_codes if resolution else [])
+        )
+        resolved_output_format = output_format
+        if resolution and resolution.output_format and output_format == "auto":
+            resolved_output_format = resolution.output_format
+
+        fixes = select_fixes(
+            dataset=resolved_dataset,
+            categories=resolved_categories,
+            codes=resolved_codes,
+            strict_codes=True,
+            fix_options=resolved_fix_options,
+            ordered_codes=resolved_ordered_codes,
+        )
+        run_id = f"woodpecker-{Path.cwd().name}"
+        run_fix_kwargs = {
+            "dry_run": not write,
+            "output_format": resolved_output_format,
+        }
+        if embed_provenance_metadata and write:
+            run_fix_kwargs["embed_provenance_metadata"] = True
+            run_fix_kwargs["provenance_run_id"] = run_id
+        stats = run_fix(inputs, fixes, **run_fix_kwargs)
+    except (TypeError, ValueError) as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    if provenance:
+        prov = build_prov_document(
+            inputs=inputs,
+            selected_codes=[getattr(fix, "code", "") for fix in fixes],
+            stats=stats,
+            mode="write" if write else "dry-run",
+            output_format=resolved_output_format,
+            workflow=str(workflow) if workflow else None,
+        )
+        write_prov_document(prov, provenance_path)
+
     if fmt == "json":
         payload = {
             "mode": "write" if write else "dry-run",
-            "output_format": output_format,
+            "output_format": resolved_output_format,
+            "provenance": str(provenance_path) if provenance else None,
             **stats,
         }
         click.echo(json.dumps(payload, indent=2))

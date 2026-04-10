@@ -1,18 +1,18 @@
 """CMIP6-decadal fix modules."""
 
-from .cmip6d01 import CMIP6D01  # noqa: F401
-from .cmip6d02 import CMIP6D02  # noqa: F401
-from .cmip6d03 import CMIP6D03  # noqa: F401
-from .cmip6d04 import CMIP6D04  # noqa: F401
-from .cmip6d05 import CMIP6D05  # noqa: F401
-from .cmip6d06 import CMIP6D06  # noqa: F401
-from .cmip6d07 import CMIP6D07  # noqa: F401
-from .cmip6d08 import CMIP6D08  # noqa: F401
-from .cmip6d09 import CMIP6D09  # noqa: F401
-from .cmip6d10 import CMIP6D10  # noqa: F401
-from .cmip6d11 import CMIP6D11  # noqa: F401
-from .cmip6d12 import CMIP6D12  # noqa: F401
-from .cmip6d13 import CMIP6D13  # noqa: F401
-from .cmip6d14 import CMIP6D14  # noqa: F401
-from .cmip6d15 import CMIP6D15  # noqa: F401
-from .cmip6dg01 import CMIP6DG01  # noqa: F401
+from .cmip6d_0001 import CMIP6D_0001  # noqa: F401
+from .cmip6d_0002 import CMIP6D_0002  # noqa: F401
+from .cmip6d_0003 import CMIP6D_0003  # noqa: F401
+from .cmip6d_0004 import CMIP6D_0004  # noqa: F401
+from .cmip6d_0005 import CMIP6D_0005  # noqa: F401
+from .cmip6d_0006 import CMIP6D_0006  # noqa: F401
+from .cmip6d_0007 import CMIP6D_0007  # noqa: F401
+from .cmip6d_0008 import CMIP6D_0008  # noqa: F401
+from .cmip6d_0009 import CMIP6D_0009  # noqa: F401
+from .cmip6d_0010 import CMIP6D_0010  # noqa: F401
+from .cmip6d_0011 import CMIP6D_0011  # noqa: F401
+from .cmip6d_0012 import CMIP6D_0012  # noqa: F401
+from .cmip6d_0013 import CMIP6D_0013  # noqa: F401
+from .cmip6d_0014 import CMIP6D_0014  # noqa: F401
+from .cmip6d_0015 import CMIP6D_0015  # noqa: F401
+from .cmip6dg_0001 import CMIP6DG_0001  # noqa: F401

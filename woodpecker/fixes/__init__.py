@@ -13,6 +13,7 @@ from . import (
     atlas,  # noqa: F401
     cmip6,  # noqa: F401
     cmip6_decadal,  # noqa: F401
-    esmval,  # noqa: F401
+    cmip7,  # noqa: F401
+    common,  # noqa: F401
 )
 from .registry import Fix, FixRegistry  # noqa: F401

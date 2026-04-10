@@ -5,15 +5,15 @@
 
 **Woodpeckers** “fix” trees by pecking out small problem spots — exactly like this tool applies targeted fixes to datasets.
 
-Woodpecker is a small, **code-driven catalog of dataset fixes** for climate data workflows (CDS/WPS, ESMValTool, etc.).
-Each fix has a **stable short code** (e.g. `CMIP6D01`) so external services (like an ESGF errata UI) can reference it directly.
+Woodpecker is a small, **code-driven catalog of dataset fixes** for climate data workflows (CDS/WPS, CMIP pipelines, etc.).
+Each fix has a **stable short code** (e.g. `CMIP6D_0001`) so external services (like an ESGF errata UI) can reference it directly.
 
 The design is inspired by Ruff: fast, rule-based checks with optional targeted auto-fixes.
 
 ## What This Demo Includes
 
 - `woodpecker.fixes.registry.FixRegistry`: in-memory registry (simple today, extensible tomorrow)
-- Built-in fix families grouped by domain subpackage (`cmip6_decadal`, `atlas`, `esmval`, ...)
+- Built-in fix families grouped by domain subpackage (`common`, `cmip6_decadal`, `cmip7`, `atlas`, ...)
 - `woodpecker` CLI:
   - `woodpecker list-fixes`
   - `woodpecker list-fixes --format md|json`
@@ -22,7 +22,7 @@ The design is inspired by Ruff: fast, rule-based checks with optional targeted a
 - Documentation generation:
   - `docs/FIXES.md` (Markdown catalog)
   - `docs/FIXES.json` (machine-readable)
-  - `docs/fixes.html` (small interactive page with anchors, ideal for linking `#CMIP6D01`)
+  - `docs/fixes.html` (small interactive page with anchors, ideal for linking `#CMIP6D_0001`)
 - MkDocs site (Material theme) + GitHub Pages workflow
 
 ## Quickstart
@@ -74,6 +74,8 @@ Woodpecker fails safely with a warning and reports persistence failure in fix st
 
 How it works (current demo): `discover fixes -> check findings -> apply selected fixes`.
 
+Woodpecker stays a thin layer: fix families can carry different requirements, while workflows provide a shared way to select and run fix sets.
+
 Common tasks:
 
 ```bash
@@ -96,14 +98,73 @@ Lint-style workflow (Ruff-like):
 woodpecker io-status
 woodpecker io-status --format json
 woodpecker check /path/to/netcdf/or/folder
-woodpecker check . --select CMIP6D01
-woodpecker fix . --select CMIP6D01        # dry-run by default
-woodpecker fix . --select CMIP6D01 --write
-woodpecker fix . --select CMIP6D01 --write --output-format zarr
+woodpecker check . --select CMIP6D_0001
+woodpecker fix . --select CMIP6D_0001        # dry-run by default
+woodpecker fix . --select CMIP6D_0001 --write
+woodpecker fix . --select CMIP6D_0001 --write --output-format zarr
+woodpecker check --workflow workflow.json
+woodpecker fix --workflow workflow.json --write
+```
 
 Write mode reports both fix changes and persistence status (`persisted` vs `failed to persist`) in text and JSON output.
 When `--write --format json` is used, Woodpecker exits with status `1` if any persistence operation fails.
+
+Selected fix codes are validated strictly: unknown `--select` codes fail fast with a clear error (same behavior in the Python API).
+
+Workflow file (building block):
+
+```json
+{
+  "version": 1,
+  "inputs": ["./data"],
+  "codes": ["CMIP6_0001", "ATLAS_0001"],
+  "fixes": {
+    "CMIP6_0001": {"marker_attr": "custom_marker", "marker_value": "ok"},
+    "ATLAS_0001": {}
+  },
+  "output_format": "netcdf",
+  "requires": ["io"]
+}
 ```
+
+CLI options override workflow defaults when both are provided.
+Use `fixes` to pass per-fix options while keeping Woodpecker itself generic.
+
+Selector + ordered steps variant:
+
+```json
+{
+  "datasets": {
+    "*cmip6*.nc": [
+      {"code": "CMIP6_0001", "options": {"message": "cmip6 check path"}},
+      {"code": "ATLAS_0001"}
+    ]
+  }
+}
+```
+
+This lets workflows choose a fix sequence per dataset pattern while still reusing common Python fix implementations.
+
+ESA CCI as workflow usage of CMIP7 fixes:
+
+```json
+{
+  "dataset": "CMIP7",
+  "datasets": {
+    "*ESA_CCI*.nc": {
+      "steps": [
+        {"code": "COMMON_0001"},
+        {"code": "CMIP7_0001"},
+        {"code": "CMIP7_0002"},
+        {"code": "COMMON_0002"},
+        {"code": "COMMON_0003"}
+      ]
+    }
+  }
+}
+```
+
+See the ready-to-use example at `workflows/examples/esa_cci_to_cmip7.json`.
 
 Library API (paths + xarray objects):
 
@@ -113,11 +174,15 @@ import woodpecker
 
 ds = xr.Dataset(attrs={"source_name": "cmip6_bad.nc"})
 
-findings = woodpecker.check(ds, codes=["CMIP6D01"])
-stats = woodpecker.fix(ds, codes=["CMIP6D01"], write=True)
+findings = woodpecker.check(ds, codes=["CMIP6D_0001"])
+stats = woodpecker.fix(ds, codes=["CMIP6D_0001"], write=True)
+
+# Workflow helpers
+findings_wf = woodpecker.check_workflow("workflow.json", inputs=["./data"])
+stats_wf = woodpecker.fix_workflow("workflow.json", inputs=ds, write=True)
 
 # Path input works as well
-findings_from_paths = woodpecker.check(["./data"], codes=["CMIP6D01"])
+findings_from_paths = woodpecker.check(["./data"], codes=["CMIP6D_0001"])
 ```
 
 Fix author contract (minimal):
@@ -132,9 +197,9 @@ into xarray objects before running fixes.
 
 ```bash
 touch cmip6_case.nc
-woodpecker check . --select CMIP6D01
-woodpecker fix . --select CMIP6D01        # dry-run by default
-woodpecker fix . --select CMIP6D01 --write
+woodpecker check . --select CMIP6D_0001
+woodpecker fix . --select CMIP6D_0001        # dry-run by default
+woodpecker fix . --select CMIP6D_0001 --write
 # dummy fix marks datasets in-memory/on write path (no filename renaming in this phase)
 ```
 
@@ -152,7 +217,7 @@ Woodpecker intentionally stays simple and “human-countable”, but the design 
 
 - file-level demo logic is intentionally lightweight (no heavy real-world NetCDF transforms yet)
 - checks/fixes focus on deterministic, explainable behavior for design discussions
-- includes a prototype-inspired `ESMVAL01` example fix (tas/temp Celsius -> Kelvin)
+- includes prototype-inspired `COMMON_0001` fix (tas/temp Celsius -> Kelvin) and CMIP7-specific wrappers (`CMIP7_0001`, `CMIP7_0002`)
 
 ## Next Steps
 
@@ -162,5 +227,5 @@ Woodpecker intentionally stays simple and “human-countable”, but the design 
 ## GitHub Pages
 
 This repo includes a workflow that builds and deploys the MkDocs site to GitHub Pages on pushes that touch fixes/docs/scripts.
-After enabling GitHub Pages (Settings → Pages), your fix codes become clickable URLs (e.g. `.../fixes.html#CMIP6D01`),
+After enabling GitHub Pages (Settings → Pages), your fix codes become clickable URLs (e.g. `.../fixes.html#CMIP6D_0001`),
 which an errata service can reference.
