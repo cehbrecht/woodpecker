@@ -71,7 +71,9 @@ def _apply_dim_renames(dataset: xr.Dataset, dim_map: dict[str, str]) -> bool:
 class CMIP7_0003(Fix):
     code = "CMIP7_0003"
     name = "Configurable CMIP7 reformat bridge (plugin)"
-    description = "Applies workflow-driven variable/dimension remapping and selected metadata updates."
+    description = (
+        "Applies workflow-driven variable/dimension remapping and selected metadata updates."
+    )
     categories = ["structure", "metadata"]
     priority = 43
     dataset = "CMIP7"

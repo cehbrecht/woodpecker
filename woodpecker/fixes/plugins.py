@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from importlib import metadata
 import warnings
+from importlib import metadata
 from typing import Any, Iterable
 
 ENTRYPOINT_GROUP = "woodpecker.plugins"
