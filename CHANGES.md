@@ -2,8 +2,10 @@
 
 ## Unreleased
 
-- Refactored dataset I/O into a dedicated `woodpecker.inout` package and updated API/CLI/runner to use it.
-- Added optional backend model (`io`, `zarr` extras), runtime capability reporting (`io-status`), and safe fallback behavior when backends are missing.
-- Improved fix execution/reporting with explicit persistence stats and JSON output for machine-readable workflows.
-- Expanded quality gates with Ruff tooling, `uv` developer workflow, and CI coverage for minimal/full dependency profiles.
-- Added backend-aware tests (`pytest.mark.io_backend`) and updated project/docs/Make targets to match the new workflow.
+## 0.1.0 (2026-04-15)
+
+- Moved dataset I/O into `woodpecker.inout` and wired API, CLI, and runner to use it.
+- Added fix plan workflow support to drive fix selection/options from JSON or YAML.
+- Added optional backend support (`io` and `zarr` extras) with `io-status` reporting and safe fallbacks.
+- Improved fix reporting with persistence stats and JSON output.
+- Expanded tooling and tests (Ruff, `uv` workflow, CI profiles, backend-aware tests).
