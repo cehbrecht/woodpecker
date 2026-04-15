@@ -99,6 +99,18 @@ def load():
 	return None
 ```
 
+Concrete reference package in this repo:
+
+- `examples/plugins/woodpecker-cmip7-plugin` (CMIP7-style external fixes)
+
+CMIP7 fixes are plugin-provided (not built into core).
+
+Install the CMIP7 plugin example before using `CMIP7_000*` codes:
+
+```bash
+pip install -e examples/plugins/woodpecker-cmip7-plugin
+```
+
 ## Example
 
 ```bash

@@ -13,7 +13,6 @@ from . import (
     atlas,  # noqa: F401
     cmip6,  # noqa: F401
     cmip6_decadal,  # noqa: F401
-    cmip7,  # noqa: F401
     common,  # noqa: F401
 )
 from .plugins import load_plugins

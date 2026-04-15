@@ -36,9 +36,9 @@ def test_registry_discovers_builtins():
     assert "COMMON_0002" in codes
     assert "COMMON_0003" in codes
 
-    # CMIP7 fix family
-    assert "CMIP7_0001" in codes
-    assert "CMIP7_0002" in codes
+    # CMIP7 fixes are provided via external plugin (not built-in)
+    assert "CMIP7_0001" not in codes
+    assert "CMIP7_0002" not in codes
 
     # Group fix
     assert "CMIP6DG_0001" in codes
