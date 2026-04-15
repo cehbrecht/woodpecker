@@ -1,6 +1,6 @@
 import pytest
 
-from woodpecker.fixes.registry import FixRegistry, GroupFix
+from woodpecker.fixes.registry import Fix, FixRegistry, GroupFix, register_fix
 
 
 def test_registry_discovers_builtins():
@@ -36,9 +36,9 @@ def test_registry_discovers_builtins():
     assert "COMMON_0002" in codes
     assert "COMMON_0003" in codes
 
-    # CMIP7 fix family
-    assert "CMIP7_0001" in codes
-    assert "CMIP7_0002" in codes
+    # CMIP7 fixes are provided via external plugin (not built-in)
+    assert "CMIP7_0001" not in codes
+    assert "CMIP7_0002" not in codes
 
     # Group fix
     assert "CMIP6DG_0001" in codes
@@ -93,3 +93,18 @@ def test_registry_rejects_missing_name():
             dataset = None
 
         FixRegistry.register(_MissingNameFix)
+
+
+def test_register_fix_decorator_alias_registers_class():
+    class _AliasFix(Fix):
+        code = "ALIAS_0001"
+        name = "Alias decorator fix"
+        description = ""
+        categories = ["metadata"]
+        priority = 10
+        dataset = None
+
+    registered = register_fix(_AliasFix)
+    assert registered is _AliasFix
+    assert "ALIAS_0001" in FixRegistry.registered_codes()
+    FixRegistry._registry.pop("ALIAS_0001", None)

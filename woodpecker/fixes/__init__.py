@@ -13,7 +13,10 @@ from . import (
     atlas,  # noqa: F401
     cmip6,  # noqa: F401
     cmip6_decadal,  # noqa: F401
-    cmip7,  # noqa: F401
     common,  # noqa: F401
 )
-from .registry import Fix, FixRegistry  # noqa: F401
+from .plugins import load_plugins
+from .registry import Fix, FixRegistry, register_fix  # noqa: F401
+
+# Discover and load third-party fix plugins via entry points.
+load_plugins()

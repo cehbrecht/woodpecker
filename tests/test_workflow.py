@@ -117,7 +117,7 @@ def test_workflow_comment_fields_are_parsed(tmp_path: Path):
     assert block.steps[0].comment == "Fix note with docs link"
 
 
-def test_esa_cci_example_workflow_uses_cmip7_fix_codes_in_order():
+def test_esa_cci_example_workflow_uses_plugin_cmip7_fix_codes_in_order():
     workflow_path = Path("workflows/examples/esa_cci.json")
 
     workflow = load_workflow(workflow_path)

@@ -187,6 +187,16 @@
     "priority": 30
   },
   {
+    "code": "COMMON_0004",
+    "name": "Merge equivalent dimensions",
+    "description": "Merges two or more same-sized dimensions into the first configured dimension.",
+    "categories": [
+      "structure"
+    ],
+    "dataset": null,
+    "priority": 32
+  },
+  {
     "code": "COMMON_0002",
     "name": "Ensure latitude is increasing",
     "description": "Flips datasets with decreasing latitude coordinates to increasing order.",
@@ -216,27 +226,6 @@
     ],
     "dataset": "cmip6",
     "priority": 40
-  },
-  {
-    "code": "CMIP7_0001",
-    "name": "Ensure project_id is present",
-    "description": "Sets project_id from dataset identifier metadata when missing.",
-    "categories": [
-      "metadata"
-    ],
-    "dataset": "CMIP7",
-    "priority": 41
-  },
-  {
-    "code": "CMIP7_0002",
-    "name": "Rename temp variable to tas",
-    "description": "Renames data variable temp to tas when tas is missing.",
-    "categories": [
-      "structure",
-      "metadata"
-    ],
-    "dataset": "CMIP7",
-    "priority": 42
   },
   {
     "code": "CMIP6DG_0001",
