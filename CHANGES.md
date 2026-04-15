@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Added minimal entry-point plugin support (`woodpecker.plugins`) for external fix discovery.
-- Moved CMIP7 fixes out of core and into the external plugin package `examples/plugins/woodpecker-cmip7-plugin`.
+- Moved CMIP7 fixes out of core and into the external plugin package `plugins/woodpecker-cmip7-plugin`.
 
 ## 0.1.0 (2026-04-15)
 
