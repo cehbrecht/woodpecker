@@ -16,4 +16,8 @@ from . import (
     cmip7,  # noqa: F401
     common,  # noqa: F401
 )
-from .registry import Fix, FixRegistry  # noqa: F401
+from .plugins import load_plugins
+from .registry import Fix, FixRegistry, register_fix  # noqa: F401
+
+# Discover and load third-party fix plugins via entry points.
+load_plugins()

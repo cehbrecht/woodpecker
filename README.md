@@ -43,6 +43,62 @@ Force-apply option:
 
 More advanced workflow patterns are in `CONTRIBUTING.md`.
 
+## Plugin Fixes (Entry Points)
+
+Woodpecker can discover external fix plugins via Python entry points.
+Entry point group: `woodpecker.plugins`.
+
+Each plugin entry point can target either:
+
+- a module import path (import side effects register fixes), or
+- a callable loader function (called once at startup).
+
+Minimal example plugin package:
+
+`pyproject.toml`:
+
+```toml
+[project]
+name = "woodpecker-example-plugin"
+version = "0.1.0"
+dependencies = ["woodpecker>=0.1.0"]
+
+[project.entry-points."woodpecker.plugins"]
+example = "woodpecker_example_plugin"
+# or callable loader:
+# example = "woodpecker_example_plugin:load"
+```
+
+`woodpecker_example_plugin/__init__.py`:
+
+```python
+from woodpecker.fixes.registry import Fix, register_fix
+
+
+@register_fix
+class EXTERNAL_0001(Fix):
+	code = "EXTERNAL_0001"
+	name = "External demo fix"
+	description = "A minimal plugin-provided fix."
+	categories = ["metadata"]
+	priority = 50
+	dataset = None
+
+	def matches(self, dataset):
+		return True
+
+	def check(self, dataset):
+		return []
+
+	def apply(self, dataset, dry_run=True):
+		return False
+
+
+def load():
+	# Optional callable entry point target.
+	return None
+```
+
 ## Example
 
 ```bash

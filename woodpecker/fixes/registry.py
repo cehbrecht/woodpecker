@@ -203,3 +203,18 @@ class FixRegistry:
 
         with open(path, "w", encoding="utf-8") as fp:
             json.dump(data, fp, indent=2)
+
+
+def register_fix(fix_cls: Type[Any]) -> Type[Any]:
+    """Decorator alias for registering fixes.
+
+    This keeps the plugin author API minimal:
+
+        from woodpecker.fixes.registry import Fix, register_fix
+
+        @register_fix
+        class MY_FIX(Fix):
+            ...
+    """
+
+    return FixRegistry.register(fix_cls)

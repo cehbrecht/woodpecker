@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added minimal entry-point plugin support (`woodpecker.plugins`) for external fix discovery.
+
 ## 0.1.0 (2026-04-15)
 
 - Moved dataset I/O into `woodpecker.inout` and wired API, CLI, and runner to use it.
