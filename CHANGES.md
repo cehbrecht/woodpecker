@@ -4,6 +4,7 @@
 
 - Added minimal entry-point plugin support (`woodpecker.plugins`) for external fix discovery.
 - Moved CMIP7 fixes out of core and into the external plugin package `plugins/woodpecker-cmip7-plugin`.
+- Added a lightweight FixPlan abstraction (`FixRef`, `FixPlan`, `apply_plan`, `load_fix_plan`) for JSON/YAML-defined fix sequences.
 
 ## 0.1.0 (2026-04-15)
 
