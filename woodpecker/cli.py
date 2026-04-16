@@ -7,9 +7,9 @@ import click
 
 # Importing woodpecker.fixes registers built-in fixes.
 import woodpecker.fixes  # noqa: F401
-from woodpecker.fix_plan import load_fix_plan_spec
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.inout import get_io_availability, normalize_inputs
+from woodpecker.plans.io import load_fix_plan_spec
 from woodpecker.provenance import build_prov_document, write_prov_document
 from woodpecker.runner import run_check, run_fix, select_fixes
 

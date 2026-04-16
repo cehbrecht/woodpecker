@@ -3,8 +3,10 @@ from pathlib import Path
 import pytest
 import xarray as xr
 
-from woodpecker.fix_plan import FixPlan, apply_plan, load_fix_plan
 from woodpecker.fixes.registry import FixRegistry, register_fix
+from woodpecker.plans.io import load_fix_plan
+from woodpecker.plans.models import FixPlan
+from woodpecker.plans.runner import apply_fix_plan
 
 
 class _FixMethodFix:
@@ -100,7 +102,7 @@ def test_apply_plan_calls_check_then_fix_and_passes_options():
     plan = FixPlan.from_mapping({"fixes": [{"id": "PLAN_0001", "options": {"alpha": 1}}]})
 
     try:
-        apply_plan(ds, plan, FixRegistry)
+        apply_fix_plan(ds, plan, FixRegistry)
     finally:
         FixRegistry._registry.pop("PLAN_0001", None)
 
@@ -113,7 +115,7 @@ def test_apply_plan_falls_back_to_apply_when_fix_method_missing():
     plan = FixPlan.from_mapping({"fixes": [{"id": "PLAN_0002", "options": {"beta": 2}}]})
 
     try:
-        apply_plan(ds, plan, FixRegistry)
+        apply_fix_plan(ds, plan, FixRegistry)
     finally:
         FixRegistry._registry.pop("PLAN_0002", None)
 
@@ -127,6 +129,6 @@ def test_apply_plan_does_not_mask_type_error_from_fix_method():
 
     try:
         with pytest.raises(TypeError, match="internal check bug"):
-            apply_plan(ds, plan, FixRegistry)
+            apply_fix_plan(ds, plan, FixRegistry)
     finally:
         FixRegistry._registry.pop("PLAN_0003", None)

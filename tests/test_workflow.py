@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from woodpecker.fix_plan import load_fix_plan_spec
+from woodpecker.plans.io import load_fix_plan_spec
 
 
 def test_load_fix_plan_spec_json(tmp_path: Path):
