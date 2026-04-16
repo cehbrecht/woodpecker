@@ -20,7 +20,7 @@ class DuckDBFixPlanStore(FixPlanStore):
             import duckdb
         except ImportError as exc:  # pragma: no cover - exercised in environments without duckdb
             raise RuntimeError(
-                "DuckDBFixPlanStore requires optional dependency 'duckdb'. Install with: pip install 'woodpecker[duckdb]'"
+                "DuckDBFixPlanStore requires optional dependency 'duckdb'. Install with: pip install duckdb (or pip install 'woodpecker[full]')"
             ) from exc
         return duckdb
 

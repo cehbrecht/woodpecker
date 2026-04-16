@@ -22,7 +22,7 @@ make list-fixes
 Optional DuckDB support (for `DuckDBFixPlanStore`):
 
 ```bash
-pip install -e ".[duckdb]"
+pip install -e ".[full]"
 ```
 
 ## Usage
