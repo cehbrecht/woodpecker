@@ -16,6 +16,46 @@ from woodpecker.provenance import build_prov_document, write_prov_document
 from woodpecker.stores.helpers import create_fix_plan_store
 
 
+def build_run_fix_kwargs(
+    context,
+    dry_run: bool,
+    force_apply: bool,
+    embed_provenance_metadata: bool,
+) -> dict[str, object]:
+    """Build keyword arguments forwarded to run_fix()."""
+
+    run_fix_kwargs: dict[str, object] = {
+        "dry_run": dry_run,
+        "output_format": context.resolved_output_format,
+    }
+    if force_apply:
+        run_fix_kwargs["force_apply"] = True
+    if embed_provenance_metadata and not dry_run:
+        run_id = f"woodpecker-{Path.cwd().name}"
+        run_fix_kwargs["embed_provenance_metadata"] = True
+        run_fix_kwargs["provenance_run_id"] = run_id
+    return run_fix_kwargs
+
+
+def format_provenance_source(
+    context,
+    plan: Path | None,
+    plan_store: str | None,
+    plan_store_path: Path | None,
+) -> str | None:
+    """Return a human-readable provenance source string for plan selection."""
+
+    if context.source == "plan":
+        return str(plan) if plan else None
+
+    if context.source == "store":
+        plan_ids = [selected.id for selected in context.selected_plans if selected.id]
+        selected_text = ", ".join(plan_ids) if plan_ids else "<unnamed>"
+        return f"store:{plan_store}@{plan_store_path} plans={selected_text}"
+
+    return None
+
+
 @click.group()
 def cli():
     """Woodpecker CLI."""
@@ -80,7 +120,9 @@ def list_plans(plan_store: str, plan_store_path: Path, fmt: str):
 
     try:
         store = create_fix_plan_store(plan_store, plan_store_path)
-    except ValueError as exc:
+    except click.ClickException:
+        raise
+    except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
 
     if store is None:  # pragma: no cover - guarded by required=True on options
@@ -88,7 +130,9 @@ def list_plans(plan_store: str, plan_store_path: Path, fmt: str):
 
     try:
         plans = store.list_plans()
-    except (RuntimeError, ValueError) as exc:
+    except click.ClickException:
+        raise
+    except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
 
     click.echo(format_plans(plans, fmt))
@@ -145,7 +189,9 @@ def load_plans(
 
     try:
         target_store = create_fix_plan_store(plan_store, plan_store_path)
-    except ValueError as exc:
+    except click.ClickException:
+        raise
+    except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
 
     if target_store is None:  # pragma: no cover - guarded by required=True
@@ -158,7 +204,9 @@ def load_plans(
             from_store_path=from_store_path,
             plan_id=plan_id,
         )
-    except ValueError as exc:
+    except click.ClickException:
+        raise
+    except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
 
     for plan in plans:
@@ -239,6 +287,8 @@ def check(
             codes=codes,
             output_format="auto",
         )
+    except click.ClickException:
+        raise
     except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
 
@@ -370,28 +420,27 @@ def fix(
             raise click.ClickException(
                 "--force-apply requires explicit fix selection via --select or plan codes."
             )
-        run_id = f"woodpecker-{Path.cwd().name}"
-        run_fix_kwargs = {
-            "dry_run": dry_run,
-            "output_format": context.resolved_output_format,
-        }
-        if force_apply:
-            run_fix_kwargs["force_apply"] = True
-        if embed_provenance_metadata and not dry_run:
-            run_fix_kwargs["embed_provenance_metadata"] = True
-            run_fix_kwargs["provenance_run_id"] = run_id
+        run_fix_kwargs = build_run_fix_kwargs(
+            context,
+            dry_run,
+            force_apply,
+            embed_provenance_metadata,
+        )
         stats = run_fix(context.inputs, context.fixes, **run_fix_kwargs)
+    except click.ClickException:
+        raise
     except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
 
     if provenance:
+        provenance_source = format_provenance_source(context, plan, plan_store, plan_store_path)
         prov = build_prov_document(
             inputs=context.inputs,
             selected_codes=[getattr(fix, "code", "") for fix in context.fixes],
             stats=stats,
             mode="dry-run" if dry_run else "write",
             output_format=context.resolved_output_format,
-            plan=str(plan) if plan else None,
+            plan=provenance_source,
         )
         write_prov_document(prov, provenance_path)
 
