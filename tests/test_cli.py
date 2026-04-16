@@ -319,3 +319,219 @@ def test_fix_force_apply_requires_selected_codes(
 
     assert result.exit_code != 0
     assert "--force-apply requires explicit fix selection" in result.output
+
+
+def test_check_uses_json_plan_store_lookup(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("cmip6_bad.nc")
+    Path("plans.json").write_text(
+        json.dumps(
+            [
+                {
+                    "id": "cmip6-default",
+                    "match": {"path_patterns": ["*cmip6_bad.nc"]},
+                    "fixes": [{"id": "CMIP6_0001"}],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        cli,
+        ["check", ".", "--plan-store", "json", "--plan-store-path", "plans.json"],
+    )
+
+    assert result.exit_code == 1
+    assert "CMIP6_0001" in result.output
+
+
+def test_check_plan_store_requires_plan_id_when_multiple_match(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("cmip6_bad.nc")
+    Path("plans.json").write_text(
+        json.dumps(
+            [
+                {
+                    "id": "first",
+                    "match": {"path_patterns": ["*cmip6_bad.nc"]},
+                    "fixes": [{"id": "CMIP6_0001"}],
+                },
+                {
+                    "id": "second",
+                    "match": {"path_patterns": ["*cmip6_bad.nc"]},
+                    "fixes": [{"id": "CMIP6D_0001"}],
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        cli,
+        ["check", ".", "--plan-store", "json", "--plan-store-path", "plans.json"],
+    )
+
+    assert result.exit_code != 0
+    assert "Multiple matching stored fix plans found" in result.output
+
+
+def test_check_plan_store_plan_id_selects_specific_plan(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("cmip6_bad.nc")
+    Path("plans.json").write_text(
+        json.dumps(
+            [
+                {
+                    "id": "first",
+                    "match": {"path_patterns": ["*cmip6_bad.nc"]},
+                    "fixes": [{"id": "CMIP6D_0001"}],
+                },
+                {
+                    "id": "second",
+                    "match": {"path_patterns": ["*cmip6_bad.nc"]},
+                    "fixes": [{"id": "CMIP6_0001"}],
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        cli,
+        [
+            "check",
+            ".",
+            "--plan-store",
+            "json",
+            "--plan-store-path",
+            "plans.json",
+            "--plan-id",
+            "second",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "CMIP6_0001" in result.output
+
+
+def test_check_explicit_plan_overrides_store(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("cmip6_bad.nc")
+
+    Path("plan.json").write_text(
+        json.dumps({"inputs": ["."], "codes": ["CMIP6_0001"]}),
+        encoding="utf-8",
+    )
+    Path("plans.json").write_text(
+        json.dumps(
+            [
+                {
+                    "id": "store-plan",
+                    "match": {"path_patterns": ["*cmip6_bad.nc"]},
+                    "fixes": [{"id": "CMIP6D_0001"}],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        cli,
+        [
+            "check",
+            "--plan",
+            "plan.json",
+            "--plan-store",
+            "json",
+            "--plan-store-path",
+            "plans.json",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "CMIP6_0001" in result.output
+
+
+def test_list_plans_text_output(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, _ = isolated_cli_workspace
+    Path("plans.json").write_text(
+        json.dumps(
+            [
+                {
+                    "id": "alpha",
+                    "fixes": [{"id": "CMIP6_0001"}],
+                },
+                {
+                    "id": "beta",
+                    "fixes": [{"id": "CMIP6D_0001"}, {"id": "ATLAS_0001"}],
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        cli,
+        ["list-plans", "--plan-store", "json", "--plan-store-path", "plans.json"],
+    )
+
+    assert result.exit_code == 0
+    assert "alpha: 1 fixes" in result.output
+    assert "beta: 2 fixes" in result.output
+
+
+def test_list_plans_json_output(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, _ = isolated_cli_workspace
+    Path("plans.json").write_text(
+        json.dumps(
+            [
+                {
+                    "id": "alpha",
+                    "fixes": [{"id": "CMIP6_0001"}],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        cli,
+        [
+            "list-plans",
+            "--plan-store",
+            "json",
+            "--plan-store-path",
+            "plans.json",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert isinstance(payload, list)
+    assert payload[0]["id"] == "alpha"
+
+
+def test_list_plans_requires_store_options(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, _ = isolated_cli_workspace
+
+    result = runner.invoke(cli, ["list-plans"])
+
+    assert result.exit_code != 0
+    assert "Missing option '--plan-store'" in result.output

@@ -38,6 +38,13 @@ woodpecker fix . --select CMIP6D_0001 --dry-run
 woodpecker fix . --select CMIP6D_0001
 ```
 
+List stored fix plans:
+
+```bash
+woodpecker list-plans --plan-store json --plan-store-path plans.json
+woodpecker list-plans --plan-store duckdb --plan-store-path plans.duckdb --format json
+```
+
 Fix plan option:
 
 - `--plan` loads fix selection and options from a JSON/YAML fix plan file.

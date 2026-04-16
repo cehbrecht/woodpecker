@@ -1,17 +1,298 @@
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Literal, Sequence
 
 import click
 
 # Importing woodpecker.fixes registers built-in fixes.
 import woodpecker.fixes  # noqa: F401
 from woodpecker.fixes.registry import FixRegistry
-from woodpecker.inout import get_io_availability, normalize_inputs
+from woodpecker.inout import DataInput, get_io_availability, normalize_inputs
 from woodpecker.plans.io import load_fix_plan_spec
+from woodpecker.plans.models import FixPlan
 from woodpecker.plans.runner import run_check, run_fix, select_fixes
 from woodpecker.provenance import build_prov_document, write_prov_document
+from woodpecker.stores import DuckDBFixPlanStore, FixPlanStore, JsonFixPlanStore
+
+
+@dataclass(frozen=True)
+class RunContext:
+    """Resolved execution context shared by `check` and `fix`.
+
+    Precedence rules:
+    - explicit CLI arguments override plan/store-derived values
+    - explicit `--plan` overrides store lookup
+    - `--plan-store` is an optional fallback source
+    - with no plan/store source, direct registry selection is used
+    """
+
+    inputs: list[DataInput]
+    fixes: list[Any]
+    selected_plans: list[FixPlan]
+    resolved_dataset: str | None
+    resolved_categories: tuple[str, ...]
+    resolved_codes: tuple[str, ...]
+    resolved_fix_options: dict[str, dict[str, Any]]
+    resolved_output_format: str
+    source: Literal["direct", "plan", "store"]
+
+
+def _normalize_ordered_codes(codes: Sequence[str]) -> tuple[str, ...]:
+    out: list[str] = []
+    seen: set[str] = set()
+    for raw in codes:
+        code = str(raw).strip().upper()
+        if not code or code in seen:
+            continue
+        out.append(code)
+        seen.add(code)
+    return tuple(out)
+
+
+def create_fix_plan_store(store_type: str | None, store_path: Path | None) -> FixPlanStore | None:
+    """Create an optional FixPlanStore backend from CLI options."""
+
+    if store_type is None and store_path is None:
+        return None
+    if store_type is None or store_path is None:
+        raise click.ClickException("--plan-store and --plan-store-path must be provided together.")
+
+    try:
+        if store_type == "json":
+            return JsonFixPlanStore(store_path)
+        if store_type == "duckdb":
+            return DuckDBFixPlanStore(store_path)
+    except (RuntimeError, ValueError) as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    raise click.ClickException(f"Unsupported plan store type: {store_type}")
+
+
+def _load_store_plans(
+    *,
+    store: FixPlanStore,
+    inputs: Sequence[DataInput],
+    plan_id: str | None,
+) -> list[FixPlan]:
+    plans_by_key: dict[str, FixPlan] = {}
+    for data_input in inputs:
+        dataset = data_input.load()
+        try:
+            for plan in store.lookup(dataset, path=data_input.reference):
+                key = plan.id or json.dumps(plan.to_dict(), sort_keys=True)
+                plans_by_key[key] = plan
+        finally:
+            close = getattr(dataset, "close", None)
+            if callable(close):
+                close()
+
+    matches = list(plans_by_key.values())
+    if plan_id:
+        requested = plan_id.strip()
+        matches = [plan for plan in matches if plan.id == requested]
+        if not matches:
+            raise click.ClickException(f"No matching stored fix plan found for --plan-id '{requested}'.")
+
+    if not matches:
+        return []
+    if len(matches) > 1:
+        plan_ids = [plan.id for plan in matches if plan.id]
+        label = ", ".join(plan_ids) if plan_ids else f"{len(matches)} unnamed plans"
+        raise click.ClickException(
+            "Multiple matching stored fix plans found; specify --plan-id to choose one: " + label
+        )
+    return matches
+
+
+def _plan_codes_and_options(plan: FixPlan) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
+    codes = tuple(ref.id for ref in plan.fixes)
+    options = {ref.id: dict(ref.options) for ref in plan.fixes}
+    return codes, options
+
+
+def load_plan_from_sources(
+    *,
+    inputs: Sequence[DataInput],
+    plan_path: Path | None,
+    store_type: str | None,
+    store_path: Path | None,
+    plan_id: str | None,
+) -> tuple[
+    Literal["direct", "plan", "store"],
+    list[FixPlan],
+    str | None,
+    tuple[str, ...],
+    tuple[str, ...],
+    dict[str, dict[str, Any]],
+    str | None,
+]:
+    """Load plan data from explicit file or optional store fallback."""
+
+    if plan_path is not None and plan_id:
+        raise click.ClickException("--plan-id cannot be used together with --plan.")
+    if plan_path is None and plan_id and (store_type is None and store_path is None):
+        raise click.ClickException("--plan-id requires --plan-store and --plan-store-path.")
+
+    if plan_path is not None:
+        spec = load_fix_plan_spec(plan_path)
+        resolution = spec.resolve([item.reference for item in inputs])
+        return (
+            "plan",
+            [resolution.plan],
+            resolution.dataset,
+            tuple(resolution.categories),
+            tuple(resolution.codes),
+            dict(resolution.fixes),
+            resolution.output_format,
+        )
+
+    store = create_fix_plan_store(store_type, store_path)
+    if store is None:
+        return "direct", [], None, (), (), {}, None
+
+    plans = _load_store_plans(store=store, inputs=inputs, plan_id=plan_id)
+    if not plans:
+        return "store", [], None, (), (), {}, None
+
+    selected = plans[0]
+    codes, fix_options = _plan_codes_and_options(selected)
+    return "store", [selected], None, (), codes, fix_options, None
+
+
+def _resolve_target_paths(paths: tuple[Path, ...], plan_path: Path | None) -> list[Path]:
+    if paths:
+        return list(paths)
+    if plan_path is not None:
+        spec = load_fix_plan_spec(plan_path)
+        if spec.inputs:
+            return [Path(item) for item in spec.inputs]
+    return [Path.cwd()]
+
+
+def resolve_run_context(
+    *,
+    paths: tuple[Path, ...],
+    plan_path: Path | None,
+    store_type: str | None,
+    store_path: Path | None,
+    plan_id: str | None,
+    dataset: str | None,
+    categories: tuple[str, ...],
+    codes: tuple[str, ...],
+    output_format: str,
+) -> RunContext:
+    """Resolve inputs + fix selection from direct, plan, or store sources."""
+
+    target_paths = _resolve_target_paths(paths, plan_path)
+    inputs = normalize_inputs(target_paths)
+
+    (
+        source,
+        selected_plans,
+        source_dataset,
+        source_categories,
+        source_codes,
+        source_fix_options,
+        source_output_format,
+    ) = load_plan_from_sources(
+        inputs=inputs,
+        plan_path=plan_path,
+        store_type=store_type,
+        store_path=store_path,
+        plan_id=plan_id,
+    )
+
+    cli_codes = _normalize_ordered_codes(codes)
+    resolved_codes = cli_codes or source_codes
+    resolved_ordered_codes = resolved_codes
+    resolved_dataset = dataset or source_dataset
+    resolved_categories = categories or source_categories
+
+    resolved_output_format = (
+        source_output_format if output_format == "auto" and source_output_format else output_format
+    )
+
+    resolved_fix_options = dict(source_fix_options)
+
+    if source == "store" and not selected_plans and not resolved_codes:
+        raise click.ClickException("No matching fix plans found in the plan store for the selected inputs.")
+
+    fixes = select_fixes(
+        dataset=resolved_dataset,
+        categories=resolved_categories,
+        codes=resolved_codes,
+        strict_codes=True,
+        fix_options=resolved_fix_options,
+        ordered_codes=resolved_ordered_codes,
+    )
+
+    return RunContext(
+        inputs=inputs,
+        fixes=fixes,
+        selected_plans=selected_plans,
+        resolved_dataset=resolved_dataset,
+        resolved_categories=tuple(resolved_categories),
+        resolved_codes=tuple(resolved_codes),
+        resolved_fix_options=resolved_fix_options,
+        resolved_output_format=resolved_output_format,
+        source=source,
+    )
+
+
+def format_findings(findings: list[dict[str, str]], fmt: str) -> str:
+    if fmt == "json":
+        return json.dumps(findings, indent=2)
+    return "\n".join(f"{item['path']}: {item['code']} {item['message']}" for item in findings)
+
+
+def format_fix_stats(
+    stats: dict[str, int],
+    *,
+    fmt: str,
+    dry_run: bool,
+    force_apply: bool,
+    resolved_output_format: str,
+    provenance: bool,
+    provenance_path: Path,
+) -> str:
+    if fmt == "json":
+        payload = {
+            "mode": "dry-run" if dry_run else "write",
+            "force_apply": force_apply,
+            "output_format": resolved_output_format,
+            "provenance": str(provenance_path) if provenance else None,
+            **stats,
+        }
+        return json.dumps(payload, indent=2)
+
+    mode = "dry-run" if dry_run else "write"
+    if not dry_run:
+        return (
+            f"Fix run complete ({mode}): {stats['attempted']} fix applications attempted, "
+            f"{stats['changed']} files changed, {stats['persisted']} persisted, "
+            f"{stats['persist_failed']} failed to persist."
+        )
+    return (
+        f"Fix run complete ({mode}): {stats['attempted']} fix applications attempted, "
+        f"{stats['changed']} files changed."
+    )
+
+
+def format_plans(plans: Sequence[FixPlan], fmt: str) -> str:
+    if fmt == "json":
+        return json.dumps([plan.to_dict() for plan in plans], indent=2)
+
+    if not plans:
+        return "No plans found."
+
+    lines: list[str] = []
+    for plan in plans:
+        plan_id = plan.id or "<unnamed>"
+        lines.append(f"{plan_id}: {len(plan.fixes)} fixes")
+    return "\n".join(lines)
 
 
 @click.group()
@@ -57,6 +338,37 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
         )
 
 
+@cli.command("list-plans")
+@click.option(
+    "--plan-store",
+    "plan_store",
+    type=click.Choice(["json", "duckdb"]),
+    required=True,
+    help="Fix plan store backend.",
+)
+@click.option(
+    "--plan-store-path",
+    "plan_store_path",
+    type=click.Path(path_type=Path),
+    required=True,
+    help="Path to fix plan store file/database.",
+)
+@click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
+def list_plans(plan_store: str, plan_store_path: Path, fmt: str):
+    """List fix plans available in a configured store backend."""
+
+    store = create_fix_plan_store(plan_store, plan_store_path)
+    if store is None:  # pragma: no cover - guarded by required=True on options
+        raise click.ClickException("--plan-store and --plan-store-path are required.")
+
+    try:
+        plans = store.list_plans()
+    except (RuntimeError, ValueError) as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    click.echo(format_plans(plans, fmt))
+
+
 @cli.command("check")
 @click.argument("paths", nargs=-1, type=click.Path(exists=True, path_type=Path))
 @click.option(
@@ -66,6 +378,21 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
     default=None,
     help="Load fix selection/options from a fix plan file.",
 )
+@click.option(
+    "--plan-store",
+    "plan_store",
+    type=click.Choice(["json", "duckdb"]),
+    default=None,
+    help="Optional fix plan store backend when --plan is not provided.",
+)
+@click.option(
+    "--plan-store-path",
+    "plan_store_path",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Path to fix plan store file/database.",
+)
+@click.option("--plan-id", "plan_id", default=None, help="Select a specific stored plan id.")
 @click.option("--dataset", default=None, help="Filter fixes by dataset.")
 @click.option(
     "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
@@ -75,6 +402,9 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
 def check(
     paths: tuple[Path, ...],
     plan: Path | None,
+    plan_store: str | None,
+    plan_store_path: Path | None,
+    plan_id: str | None,
     dataset: str | None,
     categories: tuple[str, ...],
     codes: tuple[str, ...],
@@ -82,48 +412,28 @@ def check(
 ):
     """Check NetCDF files and report findings grouped by fix code."""
     try:
-        plan_spec = load_fix_plan_spec(plan) if plan else None
-
-        resolved_paths = list(paths)
-        if not resolved_paths and plan_spec and plan_spec.inputs:
-            resolved_paths = [Path(item) for item in plan_spec.inputs]
-        target_paths = resolved_paths or [Path.cwd()]
-
-        inputs = normalize_inputs(target_paths)
-        resolution = plan_spec.resolve([item.reference for item in inputs]) if plan_spec else None
-
-        resolved_dataset = dataset or (resolution.dataset if resolution else None)
-        resolved_categories = categories or tuple(resolution.categories if resolution else [])
-        resolved_codes = codes or tuple(resolution.codes if resolution else [])
-        resolved_fix_options = resolution.fixes if resolution else {}
-        resolved_ordered_codes = (
-            tuple(code.strip().upper() for code in codes if code.strip())
-            if codes
-            else tuple(resolution.ordered_ids if resolution else [])
-        )
-
-        fixes = select_fixes(
-            dataset=resolved_dataset,
-            categories=resolved_categories,
-            codes=resolved_codes,
-            strict_codes=True,
-            fix_options=resolved_fix_options,
-            ordered_codes=resolved_ordered_codes,
+        context = resolve_run_context(
+            paths=paths,
+            plan_path=plan,
+            store_type=plan_store,
+            store_path=plan_store_path,
+            plan_id=plan_id,
+            dataset=dataset,
+            categories=categories,
+            codes=codes,
+            output_format="auto",
         )
     except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
 
-    findings = run_check(inputs, fixes)
-
-    if fmt == "json":
-        click.echo(json.dumps(findings, indent=2))
-    else:
-        for item in findings:
-            click.echo(f"{item['path']}: {item['code']} {item['message']}")
+    findings = run_check(context.inputs, context.fixes)
+    output = format_findings(findings, fmt)
+    if output:
+        click.echo(output)
 
     if not findings and fmt == "text":
         click.echo(
-            f"No issues found ({len(inputs)} NetCDF files scanned, {len(fixes)} fixes selected)."
+            f"No issues found ({len(context.inputs)} NetCDF files scanned, {len(context.fixes)} fixes selected)."
         )
 
     raise SystemExit(1 if findings else 0)
@@ -151,6 +461,21 @@ def io_status(fmt: str):
     default=None,
     help="Load fix selection/options from a fix plan file.",
 )
+@click.option(
+    "--plan-store",
+    "plan_store",
+    type=click.Choice(["json", "duckdb"]),
+    default=None,
+    help="Optional fix plan store backend when --plan is not provided.",
+)
+@click.option(
+    "--plan-store-path",
+    "plan_store_path",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Path to fix plan store file/database.",
+)
+@click.option("--plan-id", "plan_id", default=None, help="Select a specific stored plan id.")
 @click.option("--dataset", default=None, help="Filter fixes by dataset.")
 @click.option(
     "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
@@ -198,6 +523,9 @@ def io_status(fmt: str):
 def fix(
     paths: tuple[Path, ...],
     plan: Path | None,
+    plan_store: str | None,
+    plan_store_path: Path | None,
+    plan_id: str | None,
     dataset: str | None,
     categories: tuple[str, ...],
     codes: tuple[str, ...],
@@ -211,89 +539,61 @@ def fix(
 ):
     """Apply selected fixes to NetCDF files."""
     try:
-        plan_path = plan
-        plan_spec = load_fix_plan_spec(plan_path) if plan_path else None
-
-        resolved_paths = list(paths)
-        if not resolved_paths and plan_spec and plan_spec.inputs:
-            resolved_paths = [Path(item) for item in plan_spec.inputs]
-        target_paths = resolved_paths or [Path.cwd()]
-
-        inputs = normalize_inputs(target_paths)
-        resolution = plan_spec.resolve([item.reference for item in inputs]) if plan_spec else None
-
-        resolved_dataset = dataset or (resolution.dataset if resolution else None)
-        resolved_categories = categories or tuple(resolution.categories if resolution else [])
-        resolved_codes = codes or tuple(resolution.codes if resolution else [])
-        resolved_fix_options = resolution.fixes if resolution else {}
-        resolved_ordered_codes = (
-            tuple(code.strip().upper() for code in codes if code.strip())
-            if codes
-            else tuple(resolution.ordered_ids if resolution else [])
+        context = resolve_run_context(
+            paths=paths,
+            plan_path=plan,
+            store_type=plan_store,
+            store_path=plan_store_path,
+            plan_id=plan_id,
+            dataset=dataset,
+            categories=categories,
+            codes=codes,
+            output_format=output_format,
         )
-        if force_apply and not resolved_codes:
+        if force_apply and not context.resolved_codes:
             raise click.ClickException(
                 "--force-apply requires explicit fix selection via --select or plan codes."
             )
-        resolved_output_format = output_format
-        if resolution and resolution.output_format and output_format == "auto":
-            resolved_output_format = resolution.output_format
-
-        fixes = select_fixes(
-            dataset=resolved_dataset,
-            categories=resolved_categories,
-            codes=resolved_codes,
-            strict_codes=True,
-            fix_options=resolved_fix_options,
-            ordered_codes=resolved_ordered_codes,
-        )
         run_id = f"woodpecker-{Path.cwd().name}"
         run_fix_kwargs = {
             "dry_run": dry_run,
-            "output_format": resolved_output_format,
+            "output_format": context.resolved_output_format,
         }
         if force_apply:
             run_fix_kwargs["force_apply"] = True
         if embed_provenance_metadata and not dry_run:
             run_fix_kwargs["embed_provenance_metadata"] = True
             run_fix_kwargs["provenance_run_id"] = run_id
-        stats = run_fix(inputs, fixes, **run_fix_kwargs)
+        stats = run_fix(context.inputs, context.fixes, **run_fix_kwargs)
     except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
 
     if provenance:
         prov = build_prov_document(
-            inputs=inputs,
-            selected_codes=[getattr(fix, "code", "") for fix in fixes],
+            inputs=context.inputs,
+            selected_codes=[getattr(fix, "code", "") for fix in context.fixes],
             stats=stats,
             mode="dry-run" if dry_run else "write",
-            output_format=resolved_output_format,
-            plan=str(plan_path) if plan_path else None,
+            output_format=context.resolved_output_format,
+            plan=str(plan) if plan else None,
         )
         write_prov_document(prov, provenance_path)
 
-    if fmt == "json":
-        payload = {
-            "mode": "dry-run" if dry_run else "write",
-            "force_apply": force_apply,
-            "output_format": resolved_output_format,
-            "provenance": str(provenance_path) if provenance else None,
-            **stats,
-        }
-        click.echo(json.dumps(payload, indent=2))
-        if not dry_run and stats.get("persist_failed", 0) > 0:
-            raise SystemExit(1)
-        return
-
-    mode = "dry-run" if dry_run else "write"
-    if not dry_run:
-        click.echo(
-            f"Fix run complete ({mode}): {stats['attempted']} fix applications attempted, {stats['changed']} files changed, {stats['persisted']} persisted, {stats['persist_failed']} failed to persist."
-        )
-        return
     click.echo(
-        f"Fix run complete ({mode}): {stats['attempted']} fix applications attempted, {stats['changed']} files changed."
+        format_fix_stats(
+            stats,
+            fmt=fmt,
+            dry_run=dry_run,
+            force_apply=force_apply,
+            resolved_output_format=context.resolved_output_format,
+            provenance=provenance,
+            provenance_path=provenance_path,
+        )
     )
+    if fmt == "json" and not dry_run and stats.get("persist_failed", 0) > 0:
+        raise SystemExit(1)
+    if not dry_run:
+        return
 
 
 if __name__ == "__main__":
