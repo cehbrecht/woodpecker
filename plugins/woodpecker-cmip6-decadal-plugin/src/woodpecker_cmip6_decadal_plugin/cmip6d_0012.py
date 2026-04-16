@@ -4,6 +4,7 @@ import xarray as xr
 
 from woodpecker.fixes.registry import Fix, FixRegistry
 
+from .constants import CMIP6D_PREFIX
 from .helpers import apply_leadtime_metadata, is_cmip6_decadal_netcdf, leadtime_metadata_invalid
 
 
@@ -22,7 +23,7 @@ def _apply_leadtime_metadata_fix(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class CMIP6D_0012(Fix):
-    code = "CMIP6D_0012"
+    code = f"{CMIP6D_PREFIX}0012"
     name = "Decadal leadtime metadata normalization"
     description = "Normalizes CMIP6-decadal leadtime metadata (units, long_name, standard_name)."
     categories = ["metadata"]

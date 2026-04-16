@@ -4,6 +4,8 @@ import xarray as xr
 
 from woodpecker.fixes.registry import Fix, FixRegistry
 
+from .constants import CMIP6_PREFIX
+
 
 def _is_cmip6_non_decadal(dataset: xr.Dataset) -> bool:
     source = str(dataset.attrs.get("source_name", "")).lower()
@@ -12,7 +14,7 @@ def _is_cmip6_non_decadal(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class CMIP6_0001(Fix):
-    code = "CMIP6_0001"
+    code = f"{CMIP6_PREFIX}0001"
     name = "CMIP6 dummy placeholder"
     description = "Dummy placeholder for future non-decadal CMIP6 fixes."
     categories = ["metadata"]

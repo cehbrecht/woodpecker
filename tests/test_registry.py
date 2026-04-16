@@ -41,12 +41,12 @@ def test_registry_discovers_builtins():
     assert "CMIP7_0002" in codes
 
     # Group fix
-    assert "CMIP6DG_0001" in codes
+    assert "CMIP6D_0999" in codes
 
 
 def test_group_fix_is_group_fix_instance():
     fixes = FixRegistry.discover()
-    group = next(f for f in fixes if f.code == "CMIP6DG_0001")
+    group = next(f for f in fixes if f.code == "CMIP6D_0999")
     assert isinstance(group, GroupFix)
     assert group.member_codes == [
         "CMIP6D_0001",

@@ -5,6 +5,7 @@ import xarray as xr
 from woodpecker.fixes.common.helpers import remove_encoding_key, vars_with_encoding_key
 from woodpecker.fixes.registry import Fix, FixRegistry
 
+from .constants import CMIP6D_PREFIX
 from .helpers import is_cmip6_decadal_netcdf
 
 
@@ -23,7 +24,7 @@ def _apply_fillvalue_encoding_cleanup(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class CMIP6D_0007(Fix):
-    code = "CMIP6D_0007"
+    code = f"{CMIP6D_PREFIX}0007"
     name = "Decadal _FillValue encoding cleanup"
     description = (
         "Removes stale '_FillValue' encoding entries from realization and bounds variables "

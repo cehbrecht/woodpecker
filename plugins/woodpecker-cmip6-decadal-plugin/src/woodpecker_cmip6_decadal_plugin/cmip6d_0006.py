@@ -5,6 +5,7 @@ import xarray as xr
 
 from woodpecker.fixes.registry import Fix, FixRegistry
 
+from .constants import CMIP6D_PREFIX
 from .helpers import is_cmip6_decadal_netcdf
 
 
@@ -27,7 +28,7 @@ def _apply_realization_dtype_fix(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class CMIP6D_0006(Fix):
-    code = "CMIP6D_0006"
+    code = f"{CMIP6D_PREFIX}0006"
     name = "Decadal realization dtype normalization"
     description = "Normalizes realization data variable dtype to int32 for CMIP6-decadal datasets."
     categories = ["metadata", "structure"]

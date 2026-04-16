@@ -5,6 +5,7 @@ from typing import Any
 import xarray as xr
 
 from ..registry import Fix, FixRegistry
+from .constants import COMMON_PREFIX
 
 
 def _merge_dims_from_config(config: dict[str, Any]) -> tuple[str, ...]:
@@ -65,7 +66,7 @@ def _apply_merge_dims(dataset: xr.Dataset, dims: tuple[str, ...]) -> bool:
 
 @FixRegistry.register
 class COMMON_0004(Fix):
-    code = "COMMON_0004"
+    code = f"{COMMON_PREFIX}0004"
     name = "Merge equivalent dimensions"
     description = "Merges two or more same-sized dimensions into the first configured dimension."
     categories = ["structure"]

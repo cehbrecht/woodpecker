@@ -6,6 +6,8 @@ from woodpecker.fixes.common.helpers import lower_source_name
 from woodpecker.fixes.registry import Fix, FixRegistry
 from woodpecker.identity import resolve_dataset_identity
 
+from .constants import ATLAS_PREFIX
+
 
 def _needs_project_id(dataset: xr.Dataset) -> bool:
     identity = resolve_dataset_identity(dataset)
@@ -28,7 +30,7 @@ def _apply_atlas_project_id(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class ATLAS_0002(Fix):
-    code = "ATLAS_0002"
+    code = f"{ATLAS_PREFIX}0002"
     name = "ATLAS project_id normalization"
     description = "Adds or normalizes ATLAS project_id from dataset identifier prefix."
     categories = ["metadata"]
