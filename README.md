@@ -1,7 +1,9 @@
 # Woodpecker
 
-[![CI](https://github.com/macpingu/woodpecker/actions/workflows/ci.yml/badge.svg)](https://github.com/macpingu/woodpecker/actions/workflows/ci.yml)
-[![Docs](https://github.com/macpingu/woodpecker/actions/workflows/docs.yml/badge.svg)](https://github.com/macpingu/woodpecker/actions/workflows/docs.yml)
+[![CI](https://github.com/cehbrecht/woodpecker/actions/workflows/ci.yml/badge.svg)](https://github.com/cehbrecht/woodpecker/actions/workflows/ci.yml)
+[![Docs](https://github.com/cehbrecht/woodpecker/actions/workflows/docs.yml/badge.svg)](https://github.com/cehbrecht/woodpecker/actions/workflows/docs.yml)
+[![License](https://img.shields.io/github/license/cehbrecht/woodpecker)](https://github.com/cehbrecht/woodpecker/blob/main/LICENSE)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://github.com/cehbrecht/woodpecker/blob/main/pyproject.toml)
 
 Woodpecker is a lightweight, code-based catalog of dataset fixes for climate processing.
 
@@ -24,6 +26,9 @@ Woodpecker is built around three simple concepts:
 - **FixPlanStore** (optional)  
   A lookup layer that returns matching `FixPlan`s for a dataset.  
   Can be backed by JSON files or DuckDB.
+
+Implementation note:
+- A design-stub placeholder for a future Elasticsearch-backed store is in `woodpecker/stores/elasticsearch_store.py` (not wired into CLI/runtime yet).
 
 Plan files (`--plan`) and plan stores use the same `FixPlan` schema.  
 Plan files are simply containers of one or more plans.
