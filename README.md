@@ -25,6 +25,9 @@ Woodpecker is built around three simple concepts:
   A lookup layer that returns matching `FixPlan`s for a dataset.  
   Can be backed by JSON files or DuckDB.
 
+Implementation note:
+- A design-stub placeholder for a future Elasticsearch-backed store is in `woodpecker/stores/elasticsearch_store.py` (not wired into CLI/runtime yet).
+
 Plan files (`--plan`) and plan stores use the same `FixPlan` schema.  
 Plan files are simply containers of one or more plans.
 
