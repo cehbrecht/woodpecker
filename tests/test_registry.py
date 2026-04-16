@@ -7,10 +7,10 @@ def test_registry_discovers_builtins():
     fixes = FixRegistry.discover()
     codes = {fix.code for fix in fixes}
 
-    # CMIP6 (non-decadal) placeholder fix family
+    # CMIP6 (non-decadal) plugin family
     assert "CMIP6_0001" in codes
 
-    # CMIP6-decadal fix family
+    # CMIP6-decadal plugin family
     assert "CMIP6D_0001" in codes
     assert "CMIP6D_0002" in codes
     assert "CMIP6D_0003" in codes
@@ -27,7 +27,7 @@ def test_registry_discovers_builtins():
     assert "CMIP6D_0014" in codes
     assert "CMIP6D_0015" in codes
 
-    # Atlas fix family
+    # Atlas plugin family
     assert "ATLAS_0001" in codes
     assert "ATLAS_0002" in codes
 
@@ -36,17 +36,17 @@ def test_registry_discovers_builtins():
     assert "COMMON_0002" in codes
     assert "COMMON_0003" in codes
 
-    # CMIP7 fixes are provided via external plugin (not built-in)
-    assert "CMIP7_0001" not in codes
-    assert "CMIP7_0002" not in codes
+    # CMIP7 fixes are provided via external plugin.
+    assert "CMIP7_0001" in codes
+    assert "CMIP7_0002" in codes
 
     # Group fix
-    assert "CMIP6DG_0001" in codes
+    assert "CMIP6D_0999" in codes
 
 
 def test_group_fix_is_group_fix_instance():
     fixes = FixRegistry.discover()
-    group = next(f for f in fixes if f.code == "CMIP6DG_0001")
+    group = next(f for f in fixes if f.code == "CMIP6D_0999")
     assert isinstance(group, GroupFix)
     assert group.member_codes == [
         "CMIP6D_0001",

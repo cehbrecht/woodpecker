@@ -4,7 +4,7 @@ import re
 
 import xarray as xr
 
-from ..common.helpers import lower_source_name
+from woodpecker.fixes.common.helpers import lower_source_name
 
 _START_YEAR_PATTERN = re.compile(r"s(\d{4})(?:[^\d]|$)")
 _METADATA_SOURCES = (

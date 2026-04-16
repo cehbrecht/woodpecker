@@ -3,6 +3,7 @@ from __future__ import annotations
 import xarray as xr
 
 from ..registry import Fix, FixRegistry
+from .constants import COMMON_PREFIX
 from .helpers import get_data_unit, is_celsius_unit, target_temperature_variable
 
 
@@ -31,7 +32,7 @@ def _apply_kelvin_conversion(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class COMMON_0001(Fix):
-    code = "COMMON_0001"
+    code = f"{COMMON_PREFIX}0001"
     name = "Normalize tas-like units to Kelvin"
     description = "Converts tas/temp from Celsius-like units to Kelvin."
     categories = ["metadata", "units"]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from ..registry import FixRegistry, GroupFix
+from woodpecker.fixes.registry import FixRegistry, GroupFix
+
 from .cmip6d_0001 import CMIP6D_0001
 from .cmip6d_0002 import CMIP6D_0002
 from .cmip6d_0003 import CMIP6D_0003
@@ -16,11 +17,12 @@ from .cmip6d_0012 import CMIP6D_0012
 from .cmip6d_0013 import CMIP6D_0013
 from .cmip6d_0014 import CMIP6D_0014
 from .cmip6d_0015 import CMIP6D_0015
+from .constants import CMIP6D_PREFIX
 
 
 @FixRegistry.register
-class CMIP6DG_0001(GroupFix):
-    code = "CMIP6DG_0001"
+class CMIP6D_0999(GroupFix):
+    code = f"{CMIP6D_PREFIX}0999"
     name = "CMIP6 Decadal: full fix suite"
     description = (
         "Applies all CMIP6-decadal fixes (CMIP6D_0001–CMIP6D_0015) in sequence: "

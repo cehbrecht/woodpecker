@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import xarray as xr
 
-from ..common.helpers import (
+from woodpecker.fixes.common.helpers import (
     lower_source_name,
     normalize_compression_settings,
     vars_with_compression_above_level,
     vars_with_encoding_key,
 )
-from ..registry import Fix, FixRegistry
+from woodpecker.fixes.registry import Fix, FixRegistry
+
+from .constants import ATLAS_PREFIX
 
 
 def _atlas_vars_to_check(dataset: xr.Dataset) -> list[str]:
@@ -78,7 +80,7 @@ def _apply_atlas_encoding_cleanup(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class ATLAS_0001(Fix):
-    code = "ATLAS_0001"
+    code = f"{ATLAS_PREFIX}0001"
     name = "ATLAS encoding cleanup"
     description = "Applies rook-equivalent ATLAS deflation/encoding cleanup."
     categories = ["encoding"]

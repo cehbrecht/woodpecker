@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import xarray as xr
 
-from ..registry import Fix, FixRegistry
+from woodpecker.fixes.registry import Fix, FixRegistry
+
+from .constants import CMIP6D_PREFIX
 from .helpers import is_cmip6_decadal_netcdf
 from .helpers import normalized_start_token as _normalized_start_token
 
@@ -34,7 +36,7 @@ def _apply_start_token_fix(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class CMIP6D_0009(Fix):
-    code = "CMIP6D_0009"
+    code = f"{CMIP6D_PREFIX}0009"
     name = "Decadal start token normalization"
     description = (
         "Normalizes CMIP6-decadal startdate and sub_experiment_id to the canonical sYYYY11 token."

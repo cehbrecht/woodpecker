@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 import xarray as xr
 
 from woodpecker.fix_plan import FixPlan, apply_plan, load_fix_plan
@@ -48,6 +49,21 @@ class _ApplyMethodFix:
             ("apply", dict(getattr(self, "config", {})), dry_run)
         )
         return True
+
+
+class _TypeErrorInsideMethodFix:
+    code = "PLAN_0003"
+    name = "Plan type error fix"
+    description = ""
+    categories = ["metadata"]
+    priority = 10
+    dataset = None
+
+    def check(self, dataset, options=None):
+        raise TypeError("internal check bug")
+
+    def fix(self, dataset, options=None):
+        return dataset
 
 
 def test_load_fix_plan_from_json(tmp_path: Path):
@@ -102,3 +118,15 @@ def test_apply_plan_falls_back_to_apply_when_fix_method_missing():
         FixRegistry._registry.pop("PLAN_0002", None)
 
     assert ds.attrs["trace"] == [("check", {"beta": 2}), ("apply", {"beta": 2}, False)]
+
+
+def test_apply_plan_does_not_mask_type_error_from_fix_method():
+    register_fix(_TypeErrorInsideMethodFix)
+    ds = xr.Dataset()
+    plan = FixPlan.from_mapping({"fixes": [{"id": "PLAN_0003", "options": {"gamma": 3}}]})
+
+    try:
+        with pytest.raises(TypeError, match="internal check bug"):
+            apply_plan(ds, plan, FixRegistry)
+    finally:
+        FixRegistry._registry.pop("PLAN_0003", None)

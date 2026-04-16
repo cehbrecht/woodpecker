@@ -22,4 +22,4 @@
 | COMMON_0002 | Ensure latitude is increasing | Flips datasets with decreasing latitude coordinates to increasing order. | structure |  | 33 |
 | COMMON_0003 | Remove coordinate FillValue encodings | Removes _FillValue encoding entries from common coordinate variables. | metadata, structure |  | 34 |
 | CMIP6_0001 | CMIP6 dummy placeholder | Dummy placeholder for future non-decadal CMIP6 fixes. | metadata | cmip6 | 40 |
-| CMIP6DG_0001 | CMIP6 Decadal: full fix suite | Applies all CMIP6-decadal fixes (CMIP6D_0001–CMIP6D_0015) in sequence: calendar, encoding, realization metadata, start-token normalisation, model-specific global attributes, and leadtime/reftime coordinates. | metadata, calendar, encoding, structure | CMIP6-decadal | 99 |
+| CMIP6D_0999 | CMIP6 Decadal: full fix suite | Applies all CMIP6-decadal fixes (CMIP6D_0001–CMIP6D_0015) in sequence: calendar, encoding, realization metadata, start-token normalisation, model-specific global attributes, and leadtime/reftime coordinates. | metadata, calendar, encoding, structure | CMIP6-decadal | 99 |

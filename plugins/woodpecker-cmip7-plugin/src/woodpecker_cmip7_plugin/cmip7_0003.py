@@ -6,6 +6,8 @@ import xarray as xr
 
 from woodpecker.fixes.registry import Fix, register_fix
 
+from .constants import CMIP7_PREFIX
+
 
 def _config_map(config: dict[str, Any], key: str) -> dict[str, str]:
     raw = config.get(key, {})
@@ -69,7 +71,7 @@ def _apply_dim_renames(dataset: xr.Dataset, dim_map: dict[str, str]) -> bool:
 
 @register_fix
 class CMIP7_0003(Fix):
-    code = "CMIP7_0003"
+    code = f"{CMIP7_PREFIX}0003"
     name = "Configurable CMIP7 reformat bridge (plugin)"
     description = (
         "Applies workflow-driven variable/dimension remapping and selected metadata updates."

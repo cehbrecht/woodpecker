@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import json
 from dataclasses import dataclass, field
 from fnmatch import fnmatch
@@ -83,22 +84,35 @@ def apply_plan(ds: Any, plan: FixPlan, registry: Any) -> Any:
 
         if not hasattr(fix, "check"):
             raise TypeError(f"Fix '{ref.id}' does not implement check()")
-        try:
-            fix.check(ds, options=ref.options)
-        except TypeError:
-            fix.check(ds)
+        _invoke_with_optional_options(fix.check, ds, ref.options)
 
         if hasattr(fix, "fix"):
-            try:
-                fix.fix(ds, options=ref.options)
-            except TypeError:
-                fix.fix(ds)
+            _invoke_with_optional_options(fix.fix, ds, ref.options)
         elif hasattr(fix, "apply"):
             fix.apply(ds, dry_run=False)
         else:
             raise TypeError(f"Fix '{ref.id}' does not implement fix() or apply()")
 
     return ds
+
+
+def _invoke_with_optional_options(method: Any, ds: Any, options: Mapping[str, Any]) -> Any:
+    """Call fix method and pass options only when the signature supports it."""
+
+    try:
+        signature = inspect.signature(method)
+    except (TypeError, ValueError):
+        # If signature introspection is unavailable, preserve prior behavior.
+        return method(ds, options=options)
+
+    parameters = signature.parameters.values()
+    supports_options = any(
+        param.kind is inspect.Parameter.VAR_KEYWORD or param.name == "options"
+        for param in parameters
+    )
+    if supports_options:
+        return method(ds, options=options)
+    return method(ds)
 
 
 def _normalize_code_list(value: Any) -> list[str]:

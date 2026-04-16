@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "woodpecker-atlas-plugin"
+version = "0.1.0"
+description = "External plugin providing ATLAS fixes for Woodpecker"
+requires-python = ">=3.10"
+dependencies = [
+  "woodpecker>=0.1.0",
+  "xarray>=2024.1.0",
+]
+
+[project.entry-points."woodpecker.plugins"]
+atlas = "woodpecker_atlas_plugin"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["woodpecker_atlas_plugin*"]

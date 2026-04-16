@@ -4,7 +4,9 @@ import re
 
 import xarray as xr
 
-from ..registry import Fix, FixRegistry
+from woodpecker.fixes.registry import Fix, FixRegistry
+
+from .constants import CMIP6D_PREFIX
 from .helpers import is_cmip6_decadal_netcdf
 
 _MALFORMED_URL_VARIANT_PATTERN = re.compile(r"(\.s\d{4})-(r\d+i\d+p\d+f\d+)")
@@ -32,7 +34,7 @@ def _apply_further_info_url_fix(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class CMIP6D_0008(Fix):
-    code = "CMIP6D_0008"
+    code = f"{CMIP6D_PREFIX}0008"
     name = "Decadal further_info_url normalization"
     description = (
         "Normalizes malformed CMIP6-decadal further_info_url variant separators from '-' to '.'."
