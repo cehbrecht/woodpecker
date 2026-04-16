@@ -62,9 +62,9 @@ Core commands:
 
 Fix plan usage:
 
-- `--plan` loads fix selection and options from a FixPlan file.
-- Plan files may contain one or more FixPlans; the CLI selects the matching one.
-- `--plan-store` resolves the same FixPlan entries from a store backend instead of a file.
+- `--store` selects the FixPlanStore backend (default: `json`).
+- `--plan` provides the location interpreted by that backend (JSON file, DuckDB file, etc.).
+- Plan files and stores use the same underlying FixPlan schema.
 
 Force-apply option:
 
@@ -73,8 +73,8 @@ Force-apply option:
 
 List stored fix plans:
 
-    woodpecker list-plans --plan-store json --plan-store-path plans.json
-    woodpecker list-plans --plan-store duckdb --plan-store-path plans.duckdb --format json
+    woodpecker list-plans --store json --plan plans.json
+    woodpecker list-plans --store duckdb --plan plans.duckdb --format json
 
 Fix plan stores provide an optional way to look up FixPlans automatically based on dataset metadata or file paths.
 
@@ -155,9 +155,9 @@ Start here:
 
 Quick run:
 
-    woodpecker check --plan examples/fix-plans/cmip6.json
-    woodpecker fix --plan examples/fix-plans/cmip6.json --dry-run
-    woodpecker list-plans --plan-store json --plan-store-path examples/fix-plans/store.json
+    woodpecker check --plan examples/fix-plans/atlas.json
+    woodpecker fix --plan examples/fix-plans/atlas.json --dry-run
+    woodpecker list-plans --store json --plan examples/fix-plans/atlas.json
 
 Plan files and stores use the same FixPlan schema; the difference is only how plans are stored and retrieved.
 
