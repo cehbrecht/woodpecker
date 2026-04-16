@@ -100,14 +100,12 @@ class DuckDBFixPlanStore(FixPlanStore):
         for key, value in dataset_attrs.items():
             key_text = str(key)
             clauses.append(
-                "(" 
+                "("
                 "match_json IS NULL "
                 "OR json_extract_string(CAST(match_json AS JSON), '$.attrs."
                 + key_text
                 + "') IS NULL "
-                "OR json_extract_string(CAST(match_json AS JSON), '$.attrs."
-                + key_text
-                + "') = ?"
+                "OR json_extract_string(CAST(match_json AS JSON), '$.attrs." + key_text + "') = ?"
                 ")"
             )
             params.append(value)
