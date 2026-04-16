@@ -1,15 +1,28 @@
 # Fix Plan Examples
 
-This folder contains compact, runnable examples so the top-level README stays short.
+This folder contains runnable FixPlan examples.
 
-The examples follow the same core concepts: executable `Fix` rules, ordered `FixPlan` definitions, and optional `FixPlanStore` lookup backends.
+All commands use the current store-based CLI model:
+
+- `--store` selects the backend (`json` by default)
+- `--plan` provides the backend location
+- `--plan-id` selects one plan when needed
 
 ## Files
 
 - `fix-plans/atlas.json`: concrete plan-file example for ATLAS-style inputs.
 - `fix-plans/esa_cci.json`: selector-based plan-file example for ESA CCI / CMIP7-style inputs.
 
-## Run Using Plan Files
+## Run With JSON Backend
+
+`json` is the default backend, so these are equivalent:
+
+```bash
+woodpecker check --plan examples/fix-plans/atlas.json
+woodpecker check --store json --plan examples/fix-plans/atlas.json
+```
+
+Run with plan-derived fix selection:
 
 ```bash
 woodpecker check --plan examples/fix-plans/atlas.json
@@ -19,98 +32,82 @@ woodpecker check --plan examples/fix-plans/esa_cci.json
 woodpecker fix --plan examples/fix-plans/esa_cci.json --force-apply
 ```
 
-`--store` defaults to `json`, so `--plan` alone is shorthand for:
-
-```bash
-woodpecker check --store json --plan examples/fix-plans/atlas.json
-```
-
-## Run Via JSON Plan Store
-
-List available plans:
+List plans from a JSON file:
 
 ```bash
 woodpecker list-plans --store json --plan examples/fix-plans/atlas.json
 ```
 
-Use store lookup (auto-match by dataset attrs/path patterns):
+Lookup matching plans from the JSON file:
 
 ```bash
 woodpecker check . --store json --plan examples/fix-plans/atlas.json
 ```
 
-Select a specific stored plan:
+Select one plan explicitly:
 
 ```bash
 woodpecker fix . --store json --plan examples/fix-plans/atlas.json --plan-id atlas-basic --dry-run
 ```
 
-## Run Via DuckDB Plan Store
+## Run With DuckDB Backend
 
-DuckDB stores the same `FixPlan` entries as JSON, but in database form.
-
-List available plans:
+List plans in DuckDB:
 
 ```bash
 woodpecker list-plans --store duckdb --plan examples/fix-plans/store.duckdb
 ```
 
-Use store lookup:
+Lookup matching plans from DuckDB:
 
 ```bash
 woodpecker check . --store duckdb --plan examples/fix-plans/store.duckdb
 ```
 
-Select a specific stored plan:
+Select one plan explicitly:
 
 ```bash
 woodpecker fix . --store duckdb --plan examples/fix-plans/store.duckdb --plan-id atlas-basic --dry-run
 ```
 
-## Populate DuckDB Store
+## Load Plans Into DuckDB
 
-Install DuckDB support first:
+Install optional backends first:
 
 ```bash
 pip install -e ".[full]"
 ```
 
-Option A: from a `FixPlanDocument` file (`plans: [...]`):
+Load from a JSON plan document:
 
 ```bash
 woodpecker load-plans \
-	--store duckdb \
-	--plan examples/fix-plans/store.duckdb \
-	--from-plan examples/fix-plans/atlas.json
+  --store duckdb \
+  --plan examples/fix-plans/store.duckdb \
+  --from-plan examples/fix-plans/atlas.json
 ```
 
-Option B: copy existing plans from JSON store:
+Load from a JSON backend source:
 
 ```bash
 woodpecker load-plans \
-	--store duckdb \
-	--plan examples/fix-plans/store.duckdb \
-	--from-store json \
-	--from-plan examples/fix-plans/atlas.json
+  --store duckdb \
+  --plan examples/fix-plans/store.duckdb \
+  --from-store json \
+  --from-plan examples/fix-plans/atlas.json
 
-# Optional: only copy one plan id
+# Optional: load one plan only
 woodpecker load-plans \
-	--store duckdb \
-	--plan examples/fix-plans/store.duckdb \
-	--from-store json \
-	--from-plan examples/fix-plans/atlas.json \
-	--plan-id atlas-basic
+  --store duckdb \
+  --plan examples/fix-plans/store.duckdb \
+  --from-store json \
+  --from-plan examples/fix-plans/atlas.json \
+  --plan-id atlas-basic
 ```
 
-## Notes
+## Data Model
 
-- The similarity between a plan document entry and a store entry is intentional.
-- Both use the same `FixPlan` fields: `id`, `description`, `match`, `fixes`.
-- The practical difference is source/backend interpretation:
-	- JSON store: local file path passed to `--plan`
-	- DuckDB store: database file path passed to `--plan`
-- Plan files (`atlas.json`, `esa_cci.json`) are `FixPlanDocument`s with `plans: [...]`.
-- Each entry in `plans` uses the same `FixPlan` schema (`id`, `description`, `match`, `fixes`).
-- `FixPlanStore` backends (JSON, DuckDB) store and return the same `FixPlan` objects.
-- There is only one `FixPlan` schema used across files and stores.
-- CLI arguments still override values derived from plan files or store entries.
+- Plan documents use `{"plans": [...]}`.
+- Each plan uses the same `FixPlan` schema: `id`, `description`, `match`, `fixes`.
+- JSON and DuckDB backends both load and return the same `FixPlan` objects.
+- CLI options such as `--select`, `--dataset`, and `--category` override plan-derived defaults.
