@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 import xarray as xr
 
-from woodpecker.fix_plan_store import (
+from woodpecker.store import (
     DatasetMatcher,
     DuckDBFixPlanStore,
     FixPlan,
