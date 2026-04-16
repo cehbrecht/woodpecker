@@ -28,6 +28,9 @@ zarr = [
   "numcodecs>=0.12",
   "fsspec>=2024.1.0",
 ]
+duckdb = [
+  "duckdb>=1.0",
+]
 docs = [
   "mkdocs<2",
   "mkdocs-material>=9",

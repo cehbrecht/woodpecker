@@ -19,6 +19,12 @@ make dev
 make list-fixes
 ```
 
+Optional DuckDB support (for `DuckDBFixPlanStore`):
+
+```bash
+pip install -e ".[duckdb]"
+```
+
 ## Usage
 
 Flow: `discover fixes -> check findings -> apply selected fixes`.
