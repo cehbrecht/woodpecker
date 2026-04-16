@@ -4,9 +4,9 @@ from pathlib import Path
 from typing import Any, Sequence
 
 import woodpecker.fixes  # noqa: F401
-from woodpecker.fixes.runner import run_check, run_fix, select_fixes
 from woodpecker.inout import normalize_inputs
 from woodpecker.plans.io import load_fix_plan_spec
+from woodpecker.plans.runner import run_check, run_fix, select_fixes
 
 
 def check(
