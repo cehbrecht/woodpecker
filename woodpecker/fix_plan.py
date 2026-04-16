@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import inspect
 import json
 from dataclasses import dataclass
 from fnmatch import fnmatch
@@ -9,7 +8,8 @@ from typing import Any, Mapping, Optional, Sequence
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-from .store.models import FixPlan, FixRef
+from .plans.models import FixPlan, FixRef, parse_fix_ref
+from .plans.runner import apply_fix_plan
 
 try:
     import yaml
@@ -17,75 +17,10 @@ except Exception:  # pragma: no cover - optional import guard
     yaml = None
 
 
-def _parse_fix_ref(item: Any) -> FixRef:
-    if isinstance(item, str):
-        return FixRef(id=item)
-    if not isinstance(item, Mapping):
-        raise ValueError("Each fix entry must be a string or object")
-    fix_id = item.get("id", item.get("code", ""))
-    return FixRef(id=str(fix_id), options=dict(item.get("options", {}) or {}))
-
-
-def _resolve_fix(registry: Any, fix_id: str) -> Any:
-    key = str(fix_id).strip().upper()
-    source: Any | None = None
-    if isinstance(registry, Mapping):
-        source = registry.get(key)
-    elif hasattr(registry, "_registry"):
-        source = getattr(registry, "_registry", {}).get(key)
-    elif hasattr(registry, "get"):
-        source = registry.get(key)
-
-    if source is None:
-        raise KeyError(f"Unknown fix id: {key}")
-
-    if isinstance(source, type):
-        return source()
-    if callable(source) and not hasattr(source, "check"):
-        return source()
-    return source
-
-
 def apply_plan(ds: Any, plan: FixPlan, registry: Any) -> Any:
-    """Resolve plan fix ids from a registry and execute check then fix/apply."""
+    """Compatibility wrapper around plans.runner.apply_fix_plan."""
 
-    for ref in plan.fixes:
-        fix = _resolve_fix(registry, ref.id)
-
-        if hasattr(fix, "configure"):
-            fix = fix.configure(ref.options)
-
-        if not hasattr(fix, "check"):
-            raise TypeError(f"Fix '{ref.id}' does not implement check()")
-        _invoke_with_optional_options(fix.check, ds, ref.options)
-
-        if hasattr(fix, "fix"):
-            _invoke_with_optional_options(fix.fix, ds, ref.options)
-        elif hasattr(fix, "apply"):
-            fix.apply(ds, dry_run=False)
-        else:
-            raise TypeError(f"Fix '{ref.id}' does not implement fix() or apply()")
-
-    return ds
-
-
-def _invoke_with_optional_options(method: Any, ds: Any, options: Mapping[str, Any]) -> Any:
-    """Call fix method and pass options only when the signature supports it."""
-
-    try:
-        signature = inspect.signature(method)
-    except (TypeError, ValueError):
-        # If signature introspection is unavailable, preserve prior behavior.
-        return method(ds, options=options)
-
-    parameters = signature.parameters.values()
-    supports_options = any(
-        param.kind is inspect.Parameter.VAR_KEYWORD or param.name == "options"
-        for param in parameters
-    )
-    if supports_options:
-        return method(ds, options=options)
-    return method(ds)
+    return apply_fix_plan(ds, plan, registry)
 
 
 def _normalize_code_list(value: Any) -> list[str]:
@@ -381,7 +316,7 @@ def load_fix_plan(path: str | Path) -> FixPlan:
     if payload is None:
         payload = {"fixes": []}
     if isinstance(payload, list):
-        return FixPlan(fixes=[_parse_fix_ref(item) for item in payload])
+        return FixPlan(fixes=[parse_fix_ref(item) for item in payload])
     if not isinstance(payload, Mapping):
         raise ValueError("Fix plan file must contain an object or list")
 

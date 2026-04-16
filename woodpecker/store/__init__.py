@@ -1,10 +1,8 @@
 """Fix plan store package with optional backends."""
 
-from .base import FixPlanStore
-from .duckdb_store import DuckDBFixPlanStore
-from .json_store import JsonFixPlanStore
-from .matcher import plan_matches_dataset
-from .models import DatasetMatcher, FixPlan, FixRef
+from ..plans.matcher import plan_matches_dataset
+from ..plans.models import DatasetMatcher, FixPlan, FixRef
+from ..stores import DuckDBFixPlanStore, FixPlanStore, JsonFixPlanStore
 
 __all__ = [
     "FixRef",

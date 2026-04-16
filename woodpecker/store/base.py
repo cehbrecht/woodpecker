@@ -1,20 +1,5 @@
-from __future__ import annotations
+"""Compatibility re-export for FixPlanStore."""
 
-from abc import ABC, abstractmethod
-from typing import Any
+from ..stores.base import FixPlanStore
 
-from .models import FixPlan
-
-
-class FixPlanStore(ABC):
-    @abstractmethod
-    def lookup(self, dataset: Any, path: str | None = None) -> list[FixPlan]:
-        raise NotImplementedError
-
-    @abstractmethod
-    def list_plans(self) -> list[FixPlan]:
-        raise NotImplementedError
-
-    @abstractmethod
-    def save_plan(self, plan: FixPlan) -> None:
-        raise NotImplementedError
+__all__ = ["FixPlanStore"]
