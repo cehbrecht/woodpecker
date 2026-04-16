@@ -2,90 +2,10 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import asdict, dataclass, field
-from typing import Any, ClassVar, Dict, List, Optional, Type
+from dataclasses import asdict
+from typing import Any, Dict, List, Optional, Type
 
-import xarray as xr
-
-
-@dataclass
-class Fix:
-    """Catalog metadata about a fix.
-
-    This object is intentionally JSON-friendly. Transformation logic can live
-    elsewhere (e.g., WPS operator or future fix-engine modules).
-    """
-
-    code: str = ""
-    name: str = ""
-    description: str = ""
-    categories: List[str] = field(
-        default_factory=list
-    )  # e.g. ["metadata", "calendar", "structure"]
-    priority: int = 10  # lower runs earlier
-    dataset: Optional[str] = None  # e.g. "CMIP6-decadal", "CORDEX", "ATLAS"
-
-    def matches(self, dataset: xr.Dataset) -> bool:
-        return isinstance(dataset, xr.Dataset)
-
-    def configure(self, config: dict[str, Any] | None = None) -> Fix:
-        self.config = dict(config or {})
-        return self
-
-    def check(self, dataset: xr.Dataset) -> List[str]:
-        return []
-
-    def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
-        return False
-
-
-@dataclass
-class GroupFix(Fix):
-    """A Fix that chains multiple member fixes, applying them in sequence.
-
-    Subclasses declare a ``members`` class variable listing the :class:`Fix`
-    subclasses to run.  The group is recognisable because its code ends with
-    the family prefix (e.g. ``CMIP6D_0999``).  It satisfies the same interface
-    as :class:`Fix` and can be registered, discovered, and applied identically.
-    """
-
-    members: ClassVar[List[Type[Any]]] = []
-    member_codes: List[str] = field(default_factory=list)
-
-    def _member_config(self, code: str) -> dict[str, Any]:
-        config = getattr(self, "config", {}) or {}
-        members = config.get("members", {}) if isinstance(config, dict) else {}
-        if not isinstance(members, dict):
-            return {}
-        value = members.get(code, {})
-        return value if isinstance(value, dict) else {}
-
-    def __post_init__(self) -> None:
-        if not self.members:
-            raise ValueError(
-                f"GroupFix '{self.code or self.__class__.__name__}' must define non-empty members"
-            )
-        if not self.member_codes and self.members:
-            self.member_codes = [getattr(cls, "code", "") for cls in self.members]
-
-    def matches(self, dataset: xr.Dataset) -> bool:
-        return any(cls().matches(dataset) for cls in self.members)
-
-    def check(self, dataset: xr.Dataset) -> List[str]:
-        issues: List[str] = []
-        for cls in self.members:
-            fix = cls().configure(self._member_config(getattr(cls, "code", "")))
-            if fix.matches(dataset):
-                issues.extend(fix.check(dataset))
-        return issues
-
-    def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
-        applied = False
-        for cls in sorted(self.members, key=lambda c: getattr(c, "priority", 10)):
-            fix = cls().configure(self._member_config(getattr(cls, "code", "")))
-            if fix.apply(dataset, dry_run=dry_run):
-                applied = True
-        return applied
+from .base import Fix, GroupFix
 
 
 class FixRegistry:
@@ -218,3 +138,6 @@ def register_fix(fix_cls: Type[Any]) -> Type[Any]:
     """
 
     return FixRegistry.register(fix_cls)
+
+
+__all__ = ["Fix", "GroupFix", "FixRegistry", "register_fix"]

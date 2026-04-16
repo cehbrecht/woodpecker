@@ -26,12 +26,12 @@ Pip-only setup:
 pip install -e .
 ```
 
-Optional I/O extras:
+Optional extras:
 
 ```bash
-pip install -e ".[io]"       # NetCDF backends (netCDF4/h5netcdf/scipy)
-pip install -e ".[zarr]"     # Zarr backend support
-pip install -e ".[io,zarr]"  # both
+pip install -e ".[full]"     # runtime optional backends (NetCDF/Zarr/DuckDB)
+pip install -e ".[docs]"     # docs build toolchain (mkdocs/material/jinja2)
+pip install -e ".[dev,full]" # common local test setup with optional backends
 ```
 
 ## Common Development Commands
