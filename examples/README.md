@@ -2,6 +2,8 @@
 
 This folder contains compact, runnable examples so the top-level README stays short.
 
+The examples follow the same core concepts: executable `Fix` rules, ordered `FixPlan` definitions, and optional `FixPlanStore` lookup backends.
+
 ## Files
 
 - `fix-plans/cmip6.json`: plan-file example for CMIP6-style inputs.

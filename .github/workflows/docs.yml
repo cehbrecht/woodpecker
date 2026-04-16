@@ -42,6 +42,7 @@ jobs:
         run: |
           PYTHON_BIN=$(python -c 'import sys; print(sys.executable)')
           uv pip install --python "$PYTHON_BIN" -e ".[docs]"
+          uv pip install --python "$PYTHON_BIN" -e plugins/woodpecker-atlas-plugin -e plugins/woodpecker-cmip6-plugin -e plugins/woodpecker-cmip6-decadal-plugin -e plugins/woodpecker-cmip7-plugin
 
       - name: Generate fix catalog (MD/JSON)
         run: python scripts/generate_fix_catalog.py

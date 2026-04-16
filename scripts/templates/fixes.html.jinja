@@ -19,7 +19,7 @@
 </head>
 <body>
 <h1>Woodpecker Fix Codes</h1>
-<p class="hint">Search and click a code to get a stable anchor (useful for errata links).</p>
+<p class="hint">Search and click a code to get a stable anchor (useful for errata links). Source is either <code>core</code> or <code>plugin:&lt;package&gt;</code>.</p>
 
 <input type="text" id="search" placeholder="Search code / name / category / dataset..." />
 
@@ -32,6 +32,7 @@
       <th>Categories</th>
       <th>Dataset</th>
       <th>Priority</th>
+      <th>Source</th>
     </tr>
   </thead>
   <tbody>
@@ -43,6 +44,7 @@
       <td>{{ (f.categories or []) | join(', ') }}</td>
       <td>{{ f.dataset or '' }}</td>
       <td>{{ f.priority }}</td>
+      <td>{{ f.source or '' }}</td>
     </tr>
   {% endfor %}
   </tbody>
