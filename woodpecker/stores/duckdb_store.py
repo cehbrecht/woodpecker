@@ -77,7 +77,68 @@ class DuckDBFixPlanStore(FixPlanStore):
                 [plan.id, plan.description, match_json, fixes_json],
             )
 
+    @staticmethod
+    def _parse_matcher(match_json: str | None) -> DatasetMatcher | None:
+        match_payload = json.loads(match_json) if match_json else None
+        return DatasetMatcher.from_dict(match_payload) if isinstance(match_payload, dict) else None
+
+    @staticmethod
+    def _parse_fixes(fixes_json: str | None) -> list[FixRef]:
+        fixes_payload = json.loads(fixes_json) if fixes_json else []
+        return [FixRef.from_dict(item) for item in fixes_payload]
+
+    def _candidate_query(self, dataset: Any) -> tuple[str, list[Any]]:
+        """Build a coarse SQL prefilter; exact plan matching is done in Python."""
+
+        sql = "SELECT id, description, match_json, fixes_json FROM fix_plans"
+        dataset_attrs = getattr(dataset, "attrs", None)
+        if not isinstance(dataset_attrs, dict):
+            dataset_attrs = dict(dataset_attrs or {})
+
+        clauses: list[str] = []
+        params: list[Any] = []
+        for key, value in dataset_attrs.items():
+            key_text = str(key)
+            clauses.append(
+                "("
+                "match_json IS NULL "
+                "OR json_extract_string(CAST(match_json AS JSON), '$.attrs."
+                + key_text
+                + "') IS NULL "
+                "OR json_extract_string(CAST(match_json AS JSON), '$.attrs." + key_text + "') = ?"
+                ")"
+            )
+            params.append(value)
+
+        if clauses:
+            sql += " WHERE " + " AND ".join(clauses)
+        sql += " ORDER BY id"
+        return sql, params
+
     def lookup(self, dataset: Any, path: str | None = None) -> list[FixPlan]:
-        return [
-            plan for plan in self.list_plans() if plan_matches_dataset(plan, dataset, path=path)
-        ]
+        sql, params = self._candidate_query(dataset)
+        with self._connect() as con:
+            rows = con.execute(sql, params).fetchall()
+
+        matched: list[FixPlan] = []
+        for plan_id, description, match_json, fixes_json in rows:
+            matcher = self._parse_matcher(match_json)
+            candidate = FixPlan(
+                id=str(plan_id),
+                description=str(description or ""),
+                match=matcher,
+                fixes=[],
+            )
+            if not plan_matches_dataset(candidate, dataset, path=path):
+                continue
+
+            matched.append(
+                FixPlan(
+                    id=candidate.id,
+                    description=candidate.description,
+                    match=matcher,
+                    fixes=self._parse_fixes(fixes_json),
+                )
+            )
+
+        return matched

@@ -10,7 +10,7 @@
       },
       "fixes": [
         {
-          "code": "CMIP7_0003",
+          "id": "CMIP7_0003",
           "options": {
             "realm": "atmos",
             "branded_variable": "prw_tavg-u-hxy-u",
@@ -19,7 +19,7 @@
             "keep_global_attrs": true
           }
         },
-        {"code": "COMMON_0002"}
+        {"id": "COMMON_0002"}
       ]
     },
     {
@@ -32,13 +32,13 @@
       },
       "fixes": [
         {
-          "code": "COMMON_0004",
+          "id": "COMMON_0004",
           "options": {
             "dims": ["bnds", "nv"]
           }
         },
         {
-          "code": "CMIP7_0003",
+          "id": "CMIP7_0003",
           "options": {
             "realm": "atmos",
             "branded_variable": "prw_tavg-u-hxy-u",
@@ -46,7 +46,7 @@
             "keep_global_attrs": true
           }
         },
-        {"code": "COMMON_0002"}
+        {"id": "COMMON_0002"}
       ]
     }
   ]

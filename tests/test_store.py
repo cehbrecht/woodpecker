@@ -126,6 +126,49 @@ def test_duckdb_store_save_list_lookup(tmp_path):
     assert [item.id for item in matched] == ["plan-2"]
 
 
+def test_duckdb_candidate_query_builds_attr_prefilter(tmp_path):
+    pytest.importorskip("duckdb")
+
+    store = DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
+    ds = xr.Dataset(attrs={"project_id": "CMIP6", "table_id": "Amon"})
+
+    sql, params = store._candidate_query(ds)
+
+    assert sql.startswith("SELECT id, description, match_json, fixes_json FROM fix_plans")
+    assert "$.attrs.project_id" in sql
+    assert "$.attrs.table_id" in sql
+    assert "ORDER BY id" in sql
+    assert params == ["CMIP6", "Amon"]
+
+
+def test_duckdb_lookup_skips_decoding_nonmatching_fixes_payload(tmp_path):
+    duckdb = pytest.importorskip("duckdb")
+
+    db_path = tmp_path / "fix-plans.duckdb"
+    store = DuckDBFixPlanStore(db_path)
+    store.save_plan(
+        FixPlan(
+            id="atlas",
+            match=DatasetMatcher(path_patterns=["*atlas*.nc"]),
+            fixes=[FixRef(id="ATLAS_0001")],
+        )
+    )
+    store.save_plan(
+        FixPlan(
+            id="cmip6",
+            match=DatasetMatcher(path_patterns=["*cmip6*.nc"]),
+            fixes=[FixRef(id="CMIP6_0001")],
+        )
+    )
+
+    # Corrupt a non-matching row to verify lookup does not decode its fixes payload.
+    with duckdb.connect(str(db_path)) as con:
+        con.execute("UPDATE fix_plans SET fixes_json = ? WHERE id = ?", ["not-json", "cmip6"])
+
+    matched = store.lookup(xr.Dataset(), path="/tmp/atlas_case.nc")
+    assert [item.id for item in matched] == ["atlas"]
+
+
 def test_duckdb_store_raises_clear_error_when_dependency_missing(tmp_path, monkeypatch):
     import builtins
 

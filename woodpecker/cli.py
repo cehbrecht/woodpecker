@@ -50,19 +50,15 @@ def build_run_fix_kwargs(
 
 def format_provenance_source(
     context: RunContext,
-    plan: Path | None,
-    plan_store: str | None,
-    plan_store_path: Path | None,
+    store_type: str,
+    plan_location: Path | None,
 ) -> str | None:
-    """Return a concise provenance source description for selected plan input."""
-
-    if context.source == "plan":
-        return str(plan) if plan else None
+    """Return a concise provenance source description for selected store input."""
 
     if context.source == "store":
         plan_ids = [selected.id for selected in context.selected_plans if selected.id]
         selected_text = ", ".join(plan_ids) if plan_ids else "<unnamed>"
-        return f"store type={plan_store} path={plan_store_path} plans={selected_text}"
+        return f"store type={store_type} location={plan_location} plans={selected_text}"
 
     return None
 
@@ -112,32 +108,36 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
 
 @cli.command("list-plans")
 @click.option(
-    "--plan-store",
-    "plan_store",
+    "--store",
+    "store_type",
     type=click.Choice(["json", "duckdb"]),
-    required=True,
-    help="Fix plan store backend.",
+    default="json",
+    show_default=True,
+    help="FixPlanStore backend.",
 )
 @click.option(
-    "--plan-store-path",
-    "plan_store_path",
+    "--plan",
+    "plan_location",
     type=click.Path(path_type=Path),
     required=True,
-    help="Path to fix plan store file/database.",
+    help=(
+        "Path or location used by selected store backend (JSON: local file, DuckDB: database file)."
+    ),
 )
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
-def list_plans(plan_store: str, plan_store_path: Path, fmt: str):
-    """List fix plans available in a configured store backend."""
+def list_plans(store_type: str, plan_location: Path, fmt: str):
+    """List FixPlan entries from a configured store backend.
+
+    All plan access goes through a FixPlanStore backend selected by `--store`
+    and sourced from `--plan` location.
+    """
 
     try:
-        store = create_fix_plan_store(plan_store, plan_store_path)
+        store = create_fix_plan_store(store_type, plan_location)
     except click.ClickException:
         raise
     except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
-
-    if store is None:  # pragma: no cover - guarded by required=True on options
-        raise click.ClickException("--plan-store and --plan-store-path are required.")
 
     try:
         plans = store.list_plans()
@@ -151,68 +151,68 @@ def list_plans(plan_store: str, plan_store_path: Path, fmt: str):
 
 @cli.command("load-plans")
 @click.option(
-    "--plan-store",
-    "plan_store",
+    "--store",
+    "store_type",
     type=click.Choice(["json", "duckdb"]),
-    required=True,
-    help="Target fix plan store backend.",
+    default="json",
+    show_default=True,
+    help="Target FixPlanStore backend.",
 )
 @click.option(
-    "--plan-store-path",
-    "plan_store_path",
+    "--plan",
+    "plan_location",
     type=click.Path(path_type=Path),
     required=True,
-    help="Path to target fix plan store file/database.",
+    help=(
+        "Path or location used by selected target store backend "
+        "(JSON: local file, DuckDB: database file)."
+    ),
 )
 @click.option(
     "--from-plan",
     "from_plan",
-    type=click.Path(exists=True, path_type=Path),
-    default=None,
-    help="Load plans from a FixPlanDocument file.",
+    type=click.Path(path_type=Path),
+    required=True,
+    help=(
+        "Source plan location interpreted by --from-store "
+        "(JSON: local file, DuckDB: database file)."
+    ),
 )
 @click.option(
     "--from-store",
     "from_store",
     type=click.Choice(["json", "duckdb"]),
-    default=None,
-    help="Load plans from a source fix plan store backend.",
-)
-@click.option(
-    "--from-store-path",
-    "from_store_path",
-    type=click.Path(path_type=Path),
-    default=None,
-    help="Path to source fix plan store file/database.",
+    default="json",
+    show_default=True,
+    help="Source FixPlanStore backend for --from-plan location.",
 )
 @click.option("--plan-id", "plan_id", default=None, help="Load only this plan id from source.")
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def load_plans(
-    plan_store: str,
-    plan_store_path: Path,
-    from_plan: Path | None,
-    from_store: str | None,
-    from_store_path: Path | None,
+    store_type: str,
+    plan_location: Path,
+    from_plan: Path,
+    from_store: str,
     plan_id: str | None,
     fmt: str,
 ):
-    """Load plans into a target store from a plan document or another store."""
+    """Load plans into a target store from a source store location.
+
+    All plan access goes through a FixPlanStore backend selected by `--store`
+    and sourced from `--plan` location.
+    """
 
     try:
-        target_store = create_fix_plan_store(plan_store, plan_store_path)
+        target_store = create_fix_plan_store(store_type, plan_location)
     except click.ClickException:
         raise
     except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
 
-    if target_store is None:  # pragma: no cover - guarded by required=True
-        raise click.ClickException("--plan-store and --plan-store-path are required.")
-
     try:
         plans = resolve_load_source_plans(
             from_plan=from_plan,
             from_store_type=from_store,
-            from_store_path=from_store_path,
             plan_id=plan_id,
         )
     except click.ClickException:
@@ -234,8 +234,8 @@ def load_plans(
             json.dumps(
                 {
                     "loaded": len(plans),
-                    "target_store": plan_store,
-                    "target_path": str(plan_store_path),
+                    "target_store": store_type,
+                    "target_path": str(plan_location),
                     "plan_ids": plan_ids,
                 },
                 indent=2,
@@ -244,7 +244,7 @@ def load_plans(
         return
 
     click.echo(
-        f"Loaded {len(plans)} plan(s) into {plan_store} store at {plan_store_path}: "
+        f"Loaded {len(plans)} plan(s) into {store_type} store at {plan_location}: "
         + ", ".join(plan_ids)
     )
 
@@ -252,25 +252,22 @@ def load_plans(
 @cli.command("check")
 @click.argument("paths", nargs=-1, type=click.Path(exists=True, path_type=Path))
 @click.option(
+    "--store",
+    "store_type",
+    type=click.Choice(["json", "duckdb"]),
+    default="json",
+    show_default=True,
+    help="FixPlanStore backend (default: json).",
+)
+@click.option(
     "--plan",
     "plan",
-    type=click.Path(exists=True, path_type=Path),
-    default=None,
-    help="Load fix selection/options from a fix plan file.",
-)
-@click.option(
-    "--plan-store",
-    "plan_store",
-    type=click.Choice(["json", "duckdb"]),
-    default=None,
-    help="Optional fix plan store backend when --plan is not provided.",
-)
-@click.option(
-    "--plan-store-path",
-    "plan_store_path",
     type=click.Path(path_type=Path),
     default=None,
-    help="Path to fix plan store file/database.",
+    help=(
+        "Path or location used by selected store backend "
+        "(JSON: local file, DuckDB: database file; future backends may differ)."
+    ),
 )
 @click.option("--plan-id", "plan_id", default=None, help="Select a specific stored plan id.")
 @click.option("--dataset", default=None, help="Filter fixes by dataset.")
@@ -281,9 +278,8 @@ def load_plans(
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def check(
     paths: tuple[Path, ...],
+    store_type: str,
     plan: Path | None,
-    plan_store: str | None,
-    plan_store_path: Path | None,
     plan_id: str | None,
     dataset: str | None,
     categories: tuple[str, ...],
@@ -294,9 +290,8 @@ def check(
     try:
         context = resolve_run_context(
             paths=paths,
-            plan_path=plan,
-            store_type=plan_store,
-            store_path=plan_store_path,
+            store_type=store_type,
+            plan_location=plan,
             plan_id=plan_id,
             dataset=dataset,
             categories=categories,
@@ -337,25 +332,22 @@ def io_status(fmt: str):
 @cli.command("fix")
 @click.argument("paths", nargs=-1, type=click.Path(exists=True, path_type=Path))
 @click.option(
+    "--store",
+    "store_type",
+    type=click.Choice(["json", "duckdb"]),
+    default="json",
+    show_default=True,
+    help="FixPlanStore backend (default: json).",
+)
+@click.option(
     "--plan",
     "plan",
-    type=click.Path(exists=True, path_type=Path),
-    default=None,
-    help="Load fix selection/options from a fix plan file.",
-)
-@click.option(
-    "--plan-store",
-    "plan_store",
-    type=click.Choice(["json", "duckdb"]),
-    default=None,
-    help="Optional fix plan store backend when --plan is not provided.",
-)
-@click.option(
-    "--plan-store-path",
-    "plan_store_path",
     type=click.Path(path_type=Path),
     default=None,
-    help="Path to fix plan store file/database.",
+    help=(
+        "Path or location used by selected store backend "
+        "(JSON: local file, DuckDB: database file; future backends may differ)."
+    ),
 )
 @click.option("--plan-id", "plan_id", default=None, help="Select a specific stored plan id.")
 @click.option("--dataset", default=None, help="Filter fixes by dataset.")
@@ -404,9 +396,8 @@ def io_status(fmt: str):
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def fix(
     paths: tuple[Path, ...],
+    store_type: str,
     plan: Path | None,
-    plan_store: str | None,
-    plan_store_path: Path | None,
     plan_id: str | None,
     dataset: str | None,
     categories: tuple[str, ...],
@@ -423,9 +414,8 @@ def fix(
     try:
         context = resolve_run_context(
             paths=paths,
-            plan_path=plan,
-            store_type=plan_store,
-            store_path=plan_store_path,
+            store_type=store_type,
+            plan_location=plan,
             plan_id=plan_id,
             dataset=dataset,
             categories=categories,
@@ -449,7 +439,7 @@ def fix(
         raise click.ClickException(str(exc)) from exc
 
     if provenance:
-        provenance_source = format_provenance_source(context, plan, plan_store, plan_store_path)
+        provenance_source = format_provenance_source(context, store_type, plan)
         prov = build_prov_document(
             inputs=context.inputs,
             selected_codes=[getattr(fix, "code", "") for fix in context.fixes],

@@ -95,15 +95,25 @@ Minimal `FixPlanDocument` example:
 {
   "plans": [
     {
-      "id": "cmip6-default",
-      "description": "Default CMIP6 plan",
+      "id": "atlas-basic",
+      "description": "ATLAS plan",
       "match": {
-        "attrs": {"dataset": "CMIP6"},
-        "path_patterns": ["*cmip6*.nc"]
+        "path_patterns": ["*atlas*.nc"]
       },
       "fixes": [
-        "CMIP6_0001",
-        {"id": "ATLAS_0001", "options": {"marker_attr": "custom_marker"}}
+        "ATLAS_0001",
+        {"id": "COMMON_0002"}
+      ]
+    },
+    {
+      "id": "esa-cci-zarr",
+      "description": "Default ESA CCI zarr plan",
+      "match": {
+        "path_patterns": ["*ESACCI-WATERVAPOUR-*.zarr"]
+      },
+      "fixes": [
+        "CMIP7_0003",
+        {"id": "COMMON_0002"}
       ]
     }
   ]
@@ -130,15 +140,15 @@ woodpecker fix --plan plan.json --dry-run
 import xarray as xr
 import woodpecker
 
-ds = xr.Dataset(attrs={"source_name": "cmip6_bad.nc"})
+ds = xr.Dataset(attrs={"source_name": "atlas_bad.nc"})
 
-findings = woodpecker.check(ds, codes=["CMIP6D_0001"])
-stats = woodpecker.fix(ds, codes=["CMIP6D_0001"], write=True)
+findings = woodpecker.check(ds, codes=["ATLAS_0001"])
+stats = woodpecker.fix(ds, codes=["ATLAS_0001"], write=True)
 
 # Fix plan helpers
 findings_plan = woodpecker.check_plan("plan.json", inputs=["./data"])
 stats_plan = woodpecker.fix_plan("plan.json", inputs=ds, write=True)
 
 # Path input works as well
-findings_from_paths = woodpecker.check(["./data"], codes=["CMIP6D_0001"])
+findings_from_paths = woodpecker.check(["./data"], codes=["ATLAS_0001"])
 ```

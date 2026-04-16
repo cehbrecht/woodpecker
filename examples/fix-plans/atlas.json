@@ -1,0 +1,21 @@
+{
+  "plans": [
+    {
+      "id": "atlas-basic",
+      "description": "Concrete ATLAS plan for atlas*.nc files",
+      "match": {
+        "path_patterns": [
+          "*atlas*.nc"
+        ]
+      },
+      "fixes": [
+        {
+          "id": "ATLAS_0001"
+        },
+        {
+          "id": "ATLAS_0002"
+        }
+      ]
+    }
+  ]
+}
