@@ -7,11 +7,11 @@ import click
 
 # Importing woodpecker.fixes registers built-in fixes.
 import woodpecker.fixes  # noqa: F401
+from woodpecker.fix_plan import load_fix_plan_spec
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.inout import get_io_availability, normalize_inputs
 from woodpecker.provenance import build_prov_document, write_prov_document
 from woodpecker.runner import run_check, run_fix, select_fixes
-from woodpecker.workflow import load_workflow
 
 
 @click.group()
@@ -59,7 +59,13 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
 
 @cli.command("check")
 @click.argument("paths", nargs=-1, type=click.Path(exists=True, path_type=Path))
-@click.option("--workflow", type=click.Path(exists=True, path_type=Path), default=None)
+@click.option(
+    "--plan",
+    "plan",
+    type=click.Path(exists=True, path_type=Path),
+    default=None,
+    help="Load fix selection/options from a fix plan file.",
+)
 @click.option("--dataset", default=None, help="Filter fixes by dataset.")
 @click.option(
     "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
@@ -68,7 +74,7 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def check(
     paths: tuple[Path, ...],
-    workflow: Path | None,
+    plan: Path | None,
     dataset: str | None,
     categories: tuple[str, ...],
     codes: tuple[str, ...],
@@ -76,17 +82,15 @@ def check(
 ):
     """Check NetCDF files and report findings grouped by fix code."""
     try:
-        workflow_spec = load_workflow(workflow) if workflow else None
+        plan_spec = load_fix_plan_spec(plan) if plan else None
 
         resolved_paths = list(paths)
-        if not resolved_paths and workflow_spec and workflow_spec.inputs:
-            resolved_paths = [Path(item) for item in workflow_spec.inputs]
+        if not resolved_paths and plan_spec and plan_spec.inputs:
+            resolved_paths = [Path(item) for item in plan_spec.inputs]
         target_paths = resolved_paths or [Path.cwd()]
 
         inputs = normalize_inputs(target_paths)
-        resolution = (
-            workflow_spec.resolve([item.reference for item in inputs]) if workflow_spec else None
-        )
+        resolution = plan_spec.resolve([item.reference for item in inputs]) if plan_spec else None
 
         resolved_dataset = dataset or (resolution.dataset if resolution else None)
         resolved_categories = categories or tuple(resolution.categories if resolution else [])
@@ -95,7 +99,7 @@ def check(
         resolved_ordered_codes = (
             tuple(code.strip().upper() for code in codes if code.strip())
             if codes
-            else tuple(resolution.ordered_codes if resolution else [])
+            else tuple(resolution.ordered_ids if resolution else [])
         )
 
         fixes = select_fixes(
@@ -140,7 +144,13 @@ def io_status(fmt: str):
 
 @cli.command("fix")
 @click.argument("paths", nargs=-1, type=click.Path(exists=True, path_type=Path))
-@click.option("--workflow", type=click.Path(exists=True, path_type=Path), default=None)
+@click.option(
+    "--plan",
+    "plan",
+    type=click.Path(exists=True, path_type=Path),
+    default=None,
+    help="Load fix selection/options from a fix plan file.",
+)
 @click.option("--dataset", default=None, help="Filter fixes by dataset.")
 @click.option(
     "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
@@ -187,7 +197,7 @@ def io_status(fmt: str):
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def fix(
     paths: tuple[Path, ...],
-    workflow: Path | None,
+    plan: Path | None,
     dataset: str | None,
     categories: tuple[str, ...],
     codes: tuple[str, ...],
@@ -201,17 +211,16 @@ def fix(
 ):
     """Apply selected fixes to NetCDF files."""
     try:
-        workflow_spec = load_workflow(workflow) if workflow else None
+        plan_path = plan
+        plan_spec = load_fix_plan_spec(plan_path) if plan_path else None
 
         resolved_paths = list(paths)
-        if not resolved_paths and workflow_spec and workflow_spec.inputs:
-            resolved_paths = [Path(item) for item in workflow_spec.inputs]
+        if not resolved_paths and plan_spec and plan_spec.inputs:
+            resolved_paths = [Path(item) for item in plan_spec.inputs]
         target_paths = resolved_paths or [Path.cwd()]
 
         inputs = normalize_inputs(target_paths)
-        resolution = (
-            workflow_spec.resolve([item.reference for item in inputs]) if workflow_spec else None
-        )
+        resolution = plan_spec.resolve([item.reference for item in inputs]) if plan_spec else None
 
         resolved_dataset = dataset or (resolution.dataset if resolution else None)
         resolved_categories = categories or tuple(resolution.categories if resolution else [])
@@ -220,11 +229,11 @@ def fix(
         resolved_ordered_codes = (
             tuple(code.strip().upper() for code in codes if code.strip())
             if codes
-            else tuple(resolution.ordered_codes if resolution else [])
+            else tuple(resolution.ordered_ids if resolution else [])
         )
         if force_apply and not resolved_codes:
             raise click.ClickException(
-                "--force-apply requires explicit fix selection via --select or workflow codes."
+                "--force-apply requires explicit fix selection via --select or plan codes."
             )
         resolved_output_format = output_format
         if resolution and resolution.output_format and output_format == "auto":
@@ -259,7 +268,7 @@ def fix(
             stats=stats,
             mode="dry-run" if dry_run else "write",
             output_format=resolved_output_format,
-            workflow=str(workflow) if workflow else None,
+            plan=str(plan_path) if plan_path else None,
         )
         write_prov_document(prov, provenance_path)
 

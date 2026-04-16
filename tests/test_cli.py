@@ -190,29 +190,29 @@ def test_check_unknown_fix_code_returns_click_error(
     assert "Unknown fix code(s): DOESNOTEXIST" in result.output
 
 
-def test_check_uses_workflow_defaults(
+def test_check_uses_plan_defaults(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
 ):
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_bad.nc")
-    Path("workflow.json").write_text(
+    Path("plan.json").write_text(
         json.dumps({"inputs": ["."], "codes": ["CMIP6_0001"]}),
         encoding="utf-8",
     )
 
-    result = runner.invoke(cli, ["check", "--workflow", "workflow.json"])
+    result = runner.invoke(cli, ["check", "--plan", "plan.json"])
 
     assert result.exit_code == 1
     assert "CMIP6_0001" in result.output
 
 
-def test_fix_uses_workflow_output_format_when_auto(
+def test_fix_uses_plan_output_format_when_auto(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
     monkeypatch,
 ):
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_case.nc")
-    Path("workflow.json").write_text(
+    Path("plan.json").write_text(
         json.dumps({"inputs": ["."], "codes": ["CMIP6D_0001"], "output_format": "zarr"}),
         encoding="utf-8",
     )
@@ -232,7 +232,7 @@ def test_fix_uses_workflow_output_format_when_auto(
 
     result = runner.invoke(
         cli,
-        ["fix", "--workflow", "workflow.json", "--format", "json"],
+        ["fix", "--plan", "plan.json", "--format", "json"],
     )
 
     assert result.exit_code == 0
@@ -240,12 +240,12 @@ def test_fix_uses_workflow_output_format_when_auto(
     assert payload["output_format"] == "zarr"
 
 
-def test_check_workflow_applies_fix_options_to_message(
+def test_check_plan_applies_fix_options_to_message(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
 ):
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("c3s-cmip6.member.nc")
-    Path("workflow.json").write_text(
+    Path("plan.json").write_text(
         json.dumps(
             {
                 "inputs": ["."],
@@ -256,7 +256,7 @@ def test_check_workflow_applies_fix_options_to_message(
         encoding="utf-8",
     )
 
-    result = runner.invoke(cli, ["check", "--workflow", "workflow.json"])
+    result = runner.invoke(cli, ["check", "--plan", "plan.json"])
 
     assert result.exit_code == 1
     assert "configured check message" in result.output

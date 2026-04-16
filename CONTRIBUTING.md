@@ -53,12 +53,12 @@ woodpecker check . --select CMIP6D_0001
 woodpecker fix . --select CMIP6D_0001
 woodpecker fix . --select CMIP6D_0001 --dry-run
 woodpecker fix . --select CMIP6D_0001 --force-apply
-woodpecker fix --workflow workflow.json
+woodpecker fix --plan plan.json
 ```
 
 Notes:
 - In write mode, JSON output exits with status 1 if any persistence operation fails.
-- `--force-apply` bypasses `matches()` prefiltering and requires explicit fix selection (`--select` or workflow-provided codes).
+- `--force-apply` bypasses `matches()` prefiltering and requires explicit fix selection (`--select` or plan-provided codes).
 
 ## Adding or Updating Fixes
 
@@ -73,14 +73,14 @@ Performance guidance:
 
 Use existing fixes as examples and keep behavior deterministic.
 
-## Workflow Files
+## Fix Plan Files
 
-Workflow fields quick reference:
+Fix plan fields quick reference:
 
 | Field | Level | Type | Purpose |
 |---|---|---|---|
 | `comment` | root / dataset / step | string | Human-readable notes or links |
-| `datasets` | root | mapping | Selector-based workflow blocks (`fnmatch`) |
+| `datasets` | root | mapping | Selector-based fix plan blocks (`fnmatch`) |
 | `steps` | root / dataset | list | Ordered fix execution |
 | `code` | step | string | Fix code to run |
 | `options` | step | mapping | Parameters passed to fix via `configure()` |
@@ -88,7 +88,7 @@ Workflow fields quick reference:
 | `dataset` | root / dataset | string | Dataset-family filter |
 | `output_format` | root | string | Output backend (`auto`, `netcdf`, `zarr`) |
 
-Minimal workflow example:
+Minimal fix plan example:
 
 ```json
 {
@@ -117,7 +117,7 @@ Selector + ordered steps example:
 }
 ```
 
-CLI options override workflow defaults when both are provided.
+CLI options override fix plan defaults when both are provided.
 
 ## Python API (for contributors)
 
@@ -130,9 +130,9 @@ ds = xr.Dataset(attrs={"source_name": "cmip6_bad.nc"})
 findings = woodpecker.check(ds, codes=["CMIP6D_0001"])
 stats = woodpecker.fix(ds, codes=["CMIP6D_0001"], write=True)
 
-# Workflow helpers
-findings_wf = woodpecker.check_workflow("workflow.json", inputs=["./data"])
-stats_wf = woodpecker.fix_workflow("workflow.json", inputs=ds, write=True)
+# Fix plan helpers
+findings_plan = woodpecker.check_plan("plan.json", inputs=["./data"])
+stats_plan = woodpecker.fix_plan("plan.json", inputs=ds, write=True)
 
 # Path input works as well
 findings_from_paths = woodpecker.check(["./data"], codes=["CMIP6D_0001"])

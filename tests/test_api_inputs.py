@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 import xarray as xr
 
-from woodpecker.api import check, check_workflow, fix, fix_workflow
+from woodpecker.api import check, check_plan, fix, fix_plan
 from woodpecker.inout import (
     PathInput,
     ZarrInput,
@@ -108,28 +108,28 @@ def test_api_check_raises_on_unknown_fix_code(make_dummy_netcdf):
         check([source], codes=["DOESNOTEXIST"])
 
 
-def test_api_check_workflow_uses_codes_from_workflow(tmp_path: Path, make_dummy_netcdf):
+def test_api_check_plan_uses_codes_from_plan(tmp_path: Path, make_dummy_netcdf):
     source = make_dummy_netcdf("cmip6_bad.nc")
-    workflow_path = tmp_path / "workflow.json"
-    workflow_path.write_text(
+    plan_path = tmp_path / "plan.json"
+    plan_path.write_text(
         '{"codes": ["CMIP6_0001"]}',
         encoding="utf-8",
     )
 
-    findings = check_workflow(workflow_path, inputs=[source])
+    findings = check_plan(plan_path, inputs=[source])
 
     assert findings
     assert findings[0]["code"] == "CMIP6_0001"
 
 
-def test_api_fix_workflow_uses_output_format_from_workflow(tmp_path: Path, monkeypatch):
+def test_api_fix_plan_uses_output_format_from_plan(tmp_path: Path, monkeypatch):
     ds = xr.Dataset(
         data_vars={"tas": ("time", [273.1, 274.2])},
         coords={"time": [0, 1]},
         attrs={"source_name": "c3s-ipcc-atlas.dataset.tas.nc"},
     )
-    workflow_path = tmp_path / "workflow.json"
-    workflow_path.write_text(
+    plan_path = tmp_path / "plan.json"
+    plan_path.write_text(
         '{"codes": ["ATLAS_0001"], "output_format": "netcdf"}',
         encoding="utf-8",
     )
@@ -149,20 +149,20 @@ def test_api_fix_workflow_uses_output_format_from_workflow(tmp_path: Path, monke
 
     monkeypatch.setattr("woodpecker.api.run_fix", _fake_run_fix)
 
-    fix_workflow(workflow_path, inputs=ds, write=True)
+    fix_plan(plan_path, inputs=ds, write=True)
 
     assert observed["output_format"] == "netcdf"
 
 
-def test_api_fix_workflow_applies_fix_options_to_dataset_attrs(tmp_path: Path):
+def test_api_fix_plan_applies_fix_options_to_dataset_attrs(tmp_path: Path):
     ds = xr.Dataset(attrs={"source_name": "c3s-cmip6.member.tas.nc"})
-    workflow_path = tmp_path / "workflow.json"
-    workflow_path.write_text(
+    plan_path = tmp_path / "plan.json"
+    plan_path.write_text(
         '{"codes": ["CMIP6_0001"], "fixes": {"CMIP6_0001": {"marker_attr": "custom_marker", "marker_value": "ok"}}}',
         encoding="utf-8",
     )
 
-    stats = fix_workflow(workflow_path, inputs=ds, write=True)
+    stats = fix_plan(plan_path, inputs=ds, write=True)
 
     assert stats["attempted"] == 1
     assert stats["changed"] == 1

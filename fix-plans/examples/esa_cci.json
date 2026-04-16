@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "name": "ESA CCI workflow equivalent to fixer-prototype fixes.yaml",
+  "name": "ESA CCI fix plan equivalent to fixer-prototype fixes.yaml",
   "dataset": "CMIP7",
   "datasets": {
     "ESACCI-WATERVAPOUR-L3C-TCWV-meris-005deg-2002-2017-fv3.2.zarr": {

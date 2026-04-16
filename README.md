@@ -3,7 +3,7 @@
 [![CI](https://github.com/macpingu/woodpecker/actions/workflows/ci.yml/badge.svg)](https://github.com/macpingu/woodpecker/actions/workflows/ci.yml)
 [![Docs](https://github.com/macpingu/woodpecker/actions/workflows/docs.yml/badge.svg)](https://github.com/macpingu/woodpecker/actions/workflows/docs.yml)
 
-Woodpecker is a small, code-based catalog of dataset fixes for climate workflows.
+Woodpecker is a small, code-based catalog of dataset fixes for climate processing.
 Each fix has a stable code (for example `CMIP6D_0001`) so tools and services can reference it directly.
 
 Contributor and developer docs live in `CONTRIBUTING.md`.
@@ -32,16 +32,16 @@ woodpecker fix . --select CMIP6D_0001 --dry-run
 woodpecker fix . --select CMIP6D_0001
 ```
 
-Workflow option:
+Fix plan option:
 
-- `--workflow` loads fix selection and options from a JSON workflow file.
+- `--plan` loads fix selection and options from a JSON/YAML fix plan file.
 
 Force-apply option:
 
 - `--force-apply` skips `matches()` prefiltering before `apply()` to run faster.
-- Safety rule: `--force-apply` requires explicit fix selection (`--select` or workflow codes).
+- Safety rule: `--force-apply` requires explicit fix selection (`--select` or plan codes).
 
-More advanced workflow patterns are in `CONTRIBUTING.md`.
+More advanced fix plan patterns are in `CONTRIBUTING.md`.
 
 ## Plugin Fixes (Entry Points)
 
@@ -120,14 +120,14 @@ woodpecker fix . --select CMIP6D_0001 --dry-run
 woodpecker fix . --select CMIP6D_0001
 ```
 
-## Workflow Example
+## Fix Plan Example
 
-`workflow.json`:
+`plan.json`:
 
 ```json
 {
 	"version": 1,
-	"comment": "Workflow notes: see fixes overview at https://macpingu.github.io/woodpecker/fixes.html",
+	"comment": "Fix plan notes: see fixes overview at https://macpingu.github.io/woodpecker/fixes.html",
 	"dataset": "cmip7",
 	"datasets": {
 		"*esa_cci_a*.nc": {
@@ -179,15 +179,15 @@ woodpecker fix . --select CMIP6D_0001
 Run it:
 
 ```bash
-woodpecker fix --workflow workflow.json
-woodpecker fix --workflow workflow.json --force-apply
+woodpecker fix --plan plan.json
+woodpecker fix --plan plan.json --force-apply
 ```
 
 Same idea in YAML:
 
 ```yaml
 version: 1
-comment: "Workflow notes: see fixes overview at https://macpingu.github.io/woodpecker/fixes.html"
+comment: "Fix plan notes: see fixes overview at https://macpingu.github.io/woodpecker/fixes.html"
 dataset: cmip7
 datasets:
 	"*esa_cci_a*.nc":

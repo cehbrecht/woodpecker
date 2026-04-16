@@ -1,12 +1,104 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from fnmatch import fnmatch
 from pathlib import Path
-from typing import Any, List, Optional, Sequence
+from typing import Any, Mapping, Optional, Sequence
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
+
+try:
+    import yaml
+except Exception:  # pragma: no cover - optional import guard
+    yaml = None
+
+
+@dataclass
+class FixRef:
+    """Reference to one fix and its optional options payload."""
+
+    id: str
+    options: dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        self.id = str(self.id).strip().upper()
+        if not self.id:
+            raise ValueError("FixRef.id must be a non-empty string")
+        if not isinstance(self.options, dict):
+            raise ValueError("FixRef.options must be a mapping/object")
+
+
+@dataclass
+class FixPlan:
+    """A lightweight data structure describing fixes to execute."""
+
+    fixes: list[FixRef] = field(default_factory=list)
+
+    @classmethod
+    def from_mapping(cls, payload: Mapping[str, Any]) -> FixPlan:
+        items = payload.get("fixes", [])
+        if not isinstance(items, list):
+            raise ValueError("FixPlan 'fixes' must be a list")
+        return cls(fixes=[_parse_fix_ref(item) for item in items])
+
+
+def _parse_fix_ref(item: Any) -> FixRef:
+    if isinstance(item, str):
+        return FixRef(id=item)
+    if not isinstance(item, Mapping):
+        raise ValueError("Each fix entry must be a string or object")
+    fix_id = item.get("id", item.get("code", ""))
+    return FixRef(id=str(fix_id), options=dict(item.get("options", {}) or {}))
+
+
+def _resolve_fix(registry: Any, fix_id: str) -> Any:
+    key = str(fix_id).strip().upper()
+    source: Any | None = None
+    if isinstance(registry, Mapping):
+        source = registry.get(key)
+    elif hasattr(registry, "_registry"):
+        source = getattr(registry, "_registry", {}).get(key)
+    elif hasattr(registry, "get"):
+        source = registry.get(key)
+
+    if source is None:
+        raise KeyError(f"Unknown fix id: {key}")
+
+    if isinstance(source, type):
+        return source()
+    if callable(source) and not hasattr(source, "check"):
+        return source()
+    return source
+
+
+def apply_plan(ds: Any, plan: FixPlan, registry: Any) -> Any:
+    """Resolve plan fix ids from a registry and execute check then fix/apply."""
+
+    for ref in plan.fixes:
+        fix = _resolve_fix(registry, ref.id)
+
+        if hasattr(fix, "configure"):
+            fix = fix.configure(ref.options)
+
+        if not hasattr(fix, "check"):
+            raise TypeError(f"Fix '{ref.id}' does not implement check()")
+        try:
+            fix.check(ds, options=ref.options)
+        except TypeError:
+            fix.check(ds)
+
+        if hasattr(fix, "fix"):
+            try:
+                fix.fix(ds, options=ref.options)
+            except TypeError:
+                fix.fix(ds)
+        elif hasattr(fix, "apply"):
+            fix.apply(ds, dry_run=False)
+        else:
+            raise TypeError(f"Fix '{ref.id}' does not implement fix() or apply()")
+
+    return ds
 
 
 def _normalize_code_list(value: Any) -> list[str]:
@@ -31,7 +123,7 @@ def _merge_fix_options(*maps: dict[str, dict[str, Any]]) -> dict[str, dict[str, 
     return merged
 
 
-class WorkflowStep(BaseModel):
+class PlanStep(BaseModel):
     code: str
     comment: Optional[str] = None
     options: dict[str, Any] = Field(default_factory=dict)
@@ -62,12 +154,12 @@ class WorkflowStep(BaseModel):
         return text or None
 
 
-class DatasetWorkflow(BaseModel):
+class DatasetFixPlan(BaseModel):
     dataset: Optional[str] = None
     comment: Optional[str] = None
-    categories: List[str] = Field(default_factory=list)
-    codes: List[str] = Field(default_factory=list)
-    steps: List[WorkflowStep] = Field(default_factory=list)
+    categories: list[str] = Field(default_factory=list)
+    codes: list[str] = Field(default_factory=list)
+    steps: list[PlanStep] = Field(default_factory=list)
     fixes: dict[str, dict[str, Any]] = Field(default_factory=dict)
 
     @field_validator("comment", mode="before")
@@ -114,31 +206,38 @@ class DatasetWorkflow(BaseModel):
 
 
 @dataclass(frozen=True)
-class WorkflowResolution:
+class FixPlanResolution:
     dataset: Optional[str]
-    categories: List[str]
-    codes: List[str]
-    ordered_codes: List[str]
-    fixes: dict[str, dict[str, Any]]
+    categories: list[str]
+    plan: FixPlan
+    ordered_ids: list[str]
     output_format: Optional[str]
-    requires: List[str]
+    requires: list[str]
+
+    @property
+    def codes(self) -> list[str]:
+        return [item.id for item in self.plan.fixes]
+
+    @property
+    def fixes(self) -> dict[str, dict[str, Any]]:
+        return {item.id: dict(item.options) for item in self.plan.fixes}
 
 
-class WorkflowSpec(BaseModel):
-    """Declarative workflow definition for selecting and running fixes."""
+class FixPlanSpec(BaseModel):
+    """Declarative fix plan definition for selecting and running fixes."""
 
     version: int = 1
     name: str = ""
     comment: Optional[str] = None
-    inputs: List[str] = Field(default_factory=list)
+    inputs: list[str] = Field(default_factory=list)
     dataset: Optional[str] = None
-    categories: List[str] = Field(default_factory=list)
-    codes: List[str] = Field(default_factory=list)
-    steps: List[WorkflowStep] = Field(default_factory=list)
-    datasets: dict[str, DatasetWorkflow] = Field(default_factory=dict)
+    categories: list[str] = Field(default_factory=list)
+    codes: list[str] = Field(default_factory=list)
+    steps: list[PlanStep] = Field(default_factory=list)
+    datasets: dict[str, DatasetFixPlan] = Field(default_factory=dict)
     fixes: dict[str, dict[str, Any]] = Field(default_factory=dict)
     output_format: Optional[str] = Field(default=None, pattern=r"^(auto|netcdf|zarr)$")
-    requires: List[str] = Field(default_factory=list)
+    requires: list[str] = Field(default_factory=list)
 
     @field_validator("inputs", "categories", "requires", mode="before")
     @classmethod
@@ -189,7 +288,7 @@ class WorkflowSpec(BaseModel):
         if value is None:
             return {}
         if not isinstance(value, dict):
-            raise ValueError("datasets must be a mapping from selector to workflow block")
+            raise ValueError("datasets must be a mapping from selector to plan block")
 
         normalized: dict[str, Any] = {}
         for selector, block in value.items():
@@ -202,12 +301,10 @@ class WorkflowSpec(BaseModel):
             if isinstance(block, dict):
                 normalized[key] = block
                 continue
-            raise ValueError(
-                f"datasets['{key}'] must be either a list of step objects or a mapping"
-            )
+            raise ValueError(f"datasets['{key}'] must be a list or mapping")
         return normalized
 
-    def _match_dataset_block(self, references: Sequence[str]) -> DatasetWorkflow | None:
+    def _match_dataset_block(self, references: Sequence[str]) -> DatasetFixPlan | None:
         if not self.datasets:
             return None
         for selector, block in self.datasets.items():
@@ -220,7 +317,7 @@ class WorkflowSpec(BaseModel):
                     return block
         return None
 
-    def resolve(self, references: Sequence[str]) -> WorkflowResolution:
+    def resolve(self, references: Sequence[str]) -> FixPlanResolution:
         block = self._match_dataset_block(references)
 
         block_dataset = block.dataset if block else None
@@ -230,7 +327,7 @@ class WorkflowSpec(BaseModel):
         block_fixes = dict(block.fixes) if block else {}
 
         steps = block_steps or list(self.steps)
-        ordered_codes = [step.code for step in steps]
+        ordered_ids = [step.code for step in steps]
 
         step_fixes: dict[str, dict[str, Any]] = {}
         for step in steps:
@@ -238,19 +335,19 @@ class WorkflowSpec(BaseModel):
                 step_fixes.setdefault(step.code, {})
                 step_fixes[step.code].update(step.options)
 
-        if ordered_codes:
-            codes = block_codes or ordered_codes
+        if ordered_ids:
+            codes = block_codes or ordered_ids
         else:
             codes = block_codes or list(self.codes)
 
-        fixes = _merge_fix_options(self.fixes, block_fixes, step_fixes)
+        options_map = _merge_fix_options(self.fixes, block_fixes, step_fixes)
+        plan = FixPlan(fixes=[FixRef(id=code, options=options_map.get(code, {})) for code in codes])
 
-        return WorkflowResolution(
+        return FixPlanResolution(
             dataset=block_dataset or self.dataset,
             categories=block_categories or list(self.categories),
-            codes=codes,
-            ordered_codes=ordered_codes,
-            fixes=fixes,
+            plan=plan,
+            ordered_ids=ordered_ids,
             output_format=self.output_format,
             requires=list(self.requires),
         )
@@ -266,30 +363,51 @@ def _load_payload(path: Path) -> dict[str, Any]:
     if suffix == ".json":
         payload = json.loads(text)
     elif suffix in {".yaml", ".yml"}:
-        try:
-            import yaml  # type: ignore
-        except Exception as exc:  # pragma: no cover
+        if yaml is None:
             raise ValueError(
-                "YAML workflow files require PyYAML. Install with: pip install pyyaml "
-                "or use a .json workflow file."
-            ) from exc
+                "YAML fix plan files require PyYAML. Install with: pip install pyyaml or use .json"
+            )
         payload = yaml.safe_load(text)
     else:
         raise ValueError(
-            f"Unsupported workflow extension '{suffix}'. Supported: {sorted(SUPPORTED_EXTENSIONS)}"
+            f"Unsupported fix plan extension '{suffix}'. Supported: {sorted(SUPPORTED_EXTENSIONS)}"
         )
 
     if not isinstance(payload, dict):
-        raise ValueError("Workflow file must define a JSON/YAML object at top level")
+        raise ValueError("Fix plan file must define a JSON/YAML object at top level")
     return payload
 
 
-def load_workflow(path: Path) -> WorkflowSpec:
-    if not path.exists():
-        raise ValueError(f"Workflow file not found: {path}")
+def load_fix_plan(path: str | Path) -> FixPlan:
+    file_path = Path(path)
+    suffix = file_path.suffix.lower()
 
-    payload = _load_payload(path)
+    if suffix == ".json":
+        payload = json.loads(file_path.read_text(encoding="utf-8"))
+    elif suffix in {".yaml", ".yml"}:
+        if yaml is None:
+            raise ValueError("YAML support requires PyYAML")
+        payload = yaml.safe_load(file_path.read_text(encoding="utf-8"))
+    else:
+        raise ValueError("Unsupported fix plan file extension; use .json, .yaml, or .yml")
+
+    if payload is None:
+        payload = {"fixes": []}
+    if isinstance(payload, list):
+        return FixPlan(fixes=[_parse_fix_ref(item) for item in payload])
+    if not isinstance(payload, Mapping):
+        raise ValueError("Fix plan file must contain an object or list")
+
+    return FixPlan.from_mapping(payload)
+
+
+def load_fix_plan_spec(path: str | Path) -> FixPlanSpec:
+    file_path = Path(path)
+    if not file_path.exists():
+        raise ValueError(f"Fix plan file not found: {file_path}")
+
+    payload = _load_payload(file_path)
     try:
-        return WorkflowSpec.model_validate(payload)
+        return FixPlanSpec.model_validate(payload)
     except ValidationError as exc:
-        raise ValueError(f"Invalid workflow file '{path}': {exc}") from exc
+        raise ValueError(f"Invalid fix plan file '{file_path}': {exc}") from exc

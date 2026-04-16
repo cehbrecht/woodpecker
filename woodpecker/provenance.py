@@ -21,7 +21,7 @@ def build_prov_document(
     stats: dict[str, int],
     mode: str,
     output_format: str,
-    workflow: str | None = None,
+    plan: str | None = None,
     run_id: str | None = None,
 ) -> dict[str, Any]:
     run_id = run_id or f"woodpecker-run-{uuid.uuid4()}"
@@ -42,8 +42,8 @@ def build_prov_document(
         "selected_codes": json.dumps(selected_codes, sort_keys=True),
         "stats": json.dumps(stats, sort_keys=True),
     }
-    if workflow:
-        activity_attrs["workflow"] = workflow
+    if plan:
+        activity_attrs["plan"] = plan
 
     doc.activity(activity_id, None, None, activity_attrs)
     agent_id = "agent-woodpecker"

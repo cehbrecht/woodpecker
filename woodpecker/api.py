@@ -4,9 +4,9 @@ from pathlib import Path
 from typing import Any, Sequence
 
 import woodpecker.fixes  # noqa: F401
+from woodpecker.fix_plan import load_fix_plan_spec
 from woodpecker.inout import normalize_inputs
 from woodpecker.runner import run_check, run_fix, select_fixes
-from woodpecker.workflow import load_workflow
 
 
 def check(
@@ -51,17 +51,17 @@ def fix(
     return run_fix(normalized, fixes, dry_run=not write, output_format=output_format)
 
 
-def check_workflow(
-    workflow_path: str | Path,
+def check_plan(
+    plan_path: str | Path,
     inputs: Any | None = None,
     dataset: str | None = None,
     categories: Sequence[str] = (),
     codes: Sequence[str] = (),
 ) -> list[dict[str, str]]:
-    workflow_spec = load_workflow(Path(workflow_path))
-    resolved_inputs = inputs if inputs is not None else workflow_spec.inputs
+    plan_spec = load_fix_plan_spec(Path(plan_path))
+    resolved_inputs = inputs if inputs is not None else plan_spec.inputs
     normalized = normalize_inputs(resolved_inputs)
-    resolution = workflow_spec.resolve([item.reference for item in normalized])
+    resolution = plan_spec.resolve([item.reference for item in normalized])
 
     resolved_dataset = dataset or resolution.dataset
     resolved_categories = categories or tuple(resolution.categories)
@@ -70,7 +70,7 @@ def check_workflow(
     resolved_ordered_codes = (
         tuple(code.strip().upper() for code in codes if code.strip())
         if codes
-        else tuple(resolution.ordered_codes)
+        else tuple(resolution.ordered_ids)
     )
     return check(
         normalized,
@@ -82,8 +82,8 @@ def check_workflow(
     )
 
 
-def fix_workflow(
-    workflow_path: str | Path,
+def fix_plan(
+    plan_path: str | Path,
     inputs: Any | None = None,
     dataset: str | None = None,
     categories: Sequence[str] = (),
@@ -91,10 +91,10 @@ def fix_workflow(
     write: bool = False,
     output_format: str = "auto",
 ) -> dict[str, int]:
-    workflow_spec = load_workflow(Path(workflow_path))
-    resolved_inputs = inputs if inputs is not None else workflow_spec.inputs
+    plan_spec = load_fix_plan_spec(Path(plan_path))
+    resolved_inputs = inputs if inputs is not None else plan_spec.inputs
     normalized = normalize_inputs(resolved_inputs)
-    resolution = workflow_spec.resolve([item.reference for item in normalized])
+    resolution = plan_spec.resolve([item.reference for item in normalized])
 
     resolved_dataset = dataset or resolution.dataset
     resolved_categories = categories or tuple(resolution.categories)
@@ -103,7 +103,7 @@ def fix_workflow(
     resolved_ordered_codes = (
         tuple(code.strip().upper() for code in codes if code.strip())
         if codes
-        else tuple(resolution.ordered_codes)
+        else tuple(resolution.ordered_ids)
     )
     resolved_output = (
         resolution.output_format
