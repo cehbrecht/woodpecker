@@ -32,7 +32,8 @@ class JsonFixPlanStore(FixPlanStore):
     def _write_raw(self, plans: list[dict[str, Any]]) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.write_text(
-            json.dumps(plans, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+            json.dumps({"plans": plans}, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
         )
 
     def list_plans(self) -> list[FixPlan]:

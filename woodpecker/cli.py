@@ -127,7 +127,11 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
 )
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def list_plans(plan_store: str, plan_store_path: Path, fmt: str):
-    """List fix plans available in a configured store backend."""
+    """List FixPlan entries from a configured store backend.
+
+    Store entries use the same FixPlan schema as plans loaded from `--plan`
+    files.
+    """
 
     try:
         store = create_fix_plan_store(plan_store, plan_store_path)
@@ -169,14 +173,14 @@ def list_plans(plan_store: str, plan_store_path: Path, fmt: str):
     "from_plan",
     type=click.Path(exists=True, path_type=Path),
     default=None,
-    help="Load plans from a FixPlanDocument file.",
+    help="Load plans from a FixPlanDocument file (same FixPlan schema as store entries).",
 )
 @click.option(
     "--from-store",
     "from_store",
     type=click.Choice(["json", "duckdb"]),
     default=None,
-    help="Load plans from a source fix plan store backend.",
+    help="Load plans from a source fix plan store backend (same FixPlan schema as --from-plan).",
 )
 @click.option(
     "--from-store-path",
@@ -196,7 +200,11 @@ def load_plans(
     plan_id: str | None,
     fmt: str,
 ):
-    """Load plans into a target store from a plan document or another store."""
+    """Load plans into a target store from a plan document or another store.
+
+    Source and target use the same FixPlan schema; this command only changes
+    where plans are stored.
+    """
 
     try:
         target_store = create_fix_plan_store(plan_store, plan_store_path)
@@ -256,14 +264,14 @@ def load_plans(
     "plan",
     type=click.Path(exists=True, path_type=Path),
     default=None,
-    help="Load fix selection/options from a fix plan file.",
+    help="Load fix selection/options from a plan file (same FixPlan schema as --plan-store).",
 )
 @click.option(
     "--plan-store",
     "plan_store",
     type=click.Choice(["json", "duckdb"]),
     default=None,
-    help="Optional fix plan store backend when --plan is not provided.",
+    help="Optional plan store backend when --plan is not provided (same FixPlan schema as --plan).",
 )
 @click.option(
     "--plan-store-path",
@@ -341,14 +349,14 @@ def io_status(fmt: str):
     "plan",
     type=click.Path(exists=True, path_type=Path),
     default=None,
-    help="Load fix selection/options from a fix plan file.",
+    help="Load fix selection/options from a plan file (same FixPlan schema as --plan-store).",
 )
 @click.option(
     "--plan-store",
     "plan_store",
     type=click.Choice(["json", "duckdb"]),
     default=None,
-    help="Optional fix plan store backend when --plan is not provided.",
+    help="Optional plan store backend when --plan is not provided (same FixPlan schema as --plan).",
 )
 @click.option(
     "--plan-store-path",

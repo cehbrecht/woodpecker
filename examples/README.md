@@ -99,6 +99,11 @@ woodpecker load-plans \
 
 ## Notes
 
+- The similarity between a plan document entry and a store entry is intentional.
+- Both use the same `FixPlan` fields: `id`, `description`, `match`, `fixes`.
+- The practical difference is the container/loading path:
+	- plan file: `FixPlanDocument` wrapper with `plans: [...]`
+	- store file: persisted plan rows/documents used by a `FixPlanStore` backend
 - Plan files (`cmip6.json`, `esa_cci.json`) are `FixPlanDocument`s with `plans: [...]`.
 - Each entry in `plans` uses the same `FixPlan` schema (`id`, `description`, `match`, `fixes`).
 - `FixPlanStore` backends (JSON, DuckDB) store and return the same `FixPlan` objects.

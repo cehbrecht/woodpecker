@@ -624,7 +624,7 @@ def test_load_plans_from_plan_document_into_json_store(
 
     assert result.exit_code == 0
     payload = json.loads(Path("target.json").read_text(encoding="utf-8"))
-    assert [item["id"] for item in payload] == ["alpha", "beta"]
+    assert [item["id"] for item in payload["plans"]] == ["alpha", "beta"]
 
 
 def test_load_plans_from_store_with_plan_id_filter(
@@ -666,7 +666,7 @@ def test_load_plans_from_store_with_plan_id_filter(
     assert output["loaded"] == 1
     assert output["plan_ids"] == ["beta"]
     payload = json.loads(Path("target.json").read_text(encoding="utf-8"))
-    assert [item["id"] for item in payload] == ["beta"]
+    assert [item["id"] for item in payload["plans"]] == ["beta"]
 
 
 def test_load_plans_requires_exactly_one_source(

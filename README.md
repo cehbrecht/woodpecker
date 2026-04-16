@@ -32,6 +32,7 @@ Implementation note:
 
 Plan files (`--plan`) and plan stores use the same `FixPlan` schema.  
 Plan files are simply containers of one or more plans.
+There is no schema difference between a plan-file entry and a store entry; only the loading/storage path differs.
 
 ## Quickstart
 
@@ -63,6 +64,7 @@ Fix plan usage:
 
 - `--plan` loads fix selection and options from a FixPlan file.
 - Plan files may contain one or more FixPlans; the CLI selects the matching one.
+- `--plan-store` resolves the same FixPlan entries from a store backend instead of a file.
 
 Force-apply option:
 
