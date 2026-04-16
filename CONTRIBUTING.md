@@ -75,49 +75,54 @@ Use existing fixes as examples and keep behavior deterministic.
 
 ## Fix Plan Files
 
-Fix plan fields quick reference:
+Woodpecker uses one schema for both plan files and plan stores:
 
-| Field | Level | Type | Purpose |
-|---|---|---|---|
-| `comment` | root / dataset / step | string | Human-readable notes or links |
-| `datasets` | root | mapping | Selector-based fix plan blocks (`fnmatch`) |
-| `steps` | root / dataset | list | Ordered fix execution |
-| `code` | step | string | Fix code to run |
-| `options` | step | mapping | Parameters passed to fix via `configure()` |
-| `fixes` | root / dataset | mapping | Per-code options map merged with step options |
-| `dataset` | root / dataset | string | Dataset-family filter |
-| `output_format` | root | string | Output backend (`auto`, `netcdf`, `zarr`) |
+- `FixPlanDocument`: top-level container with `plans: [...]`.
+- `FixPlan`: plan entry with `id`, `description`, optional `match`, and ordered `fixes`.
+- `FixRef`: each fix entry (`id`, optional `options`).
 
-Minimal fix plan example:
+Common `FixPlan` fields:
 
-```json
-{
-  "version": 1,
-  "inputs": ["./data"],
-  "codes": ["CMIP6_0001", "ATLAS_0001"],
-  "fixes": {
-    "CMIP6_0001": {"marker_attr": "custom_marker", "marker_value": "ok"},
-    "ATLAS_0001": {}
-  },
-  "output_format": "netcdf",
-  "requires": ["io"]
-}
-```
+- `id`: optional plan identifier.
+- `description`: optional human-readable description.
+- `match.attrs`: key/value attribute matcher for dataset metadata.
+- `match.path_patterns`: optional fnmatch-style path patterns.
+- `fixes`: ordered list of fix refs. Each item can be a string code or object.
 
-Selector + ordered steps example:
+Minimal `FixPlanDocument` example:
 
 ```json
 {
-  "datasets": {
-    "*cmip6*.nc": [
-      {"code": "CMIP6_0001", "options": {"message": "cmip6 check path"}},
-      {"code": "ATLAS_0001"}
-    ]
-  }
+  "plans": [
+    {
+      "id": "cmip6-default",
+      "description": "Default CMIP6 plan",
+      "match": {
+        "attrs": {"dataset": "CMIP6"},
+        "path_patterns": ["*cmip6*.nc"]
+      },
+      "fixes": [
+        "CMIP6_0001",
+        {"id": "ATLAS_0001", "options": {"marker_attr": "custom_marker"}}
+      ]
+    }
+  ]
 }
 ```
 
-CLI options override fix plan defaults when both are provided.
+Single-plan shorthand is also supported by the loader: a top-level object
+with `fixes` is treated as a one-plan document.
+
+CLI override rule:
+
+- Explicit CLI options (for example `--select`, `--dataset`, `--category`) take precedence over plan-derived defaults.
+
+Load and run from file:
+
+```bash
+woodpecker check --plan plan.json
+woodpecker fix --plan plan.json --dry-run
+```
 
 ## Python API (for contributors)
 
