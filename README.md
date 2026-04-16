@@ -130,7 +130,7 @@ Example plans and a sample JSON plan store live in `examples/fix-plans`.
 
 Start here:
 
-- `examples/fix-plans/README.md`
+- `examples/README.md`
 
 Quick run:
 

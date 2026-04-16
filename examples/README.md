@@ -4,9 +4,9 @@ This folder contains compact, runnable examples so the top-level README stays sh
 
 ## Files
 
-- `cmip6.json`: plan-file example for CMIP6-style inputs.
-- `esa_cci.json`: selector-based plan-file example for ESA CCI / CMIP7-style inputs.
-- `store.json`: JSON `FixPlanStore` sample containing two stored plans.
+- `fix-plans/cmip6.json`: plan-file example for CMIP6-style inputs.
+- `fix-plans/esa_cci.json`: selector-based plan-file example for ESA CCI / CMIP7-style inputs.
+- `fix-plans/store.json`: JSON `FixPlanStore` sample containing two stored plans.
 
 ## Run Plan Files
 
