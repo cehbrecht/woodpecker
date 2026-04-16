@@ -7,21 +7,15 @@ from .duckdb_store import DuckDBFixPlanStore
 from .json_store import JsonFixPlanStore
 
 
-def create_fix_plan_store(store_type: str | None, store_path: Path | None) -> FixPlanStore | None:
-    """Create an optional FixPlanStore backend from CLI options.
+def create_fix_plan_store(store_type: str, plan_location: Path | None) -> FixPlanStore:
+    """Create a FixPlanStore backend for the selected store type and location."""
 
-    Returns None when both values are omitted. Raises ValueError for invalid or
-    incomplete configuration.
-    """
-
-    if store_type is None and store_path is None:
-        return None
-    if store_type is None or store_path is None:
-        raise ValueError("--plan-store and --plan-store-path must be provided together.")
+    if plan_location is None:
+        raise ValueError("--plan is required when using a plan store backend.")
 
     if store_type == "json":
-        return JsonFixPlanStore(store_path)
+        return JsonFixPlanStore(plan_location)
     if store_type == "duckdb":
-        return DuckDBFixPlanStore(store_path)
+        return DuckDBFixPlanStore(plan_location)
 
     raise ValueError(f"Unsupported plan store type: {store_type}")

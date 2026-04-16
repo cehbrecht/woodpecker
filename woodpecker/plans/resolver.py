@@ -6,8 +6,6 @@ from pathlib import Path
 from typing import Any, Iterable, Literal, Sequence
 
 from woodpecker.inout import DataInput, normalize_inputs
-from woodpecker.plans.io import load_fix_plan_document
-from woodpecker.plans.matcher import plan_matches_dataset
 from woodpecker.plans.models import FixPlan
 from woodpecker.plans.runner import select_fixes
 from woodpecker.stores.base import FixPlanStore
@@ -20,8 +18,7 @@ class RunContext:
 
     Precedence rules:
     - explicit CLI arguments override plan/store-derived values
-    - explicit `--plan` overrides store lookup
-    - `--plan-store` is an optional fallback source
+    - when `--plan` is set, plans are loaded through selected `--store`
     - with no plan/store source, direct registry selection is used
     """
 
@@ -33,7 +30,7 @@ class RunContext:
     resolved_codes: tuple[str, ...]
     resolved_fix_options: dict[str, dict[str, Any]]
     resolved_output_format: str
-    source: Literal["direct", "plan", "store"]
+    source: Literal["direct", "store"]
 
 
 def normalize_ordered_codes(codes: Sequence[str]) -> tuple[str, ...]:
@@ -109,45 +106,8 @@ def select_matching_store_plans(
     return _finalize_matching_plans(
         _iter_store_matches(inputs, store),
         plan_id=plan_id,
-        not_found_message="No matching stored fix plan found for --plan-id '{plan_id}'.",
-        multiple_message_prefix=(
-            "Multiple matching stored fix plans found; specify --plan-id to choose one: "
-        ),
-    )
-
-
-def _iter_document_matches(inputs: Sequence[DataInput], plans: Sequence[FixPlan]) -> list[FixPlan]:
-    """Collect plans from a document that match any normalized input."""
-
-    out: list[FixPlan] = []
-    for data_input in inputs:
-        dataset = data_input.load()
-        try:
-            for plan in plans:
-                if plan_matches_dataset(plan, dataset, path=data_input.reference):
-                    out.append(plan)
-        finally:
-            close = getattr(dataset, "close", None)
-            if callable(close):
-                close()
-    return out
-
-
-def select_matching_document_plans(
-    *,
-    plans: Sequence[FixPlan],
-    inputs: Sequence[DataInput],
-    plan_id: str | None,
-) -> list[FixPlan]:
-    """Select one matching plan from a FixPlanDocument with clear ambiguity handling."""
-
-    return _finalize_matching_plans(
-        _iter_document_matches(inputs, plans),
-        plan_id=plan_id,
         not_found_message="No matching plan found for --plan-id '{plan_id}'.",
-        multiple_message_prefix=(
-            "Multiple matching plans found in plan document; specify --plan-id to choose one: "
-        ),
+        multiple_message_prefix="Multiple matching fix plans found; specify --plan-id to choose one: ",
     )
 
 
@@ -164,40 +124,29 @@ def extract_plan_codes_and_options(
 def resolve_plan_source(
     *,
     inputs: Sequence[DataInput],
-    plan_path: Path | None,
-    store_type: str | None,
-    store_path: Path | None,
+    store_type: str,
+    plan_location: Path | None,
     plan_id: str | None,
 ) -> tuple[
-    Literal["direct", "plan", "store"],
+    Literal["direct", "store"],
     list[FixPlan],
     tuple[str, ...],
     dict[str, dict[str, Any]],
 ]:
-    """Resolve plan source with explicit precedence: plan file > store > direct.
+    """Resolve plan selection through FixPlanStore with direct-mode fallback.
 
     Returns source marker, selected plans, resolved codes, and resolved fix options.
     """
 
-    if plan_path is None and plan_id and store_type is None and store_path is None:
-        raise ValueError("--plan-id requires --plan-store and --plan-store-path.")
-
-    if plan_path is not None:
-        document = load_fix_plan_document(plan_path)
-        plans = select_matching_document_plans(plans=document.plans, inputs=inputs, plan_id=plan_id)
-        if not plans:
-            raise ValueError("No matching plans found in the plan document for selected inputs.")
-        selected = plans[0]
-        codes, fix_options = extract_plan_codes_and_options(selected)
-        return "plan", [selected], codes, fix_options
-
-    store = create_fix_plan_store(store_type, store_path)
-    if store is None:
+    if plan_location is None:
+        if plan_id:
+            raise ValueError("--plan-id requires --plan.")
         return "direct", [], (), {}
 
+    store = create_fix_plan_store(store_type, plan_location)
     plans = select_matching_store_plans(store=store, inputs=inputs, plan_id=plan_id)
     if not plans:
-        return "store", [], (), {}
+        raise ValueError("No matching fix plans found in selected store for selected inputs.")
 
     selected = plans[0]
     codes, fix_options = extract_plan_codes_and_options(selected)
@@ -215,9 +164,8 @@ def resolve_target_paths(paths: tuple[Path, ...]) -> list[Path]:
 def resolve_run_context(
     *,
     paths: tuple[Path, ...],
-    plan_path: Path | None,
-    store_type: str | None,
-    store_path: Path | None,
+    store_type: str,
+    plan_location: Path | None,
     plan_id: str | None,
     dataset: str | None,
     categories: tuple[str, ...],
@@ -227,11 +175,10 @@ def resolve_run_context(
     """Resolve inputs and fix selection for check/fix commands.
 
     Precedence:
-    - plan file (`--plan`) first
-    - store lookup fallback (`--plan-store`, `--plan-store-path`)
-    - direct selection otherwise
+        - store lookup when `--plan` is provided
+        - direct selection otherwise
     - explicit CLI filters (`--dataset`, `--category`, `--select`) override
-      plan/store-derived defaults
+            store-derived defaults
     """
 
     target_paths = resolve_target_paths(paths)
@@ -239,9 +186,8 @@ def resolve_run_context(
 
     source, selected_plans, source_codes, source_fix_options = resolve_plan_source(
         inputs=inputs,
-        plan_path=plan_path,
         store_type=store_type,
-        store_path=store_path,
+        plan_location=plan_location,
         plan_id=plan_id,
     )
 
@@ -252,9 +198,6 @@ def resolve_run_context(
     resolved_categories = categories
     resolved_output_format = output_format
     resolved_fix_options = dict(source_fix_options)
-
-    if source == "store" and not selected_plans and not resolved_codes:
-        raise ValueError("No matching fix plans found in the plan store for selected inputs.")
 
     fixes = select_fixes(
         dataset=resolved_dataset,
@@ -282,27 +225,16 @@ def resolve_load_source_plans(
     *,
     from_plan: Path | None,
     from_store_type: str | None,
-    from_store_path: Path | None,
     plan_id: str | None,
 ) -> list[FixPlan]:
     """Resolve source plans for load-plans command."""
 
-    if (from_store_type is None) != (from_store_path is None):
-        raise ValueError("--from-store and --from-store-path must be provided together.")
+    if from_plan is None:
+        raise ValueError("Provide --from-plan as the source store location.")
 
-    source_modes = int(from_plan is not None) + int(from_store_type is not None)
-    if source_modes != 1:
-        raise ValueError(
-            "Provide exactly one source: --from-plan or (--from-store and --from-store-path)."
-        )
-
-    if from_plan is not None:
-        plans = list(load_fix_plan_document(from_plan).plans)
-    else:
-        source_store = create_fix_plan_store(from_store_type, from_store_path)
-        if source_store is None:  # pragma: no cover - guarded above
-            raise ValueError("Invalid source store configuration.")
-        plans = list(source_store.list_plans())
+    source_store_type = from_store_type or "json"
+    source_store = create_fix_plan_store(source_store_type, from_plan)
+    plans = list(source_store.list_plans())
 
     if plan_id:
         requested = plan_id.strip()
@@ -311,6 +243,6 @@ def resolve_load_source_plans(
             raise ValueError(f"No plans found for --plan-id '{requested}' in selected source.")
 
     if not plans:
-        raise ValueError("No plans found in selected source.")
+        raise ValueError("No plans found in selected source store.")
 
     return plans

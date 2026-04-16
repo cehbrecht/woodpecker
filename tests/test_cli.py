@@ -348,14 +348,14 @@ def test_check_uses_json_plan_store_lookup(
 
     result = runner.invoke(
         cli,
-        ["check", ".", "--plan-store", "json", "--plan-store-path", "plans.json"],
+        ["check", ".", "--plan", "plans.json"],
     )
 
     assert result.exit_code == 1
     assert "CMIP6_0001" in result.output
 
 
-def test_check_plan_store_requires_plan_id_when_multiple_match(
+def test_check_plan_store_requires_plan_id_when_multiple_match_without_path_filters(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
 ):
     runner, make_dummy_netcdf = isolated_cli_workspace
@@ -380,14 +380,14 @@ def test_check_plan_store_requires_plan_id_when_multiple_match(
 
     result = runner.invoke(
         cli,
-        ["check", ".", "--plan-store", "json", "--plan-store-path", "plans.json"],
+        ["check", ".", "--plan", "plans.json"],
     )
 
     assert result.exit_code != 0
-    assert "Multiple matching stored fix plans found" in result.output
+    assert "Multiple matching fix plans found" in result.output
 
 
-def test_check_plan_store_plan_id_selects_specific_plan(
+def test_check_plan_store_plan_id_selects_specific_plan_without_path_filters(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
 ):
     runner, make_dummy_netcdf = isolated_cli_workspace
@@ -415,9 +415,7 @@ def test_check_plan_store_plan_id_selects_specific_plan(
         [
             "check",
             ".",
-            "--plan-store",
-            "json",
-            "--plan-store-path",
+            "--plan",
             "plans.json",
             "--plan-id",
             "second",
@@ -428,47 +426,18 @@ def test_check_plan_store_plan_id_selects_specific_plan(
     assert "CMIP6_0001" in result.output
 
 
-def test_check_explicit_plan_overrides_store(
+def test_check_plan_id_without_plan_errors(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
 ):
-    runner, make_dummy_netcdf = isolated_cli_workspace
-    make_dummy_netcdf("cmip6_bad.nc")
+    runner, _ = isolated_cli_workspace
 
-    Path("plan.json").write_text(
-        json.dumps({"plans": [{"id": "explicit", "fixes": [{"id": "CMIP6_0001"}]}]}),
-        encoding="utf-8",
-    )
-    Path("plans.json").write_text(
-        json.dumps(
-            [
-                {
-                    "id": "store-plan",
-                    "match": {"path_patterns": ["*cmip6_bad.nc"]},
-                    "fixes": [{"id": "CMIP6D_0001"}],
-                }
-            ]
-        ),
-        encoding="utf-8",
-    )
+    result = runner.invoke(cli, ["check", ".", "--plan-id", "alpha"])
 
-    result = runner.invoke(
-        cli,
-        [
-            "check",
-            "--plan",
-            "plan.json",
-            "--plan-store",
-            "json",
-            "--plan-store-path",
-            "plans.json",
-        ],
-    )
-
-    assert result.exit_code == 1
-    assert "CMIP6_0001" in result.output
+    assert result.exit_code != 0
+    assert "--plan-id requires --plan" in result.output
 
 
-def test_check_plan_document_requires_plan_id_when_multiple_match(
+def test_check_plan_store_requires_plan_id_when_multiple_match(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
 ):
     runner, make_dummy_netcdf = isolated_cli_workspace
@@ -489,10 +458,10 @@ def test_check_plan_document_requires_plan_id_when_multiple_match(
     result = runner.invoke(cli, ["check", "--plan", "plan.json"])
 
     assert result.exit_code != 0
-    assert "Multiple matching plans found in plan document" in result.output
+    assert "Multiple matching fix plans found" in result.output
 
 
-def test_check_plan_document_plan_id_selects_specific_plan(
+def test_check_plan_store_plan_id_selects_specific_plan(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
 ):
     runner, make_dummy_netcdf = isolated_cli_workspace
@@ -538,7 +507,7 @@ def test_list_plans_text_output(
 
     result = runner.invoke(
         cli,
-        ["list-plans", "--plan-store", "json", "--plan-store-path", "plans.json"],
+        ["list-plans", "--plan", "plans.json"],
     )
 
     assert result.exit_code == 0
@@ -566,9 +535,7 @@ def test_list_plans_json_output(
         cli,
         [
             "list-plans",
-            "--plan-store",
-            "json",
-            "--plan-store-path",
+            "--plan",
             "plans.json",
             "--format",
             "json",
@@ -589,7 +556,7 @@ def test_list_plans_requires_store_options(
     result = runner.invoke(cli, ["list-plans"])
 
     assert result.exit_code != 0
-    assert "Missing option '--plan-store'" in result.output
+    assert "Missing option '--plan'" in result.output
 
 
 def test_load_plans_from_plan_document_into_json_store(
@@ -613,9 +580,7 @@ def test_load_plans_from_plan_document_into_json_store(
         cli,
         [
             "load-plans",
-            "--plan-store",
-            "json",
-            "--plan-store-path",
+            "--plan",
             "target.json",
             "--from-plan",
             "plan-doc.json",
@@ -646,14 +611,12 @@ def test_load_plans_from_store_with_plan_id_filter(
         cli,
         [
             "load-plans",
-            "--plan-store",
-            "json",
-            "--plan-store-path",
+            "--plan",
             "target.json",
+            "--from-plan",
+            "source.json",
             "--from-store",
             "json",
-            "--from-store-path",
-            "source.json",
             "--plan-id",
             "beta",
             "--format",
@@ -669,7 +632,7 @@ def test_load_plans_from_store_with_plan_id_filter(
     assert [item["id"] for item in payload["plans"]] == ["beta"]
 
 
-def test_load_plans_requires_exactly_one_source(
+def test_load_plans_requires_source_plan_location(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
 ):
     runner, _ = isolated_cli_workspace
@@ -678,15 +641,13 @@ def test_load_plans_requires_exactly_one_source(
         cli,
         [
             "load-plans",
-            "--plan-store",
-            "json",
-            "--plan-store-path",
+            "--plan",
             "target.json",
         ],
     )
 
     assert result.exit_code != 0
-    assert "Provide exactly one source" in result.output
+    assert "Missing option '--from-plan'" in result.output
 
 
 def test_load_plans_wraps_save_plan_value_error(
@@ -711,9 +672,7 @@ def test_load_plans_wraps_save_plan_value_error(
         cli,
         [
             "load-plans",
-            "--plan-store",
-            "json",
-            "--plan-store-path",
+            "--plan",
             "target.json",
             "--from-plan",
             "plan-doc.json",
@@ -751,9 +710,7 @@ def test_load_plans_reraises_save_plan_click_exception(
         cli,
         [
             "load-plans",
-            "--plan-store",
-            "json",
-            "--plan-store-path",
+            "--plan",
             "target.json",
             "--from-plan",
             "plan-doc.json",
@@ -766,19 +723,6 @@ def test_load_plans_reraises_save_plan_click_exception(
     assert str(result.exception) == "save failed click"
 
 
-def test_format_provenance_source_for_plan_mode():
-    context = SimpleNamespace(source="plan", selected_plans=[])
-
-    output = format_provenance_source(
-        context,
-        Path("plan.json"),
-        plan_store=None,
-        plan_store_path=None,
-    )
-
-    assert output == "plan.json"
-
-
 def test_format_provenance_source_for_store_mode():
     context = SimpleNamespace(
         source="store",
@@ -787,12 +731,11 @@ def test_format_provenance_source_for_store_mode():
 
     output = format_provenance_source(
         context,
-        plan=None,
-        plan_store="json",
-        plan_store_path=Path("plans.json"),
+        store_type="json",
+        plan_location=Path("plans.json"),
     )
 
-    assert output == "store type=json path=plans.json plans=alpha, beta"
+    assert output == "store type=json location=plans.json plans=alpha, beta"
 
 
 def test_format_provenance_source_for_direct_mode():
@@ -800,9 +743,8 @@ def test_format_provenance_source_for_direct_mode():
 
     output = format_provenance_source(
         context,
-        plan=None,
-        plan_store="json",
-        plan_store_path=Path("plans.json"),
+        store_type="json",
+        plan_location=Path("plans.json"),
     )
 
     assert output is None
