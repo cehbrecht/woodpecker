@@ -3,14 +3,9 @@ from __future__ import annotations
 import pytest
 import xarray as xr
 
-from woodpecker.store import (
-    DatasetMatcher,
-    DuckDBFixPlanStore,
-    FixPlan,
-    FixRef,
-    JsonFixPlanStore,
-    plan_matches_dataset,
-)
+from woodpecker.plans.matcher import plan_matches_dataset
+from woodpecker.plans.models import DatasetMatcher, FixPlan, FixRef
+from woodpecker.stores import DuckDBFixPlanStore, JsonFixPlanStore
 
 
 def _sample_plan() -> FixPlan:
