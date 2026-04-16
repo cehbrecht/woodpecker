@@ -10,19 +10,19 @@ import woodpecker.fixes  # noqa: F401
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.formatting import format_findings, format_fix_stats, format_plans
 from woodpecker.inout import get_io_availability
-from woodpecker.plans.resolver import resolve_load_source_plans, resolve_run_context
+from woodpecker.plans.resolver import RunContext, resolve_load_source_plans, resolve_run_context
 from woodpecker.plans.runner import run_check, run_fix
 from woodpecker.provenance import build_prov_document, write_prov_document
 from woodpecker.stores.helpers import create_fix_plan_store
 
 
 def build_run_fix_kwargs(
-    context,
+    context: RunContext,
     dry_run: bool,
     force_apply: bool,
     embed_provenance_metadata: bool,
 ) -> dict[str, object]:
-    """Build keyword arguments forwarded to run_fix()."""
+    """Build run_fix kwargs from command flags and resolved run context."""
 
     run_fix_kwargs: dict[str, object] = {
         "dry_run": dry_run,
@@ -38,12 +38,12 @@ def build_run_fix_kwargs(
 
 
 def format_provenance_source(
-    context,
+    context: RunContext,
     plan: Path | None,
     plan_store: str | None,
     plan_store_path: Path | None,
 ) -> str | None:
-    """Return a human-readable provenance source string for plan selection."""
+    """Return a concise provenance source description for selected plan input."""
 
     if context.source == "plan":
         return str(plan) if plan else None
@@ -51,7 +51,7 @@ def format_provenance_source(
     if context.source == "store":
         plan_ids = [selected.id for selected in context.selected_plans if selected.id]
         selected_text = ", ".join(plan_ids) if plan_ids else "<unnamed>"
-        return f"store:{plan_store}@{plan_store_path} plans={selected_text}"
+        return f"store type={plan_store} path={plan_store_path} plans={selected_text}"
 
     return None
 
@@ -209,8 +209,13 @@ def load_plans(
     except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
 
-    for plan in plans:
-        target_store.save_plan(plan)
+    try:
+        for plan in plans:
+            target_store.save_plan(plan)
+    except click.ClickException:
+        raise
+    except (TypeError, ValueError) as exc:
+        raise click.ClickException(str(exc)) from exc
 
     plan_ids = [plan.id or "<unnamed>" for plan in plans]
     if fmt == "json":
