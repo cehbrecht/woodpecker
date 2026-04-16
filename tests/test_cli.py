@@ -588,3 +588,100 @@ def test_list_plans_requires_store_options(
 
     assert result.exit_code != 0
     assert "Missing option '--plan-store'" in result.output
+
+
+def test_load_plans_from_plan_document_into_json_store(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, _ = isolated_cli_workspace
+
+    Path("plan-doc.json").write_text(
+        json.dumps(
+            {
+                "plans": [
+                    {"id": "alpha", "fixes": [{"id": "CMIP6_0001"}]},
+                    {"id": "beta", "fixes": [{"id": "ATLAS_0001"}]},
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        cli,
+        [
+            "load-plans",
+            "--plan-store",
+            "json",
+            "--plan-store-path",
+            "target.json",
+            "--from-plan",
+            "plan-doc.json",
+        ],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(Path("target.json").read_text(encoding="utf-8"))
+    assert [item["id"] for item in payload] == ["alpha", "beta"]
+
+
+def test_load_plans_from_store_with_plan_id_filter(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, _ = isolated_cli_workspace
+
+    Path("source.json").write_text(
+        json.dumps(
+            [
+                {"id": "alpha", "fixes": [{"id": "CMIP6_0001"}]},
+                {"id": "beta", "fixes": [{"id": "ATLAS_0001"}]},
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        cli,
+        [
+            "load-plans",
+            "--plan-store",
+            "json",
+            "--plan-store-path",
+            "target.json",
+            "--from-store",
+            "json",
+            "--from-store-path",
+            "source.json",
+            "--plan-id",
+            "beta",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0
+    output = json.loads(result.output)
+    assert output["loaded"] == 1
+    assert output["plan_ids"] == ["beta"]
+    payload = json.loads(Path("target.json").read_text(encoding="utf-8"))
+    assert [item["id"] for item in payload] == ["beta"]
+
+
+def test_load_plans_requires_exactly_one_source(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, _ = isolated_cli_workspace
+
+    result = runner.invoke(
+        cli,
+        [
+            "load-plans",
+            "--plan-store",
+            "json",
+            "--plan-store-path",
+            "target.json",
+        ],
+    )
+
+    assert result.exit_code != 0
+    assert "Provide exactly one source" in result.output

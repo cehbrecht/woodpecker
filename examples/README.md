@@ -69,30 +69,28 @@ pip install -e ".[full]"
 Option A: from a `FixPlanDocument` file (`plans: [...]`):
 
 ```bash
-python - <<'PY'
-from woodpecker.plans.io import load_fix_plan_document
-from woodpecker.stores import DuckDBFixPlanStore
-
-doc = load_fix_plan_document("examples/fix-plans/cmip6.json")
-store = DuckDBFixPlanStore("examples/fix-plans/store.duckdb")
-
-for plan in doc.plans:
-	store.save_plan(plan)
-PY
+woodpecker load-plans \
+	--plan-store duckdb \
+	--plan-store-path examples/fix-plans/store.duckdb \
+	--from-plan examples/fix-plans/cmip6.json
 ```
 
 Option B: copy existing plans from JSON store:
 
 ```bash
-python - <<'PY'
-from woodpecker.stores import DuckDBFixPlanStore, JsonFixPlanStore
+woodpecker load-plans \
+	--plan-store duckdb \
+	--plan-store-path examples/fix-plans/store.duckdb \
+	--from-store json \
+	--from-store-path examples/fix-plans/store.json
 
-source = JsonFixPlanStore("examples/fix-plans/store.json")
-target = DuckDBFixPlanStore("examples/fix-plans/store.duckdb")
-
-for plan in source.list_plans():
-	target.save_plan(plan)
-PY
+# Optional: only copy one plan id
+woodpecker load-plans \
+	--plan-store duckdb \
+	--plan-store-path examples/fix-plans/store.duckdb \
+	--from-store json \
+	--from-store-path examples/fix-plans/store.json \
+	--plan-id cmip6-default
 ```
 
 ## Notes

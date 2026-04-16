@@ -315,6 +315,39 @@ def format_plans(plans: Sequence[FixPlan], fmt: str) -> str:
     return "\n".join(lines)
 
 
+def _select_source_plans(
+    *,
+    from_plan: Path | None,
+    from_store_type: str | None,
+    from_store_path: Path | None,
+    plan_id: str | None,
+) -> list[FixPlan]:
+    source_modes = int(from_plan is not None) + int(from_store_type is not None or from_store_path is not None)
+    if source_modes != 1:
+        raise click.ClickException(
+            "Provide exactly one source: --from-plan or (--from-store and --from-store-path)."
+        )
+
+    if from_plan is not None:
+        plans = list(load_fix_plan_document(from_plan).plans)
+    else:
+        source_store = create_fix_plan_store(from_store_type, from_store_path)
+        if source_store is None:  # pragma: no cover - guarded above
+            raise click.ClickException("Invalid source store configuration.")
+        plans = list(source_store.list_plans())
+
+    if plan_id:
+        requested = plan_id.strip()
+        plans = [plan for plan in plans if plan.id == requested]
+        if not plans:
+            raise click.ClickException(f"No plans found for --plan-id '{requested}' in selected source.")
+
+    if not plans:
+        raise click.ClickException("No plans found in selected source.")
+
+    return plans
+
+
 @click.group()
 def cli():
     """Woodpecker CLI."""
@@ -387,6 +420,90 @@ def list_plans(plan_store: str, plan_store_path: Path, fmt: str):
         raise click.ClickException(str(exc)) from exc
 
     click.echo(format_plans(plans, fmt))
+
+
+@cli.command("load-plans")
+@click.option(
+    "--plan-store",
+    "plan_store",
+    type=click.Choice(["json", "duckdb"]),
+    required=True,
+    help="Target fix plan store backend.",
+)
+@click.option(
+    "--plan-store-path",
+    "plan_store_path",
+    type=click.Path(path_type=Path),
+    required=True,
+    help="Path to target fix plan store file/database.",
+)
+@click.option(
+    "--from-plan",
+    "from_plan",
+    type=click.Path(exists=True, path_type=Path),
+    default=None,
+    help="Load plans from a FixPlanDocument file.",
+)
+@click.option(
+    "--from-store",
+    "from_store",
+    type=click.Choice(["json", "duckdb"]),
+    default=None,
+    help="Load plans from a source fix plan store backend.",
+)
+@click.option(
+    "--from-store-path",
+    "from_store_path",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Path to source fix plan store file/database.",
+)
+@click.option("--plan-id", "plan_id", default=None, help="Load only this plan id from source.")
+@click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
+def load_plans(
+    plan_store: str,
+    plan_store_path: Path,
+    from_plan: Path | None,
+    from_store: str | None,
+    from_store_path: Path | None,
+    plan_id: str | None,
+    fmt: str,
+):
+    """Load plans into a target store from a plan document or another store."""
+
+    target_store = create_fix_plan_store(plan_store, plan_store_path)
+    if target_store is None:  # pragma: no cover - guarded by required=True
+        raise click.ClickException("--plan-store and --plan-store-path are required.")
+
+    plans = _select_source_plans(
+        from_plan=from_plan,
+        from_store_type=from_store,
+        from_store_path=from_store_path,
+        plan_id=plan_id,
+    )
+
+    for plan in plans:
+        target_store.save_plan(plan)
+
+    plan_ids = [plan.id or "<unnamed>" for plan in plans]
+    if fmt == "json":
+        click.echo(
+            json.dumps(
+                {
+                    "loaded": len(plans),
+                    "target_store": plan_store,
+                    "target_path": str(plan_store_path),
+                    "plan_ids": plan_ids,
+                },
+                indent=2,
+            )
+        )
+        return
+
+    click.echo(
+        f"Loaded {len(plans)} plan(s) into {plan_store} store at {plan_store_path}: "
+        + ", ".join(plan_ids)
+    )
 
 
 @cli.command("check")
