@@ -20,24 +20,30 @@ woodpecker check --plan examples/fix-plans/esa_cci.json
 woodpecker fix --plan examples/fix-plans/esa_cci.json --force-apply
 ```
 
+`--store` defaults to `json`, so `--plan` alone is shorthand for:
+
+```bash
+woodpecker check --store json --plan examples/fix-plans/cmip6.json
+```
+
 ## Run Via JSON Plan Store
 
 List available plans:
 
 ```bash
-woodpecker list-plans --plan-store json --plan-store-path examples/fix-plans/store.json
+woodpecker list-plans --store json --plan examples/fix-plans/store.json
 ```
 
 Use store lookup (auto-match by dataset attrs/path patterns):
 
 ```bash
-woodpecker check . --plan-store json --plan-store-path examples/fix-plans/store.json
+woodpecker check . --store json --plan examples/fix-plans/store.json
 ```
 
 Select a specific stored plan:
 
 ```bash
-woodpecker fix . --plan-store json --plan-store-path examples/fix-plans/store.json --plan-id cmip6-default --dry-run
+woodpecker fix . --store json --plan examples/fix-plans/store.json --plan-id cmip6-default --dry-run
 ```
 
 ## Run Via DuckDB Plan Store
@@ -47,19 +53,19 @@ DuckDB stores the same `FixPlan` entries as JSON, but in database form.
 List available plans:
 
 ```bash
-woodpecker list-plans --plan-store duckdb --plan-store-path examples/fix-plans/store.duckdb
+woodpecker list-plans --store duckdb --plan examples/fix-plans/store.duckdb
 ```
 
 Use store lookup:
 
 ```bash
-woodpecker check . --plan-store duckdb --plan-store-path examples/fix-plans/store.duckdb
+woodpecker check . --store duckdb --plan examples/fix-plans/store.duckdb
 ```
 
 Select a specific stored plan:
 
 ```bash
-woodpecker fix . --plan-store duckdb --plan-store-path examples/fix-plans/store.duckdb --plan-id cmip6-default --dry-run
+woodpecker fix . --store duckdb --plan examples/fix-plans/store.duckdb --plan-id cmip6-default --dry-run
 ```
 
 ## Populate DuckDB Store
@@ -74,8 +80,8 @@ Option A: from a `FixPlanDocument` file (`plans: [...]`):
 
 ```bash
 woodpecker load-plans \
-	--plan-store duckdb \
-	--plan-store-path examples/fix-plans/store.duckdb \
+	--store duckdb \
+	--plan examples/fix-plans/store.duckdb \
 	--from-plan examples/fix-plans/cmip6.json
 ```
 
@@ -83,17 +89,17 @@ Option B: copy existing plans from JSON store:
 
 ```bash
 woodpecker load-plans \
-	--plan-store duckdb \
-	--plan-store-path examples/fix-plans/store.duckdb \
+	--store duckdb \
+	--plan examples/fix-plans/store.duckdb \
 	--from-store json \
-	--from-store-path examples/fix-plans/store.json
+	--from-plan examples/fix-plans/store.json
 
 # Optional: only copy one plan id
 woodpecker load-plans \
-	--plan-store duckdb \
-	--plan-store-path examples/fix-plans/store.duckdb \
+	--store duckdb \
+	--plan examples/fix-plans/store.duckdb \
 	--from-store json \
-	--from-store-path examples/fix-plans/store.json \
+	--from-plan examples/fix-plans/store.json \
 	--plan-id cmip6-default
 ```
 
@@ -101,9 +107,9 @@ woodpecker load-plans \
 
 - The similarity between a plan document entry and a store entry is intentional.
 - Both use the same `FixPlan` fields: `id`, `description`, `match`, `fixes`.
-- The practical difference is the container/loading path:
-	- plan file: `FixPlanDocument` wrapper with `plans: [...]`
-	- store file: persisted plan rows/documents used by a `FixPlanStore` backend
+- The practical difference is source/backend interpretation:
+	- JSON store: local file path passed to `--plan`
+	- DuckDB store: database file path passed to `--plan`
 - Plan files (`cmip6.json`, `esa_cci.json`) are `FixPlanDocument`s with `plans: [...]`.
 - Each entry in `plans` uses the same `FixPlan` schema (`id`, `description`, `match`, `fixes`).
 - `FixPlanStore` backends (JSON, DuckDB) store and return the same `FixPlan` objects.
