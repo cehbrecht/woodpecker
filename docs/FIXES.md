@@ -1,25 +1,30 @@
-| Code | Name | Description | Categories | Dataset | Priority |
-|------|------|-------------|------------|---------|---------|
-| CMIP6D_0001 | Decadal time metadata | Ensures CMIP6-decadal time coordinate has long_name='valid_time'. | metadata | CMIP6-decadal | 10 |
-| CMIP6D_0002 | Decadal calendar normalization | Normalizes CMIP6-decadal time calendar from proleptic_gregorian to standard. | metadata, calendar | CMIP6-decadal | 11 |
-| CMIP6D_0003 | Decadal realization variable | Adds realization data variable from realization_index for CMIP6-decadal datasets. | metadata | CMIP6-decadal | 12 |
-| CMIP6D_0004 | Decadal coordinates encoding cleanup | Removes stale 'coordinates' encoding entries from realization and bounds variables in CMIP6-decadal datasets. | encoding, metadata | CMIP6-decadal | 13 |
-| CMIP6D_0005 | Decadal realization comment normalization | Normalizes realization comment to the full CMIP6-decadal ripf guidance text. | metadata | CMIP6-decadal | 14 |
-| CMIP6D_0006 | Decadal realization dtype normalization | Normalizes realization data variable dtype to int32 for CMIP6-decadal datasets. | metadata, structure | CMIP6-decadal | 15 |
-| CMIP6D_0007 | Decadal _FillValue encoding cleanup | Removes stale '_FillValue' encoding entries from realization and bounds variables in CMIP6-decadal datasets. | encoding, metadata | CMIP6-decadal | 16 |
-| CMIP6D_0008 | Decadal further_info_url normalization | Normalizes malformed CMIP6-decadal further_info_url variant separators from '-' to '.'. | metadata | CMIP6-decadal | 17 |
-| CMIP6D_0009 | Decadal start token normalization | Normalizes CMIP6-decadal startdate and sub_experiment_id to the canonical sYYYY11 token. | metadata | CMIP6-decadal | 18 |
-| CMIP6D_0010 | Decadal realization long_name normalization | Normalizes realization long_name metadata to 'realization' for CMIP6-decadal datasets. | metadata | CMIP6-decadal | 19 |
-| ATLAS_0001 | ATLAS encoding cleanup | Applies rook-equivalent ATLAS deflation/encoding cleanup. | encoding | ATLAS | 20 |
-| CMIP6D_0011 | Decadal realization_index normalization | Normalizes CMIP6-decadal realization_index global attribute to integer type. | metadata | CMIP6-decadal | 20 |
-| ATLAS_0002 | ATLAS project_id normalization | Adds or normalizes ATLAS project_id from dataset identifier prefix. | metadata | ATLAS | 21 |
-| CMIP6D_0012 | Decadal leadtime metadata normalization | Normalizes CMIP6-decadal leadtime metadata (units, long_name, standard_name). | metadata | CMIP6-decadal | 21 |
-| CMIP6D_0013 | Decadal model global attributes | Normalizes model-specific global metadata fields for CMIP6-decadal datasets. | metadata | CMIP6-decadal | 22 |
-| CMIP6D_0014 | Decadal reftime coordinate | Adds or normalizes CMIP6-decadal scalar reftime coordinate and metadata. | metadata, structure | CMIP6-decadal | 23 |
-| CMIP6D_0015 | Decadal leadtime coordinate | Adds or normalizes CMIP6-decadal leadtime coordinate values from time and reftime. | metadata, structure | CMIP6-decadal | 24 |
-| COMMON_0001 | Normalize tas-like units to Kelvin | Converts tas/temp from Celsius-like units to Kelvin. | metadata, units |  | 30 |
-| COMMON_0004 | Merge equivalent dimensions | Merges two or more same-sized dimensions into the first configured dimension. | structure |  | 32 |
-| COMMON_0002 | Ensure latitude is increasing | Flips datasets with decreasing latitude coordinates to increasing order. | structure |  | 33 |
-| COMMON_0003 | Remove coordinate FillValue encodings | Removes _FillValue encoding entries from common coordinate variables. | metadata, structure |  | 34 |
-| CMIP6_0001 | CMIP6 dummy placeholder | Dummy placeholder for future non-decadal CMIP6 fixes. | metadata | cmip6 | 40 |
-| CMIP6D_0999 | CMIP6 Decadal: full fix suite | Applies all CMIP6-decadal fixes (CMIP6D_0001–CMIP6D_0015) in sequence: calendar, encoding, realization metadata, start-token normalisation, model-specific global attributes, and leadtime/reftime coordinates. | metadata, calendar, encoding, structure | CMIP6-decadal | 99 |
+Source values: core (built-in) or plugin:<package> (discovered plugin fix).
+
+| Code | Name | Description | Categories | Dataset | Priority | Source |
+|------|------|-------------|------------|---------|---------|--------|
+| CMIP6D_0001 | Decadal time metadata | Ensures CMIP6-decadal time coordinate has long_name='valid_time'. | metadata | CMIP6-decadal | 10 | plugin:woodpecker_cmip6_decadal_plugin |
+| CMIP6D_0002 | Decadal calendar normalization | Normalizes CMIP6-decadal time calendar from proleptic_gregorian to standard. | metadata, calendar | CMIP6-decadal | 11 | plugin:woodpecker_cmip6_decadal_plugin |
+| CMIP6D_0003 | Decadal realization variable | Adds realization data variable from realization_index for CMIP6-decadal datasets. | metadata | CMIP6-decadal | 12 | plugin:woodpecker_cmip6_decadal_plugin |
+| CMIP6D_0004 | Decadal coordinates encoding cleanup | Removes stale 'coordinates' encoding entries from realization and bounds variables in CMIP6-decadal datasets. | encoding, metadata | CMIP6-decadal | 13 | plugin:woodpecker_cmip6_decadal_plugin |
+| CMIP6D_0005 | Decadal realization comment normalization | Normalizes realization comment to the full CMIP6-decadal ripf guidance text. | metadata | CMIP6-decadal | 14 | plugin:woodpecker_cmip6_decadal_plugin |
+| CMIP6D_0006 | Decadal realization dtype normalization | Normalizes realization data variable dtype to int32 for CMIP6-decadal datasets. | metadata, structure | CMIP6-decadal | 15 | plugin:woodpecker_cmip6_decadal_plugin |
+| CMIP6D_0007 | Decadal _FillValue encoding cleanup | Removes stale '_FillValue' encoding entries from realization and bounds variables in CMIP6-decadal datasets. | encoding, metadata | CMIP6-decadal | 16 | plugin:woodpecker_cmip6_decadal_plugin |
+| CMIP6D_0008 | Decadal further_info_url normalization | Normalizes malformed CMIP6-decadal further_info_url variant separators from '-' to '.'. | metadata | CMIP6-decadal | 17 | plugin:woodpecker_cmip6_decadal_plugin |
+| CMIP6D_0009 | Decadal start token normalization | Normalizes CMIP6-decadal startdate and sub_experiment_id to the canonical sYYYY11 token. | metadata | CMIP6-decadal | 18 | plugin:woodpecker_cmip6_decadal_plugin |
+| CMIP6D_0010 | Decadal realization long_name normalization | Normalizes realization long_name metadata to 'realization' for CMIP6-decadal datasets. | metadata | CMIP6-decadal | 19 | plugin:woodpecker_cmip6_decadal_plugin |
+| ATLAS_0001 | ATLAS encoding cleanup | Applies rook-equivalent ATLAS deflation/encoding cleanup. | encoding | ATLAS | 20 | plugin:woodpecker_atlas_plugin |
+| CMIP6D_0011 | Decadal realization_index normalization | Normalizes CMIP6-decadal realization_index global attribute to integer type. | metadata | CMIP6-decadal | 20 | plugin:woodpecker_cmip6_decadal_plugin |
+| ATLAS_0002 | ATLAS project_id normalization | Adds or normalizes ATLAS project_id from dataset identifier prefix. | metadata | ATLAS | 21 | plugin:woodpecker_atlas_plugin |
+| CMIP6D_0012 | Decadal leadtime metadata normalization | Normalizes CMIP6-decadal leadtime metadata (units, long_name, standard_name). | metadata | CMIP6-decadal | 21 | plugin:woodpecker_cmip6_decadal_plugin |
+| CMIP6D_0013 | Decadal model global attributes | Normalizes model-specific global metadata fields for CMIP6-decadal datasets. | metadata | CMIP6-decadal | 22 | plugin:woodpecker_cmip6_decadal_plugin |
+| CMIP6D_0014 | Decadal reftime coordinate | Adds or normalizes CMIP6-decadal scalar reftime coordinate and metadata. | metadata, structure | CMIP6-decadal | 23 | plugin:woodpecker_cmip6_decadal_plugin |
+| CMIP6D_0015 | Decadal leadtime coordinate | Adds or normalizes CMIP6-decadal leadtime coordinate values from time and reftime. | metadata, structure | CMIP6-decadal | 24 | plugin:woodpecker_cmip6_decadal_plugin |
+| COMMON_0001 | Normalize tas-like units to Kelvin | Converts tas/temp from Celsius-like units to Kelvin. | metadata, units |  | 30 | core |
+| COMMON_0004 | Merge equivalent dimensions | Merges two or more same-sized dimensions into the first configured dimension. | structure |  | 32 | core |
+| COMMON_0002 | Ensure latitude is increasing | Flips datasets with decreasing latitude coordinates to increasing order. | structure |  | 33 | core |
+| COMMON_0003 | Remove coordinate FillValue encodings | Removes _FillValue encoding entries from common coordinate variables. | metadata, structure |  | 34 | core |
+| CMIP6_0001 | CMIP6 dummy placeholder | Dummy placeholder for future non-decadal CMIP6 fixes. | metadata | cmip6 | 40 | plugin:woodpecker_cmip6_plugin |
+| CMIP7_0001 | Ensure project_id is present (plugin) | Sets project_id from dataset identifier metadata when missing. | metadata | CMIP7 | 41 | plugin:woodpecker_cmip7_plugin |
+| CMIP7_0002 | Rename temp variable to tas (plugin) | Renames data variable temp to tas when tas is missing. | structure, metadata | CMIP7 | 42 | plugin:woodpecker_cmip7_plugin |
+| CMIP7_0003 | Configurable CMIP7 reformat bridge (plugin) | Applies workflow-driven variable/dimension remapping and selected metadata updates. | structure, metadata | CMIP7 | 43 | plugin:woodpecker_cmip7_plugin |
+| CMIP6D_0999 | CMIP6 Decadal: full fix suite | Applies all CMIP6-decadal fixes (CMIP6D_0001–CMIP6D_0015) in sequence: calendar, encoding, realization metadata, start-token normalisation, model-specific global attributes, and leadtime/reftime coordinates. | metadata, calendar, encoding, structure | CMIP6-decadal | 99 | plugin:woodpecker_cmip6_decadal_plugin |

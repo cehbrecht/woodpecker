@@ -12,18 +12,21 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
     fixes = FixRegistry.discover()
 
     md_lines = [
-        "| Code | Name | Description | Categories | Dataset | Priority |",
-        "|------|------|-------------|------------|---------|---------|",
+        "Source values: core (built-in) or plugin:<package> (discovered plugin fix).",
+        "",
+        "| Code | Name | Description | Categories | Dataset | Priority | Source |",
+        "|------|------|-------------|------------|---------|---------|--------|",
     ]
     json_list = []
 
     for f in fixes:
         cats = ", ".join(getattr(f, "categories", []) or [])
+        source = FixRegistry.source_label(f)
         md_lines.append(
-            f"| {f.code} | {f.name} | {f.description} | {cats} | {f.dataset or ''} | {f.priority} |"
+            f"| {f.code} | {f.name} | {f.description} | {cats} | {f.dataset or ''} | {f.priority} | {source} |"
         )
         if hasattr(f, "model_dump"):
-            json_list.append(f.model_dump())
+            entry = f.model_dump()
         else:
             entry = {
                 "code": f.code,
@@ -33,9 +36,10 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
                 "dataset": f.dataset,
                 "priority": f.priority,
             }
-            if isinstance(f, GroupFix) and f.member_codes:
-                entry["member_codes"] = f.member_codes
-            json_list.append(entry)
+        if isinstance(f, GroupFix) and f.member_codes:
+            entry["member_codes"] = f.member_codes
+        entry["source"] = source
+        json_list.append(entry)
 
     Path(md_path).write_text("\n".join(md_lines), encoding="utf-8")
     Path(json_path).write_text(json.dumps(json_list, indent=2), encoding="utf-8")

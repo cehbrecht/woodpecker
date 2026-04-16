@@ -109,6 +109,22 @@ class FixRegistry:
         out = [f for f in fixes if match(f)]
         return sorted(out, key=lambda f: getattr(f, "priority", 10))
 
+    @staticmethod
+    def source_label(fix: Any) -> str:
+        """Return a human-readable source label for a fix.
+
+        Built-in fixes are labeled as "core". Third-party fixes are labeled
+        as "plugin:<package>" where package is derived from the fix class
+        module root.
+        """
+
+        module = getattr(type(fix), "__module__", "")
+        if module.startswith("woodpecker.fixes."):
+            return "core"
+
+        package = module.split(".", 1)[0] if module else "unknown"
+        return f"plugin:{package}"
+
     @classmethod
     def to_json(cls, path: str):
         """Export all fixes to a JSON catalog."""

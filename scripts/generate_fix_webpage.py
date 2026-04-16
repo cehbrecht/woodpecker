@@ -11,7 +11,11 @@ from woodpecker.fixes.registry import FixRegistry
 
 def main():
     fixes = FixRegistry.discover()
-    fix_dicts = [(f.model_dump() if hasattr(f, "model_dump") else f.__dict__) for f in fixes]
+    fix_dicts = []
+    for fix in fixes:
+        entry = fix.model_dump() if hasattr(fix, "model_dump") else dict(fix.__dict__)
+        entry["source"] = FixRegistry.source_label(fix)
+        fix_dicts.append(entry)
 
     env = Environment(loader=FileSystemLoader("scripts/templates"), autoescape=True)
     template = env.get_template("fixes.html.jinja")

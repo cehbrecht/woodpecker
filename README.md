@@ -124,6 +124,11 @@ Install the CMIP7 plugin example before using `CMIP7_000*` codes:
 pip install -e plugins/woodpecker-cmip7-plugin
 ```
 
+Catalog source labels:
+
+- `core` means the fix is provided by the built-in `woodpecker.fixes` package.
+- `plugin:<package>` means the fix was discovered from an external plugin package.
+
 ## Examples
 
 Example plans and a sample JSON plan store live in `examples/fix-plans`.

@@ -7,7 +7,8 @@
       "metadata"
     ],
     "dataset": "CMIP6-decadal",
-    "priority": 10
+    "priority": 10,
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
     "code": "CMIP6D_0002",
@@ -18,7 +19,8 @@
       "calendar"
     ],
     "dataset": "CMIP6-decadal",
-    "priority": 11
+    "priority": 11,
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
     "code": "CMIP6D_0003",
@@ -28,7 +30,8 @@
       "metadata"
     ],
     "dataset": "CMIP6-decadal",
-    "priority": 12
+    "priority": 12,
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
     "code": "CMIP6D_0004",
@@ -39,7 +42,8 @@
       "metadata"
     ],
     "dataset": "CMIP6-decadal",
-    "priority": 13
+    "priority": 13,
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
     "code": "CMIP6D_0005",
@@ -49,7 +53,8 @@
       "metadata"
     ],
     "dataset": "CMIP6-decadal",
-    "priority": 14
+    "priority": 14,
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
     "code": "CMIP6D_0006",
@@ -60,7 +65,8 @@
       "structure"
     ],
     "dataset": "CMIP6-decadal",
-    "priority": 15
+    "priority": 15,
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
     "code": "CMIP6D_0007",
@@ -71,7 +77,8 @@
       "metadata"
     ],
     "dataset": "CMIP6-decadal",
-    "priority": 16
+    "priority": 16,
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
     "code": "CMIP6D_0008",
@@ -81,7 +88,8 @@
       "metadata"
     ],
     "dataset": "CMIP6-decadal",
-    "priority": 17
+    "priority": 17,
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
     "code": "CMIP6D_0009",
@@ -91,7 +99,8 @@
       "metadata"
     ],
     "dataset": "CMIP6-decadal",
-    "priority": 18
+    "priority": 18,
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
     "code": "CMIP6D_0010",
@@ -101,7 +110,8 @@
       "metadata"
     ],
     "dataset": "CMIP6-decadal",
-    "priority": 19
+    "priority": 19,
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
     "code": "ATLAS_0001",
@@ -111,7 +121,8 @@
       "encoding"
     ],
     "dataset": "ATLAS",
-    "priority": 20
+    "priority": 20,
+    "source": "plugin:woodpecker_atlas_plugin"
   },
   {
     "code": "CMIP6D_0011",
@@ -121,7 +132,8 @@
       "metadata"
     ],
     "dataset": "CMIP6-decadal",
-    "priority": 20
+    "priority": 20,
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
     "code": "ATLAS_0002",
@@ -131,7 +143,8 @@
       "metadata"
     ],
     "dataset": "ATLAS",
-    "priority": 21
+    "priority": 21,
+    "source": "plugin:woodpecker_atlas_plugin"
   },
   {
     "code": "CMIP6D_0012",
@@ -141,7 +154,8 @@
       "metadata"
     ],
     "dataset": "CMIP6-decadal",
-    "priority": 21
+    "priority": 21,
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
     "code": "CMIP6D_0013",
@@ -151,7 +165,8 @@
       "metadata"
     ],
     "dataset": "CMIP6-decadal",
-    "priority": 22
+    "priority": 22,
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
     "code": "CMIP6D_0014",
@@ -162,7 +177,8 @@
       "structure"
     ],
     "dataset": "CMIP6-decadal",
-    "priority": 23
+    "priority": 23,
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
     "code": "CMIP6D_0015",
@@ -173,7 +189,8 @@
       "structure"
     ],
     "dataset": "CMIP6-decadal",
-    "priority": 24
+    "priority": 24,
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
     "code": "COMMON_0001",
@@ -184,7 +201,8 @@
       "units"
     ],
     "dataset": null,
-    "priority": 30
+    "priority": 30,
+    "source": "core"
   },
   {
     "code": "COMMON_0004",
@@ -194,7 +212,8 @@
       "structure"
     ],
     "dataset": null,
-    "priority": 32
+    "priority": 32,
+    "source": "core"
   },
   {
     "code": "COMMON_0002",
@@ -204,7 +223,8 @@
       "structure"
     ],
     "dataset": null,
-    "priority": 33
+    "priority": 33,
+    "source": "core"
   },
   {
     "code": "COMMON_0003",
@@ -215,7 +235,8 @@
       "structure"
     ],
     "dataset": null,
-    "priority": 34
+    "priority": 34,
+    "source": "core"
   },
   {
     "code": "CMIP6_0001",
@@ -225,7 +246,43 @@
       "metadata"
     ],
     "dataset": "cmip6",
-    "priority": 40
+    "priority": 40,
+    "source": "plugin:woodpecker_cmip6_plugin"
+  },
+  {
+    "code": "CMIP7_0001",
+    "name": "Ensure project_id is present (plugin)",
+    "description": "Sets project_id from dataset identifier metadata when missing.",
+    "categories": [
+      "metadata"
+    ],
+    "dataset": "CMIP7",
+    "priority": 41,
+    "source": "plugin:woodpecker_cmip7_plugin"
+  },
+  {
+    "code": "CMIP7_0002",
+    "name": "Rename temp variable to tas (plugin)",
+    "description": "Renames data variable temp to tas when tas is missing.",
+    "categories": [
+      "structure",
+      "metadata"
+    ],
+    "dataset": "CMIP7",
+    "priority": 42,
+    "source": "plugin:woodpecker_cmip7_plugin"
+  },
+  {
+    "code": "CMIP7_0003",
+    "name": "Configurable CMIP7 reformat bridge (plugin)",
+    "description": "Applies workflow-driven variable/dimension remapping and selected metadata updates.",
+    "categories": [
+      "structure",
+      "metadata"
+    ],
+    "dataset": "CMIP7",
+    "priority": 43,
+    "source": "plugin:woodpecker_cmip7_plugin"
   },
   {
     "code": "CMIP6D_0999",
@@ -255,6 +312,7 @@
       "CMIP6D_0013",
       "CMIP6D_0014",
       "CMIP6D_0015"
-    ]
+    ],
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   }
 ]
