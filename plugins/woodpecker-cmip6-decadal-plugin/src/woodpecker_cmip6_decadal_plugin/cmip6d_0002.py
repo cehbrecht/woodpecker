@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import xarray as xr
 
-from ..registry import Fix, FixRegistry
+from woodpecker.fixes.registry import Fix, FixRegistry
+
 from .helpers import is_cmip6_decadal_netcdf
 
 try:

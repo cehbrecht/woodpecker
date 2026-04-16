@@ -26,9 +26,11 @@ install-uv:
 
 dev:
 	pip install -e ".[docs,dev,io,zarr]"
+	pip install -e plugins/woodpecker-atlas-plugin -e plugins/woodpecker-cmip6-plugin -e plugins/woodpecker-cmip6-decadal-plugin -e plugins/woodpecker-cmip7-plugin
 
 dev-uv:
 	uv pip install --python "$(PYTHON)" -e ".[docs,dev,io,zarr]"
+	uv pip install --python "$(PYTHON)" -e plugins/woodpecker-atlas-plugin -e plugins/woodpecker-cmip6-plugin -e plugins/woodpecker-cmip6-decadal-plugin -e plugins/woodpecker-cmip7-plugin
 
 format:
 	ruff format .

@@ -1,10 +1,8 @@
 import numpy as np
 import pytest
 import xarray as xr
-
-from woodpecker.fixes.atlas import ATLAS_0001, ATLAS_0002
-from woodpecker.fixes.cmip6 import CMIP6_0001
-from woodpecker.fixes.cmip6_decadal import (
+from woodpecker_atlas_plugin import ATLAS_0001, ATLAS_0002
+from woodpecker_cmip6_decadal_plugin import (
     CMIP6D_0001,
     CMIP6D_0002,
     CMIP6D_0003,
@@ -21,6 +19,8 @@ from woodpecker.fixes.cmip6_decadal import (
     CMIP6D_0014,
     CMIP6D_0015,
 )
+from woodpecker_cmip6_plugin import CMIP6_0001
+
 from woodpecker.fixes.common import COMMON_0001
 
 

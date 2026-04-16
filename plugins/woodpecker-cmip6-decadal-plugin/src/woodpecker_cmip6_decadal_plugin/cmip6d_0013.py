@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import xarray as xr
 
-from ..common.helpers import lower_source_name
-from ..registry import Fix, FixRegistry
+from woodpecker.fixes.common.helpers import lower_source_name
+from woodpecker.fixes.registry import Fix, FixRegistry
+
 from .helpers import is_cmip6_decadal_netcdf
 
 MODEL_SPECIFIC_GLOBAL_ATTRS: dict[str, dict[str, str]] = {

@@ -4,7 +4,8 @@ import re
 
 import xarray as xr
 
-from ..registry import Fix, FixRegistry
+from woodpecker.fixes.registry import Fix, FixRegistry
+
 from .helpers import is_cmip6_decadal_netcdf
 
 _MALFORMED_URL_VARIANT_PATTERN = re.compile(r"(\.s\d{4})-(r\d+i\d+p\d+f\d+)")

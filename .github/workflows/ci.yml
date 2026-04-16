@@ -27,6 +27,7 @@ jobs:
         run: |
           PYTHON_BIN=$(python -c 'import sys; print(sys.executable)')
           uv pip install --python "$PYTHON_BIN" -e ".[dev]"
+          uv pip install --python "$PYTHON_BIN" -e plugins/woodpecker-atlas-plugin -e plugins/woodpecker-cmip6-plugin -e plugins/woodpecker-cmip6-decadal-plugin -e plugins/woodpecker-cmip7-plugin
 
       - name: Run Ruff format check
         run: ruff format --check .
@@ -50,6 +51,7 @@ jobs:
         run: |
           PYTHON_BIN=$(python -c 'import sys; print(sys.executable)')
           uv pip install --python "$PYTHON_BIN" -e ".[dev]"
+          uv pip install --python "$PYTHON_BIN" -e plugins/woodpecker-atlas-plugin -e plugins/woodpecker-cmip6-plugin -e plugins/woodpecker-cmip6-decadal-plugin -e plugins/woodpecker-cmip7-plugin
 
       - name: Run Ruff
         run: make lint
@@ -85,12 +87,14 @@ jobs:
         run: |
           PYTHON_BIN=$(python -c 'import sys; print(sys.executable)')
           uv pip install --python "$PYTHON_BIN" -e ".[dev]"
+          uv pip install --python "$PYTHON_BIN" -e plugins/woodpecker-atlas-plugin -e plugins/woodpecker-cmip6-plugin -e plugins/woodpecker-cmip6-decadal-plugin -e plugins/woodpecker-cmip7-plugin
 
       - name: Install test dependencies (full io)
         if: matrix.profile == 'full'
         run: |
           PYTHON_BIN=$(python -c 'import sys; print(sys.executable)')
           uv pip install --python "$PYTHON_BIN" -e ".[dev,io,zarr]"
+          uv pip install --python "$PYTHON_BIN" -e plugins/woodpecker-atlas-plugin -e plugins/woodpecker-cmip6-plugin -e plugins/woodpecker-cmip6-decadal-plugin -e plugins/woodpecker-cmip7-plugin
 
       - name: Run tests
         run: make test

@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import xarray as xr
 
+from woodpecker.fixes.common.helpers import lower_source_name
+from woodpecker.fixes.registry import Fix, FixRegistry
 from woodpecker.identity import resolve_dataset_identity
-
-from ..common.helpers import lower_source_name
-from ..registry import Fix, FixRegistry
 
 
 def _needs_project_id(dataset: xr.Dataset) -> bool:

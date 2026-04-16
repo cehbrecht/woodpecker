@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import xarray as xr
 
-from ..common.helpers import remove_encoding_key, vars_with_encoding_key
-from ..registry import Fix, FixRegistry
+from woodpecker.fixes.common.helpers import remove_encoding_key, vars_with_encoding_key
+from woodpecker.fixes.registry import Fix, FixRegistry
+
 from .helpers import is_cmip6_decadal_netcdf
 
 

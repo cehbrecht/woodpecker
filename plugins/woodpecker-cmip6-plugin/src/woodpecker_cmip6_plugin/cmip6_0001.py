@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from ..registry import Fix, FixRegistry
+from woodpecker.fixes.registry import Fix, FixRegistry
 
 
 def _is_cmip6_non_decadal(dataset: xr.Dataset) -> bool:

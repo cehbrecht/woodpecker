@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from ..registry import FixRegistry, GroupFix
+from woodpecker.fixes.registry import FixRegistry, GroupFix
+
 from .cmip6d_0001 import CMIP6D_0001
 from .cmip6d_0002 import CMIP6D_0002
 from .cmip6d_0003 import CMIP6D_0003
