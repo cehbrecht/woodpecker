@@ -24,12 +24,16 @@ class JsonFixPlanStore(FixPlanStore):
             plans = payload
 
         if not isinstance(plans, list):
-            raise ValueError("JSON fix-plan store file must contain a list or {'plans': [...]} payload")
+            raise ValueError(
+                "JSON fix-plan store file must contain a list or {'plans': [...]} payload"
+            )
         return [item for item in plans if isinstance(item, dict)]
 
     def _write_raw(self, plans: list[dict[str, Any]]) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps(plans, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        self.path.write_text(
+            json.dumps(plans, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
 
     def list_plans(self) -> list[FixPlan]:
         return [FixPlan.from_dict(item) for item in self._read_raw()]
@@ -47,4 +51,6 @@ class JsonFixPlanStore(FixPlanStore):
         self._write_raw(plans)
 
     def lookup(self, dataset: Any, path: str | None = None) -> list[FixPlan]:
-        return [plan for plan in self.list_plans() if plan_matches_dataset(plan, dataset, path=path)]
+        return [
+            plan for plan in self.list_plans() if plan_matches_dataset(plan, dataset, path=path)
+        ]

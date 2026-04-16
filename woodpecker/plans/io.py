@@ -69,5 +69,7 @@ def load_fix_plan_document(path: str | Path) -> FixPlanDocument:
 
     payload = _load_payload(file_path)
     if isinstance(payload, list):
-        return FixPlanDocument(plans=[FixPlan.from_mapping(item) for item in payload if isinstance(item, Mapping)])
+        return FixPlanDocument(
+            plans=[FixPlan.from_mapping(item) for item in payload if isinstance(item, Mapping)]
+        )
     return FixPlanDocument.from_mapping(payload)

@@ -119,13 +119,17 @@ class FixPlanDocument:
             return cls(plans=[FixPlan.from_mapping(payload)])
         if not isinstance(raw_plans, list):
             raise ValueError("FixPlanDocument 'plans' must be a list")
-        return cls(plans=[FixPlan.from_mapping(item) for item in raw_plans if isinstance(item, Mapping)])
+        return cls(
+            plans=[FixPlan.from_mapping(item) for item in raw_plans if isinstance(item, Mapping)]
+        )
 
     @classmethod
     def from_json(cls, payload: str) -> FixPlanDocument:
         data = json.loads(payload)
         if isinstance(data, list):
-            return cls(plans=[FixPlan.from_mapping(item) for item in data if isinstance(item, Mapping)])
+            return cls(
+                plans=[FixPlan.from_mapping(item) for item in data if isinstance(item, Mapping)]
+            )
         if not isinstance(data, Mapping):
             raise ValueError("FixPlanDocument JSON payload must decode to an object or list")
         return cls.from_mapping(data)

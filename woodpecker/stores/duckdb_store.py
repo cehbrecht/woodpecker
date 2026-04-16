@@ -78,4 +78,6 @@ class DuckDBFixPlanStore(FixPlanStore):
             )
 
     def lookup(self, dataset: Any, path: str | None = None) -> list[FixPlan]:
-        return [plan for plan in self.list_plans() if plan_matches_dataset(plan, dataset, path=path)]
+        return [
+            plan for plan in self.list_plans() if plan_matches_dataset(plan, dataset, path=path)
+        ]

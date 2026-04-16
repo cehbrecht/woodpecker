@@ -151,7 +151,9 @@ def select_matching_document_plans(
     )
 
 
-def extract_plan_codes_and_options(plan: FixPlan) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
+def extract_plan_codes_and_options(
+    plan: FixPlan,
+) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
     """Extract ordered fix codes and per-code options from a FixPlan."""
 
     codes = tuple(ref.id for ref in plan.fixes)
@@ -290,7 +292,9 @@ def resolve_load_source_plans(
 
     source_modes = int(from_plan is not None) + int(from_store_type is not None)
     if source_modes != 1:
-        raise ValueError("Provide exactly one source: --from-plan or (--from-store and --from-store-path).")
+        raise ValueError(
+            "Provide exactly one source: --from-plan or (--from-store and --from-store-path)."
+        )
 
     if from_plan is not None:
         plans = list(load_fix_plan_document(from_plan).plans)
