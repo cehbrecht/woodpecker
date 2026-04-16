@@ -4,10 +4,7 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
-from pydantic import ValidationError
-
-from .models import FixPlan, parse_fix_ref
-from .spec import FixPlanSpec
+from .models import FixPlan, FixPlanDocument, parse_fix_ref
 
 try:
     import yaml
@@ -35,8 +32,10 @@ def _load_payload(path: Path) -> dict[str, Any]:
             f"Unsupported fix plan extension '{suffix}'. Supported: {sorted(SUPPORTED_EXTENSIONS)}"
         )
 
-    if not isinstance(payload, dict):
-        raise ValueError("Fix plan file must define a JSON/YAML object at top level")
+    if payload is None:
+        payload = {}
+    if not isinstance(payload, (dict, list)):
+        raise ValueError("Fix plan file must define a JSON/YAML object or list at top level")
     return payload
 
 
@@ -63,13 +62,12 @@ def load_fix_plan(path: str | Path) -> FixPlan:
     return FixPlan.from_mapping(payload)
 
 
-def load_fix_plan_spec(path: str | Path) -> FixPlanSpec:
+def load_fix_plan_document(path: str | Path) -> FixPlanDocument:
     file_path = Path(path)
     if not file_path.exists():
         raise ValueError(f"Fix plan file not found: {file_path}")
 
     payload = _load_payload(file_path)
-    try:
-        return FixPlanSpec.model_validate(payload)
-    except ValidationError as exc:
-        raise ValueError(f"Invalid fix plan file '{file_path}': {exc}") from exc
+    if isinstance(payload, list):
+        return FixPlanDocument(plans=[FixPlan.from_mapping(item) for item in payload if isinstance(item, Mapping)])
+    return FixPlanDocument.from_mapping(payload)

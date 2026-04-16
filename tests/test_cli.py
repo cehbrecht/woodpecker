@@ -196,7 +196,7 @@ def test_check_uses_plan_defaults(
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_bad.nc")
     Path("plan.json").write_text(
-        json.dumps({"inputs": ["."], "codes": ["CMIP6_0001"]}),
+        json.dumps({"plans": [{"id": "cmip6-basic", "fixes": [{"id": "CMIP6_0001"}]}]}),
         encoding="utf-8",
     )
 
@@ -206,20 +206,20 @@ def test_check_uses_plan_defaults(
     assert "CMIP6_0001" in result.output
 
 
-def test_fix_uses_plan_output_format_when_auto(
+def test_fix_uses_auto_output_format_when_not_set(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
     monkeypatch,
 ):
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_case.nc")
     Path("plan.json").write_text(
-        json.dumps({"inputs": ["."], "codes": ["CMIP6D_0001"], "output_format": "zarr"}),
+        json.dumps({"plans": [{"id": "cmip6d-basic", "fixes": [{"id": "CMIP6D_0001"}]}]}),
         encoding="utf-8",
     )
 
     def _fake_run_fix(inputs, fixes, dry_run, output_format):
         _ = (inputs, fixes, dry_run)
-        assert output_format == "zarr"
+        assert output_format == "auto"
         return {
             "attempted": 1,
             "changed": 1,
@@ -237,7 +237,7 @@ def test_fix_uses_plan_output_format_when_auto(
 
     assert result.exit_code == 0
     payload = json.loads(result.output)
-    assert payload["output_format"] == "zarr"
+    assert payload["output_format"] == "auto"
 
 
 def test_check_plan_applies_fix_options_to_message(
@@ -248,9 +248,14 @@ def test_check_plan_applies_fix_options_to_message(
     Path("plan.json").write_text(
         json.dumps(
             {
-                "inputs": ["."],
-                "codes": ["CMIP6_0001"],
-                "fixes": {"CMIP6_0001": {"message": "configured check message"}},
+                "plans": [
+                    {
+                        "id": "cmip6-msg",
+                        "fixes": [
+                            {"id": "CMIP6_0001", "options": {"message": "configured check message"}}
+                        ],
+                    }
+                ]
             }
         ),
         encoding="utf-8",
@@ -428,7 +433,7 @@ def test_check_explicit_plan_overrides_store(
     make_dummy_netcdf("cmip6_bad.nc")
 
     Path("plan.json").write_text(
-        json.dumps({"inputs": ["."], "codes": ["CMIP6_0001"]}),
+        json.dumps({"plans": [{"id": "explicit", "fixes": [{"id": "CMIP6_0001"}]}]}),
         encoding="utf-8",
     )
     Path("plans.json").write_text(
@@ -456,6 +461,54 @@ def test_check_explicit_plan_overrides_store(
             "plans.json",
         ],
     )
+
+    assert result.exit_code == 1
+    assert "CMIP6_0001" in result.output
+
+
+def test_check_plan_document_requires_plan_id_when_multiple_match(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("cmip6_bad.nc")
+
+    Path("plan.json").write_text(
+        json.dumps(
+            {
+                "plans": [
+                    {"id": "first", "fixes": [{"id": "CMIP6_0001"}]},
+                    {"id": "second", "fixes": [{"id": "CMIP6D_0001"}]},
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(cli, ["check", "--plan", "plan.json"])
+
+    assert result.exit_code != 0
+    assert "Multiple matching plans found in plan document" in result.output
+
+
+def test_check_plan_document_plan_id_selects_specific_plan(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+):
+    runner, make_dummy_netcdf = isolated_cli_workspace
+    make_dummy_netcdf("cmip6_bad.nc")
+
+    Path("plan.json").write_text(
+        json.dumps(
+            {
+                "plans": [
+                    {"id": "first", "fixes": [{"id": "CMIP6D_0001"}]},
+                    {"id": "second", "fixes": [{"id": "CMIP6_0001"}]},
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(cli, ["check", "--plan", "plan.json", "--plan-id", "second"])
 
     assert result.exit_code == 1
     assert "CMIP6_0001" in result.output

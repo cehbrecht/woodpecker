@@ -40,6 +40,6 @@ woodpecker fix . --plan-store json --plan-store-path examples/fix-plans/store.js
 
 ## Notes
 
-- Plan files (`cmip6.json`, `esa_cci.json`) use the declarative `FixPlanSpec` schema.
-- Store payload (`store.json`) uses the simpler stored `FixPlan` schema (`id`, `description`, `match`, `fixes`).
+- Plan files (`cmip6.json`, `esa_cci.json`) use `FixPlanDocument` with `plans: [...]`.
+- Each entry in `plans` uses the same `FixPlan` schema as store payloads (`id`, `description`, `match`, `fixes`).
 - CLI arguments still override values derived from plan files or store entries.

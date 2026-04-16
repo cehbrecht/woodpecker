@@ -11,7 +11,8 @@ import click
 import woodpecker.fixes  # noqa: F401
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.inout import DataInput, get_io_availability, normalize_inputs
-from woodpecker.plans.io import load_fix_plan_spec
+from woodpecker.plans.io import load_fix_plan_document
+from woodpecker.plans.matcher import plan_matches_dataset
 from woodpecker.plans.models import FixPlan
 from woodpecker.plans.runner import run_check, run_fix, select_fixes
 from woodpecker.provenance import build_prov_document, write_prov_document
@@ -107,6 +108,43 @@ def _load_store_plans(
     return matches
 
 
+def _load_document_plans(
+    *,
+    plans: Sequence[FixPlan],
+    inputs: Sequence[DataInput],
+    plan_id: str | None,
+) -> list[FixPlan]:
+    plans_by_key: dict[str, FixPlan] = {}
+    for data_input in inputs:
+        dataset = data_input.load()
+        try:
+            for plan in plans:
+                if plan_matches_dataset(plan, dataset, path=data_input.reference):
+                    key = plan.id or json.dumps(plan.to_dict(), sort_keys=True)
+                    plans_by_key[key] = plan
+        finally:
+            close = getattr(dataset, "close", None)
+            if callable(close):
+                close()
+
+    matches = list(plans_by_key.values())
+    if plan_id:
+        requested = plan_id.strip()
+        matches = [plan for plan in matches if plan.id == requested]
+        if not matches:
+            raise click.ClickException(f"No matching plan found for --plan-id '{requested}'.")
+
+    if not matches:
+        return []
+    if len(matches) > 1:
+        plan_ids = [plan.id for plan in matches if plan.id]
+        label = ", ".join(plan_ids) if plan_ids else f"{len(matches)} unnamed plans"
+        raise click.ClickException(
+            "Multiple matching plans found in plan document; specify --plan-id to choose one: " + label
+        )
+    return matches
+
+
 def _plan_codes_and_options(plan: FixPlan) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
     codes = tuple(ref.id for ref in plan.fixes)
     options = {ref.id: dict(ref.options) for ref in plan.fixes}
@@ -123,52 +161,39 @@ def load_plan_from_sources(
 ) -> tuple[
     Literal["direct", "plan", "store"],
     list[FixPlan],
-    str | None,
-    tuple[str, ...],
     tuple[str, ...],
     dict[str, dict[str, Any]],
-    str | None,
 ]:
-    """Load plan data from explicit file or optional store fallback."""
+    """Load plan selection from explicit file or optional store fallback."""
 
-    if plan_path is not None and plan_id:
-        raise click.ClickException("--plan-id cannot be used together with --plan.")
-    if plan_path is None and plan_id and (store_type is None and store_path is None):
+    if plan_path is None and plan_id and store_type is None and store_path is None:
         raise click.ClickException("--plan-id requires --plan-store and --plan-store-path.")
 
     if plan_path is not None:
-        spec = load_fix_plan_spec(plan_path)
-        resolution = spec.resolve([item.reference for item in inputs])
-        return (
-            "plan",
-            [resolution.plan],
-            resolution.dataset,
-            tuple(resolution.categories),
-            tuple(resolution.codes),
-            dict(resolution.fixes),
-            resolution.output_format,
-        )
+        document = load_fix_plan_document(plan_path)
+        plans = _load_document_plans(plans=document.plans, inputs=inputs, plan_id=plan_id)
+        if not plans:
+            raise click.ClickException("No matching plans found in the plan document for selected inputs.")
+        selected = plans[0]
+        codes, fix_options = _plan_codes_and_options(selected)
+        return "plan", [selected], codes, fix_options
 
     store = create_fix_plan_store(store_type, store_path)
     if store is None:
-        return "direct", [], None, (), (), {}, None
+        return "direct", [], (), {}
 
     plans = _load_store_plans(store=store, inputs=inputs, plan_id=plan_id)
     if not plans:
-        return "store", [], None, (), (), {}, None
+        return "store", [], (), {}
 
     selected = plans[0]
     codes, fix_options = _plan_codes_and_options(selected)
-    return "store", [selected], None, (), codes, fix_options, None
+    return "store", [selected], codes, fix_options
 
 
-def _resolve_target_paths(paths: tuple[Path, ...], plan_path: Path | None) -> list[Path]:
+def _resolve_target_paths(paths: tuple[Path, ...]) -> list[Path]:
     if paths:
         return list(paths)
-    if plan_path is not None:
-        spec = load_fix_plan_spec(plan_path)
-        if spec.inputs:
-            return [Path(item) for item in spec.inputs]
     return [Path.cwd()]
 
 
@@ -186,17 +211,14 @@ def resolve_run_context(
 ) -> RunContext:
     """Resolve inputs + fix selection from direct, plan, or store sources."""
 
-    target_paths = _resolve_target_paths(paths, plan_path)
+    target_paths = _resolve_target_paths(paths)
     inputs = normalize_inputs(target_paths)
 
     (
         source,
         selected_plans,
-        source_dataset,
-        source_categories,
         source_codes,
         source_fix_options,
-        source_output_format,
     ) = load_plan_from_sources(
         inputs=inputs,
         plan_path=plan_path,
@@ -208,17 +230,15 @@ def resolve_run_context(
     cli_codes = _normalize_ordered_codes(codes)
     resolved_codes = cli_codes or source_codes
     resolved_ordered_codes = resolved_codes
-    resolved_dataset = dataset or source_dataset
-    resolved_categories = categories or source_categories
+    resolved_dataset = dataset
+    resolved_categories = categories
 
-    resolved_output_format = (
-        source_output_format if output_format == "auto" and source_output_format else output_format
-    )
+    resolved_output_format = output_format
 
     resolved_fix_options = dict(source_fix_options)
 
     if source == "store" and not selected_plans and not resolved_codes:
-        raise click.ClickException("No matching fix plans found in the plan store for the selected inputs.")
+        raise click.ClickException("No matching fix plans found in the plan store for selected inputs.")
 
     fixes = select_fixes(
         dataset=resolved_dataset,

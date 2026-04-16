@@ -112,7 +112,7 @@ def test_api_check_plan_uses_codes_from_plan(tmp_path: Path, make_dummy_netcdf):
     source = make_dummy_netcdf("cmip6_bad.nc")
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
-        '{"codes": ["CMIP6_0001"]}',
+        '{"plans": [{"id": "cmip6-basic", "fixes": [{"id": "CMIP6_0001"}]}]}',
         encoding="utf-8",
     )
 
@@ -122,7 +122,7 @@ def test_api_check_plan_uses_codes_from_plan(tmp_path: Path, make_dummy_netcdf):
     assert findings[0]["code"] == "CMIP6_0001"
 
 
-def test_api_fix_plan_uses_output_format_from_plan(tmp_path: Path, monkeypatch):
+def test_api_fix_plan_uses_explicit_output_format_argument(tmp_path: Path, monkeypatch):
     ds = xr.Dataset(
         data_vars={"tas": ("time", [273.1, 274.2])},
         coords={"time": [0, 1]},
@@ -130,7 +130,7 @@ def test_api_fix_plan_uses_output_format_from_plan(tmp_path: Path, monkeypatch):
     )
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
-        '{"codes": ["ATLAS_0001"], "output_format": "netcdf"}',
+        '{"plans": [{"id": "atlas-basic", "fixes": [{"id": "ATLAS_0001"}]}]}',
         encoding="utf-8",
     )
 
@@ -149,7 +149,7 @@ def test_api_fix_plan_uses_output_format_from_plan(tmp_path: Path, monkeypatch):
 
     monkeypatch.setattr("woodpecker.api.run_fix", _fake_run_fix)
 
-    fix_plan(plan_path, inputs=ds, write=True)
+    fix_plan(plan_path, inputs=ds, write=True, output_format="netcdf")
 
     assert observed["output_format"] == "netcdf"
 
@@ -158,7 +158,7 @@ def test_api_fix_plan_applies_fix_options_to_dataset_attrs(tmp_path: Path):
     ds = xr.Dataset(attrs={"source_name": "c3s-cmip6.member.tas.nc"})
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
-        '{"codes": ["CMIP6_0001"], "fixes": {"CMIP6_0001": {"marker_attr": "custom_marker", "marker_value": "ok"}}}',
+        '{"plans": [{"id": "cmip6-options", "fixes": [{"id": "CMIP6_0001", "options": {"marker_attr": "custom_marker", "marker_value": "ok"}}]}]}',
         encoding="utf-8",
     )
 

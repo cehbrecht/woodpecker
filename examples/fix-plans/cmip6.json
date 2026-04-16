@@ -1,31 +1,27 @@
 {
-  "version": 1,
-  "name": "Example CMIP6 fix plan",
-  "comment": "Minimal plan-file example used by README docs.",
-  "dataset": "cmip6",
-  "inputs": ["."],
-  "codes": ["CMIP6_0001", "ATLAS_0001"],
-  "fixes": {
-    "CMIP6_0001": {
-      "message": "cmip6 plan check",
-      "marker_attr": "cmip6_fix_plan",
-      "marker_value": "applied"
-    },
-    "ATLAS_0001": {}
-  },
-  "datasets": {
-    "*cmip6*.nc": {
-      "steps": [
+  "plans": [
+    {
+      "id": "cmip6-basic",
+      "description": "Basic CMIP6 plan for *.nc files",
+      "match": {
+        "path_patterns": [
+          "*cmip6*.nc"
+        ]
+      },
+      "fixes": [
         {
-          "code": "CMIP6_0001",
+          "id": "CMIP6_0001",
           "options": {
-            "message": "cmip6 fix plan check",
+            "message": "cmip6 plan check",
             "marker_attr": "cmip6_fix_plan",
             "marker_value": "applied"
           }
+        },
+        {
+          "id": "ATLAS_0001",
+          "options": {}
         }
       ]
     }
-  },
-  "output_format": "netcdf"
+  ]
 }

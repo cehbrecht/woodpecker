@@ -102,3 +102,30 @@ class FixPlan:
         if not isinstance(items, list):
             raise ValueError("FixPlan 'fixes' must be a list")
         return cls.from_dict(payload)
+
+
+@dataclass
+class FixPlanDocument:
+    plans: list[FixPlan] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"plans": [plan.to_dict() for plan in self.plans]}
+
+    @classmethod
+    def from_mapping(cls, payload: Mapping[str, Any]) -> FixPlanDocument:
+        raw_plans = payload.get("plans")
+        if raw_plans is None:
+            # Single-plan shorthand: treat top-level object as one FixPlan.
+            return cls(plans=[FixPlan.from_mapping(payload)])
+        if not isinstance(raw_plans, list):
+            raise ValueError("FixPlanDocument 'plans' must be a list")
+        return cls(plans=[FixPlan.from_mapping(item) for item in raw_plans if isinstance(item, Mapping)])
+
+    @classmethod
+    def from_json(cls, payload: str) -> FixPlanDocument:
+        data = json.loads(payload)
+        if isinstance(data, list):
+            return cls(plans=[FixPlan.from_mapping(item) for item in data if isinstance(item, Mapping)])
+        if not isinstance(data, Mapping):
+            raise ValueError("FixPlanDocument JSON payload must decode to an object or list")
+        return cls.from_mapping(data)
