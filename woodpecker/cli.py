@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import TypedDict
 
 import click
 
@@ -16,15 +17,25 @@ from woodpecker.provenance import build_prov_document, write_prov_document
 from woodpecker.stores.helpers import create_fix_plan_store
 
 
+class RunFixKwargs(TypedDict, total=False):
+    """Keyword arguments accepted by run_fix in this CLI context."""
+
+    dry_run: bool
+    output_format: str
+    force_apply: bool
+    embed_provenance_metadata: bool
+    provenance_run_id: str
+
+
 def build_run_fix_kwargs(
     context: RunContext,
     dry_run: bool,
     force_apply: bool,
     embed_provenance_metadata: bool,
-) -> dict[str, object]:
+) -> RunFixKwargs:
     """Build run_fix kwargs from command flags and resolved run context."""
 
-    run_fix_kwargs: dict[str, object] = {
+    run_fix_kwargs: RunFixKwargs = {
         "dry_run": dry_run,
         "output_format": context.resolved_output_format,
     }

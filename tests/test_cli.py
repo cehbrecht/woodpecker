@@ -1,10 +1,12 @@
 import json
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Callable
 
+import click
 from click.testing import CliRunner
 
-from woodpecker.cli import cli
+from woodpecker.cli import cli, format_provenance_source
 
 
 def test_list_fixes_contains_known_codes():
@@ -685,3 +687,122 @@ def test_load_plans_requires_exactly_one_source(
 
     assert result.exit_code != 0
     assert "Provide exactly one source" in result.output
+
+
+def test_load_plans_wraps_save_plan_value_error(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    monkeypatch,
+):
+    runner, _ = isolated_cli_workspace
+    Path("plan-doc.json").write_text(json.dumps({"plans": []}), encoding="utf-8")
+
+    class _Store:
+        def save_plan(self, plan):
+            _ = plan
+            raise ValueError("save failed value")
+
+    monkeypatch.setattr("woodpecker.cli.create_fix_plan_store", lambda *_args, **_kwargs: _Store())
+    monkeypatch.setattr(
+        "woodpecker.cli.resolve_load_source_plans",
+        lambda **_kwargs: [SimpleNamespace(id="alpha")],
+    )
+
+    result = runner.invoke(
+        cli,
+        [
+            "load-plans",
+            "--plan-store",
+            "json",
+            "--plan-store-path",
+            "target.json",
+            "--from-plan",
+            "plan-doc.json",
+        ],
+        standalone_mode=False,
+    )
+
+    assert result.exit_code != 0
+    assert isinstance(result.exception, click.ClickException)
+    assert str(result.exception) == "save failed value"
+
+
+def test_load_plans_reraises_save_plan_click_exception(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    monkeypatch,
+):
+    runner, _ = isolated_cli_workspace
+    Path("plan-doc.json").write_text(json.dumps({"plans": []}), encoding="utf-8")
+
+    class _SavePlanClickError(click.ClickException):
+        pass
+
+    class _Store:
+        def save_plan(self, plan):
+            _ = plan
+            raise _SavePlanClickError("save failed click")
+
+    monkeypatch.setattr("woodpecker.cli.create_fix_plan_store", lambda *_args, **_kwargs: _Store())
+    monkeypatch.setattr(
+        "woodpecker.cli.resolve_load_source_plans",
+        lambda **_kwargs: [SimpleNamespace(id="alpha")],
+    )
+
+    result = runner.invoke(
+        cli,
+        [
+            "load-plans",
+            "--plan-store",
+            "json",
+            "--plan-store-path",
+            "target.json",
+            "--from-plan",
+            "plan-doc.json",
+        ],
+        standalone_mode=False,
+    )
+
+    assert result.exit_code != 0
+    assert isinstance(result.exception, _SavePlanClickError)
+    assert str(result.exception) == "save failed click"
+
+
+def test_format_provenance_source_for_plan_mode():
+    context = SimpleNamespace(source="plan", selected_plans=[])
+
+    output = format_provenance_source(
+        context,
+        Path("plan.json"),
+        plan_store=None,
+        plan_store_path=None,
+    )
+
+    assert output == "plan.json"
+
+
+def test_format_provenance_source_for_store_mode():
+    context = SimpleNamespace(
+        source="store",
+        selected_plans=[SimpleNamespace(id="alpha"), SimpleNamespace(id="beta")],
+    )
+
+    output = format_provenance_source(
+        context,
+        plan=None,
+        plan_store="json",
+        plan_store_path=Path("plans.json"),
+    )
+
+    assert output == "store type=json path=plans.json plans=alpha, beta"
+
+
+def test_format_provenance_source_for_direct_mode():
+    context = SimpleNamespace(source="direct", selected_plans=[])
+
+    output = format_provenance_source(
+        context,
+        plan=None,
+        plan_store="json",
+        plan_store_path=Path("plans.json"),
+    )
+
+    assert output is None
