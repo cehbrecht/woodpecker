@@ -6,9 +6,9 @@ This folder contains compact, runnable examples so the top-level README stays sh
 
 - `fix-plans/cmip6.json`: plan-file example for CMIP6-style inputs.
 - `fix-plans/esa_cci.json`: selector-based plan-file example for ESA CCI / CMIP7-style inputs.
-- `fix-plans/store.json`: JSON `FixPlanStore` sample containing two stored plans.
+- `fix-plans/store.json`: JSON-based `FixPlanStore` sample containing two `FixPlan` entries.
 
-## Run Plan Files
+## Run Using Plan Files
 
 ```bash
 woodpecker check --plan examples/fix-plans/cmip6.json
@@ -39,6 +39,8 @@ woodpecker fix . --plan-store json --plan-store-path examples/fix-plans/store.js
 ```
 
 ## Run Via DuckDB Plan Store
+
+DuckDB stores the same `FixPlan` entries as JSON, but in database form.
 
 List available plans:
 
@@ -95,6 +97,8 @@ woodpecker load-plans \
 
 ## Notes
 
-- Plan files (`cmip6.json`, `esa_cci.json`) use `FixPlanDocument` with `plans: [...]`.
-- Each entry in `plans` uses the same `FixPlan` schema as store payloads (`id`, `description`, `match`, `fixes`).
+- Plan files (`cmip6.json`, `esa_cci.json`) are `FixPlanDocument`s with `plans: [...]`.
+- Each entry in `plans` uses the same `FixPlan` schema (`id`, `description`, `match`, `fixes`).
+- `FixPlanStore` backends (JSON, DuckDB) store and return the same `FixPlan` objects.
+- There is only one `FixPlan` schema used across files and stores.
 - CLI arguments still override values derived from plan files or store entries.
