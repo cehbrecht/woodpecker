@@ -80,7 +80,7 @@ Examples:
     woodpecker check --store duckdb --plan plans.duckdb
 
     # select a specific plan
-    woodpecker fix --plan plans.json --plan-id cmip6-default
+    woodpecker fix --plan plans.json --plan-id atlas-basic
 
 ### Direct fix selection
 
@@ -143,7 +143,7 @@ Minimal example:
 
 ## Examples
 
-Example plans and a sample JSON plan store live in `examples/fix-plans`.
+Example plan documents live in `examples/fix-plans`.
 
     woodpecker check --plan examples/fix-plans/atlas.json
     woodpecker fix --plan examples/fix-plans/atlas.json --dry-run

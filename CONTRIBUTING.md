@@ -95,8 +95,8 @@ Minimal `FixPlanDocument` example:
 {
   "plans": [
     {
-      "id": "atlas-default",
-      "description": "Default ATLAS plan",
+      "id": "atlas-basic",
+      "description": "ATLAS plan",
       "match": {
         "path_patterns": ["*atlas*.nc"]
       },
