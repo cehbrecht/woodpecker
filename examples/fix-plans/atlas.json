@@ -10,11 +10,10 @@
       },
       "fixes": [
         {
-          "id": "ATLAS_0001",
-          "options": {
-            "marker_attr": "atlas_fix_plan",
-            "marker_value": "atlas-basic"
-          }
+          "id": "ATLAS_0001"
+        },
+        {
+          "id": "ATLAS_0002"
         }
       ]
     }

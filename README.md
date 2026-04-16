@@ -30,9 +30,22 @@ Woodpecker is built around three simple concepts:
 Implementation note:
 - A design-stub placeholder for a future Elasticsearch-backed store is in `woodpecker/stores/elasticsearch_store.py` (not wired into CLI/runtime yet).
 
-Plan files (`--plan`) and plan stores use the same `FixPlan` schema.  
-Plan files are simply containers of one or more plans.
-There is no schema difference between a plan-file entry and a store entry; only the loading/storage path differs.
+### Unified model
+
+There is only one FixPlan schema.
+
+All plans are accessed through a FixPlanStore:
+
+- `--store` selects the backend (default: `json`)
+- `--plan` provides the location interpreted by that backend
+
+For JSON, plan files and plan stores use the same document format:
+
+    {
+      "plans": [ ... ]
+    }
+
+There is no schema difference between a plan-file entry and a store entry; only how they are accessed differs.
 
 ## Quickstart
 
@@ -60,25 +73,44 @@ Core commands:
     woodpecker fix . --select CMIP6D_0001 --dry-run
     woodpecker fix . --select CMIP6D_0001
 
-Fix plan usage:
+### Fix plan usage
 
-- `--store` selects the FixPlanStore backend (default: `json`).
-- `--plan` provides the location interpreted by that backend (JSON file, DuckDB file, etc.).
-- Plan files and stores use the same underlying FixPlan schema.
+- `--store` selects the FixPlanStore backend (default: `json`)
+- `--plan` provides the location used by that backend (JSON file, DuckDB file, etc.)
+- `--plan-id` optionally selects a specific FixPlan
 
-Force-apply option:
+Examples:
 
-- `--force-apply` skips `matches()` prefiltering before `apply()` to run faster.
-- Safety rule: `--force-apply` requires explicit fix selection (`--select` or plan codes).
+    # default JSON backend
+    woodpecker check --plan plans.json
 
-List stored fix plans:
+    # explicit backend
+    woodpecker check --store json --plan plans.json
+    woodpecker check --store duckdb --plan plans.duckdb
+
+    # select a specific plan
+    woodpecker fix --plan plans.json --plan-id cmip6-default
+
+### Direct mode (no plans)
+
+You can still run fixes directly without a plan source:
+
+    woodpecker check . --select CMIP6D_0001
+    woodpecker fix . --select CMIP6D_0001
+
+### Force-apply
+
+- `--force-apply` skips `matches()` prefiltering before `apply()` to run faster
+- Safety rule: requires explicit fix selection (`--select` or plan codes)
+
+### List stored plans
 
     woodpecker list-plans --store json --plan plans.json
     woodpecker list-plans --store duckdb --plan plans.duckdb --format json
 
-Fix plan stores provide an optional way to look up FixPlans automatically based on dataset metadata or file paths.
+FixPlanStores provide an optional way to look up FixPlans automatically based on dataset metadata or file paths.
 
-More advanced fix plan patterns are in `CONTRIBUTING.md`.
+More advanced patterns are in `CONTRIBUTING.md`.
 
 ## Plugin Fixes (Entry Points)
 
@@ -101,8 +133,6 @@ Minimal example plugin package:
 
     [project.entry-points."woodpecker.plugins"]
     example = "woodpecker_example_plugin"
-    # or callable loader:
-    # example = "woodpecker_example_plugin:load"
 
 `woodpecker_example_plugin/__init__.py`:
 
@@ -127,23 +157,20 @@ Minimal example plugin package:
             return False
 
     def load():
-        # Optional callable entry point target.
         return None
 
 Concrete reference package in this repo:
 
 - `plugins/woodpecker-cmip7-plugin` (CMIP7-style external fixes)
 
-CMIP7 fixes are plugin-provided (not built into core).
-
-Install the CMIP7 plugin example before using `CMIP7_000*` codes:
+Install before using `CMIP7_000*` codes:
 
     pip install -e plugins/woodpecker-cmip7-plugin
 
 Catalog source labels:
 
-- `core` means the fix is provided by the built-in `woodpecker.fixes` package.
-- `plugin:<package>` means the fix was discovered from an external plugin package.
+- `core` = built-in fixes
+- `plugin:<package>` = external plugin fixes
 
 ## Examples
 
@@ -159,8 +186,6 @@ Quick run:
     woodpecker fix --plan examples/fix-plans/atlas.json --dry-run
     woodpecker list-plans --store json --plan examples/fix-plans/atlas.json
 
-Plan files and stores use the same FixPlan schema; the difference is only how plans are stored and retrieved.
-
 ## Provenance
 
 Woodpecker writes a PROV-JSON provenance file by default when you run `fix`.  
@@ -168,44 +193,27 @@ Default output file: `woodpecker.prov.json`.
 
 Examples:
 
-    # default provenance file
+    # default
     woodpecker fix . --select CMIP6D_0001
 
-    # custom provenance output path
+    # custom path
     woodpecker fix . --select CMIP6D_0001 --provenance-path run_01.prov.json
 
-    # disable provenance output
+    # disable
     woodpecker fix . --select CMIP6D_0001 --no-provenance
 
-Example `woodpecker.prov.json` (shortened):
+Example (shortened):
 
     {
-      "prefix": {
-        "default": "urn:woodpecker:",
-        "woodpecker": "https://github.com/macpingu/woodpecker#"
-      },
-      "activity": {
-        "activity-woodpecker-run-123": {
-          "prov:type": "woodpecker:FixRun",
-          "mode": "write",
-          "output_format": "netcdf",
-          "selected_codes": "[\"CMIP6D_0001\"]",
-          "stats": "{\"attempted\": 1, \"changed\": 1}"
-        }
-      }
+      "prefix": { ... },
+      "activity": { ... }
     }
 
-Embedded provenance metadata (NetCDF output):
+Embedded provenance metadata:
 
     woodpecker fix . --select CMIP6D_0001 --embed-provenance-metadata --output-format netcdf
-
-This writes a global attribute named `woodpecker_provenance` to the output dataset.
-
-Example attribute value (JSON string):
-
-    {"applied_codes": ["CMIP6D_0001"], "generated_at": "...", "run_id": "...", "source": "..."}
 
 ## GitHub Pages
 
 This repository includes a workflow that builds and deploys the MkDocs site to GitHub Pages.  
-After enabling Pages in repo settings, fix codes are available as direct links (for example `.../fixes.html#CMIP6D_0001`).
+After enabling Pages, fix codes are available as direct links.

@@ -64,7 +64,7 @@ woodpecker check . --store duckdb --plan examples/fix-plans/store.duckdb
 Select a specific stored plan:
 
 ```bash
-woodpecker fix . --store duckdb --plan examples/fix-plans/store.duckdb --plan-id atlas-default --dry-run
+woodpecker fix . --store duckdb --plan examples/fix-plans/store.duckdb --plan-id atlas-basic --dry-run
 ```
 
 ## Populate DuckDB Store
