@@ -1,7 +1,7 @@
 import xarray as xr
 
+from woodpecker.fixes.runner import run_fix, select_fixes
 from woodpecker.inout import DataInput
-from woodpecker.runner import run_fix, select_fixes
 
 
 class DummyInput(DataInput):

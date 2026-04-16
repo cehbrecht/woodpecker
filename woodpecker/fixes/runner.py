@@ -4,12 +4,10 @@ import json
 from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
-from woodpecker.fixes.registry import FixRegistry
-from woodpecker.identity import (
-    dataset_type_matches_declared,
-    resolve_dataset_identity,
-)
+from woodpecker.identity import dataset_type_matches_declared, resolve_dataset_identity
 from woodpecker.inout import DataInput, get_output_adapter
+
+from .registry import FixRegistry
 
 
 def _normalize_codes(codes: Sequence[str]) -> set[str]:
@@ -107,9 +105,7 @@ def run_check(inputs: Iterable[DataInput], fixes: Iterable[Any]) -> List[Dict[st
         dataset = data_input.load()
         identity = resolve_dataset_identity(dataset)
         for fix in fixes:
-            if not dataset_type_matches_declared(
-                getattr(fix, "dataset", None), identity.dataset_type
-            ):
+            if not dataset_type_matches_declared(getattr(fix, "dataset", None), identity.dataset_type):
                 continue
             if not fix.matches(dataset):
                 continue
@@ -149,9 +145,7 @@ def run_fix(
         dataset_changed = False
         applied_codes: list[str] = []
         for fix in fixes:
-            if not dataset_type_matches_declared(
-                getattr(fix, "dataset", None), identity.dataset_type
-            ):
+            if not dataset_type_matches_declared(getattr(fix, "dataset", None), identity.dataset_type):
                 continue
             if not force_apply and not fix.matches(dataset):
                 continue
