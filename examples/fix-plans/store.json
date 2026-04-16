@@ -1,0 +1,48 @@
+[
+  {
+    "id": "cmip6-default",
+    "description": "Stored CMIP6 plan for cmip6*.nc files",
+    "match": {
+      "path_patterns": [
+        "*cmip6*.nc"
+      ],
+      "attrs": {}
+    },
+    "fixes": [
+      {
+        "id": "CMIP6_0001",
+        "options": {
+          "message": "store-selected CMIP6 plan",
+          "marker_attr": "store_plan",
+          "marker_value": "cmip6-default"
+        }
+      }
+    ]
+  },
+  {
+    "id": "esa-cci-zarr",
+    "description": "Stored CMIP7/ESA-CCI zarr plan",
+    "match": {
+      "path_patterns": [
+        "*ESACCI-WATERVAPOUR-*.zarr"
+      ],
+      "attrs": {}
+    },
+    "fixes": [
+      {
+        "id": "CMIP7_0003",
+        "options": {
+          "realm": "atmos",
+          "variable_map": {
+            "prw": "tcwv"
+          },
+          "branded_variable": "prw_tavg-u-hxy-u"
+        }
+      },
+      {
+        "id": "COMMON_0002",
+        "options": {}
+      }
+    ]
+  }
+]

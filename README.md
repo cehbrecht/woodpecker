@@ -124,98 +124,20 @@ Install the CMIP7 plugin example before using `CMIP7_000*` codes:
 pip install -e plugins/woodpecker-cmip7-plugin
 ```
 
-## Example
+## Examples
+
+Example plans and a sample JSON plan store live in `examples/fix-plans`.
+
+Start here:
+
+- `examples/fix-plans/README.md`
+
+Quick run:
 
 ```bash
-touch cmip6_case.nc
-woodpecker check . --select CMIP6D_0001
-woodpecker fix . --select CMIP6D_0001 --dry-run
-woodpecker fix . --select CMIP6D_0001
-```
-
-## Fix Plan Example
-
-`plan.json`:
-
-```json
-{
-	"version": 1,
-	"comment": "Fix plan notes: see fixes overview at https://macpingu.github.io/woodpecker/fixes.html",
-	"dataset": "cmip7",
-	"datasets": {
-		"*esa_cci_a*.nc": {
-			"comment": "ESA CCI file group A",
-			"steps": [
-				{
-					"code": "CMIP7_0003",
-					"comment": "CMIP7_0003: configurable reformat bridge",
-					"options": {
-						"variable_map": {"prw": "tcwv"},
-						"dim_map": {"bnds": "nv"},
-						"realm": "atmos",
-						"branded_variable": "prw_tavg-u-hxy-u"
-					}
-				}
-			]
-		},
-		"*esa_cci_b*.nc": {
-			"comment": "ESA CCI file group B",
-			"steps": [
-				{
-					"code": "CMIP7_0003",
-					"comment": "CMIP7_0003 with variable_map + realm",
-					"options": {
-						"variable_map": {"prw": "tcwv"},
-						"realm": "atmos"
-					}
-				}
-			]
-		},
-		"*esa_cci_c*.nc": {
-			"comment": "ESA CCI file group C",
-			"steps": [
-				{
-					"code": "CMIP7_0003",
-					"comment": "CMIP7_0003 with branded variable metadata",
-					"options": {
-						"variable_map": {"prw": "tcwv"},
-						"branded_variable": "prw_tavg-u-hxy-u"
-					}
-				}
-			]
-		}
-	},
-	"output_format": "netcdf"
-}
-```
-
-Run it:
-
-```bash
-woodpecker fix --plan plan.json
-woodpecker fix --plan plan.json --force-apply
-```
-
-Same idea in YAML:
-
-```yaml
-version: 1
-comment: "Fix plan notes: see fixes overview at https://macpingu.github.io/woodpecker/fixes.html"
-dataset: cmip7
-datasets:
-	"*esa_cci_a*.nc":
-		comment: "ESA CCI file group A"
-		steps:
-			- code: CMIP7_0003
-				comment: "CMIP7_0003: configurable reformat bridge"
-				options:
-					variable_map:
-						prw: tcwv
-					dim_map:
-						bnds: nv
-					realm: atmos
-					branded_variable: prw_tavg-u-hxy-u
-output_format: netcdf
+woodpecker check --plan examples/fix-plans/cmip6.json
+woodpecker fix --plan examples/fix-plans/cmip6.json --dry-run
+woodpecker list-plans --plan-store json --plan-store-path examples/fix-plans/store.json
 ```
 
 ## Provenance

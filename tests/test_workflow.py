@@ -118,13 +118,13 @@ def test_fix_plan_comment_fields_are_parsed(tmp_path: Path):
 
 
 def test_esa_cci_example_fix_plan_uses_plugin_cmip7_fix_codes_in_order():
-    plan_path = Path("fix-plans/examples/esa_cci.json")
+    plan_path = Path("examples/fix-plans/esa_cci.json")
 
     plan = load_fix_plan_spec(plan_path)
     resolution = plan.resolve(
         ["/tmp/ESACCI-WATERVAPOUR-L3C-TCWV-meris-005deg-2002-2017-fv3.2.zarr"]
     )
 
-    assert resolution.dataset == "CMIP7"
+    assert resolution.dataset == "cmip7"
     assert resolution.codes == ["CMIP7_0003", "COMMON_0002"]
     assert resolution.ordered_ids == ["CMIP7_0003", "COMMON_0002"]

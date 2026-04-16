@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "name": "Example ESA CCI CMIP7 fix plan",
+  "comment": "Compact selector-based plan with two dataset groups.",
+  "dataset": "cmip7",
+  "output_format": "netcdf",
+  "datasets": {
+    "*ESACCI-WATERVAPOUR-*.zarr": {
+      "steps": [
+        {
+          "code": "CMIP7_0003",
+          "options": {
+            "realm": "atmos",
+            "branded_variable": "prw_tavg-u-hxy-u",
+            "dim_map": {"bnds": "nv"},
+            "variable_map": {"prw": "tcwv"},
+            "keep_global_attrs": true
+          }
+        },
+        {"code": "COMMON_0002"}
+      ]
+    },
+    "esacci.WATERVAPOUR.*": {
+      "steps": [
+        {
+          "code": "COMMON_0004",
+          "options": {
+            "dims": ["bnds", "nv"]
+          }
+        },
+        {
+          "code": "CMIP7_0003",
+          "options": {
+            "realm": "atmos",
+            "branded_variable": "prw_tavg-u-hxy-u",
+            "variable_map": {"prw": "tcwv"},
+            "keep_global_attrs": true
+          }
+        },
+        {"code": "COMMON_0002"}
+      ]
+    }
+  }
+}

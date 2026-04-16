@@ -1,7 +1,18 @@
 {
   "version": 1,
-  "name": "Simple CMIP6 fix plan",
+  "name": "Example CMIP6 fix plan",
+  "comment": "Minimal plan-file example used by README docs.",
   "dataset": "cmip6",
+  "inputs": ["."],
+  "codes": ["CMIP6_0001", "ATLAS_0001"],
+  "fixes": {
+    "CMIP6_0001": {
+      "message": "cmip6 plan check",
+      "marker_attr": "cmip6_fix_plan",
+      "marker_value": "applied"
+    },
+    "ATLAS_0001": {}
+  },
   "datasets": {
     "*cmip6*.nc": {
       "steps": [
