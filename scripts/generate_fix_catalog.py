@@ -40,9 +40,7 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
         entry["source"] = source
         json_list.append(entry)
 
-    ordered_group_keys = ["core"] + sorted(
-        key for key in grouped_rows.keys() if key != "core"
-    )
+    ordered_group_keys = ["core"] + sorted(key for key in grouped_rows.keys() if key != "core")
     for key in ordered_group_keys:
         rows = grouped_rows.get(key, [])
         if not rows:
