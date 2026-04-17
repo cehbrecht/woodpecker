@@ -107,6 +107,28 @@ Each plugin entry point can target either:
 - a module import path, or
 - a callable loader function
 
+### Load current local plugins
+
+In this repository, the current plugin packages are:
+
+- `plugins/woodpecker-atlas-plugin`
+- `plugins/woodpecker-cmip6-plugin`
+- `plugins/woodpecker-cmip6-decadal-plugin`
+- `plugins/woodpecker-cmip7-plugin`
+
+Install them manually (editable mode):
+
+    pip install -e plugins/woodpecker-atlas-plugin \
+      -e plugins/woodpecker-cmip6-plugin \
+      -e plugins/woodpecker-cmip6-decadal-plugin \
+      -e plugins/woodpecker-cmip7-plugin
+
+Or use Make targets:
+
+    make install-plugins
+
+`make dev` and `make dev-uv` install these plugin packages by default.
+
 Minimal example:
 
 `pyproject.toml`:
