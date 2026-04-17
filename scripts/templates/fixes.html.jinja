@@ -7,56 +7,116 @@
   body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; }
   h1 { margin-bottom: 0.25rem; }
   .hint { color: #555; margin-top: 0; margin-bottom: 1rem; }
+  .summary { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.25rem 0 0.75rem 0; }
+  .pill { border: 1px solid #ddd; background: #fafafa; border-radius: 999px; padding: 0.25rem 0.6rem; font-size: 0.85rem; }
+  .pill strong { font-weight: 700; }
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0.5rem 0 1rem 0; }
+  .filter-btn { border: 1px solid #ccc; border-radius: 6px; background: #fff; padding: 0.35rem 0.65rem; cursor: pointer; }
+  .filter-btn.active { background: #111; color: #fff; border-color: #111; }
+  .group-section { margin: 1rem 0 1.5rem 0; }
+  .group-title { margin: 0.2rem 0 0.5rem 0; font-size: 1rem; }
   table { border-collapse: collapse; width: 100%; }
   th, td { border: 1px solid #ddd; padding: 0.5rem; vertical-align: top; }
   th { background: #f7f7f7; position: sticky; top: 0; }
-  #search { margin: 1rem 0; padding: 0.6rem 0.75rem; width: min(520px, 100%); }
+  #search { padding: 0.6rem 0.75rem; width: min(520px, 100%); }
   code { background: #f2f2f2; padding: 0.1rem 0.25rem; border-radius: 4px; }
   .group-badge { background: #e0edff; color: #0050c8; font-size: 0.7rem; font-weight: 600;
     padding: 0.1rem 0.35rem; border-radius: 3px; margin-left: 0.3rem; vertical-align: middle; }
   .member-codes { margin-top: 0.35rem; font-size: 0.78rem; color: #555; }
+  .source-badge { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+  .source-core { background: #e6f4ea; color: #0e7a35; }
+  .source-plugin { background: #e7f0ff; color: #1b5fd0; }
+  .source-package { margin-top: 0.2rem; font-size: 0.78rem; color: #666; }
 </style>
 </head>
 <body>
 <h1>Woodpecker Fix Codes</h1>
-<p class="hint">Search and click a code to get a stable anchor (useful for errata links). Source is either <code>core</code> or <code>plugin:&lt;package&gt;</code>.</p>
+<p class="hint">Search and click a code to get a stable anchor (useful for errata links). Source labels show whether each fix is built in or provided by an entry point plugin.</p>
 
-<input type="text" id="search" placeholder="Search code / name / category / dataset..." />
+<div class="summary">
+  <span class="pill"><strong>Total</strong>: {{ total_count }}</span>
+  <span class="pill"><strong>Core</strong>: {{ core_count }}</span>
+  <span class="pill"><strong>Plugin</strong>: {{ plugin_count }}</span>
+  <span class="pill"><strong>Plugin Packages</strong>: {{ plugin_packages | length }}</span>
+</div>
 
-<table id="fixes-table">
-  <thead>
-    <tr>
-      <th>Code</th>
-      <th>Name</th>
-      <th>Description</th>
-      <th>Categories</th>
-      <th>Dataset</th>
-      <th>Priority</th>
-      <th>Source</th>
-    </tr>
-  </thead>
-  <tbody>
-  {% for f in fixes %}
-    <tr>
-      <td id="{{ f.code }}"><a href="#{{ f.code }}"><code>{{ f.code }}</code></a></td>
-      <td>{{ f.name }}</td>
-      <td>{{ f.description }}{% if f.get('member_codes') %}<div class="member-codes">Members: {% for mc in f.member_codes %}<code>{{ mc }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</div>{% endif %}</td>
-      <td>{{ (f.categories or []) | join(', ') }}</td>
-      <td>{{ f.dataset or '' }}</td>
-      <td>{{ f.priority }}</td>
-      <td>{{ f.source or '' }}</td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
+<div class="controls">
+  <input type="text" id="search" placeholder="Search code / name / category / dataset..." />
+  <button type="button" class="filter-btn active" data-source="all">All Sources</button>
+  <button type="button" class="filter-btn" data-source="core">Core Only</button>
+  <button type="button" class="filter-btn" data-source="plugin">Plugin Only</button>
+</div>
+
+{% for group in grouped_fixes %}
+<section class="group-section" data-group-kind="{{ group.kind }}">
+  <h2 class="group-title">{{ group.label }} ({{ group.count }})</h2>
+  <table class="fixes-table">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Categories</th>
+        <th>Dataset</th>
+        <th>Priority</th>
+        <th>Source</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for f in group.fixes %}
+      <tr class="fix-row" data-source-kind="{{ f.source_kind or '' }}">
+        <td id="{{ f.code }}"><a href="#{{ f.code }}"><code>{{ f.code }}</code></a></td>
+        <td>{{ f.name }}</td>
+        <td>{{ f.description }}{% if f.get('member_codes') %}<div class="member-codes">Members: {% for mc in f.member_codes %}<code>{{ mc }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</div>{% endif %}</td>
+        <td>{{ (f.categories or []) | join(', ') }}</td>
+        <td>{{ f.dataset or '' }}</td>
+        <td>{{ f.priority }}</td>
+        <td>
+          {% if f.source_kind == 'core' %}
+            <span class="source-badge source-core">core</span>
+          {% else %}
+            <span class="source-badge source-plugin">plugin</span>
+            <div class="source-package"><code>{{ f.source_package }}</code></div>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endfor %}
 
 <script>
-  document.getElementById('search').addEventListener('input', function() {
-      const term = this.value.toLowerCase();
-      const rows = document.querySelectorAll('#fixes-table tbody tr');
+  const searchInput = document.getElementById('search');
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  const rows = document.querySelectorAll('.fix-row');
+  const sections = document.querySelectorAll('.group-section');
+  let activeSourceFilter = 'all';
+
+  function applyFilters() {
+      const term = searchInput.value.toLowerCase();
       rows.forEach(row => {
           const text = row.innerText.toLowerCase();
-          row.style.display = text.includes(term) ? '' : 'none';
+          const sourceKind = row.getAttribute('data-source-kind') || '';
+          const sourceMatch = activeSourceFilter === 'all' || sourceKind === activeSourceFilter;
+          const textMatch = text.includes(term);
+          row.style.display = (sourceMatch && textMatch) ? '' : 'none';
+      });
+
+          sections.forEach(section => {
+            const hasVisibleRows = section.querySelector('.fix-row:not([style*="display: none"])');
+            section.style.display = hasVisibleRows ? '' : 'none';
+          });
+  }
+
+  searchInput.addEventListener('input', applyFilters);
+
+  filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+          activeSourceFilter = btn.getAttribute('data-source') || 'all';
+          filterButtons.forEach(other => other.classList.remove('active'));
+          btn.classList.add('active');
+          applyFilters();
       });
   });
 </script>
