@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "woodpecker-cmip6-plugin"
-version = "0.1.0"
+version = "0.2.0"
 description = "External plugin providing CMIP6 fixes for Woodpecker"
 requires-python = ">=3.10"
 dependencies = [
-  "woodpecker>=0.1.0",
+  "woodpecker>=0.2.0",
   "xarray>=2024.1.0",
 ]
 
