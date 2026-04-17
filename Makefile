@@ -7,7 +7,7 @@ help:
 	@echo "Common targets (run after conda env is activated):"
 	@echo "  make install    - install package in editable mode"
 	@echo "  make install-uv - install package in editable mode via uv"
-	@echo "  make dev        - install package + docs + dev + io + zarr extras"
+	@echo "  make dev        - install package + docs + dev + full extras"
 	@echo "  make dev-uv     - dev install via uv (same extras as make dev)"
 	@echo "  make format     - run Ruff formatter"
 	@echo "  make lint       - run Ruff lint checks"
@@ -25,11 +25,11 @@ install-uv:
 	uv pip install --python "$(PYTHON)" -e .
 
 dev:
-	pip install -e ".[docs,dev,io,zarr]"
+	pip install -e ".[docs,dev,full]"
 	pip install -e plugins/woodpecker-atlas-plugin -e plugins/woodpecker-cmip6-plugin -e plugins/woodpecker-cmip6-decadal-plugin -e plugins/woodpecker-cmip7-plugin
 
 dev-uv:
-	uv pip install --python "$(PYTHON)" -e ".[docs,dev,io,zarr]"
+	uv pip install --python "$(PYTHON)" -e ".[docs,dev,full]"
 	uv pip install --python "$(PYTHON)" -e plugins/woodpecker-atlas-plugin -e plugins/woodpecker-cmip6-plugin -e plugins/woodpecker-cmip6-decadal-plugin -e plugins/woodpecker-cmip7-plugin
 
 format:
