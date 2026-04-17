@@ -1,14 +1,21 @@
-.PHONY: help install install-uv dev dev-uv format lint lint-fix check test docs docs-serve list-fixes
+.PHONY: help install install-uv install-plugins install-plugins-uv dev dev-uv format lint lint-fix check test docs docs-serve list-fixes
 
 CHECK_PATH ?= .
 PYTHON ?= $(shell python -c 'import sys; print(sys.executable)')
+PLUGIN_PATHS := plugins/woodpecker-atlas-plugin \
+	plugins/woodpecker-cmip6-plugin \
+	plugins/woodpecker-cmip6-decadal-plugin \
+	plugins/woodpecker-cmip7-plugin
+PLUGIN_INSTALL_ARGS := $(foreach p,$(PLUGIN_PATHS),-e $(p))
 
 help:
 	@echo "Common targets (run after conda env is activated):"
 	@echo "  make install    - install package in editable mode"
 	@echo "  make install-uv - install package in editable mode via uv"
-	@echo "  make dev        - install package + docs + dev + full extras"
-	@echo "  make dev-uv     - dev install via uv (same extras as make dev)"
+	@echo "  make install-plugins    - install current local plugin packages"
+	@echo "  make install-plugins-uv - install local plugin packages via uv"
+	@echo "  make dev        - install package + docs + dev + full extras + plugins"
+	@echo "  make dev-uv     - dev install via uv (same extras/plugins as make dev)"
 	@echo "  make format     - run Ruff formatter"
 	@echo "  make lint       - run Ruff lint checks"
 	@echo "  make lint-fix   - auto-fix Ruff lint issues"
@@ -24,13 +31,17 @@ install:
 install-uv:
 	uv pip install --python "$(PYTHON)" -e .
 
-dev:
-	pip install -e ".[docs,dev,full]"
-	pip install -e plugins/woodpecker-atlas-plugin -e plugins/woodpecker-cmip6-plugin -e plugins/woodpecker-cmip6-decadal-plugin -e plugins/woodpecker-cmip7-plugin
+install-plugins:
+	pip install $(PLUGIN_INSTALL_ARGS)
 
-dev-uv:
+install-plugins-uv:
+	uv pip install --python "$(PYTHON)" $(PLUGIN_INSTALL_ARGS)
+
+dev: install-plugins
+	pip install -e ".[docs,dev,full]"
+
+dev-uv: install-plugins-uv
 	uv pip install --python "$(PYTHON)" -e ".[docs,dev,full]"
-	uv pip install --python "$(PYTHON)" -e plugins/woodpecker-atlas-plugin -e plugins/woodpecker-cmip6-plugin -e plugins/woodpecker-cmip6-decadal-plugin -e plugins/woodpecker-cmip7-plugin
 
 format:
 	ruff format .
