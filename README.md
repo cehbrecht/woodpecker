@@ -5,7 +5,9 @@
 [![License](https://img.shields.io/github/license/cehbrecht/woodpecker)](https://github.com/cehbrecht/woodpecker/blob/main/LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://github.com/cehbrecht/woodpecker/blob/main/pyproject.toml)
 
-Woodpecker is a lightweight, code-based catalog of dataset fixes for climate processing.
+Woodpecker is a lightweight, code-based catalog of common dataset fixes for climate processing.
+
+Dataset-specific fix families are provided by external plugins.
 
 Each fix has a stable code (for example `CMIP6D_0001`) so tools and services can reference it directly.
 
@@ -23,7 +25,7 @@ Woodpecker is built around three simple concepts:
   A declarative list of fixes (with optional parameters) applied in order.
 
 - **FixPlanStore**  
-  A lookup layer that returns matching `FixPlan`s for a dataset.
+  A lookup layer that returns matching `FixPlan`s for a dataset (currently with JSON and DuckDB backends).
 
 Implementation note:
 - A design-stub placeholder for a future Elasticsearch-backed store is in `woodpecker/stores/elasticsearch_store.py`.
@@ -102,6 +104,10 @@ Examples:
 Woodpecker can discover external fixes via Python entry points.  
 Entry point group: `woodpecker.plugins`.
 
+Architecture note:
+- Core `woodpecker` keeps common, cross-dataset fixes.
+- Dataset-specific fixes are expected to live in plugins.
+
 Each plugin entry point can target either:
 
 - a module import path, or
@@ -135,8 +141,8 @@ Minimal example:
 
     [project]
     name = "woodpecker-example-plugin"
-    version = "0.1.0"
-    dependencies = ["woodpecker>=0.1.0"]
+    version = "0.2.0"
+    dependencies = ["woodpecker>=0.2.0"]
 
     [project.entry-points."woodpecker.plugins"]
     example = "woodpecker_example_plugin"
