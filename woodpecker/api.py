@@ -112,7 +112,7 @@ def check_plan(
     resolved_codes = codes or plan_codes
     resolved_fix_options = plan_fix_options
     resolved_ordered_codes = (
-        tuple(code.strip().upper() for code in codes if code.strip())
+        tuple(code.strip() for code in codes if code.strip())
         if codes
         else tuple(plan_codes)
     )
@@ -147,7 +147,7 @@ def fix_plan(
     resolved_codes = codes or plan_codes
     resolved_fix_options = plan_fix_options
     resolved_ordered_codes = (
-        tuple(code.strip().upper() for code in codes if code.strip())
+        tuple(code.strip() for code in codes if code.strip())
         if codes
         else tuple(plan_codes)
     )

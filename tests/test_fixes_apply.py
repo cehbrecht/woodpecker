@@ -1,27 +1,31 @@
 import numpy as np
 import pytest
 import xarray as xr
-from woodpecker_atlas_plugin import ATLAS_0001, ATLAS_0002
-from woodpecker_cmip6_decadal_plugin import (
-    CMIP6D_0001,
-    CMIP6D_0002,
-    CMIP6D_0003,
-    CMIP6D_0004,
-    CMIP6D_0005,
-    CMIP6D_0006,
-    CMIP6D_0007,
-    CMIP6D_0008,
-    CMIP6D_0009,
-    CMIP6D_0010,
-    CMIP6D_0011,
-    CMIP6D_0012,
-    CMIP6D_0013,
-    CMIP6D_0014,
-    CMIP6D_0015,
-)
-from woodpecker_cmip6_plugin import CMIP6_0001
 
 from woodpecker.fixes.common import COMMON_0001
+
+atlas_plugin = pytest.importorskip("woodpecker_atlas_plugin")
+cmip6d_plugin = pytest.importorskip("woodpecker_cmip6_decadal_plugin")
+cmip6_plugin = pytest.importorskip("woodpecker_cmip6_plugin")
+
+ATLAS_0001 = atlas_plugin.ATLAS_0001
+ATLAS_0002 = atlas_plugin.ATLAS_0002
+CMIP6_0001 = cmip6_plugin.CMIP6_0001
+CMIP6D_0001 = cmip6d_plugin.CMIP6D_0001
+CMIP6D_0002 = cmip6d_plugin.CMIP6D_0002
+CMIP6D_0003 = cmip6d_plugin.CMIP6D_0003
+CMIP6D_0004 = cmip6d_plugin.CMIP6D_0004
+CMIP6D_0005 = cmip6d_plugin.CMIP6D_0005
+CMIP6D_0006 = cmip6d_plugin.CMIP6D_0006
+CMIP6D_0007 = cmip6d_plugin.CMIP6D_0007
+CMIP6D_0008 = cmip6d_plugin.CMIP6D_0008
+CMIP6D_0009 = cmip6d_plugin.CMIP6D_0009
+CMIP6D_0010 = cmip6d_plugin.CMIP6D_0010
+CMIP6D_0011 = cmip6d_plugin.CMIP6D_0011
+CMIP6D_0012 = cmip6d_plugin.CMIP6D_0012
+CMIP6D_0013 = cmip6d_plugin.CMIP6D_0013
+CMIP6D_0014 = cmip6d_plugin.CMIP6D_0014
+CMIP6D_0015 = cmip6d_plugin.CMIP6D_0015
 
 
 def test_cmip601_dummy_apply_write_sets_dummy_marker_attr():

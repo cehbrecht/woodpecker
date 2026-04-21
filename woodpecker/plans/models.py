@@ -12,7 +12,7 @@ class FixRef:
     links: list[dict[str, str]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
-        self.id = str(self.id).strip().upper()
+        self.id = str(self.id).strip().lower()
         if not self.id:
             raise ValueError("FixRef.id must be a non-empty string")
         if not isinstance(self.options, dict):
@@ -31,7 +31,7 @@ class FixRef:
 
     @id.setter
     def id(self, value: str) -> None:
-        self._id = str(value).strip().upper()
+        self._id = str(value).strip().lower()
 
     @property
     def fix(self) -> str:
@@ -95,6 +95,7 @@ def parse_fix_ref(item: Any) -> FixRef:
 @dataclass
 class FixPlan:
     id: str = ""
+    local_id: str = ""
     namespace: str = ""
     description: str = ""
     match: DatasetMatcher | None = None
@@ -102,8 +103,9 @@ class FixPlan:
     links: list[dict[str, str]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
-        self.id = str(self.id).strip()
-        self.namespace = str(self.namespace).strip().upper()
+        self.id = str(self.id).strip().lower()
+        self.local_id = str(self.local_id).strip().lower() or self.id
+        self.namespace = str(self.namespace).strip().lower()
         self.description = str(self.description)
         if not isinstance(self.links, list):
             raise ValueError("FixPlan.links must be a list")
@@ -111,22 +113,41 @@ class FixPlan:
             if not isinstance(item, dict) or not item.get("rel") or not item.get("href"):
                 raise ValueError("FixPlan.links entries must contain rel and href")
 
+        if self.namespace and self.local_id:
+            self.id = f"{self.namespace}.{self.local_id}"
+        elif self.id and "." in self.id and not self.namespace:
+            self.namespace, self.local_id = self.id.split(".", 1)
+
     def resolve_fix_identifier(self, ref: FixRef) -> str:
-        token = str(ref.fix).strip()
+        token = str(ref.fix).strip().lower()
         if not token:
             return token
-        if "." in token or "_" in token:
+        if "." in token:
             return token
+        if "_" in token:
+            left, right = token.split("_", 1)
+            return f"{left}.{right}"
         if self.namespace:
             return f"{self.namespace}.{token}"
         return token
 
     def to_dict(self) -> dict[str, Any]:
+        fix_entries: list[dict[str, Any]] = []
+        for fix in self.fixes:
+            row: dict[str, Any] = {
+                "fix": self.resolve_fix_identifier(fix),
+                "options": dict(fix.options),
+            }
+            if fix.links:
+                row["links"] = [dict(item) for item in fix.links]
+            fix_entries.append(row)
+
         payload: dict[str, Any] = {
             "id": self.id,
+            "local_id": self.local_id,
             "description": self.description,
             "match": self.match.to_dict() if self.match is not None else None,
-            "fixes": [fix.to_dict() for fix in self.fixes],
+            "fixes": fix_entries,
         }
         if self.namespace:
             payload["namespace"] = self.namespace
@@ -140,9 +161,17 @@ class FixPlan:
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> FixPlan:
         raw_match = payload.get("match")
+        plan_id = str(payload.get("id", ""))
+        namespace = str(payload.get("namespace", payload.get("prefix", "")))
+        local_id = str(payload.get("local_id", ""))
+        if plan_id and "." in plan_id and not namespace:
+            namespace, local_id = plan_id.split(".", 1)
+        if not local_id:
+            local_id = str(payload.get("id", ""))
         return cls(
-            id=str(payload.get("id", "")),
-            namespace=str(payload.get("namespace", payload.get("prefix", ""))),
+            id=plan_id,
+            local_id=local_id,
+            namespace=namespace,
             description=str(payload.get("description", "")),
             match=DatasetMatcher.from_dict(raw_match) if isinstance(raw_match, Mapping) else None,
             fixes=[parse_fix_ref(item) for item in list(payload.get("fixes", []) or [])],

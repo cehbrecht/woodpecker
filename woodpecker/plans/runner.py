@@ -142,7 +142,7 @@ def run_check(inputs: Iterable[DataInput], fixes: Iterable[Any]) -> List[Dict[st
                 findings.append(
                     {
                         "path": data_input.reference,
-                        "code": fix.code,
+                        "code": getattr(fix, "canonical_id", getattr(fix, "code", "")),
                         "name": fix.name,
                         "message": message,
                     }
@@ -184,7 +184,7 @@ def run_fix(
             if fix.apply(dataset, dry_run=dry_run):
                 changed += 1
                 dataset_changed = True
-                applied_codes.append(getattr(fix, "code", ""))
+                applied_codes.append(getattr(fix, "canonical_id", getattr(fix, "code", "")))
         if dataset_changed and not dry_run:
             if embed_provenance_metadata:
                 dataset.attrs["woodpecker_provenance"] = json.dumps(

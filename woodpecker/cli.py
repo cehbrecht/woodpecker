@@ -442,7 +442,9 @@ def fix(
         provenance_source = format_provenance_source(context, store_type, plan)
         prov = build_prov_document(
             inputs=context.inputs,
-            selected_codes=[getattr(fix, "code", "") for fix in context.fixes],
+            selected_codes=[
+                getattr(fix, "canonical_id", getattr(fix, "code", "")) for fix in context.fixes
+            ],
             selected_fixes=context.fixes,
             stats=stats,
             mode="dry-run" if dry_run else "write",

@@ -17,8 +17,8 @@ def _sample_plan() -> FixPlan:
             path_patterns=["*cmip6*.nc"],
         ),
         fixes=[
-            FixRef(id="CMIP6_0001", options={"mode": "fast"}),
-            FixRef(id="COMMON_0001"),
+            FixRef(id="common.0001", options={"mode": "fast"}),
+            FixRef(id="common.0002"),
         ],
     )
 
@@ -30,7 +30,7 @@ def test_fix_plan_serialization_roundtrip():
     restored = FixPlan.from_json(payload)
 
     assert restored == plan
-    assert restored.fixes[0].id == "CMIP6_0001"
+    assert restored.fixes[0].id == "common.0001"
     assert restored.fixes[0].options == {"mode": "fast"}
 
 
@@ -102,7 +102,7 @@ def test_json_store_save_replaces_existing_plan_id(tmp_path):
     listed = store.list_plans()
     assert len(listed) == 1
     assert listed[0].description == "new"
-    assert listed[0].fixes[0].id == "COMMON_0002"
+    assert listed[0].fixes[0].id == "common.0002"
 
 
 def test_duckdb_store_save_list_lookup(tmp_path):

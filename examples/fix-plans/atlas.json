@@ -1,8 +1,9 @@
 {
   "plans": [
     {
-      "id": "atlas-basic",
-      "namespace": "ATLAS",
+      "id": "atlas.atlas_basic",
+      "local_id": "atlas_basic",
+      "namespace": "atlas",
       "description": "Concrete ATLAS plan for atlas*.nc files",
       "links": [
         {

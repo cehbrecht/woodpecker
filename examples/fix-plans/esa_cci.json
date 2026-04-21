@@ -1,8 +1,9 @@
 {
   "plans": [
     {
-      "id": "esa-cci-zarr",
-      "namespace": "CMIP7",
+      "id": "cmip7.esa_cci_water_vapour_zarr",
+      "local_id": "esa_cci_water_vapour_zarr",
+      "namespace": "cmip7",
       "description": "CMIP7/ESA CCI zarr-style inputs",
       "links": [
         {
@@ -27,12 +28,13 @@
             "keep_global_attrs": true
           }
         },
-        {"fix": "COMMON.0002"}
+        {"fix": "common.0002"}
       ]
     },
     {
-      "id": "esa-cci-dotname",
-      "namespace": "CMIP7",
+      "id": "cmip7.esa_cci_water_vapour_dotname",
+      "local_id": "esa_cci_water_vapour_dotname",
+      "namespace": "cmip7",
       "description": "CMIP7/ESA CCI dot-name inputs",
       "match": {
         "path_patterns": [
@@ -41,7 +43,7 @@
       },
       "fixes": [
         {
-          "fix": "COMMON.0004",
+          "fix": "common.0004",
           "options": {
             "dims": ["bnds", "nv"]
           }
@@ -55,7 +57,7 @@
             "keep_global_attrs": true
           }
         },
-        {"fix": "COMMON.0002"}
+        {"fix": "common.0002"}
       ]
     }
   ]

@@ -17,51 +17,88 @@ class FixRegistry:
     """
 
     _registry: Dict[str, Type[Any]] = {}
-    _code_pattern = re.compile(r"^[A-Z0-9_]{4,16}$")
+    _code_pattern = re.compile(r"^[A-Z0-9_]{4,32}$")
+    _namespace_pattern = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
     _identifier_index: Dict[str, str] = {}
     _ambiguous_identifiers: set[str] = set()
 
     @staticmethod
     def _normalize_identifier(identifier: str) -> str:
-        return str(identifier).strip().upper()
+        return str(identifier).strip().lower()
+
+    @classmethod
+    def _derive_namespace_prefix(cls, fix_cls: Type[Any], explicit: str) -> str:
+        token = cls._normalize_identifier(explicit)
+        if token:
+            return token
+
+        module = getattr(fix_cls, "__module__", "")
+        if module.startswith("woodpecker.fixes.") or module == "woodpecker.fixes":
+            return "woodpecker"
+
+        package = module.split(".", 1)[0]
+        package = cls._normalize_identifier(package)
+        if package.startswith("woodpecker_"):
+            package = package[len("woodpecker_") :]
+        if package.endswith("_plugin"):
+            package = package[: -len("_plugin")]
+        return package or "woodpecker"
+
+    @staticmethod
+    def _camel_to_snake(name: str) -> str:
+        first = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", name)
+        second = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", first)
+        return re.sub(r"__+", "_", second).strip("_").lower()
+
+    @classmethod
+    def _derive_fix_local_id(cls, fix_cls: Type[Any], explicit: str) -> str:
+        token = cls._normalize_identifier(explicit)
+        if token:
+            return token
+
+        class_name = fix_cls.__name__
+        if class_name.endswith("Fix"):
+            class_name = class_name[: -len("Fix")]
+        # Common legacy pattern: PREFIX_0001 -> 0001
+        match = re.match(r"^[A-Z0-9]+_(\d{3,})$", class_name)
+        if match:
+            return match.group(1)
+        return cls._camel_to_snake(class_name)
+
+    @classmethod
+    def _validate_local_identifier(cls, label: str, value: str) -> None:
+        if not cls._namespace_pattern.fullmatch(value):
+            raise ValueError(
+                f"Invalid {label} '{value}'. Expected lowercase snake_case identifier."
+            )
 
     @classmethod
     def _derive_namespace_and_local_id(
         cls, fix: Any, fix_cls: Type[Any]
     ) -> tuple[str, str, str, list[str]]:
-        raw_code = cls._normalize_identifier(str(getattr(fix, "code", "") or ""))
-        explicit_prefix = cls._normalize_identifier(str(getattr(fix, "namespace_prefix", "") or ""))
-        explicit_local = cls._normalize_identifier(str(getattr(fix, "local_id", "") or ""))
+        raw_code = str(getattr(fix, "code", "") or "").strip()
+        prefix = cls._derive_namespace_prefix(fix_cls, str(getattr(fix, "namespace_prefix", "") or ""))
+        local_id = cls._derive_fix_local_id(fix_cls, str(getattr(fix, "local_id", "") or ""))
 
-        prefix = explicit_prefix
-        local_id = explicit_local
-        aliases = [cls._normalize_identifier(item) for item in (getattr(fix, "aliases", []) or [])]
-
-        if prefix and local_id:
-            pass
-        elif "." in raw_code:
-            prefix, local_id = raw_code.split(".", 1)
-        elif "_" in raw_code:
-            prefix, local_id = raw_code.split("_", 1)
-        elif raw_code and prefix:
-            local_id = raw_code
-        elif raw_code:
-            # Fallback for simple direct-use fixes without explicit namespace metadata.
-            prefix = "CORE"
-            local_id = raw_code
-        else:
-            auto = cls._normalize_identifier(fix_cls.__name__)
-            match = re.search(r"(?:_|)(\d{3,})$", auto)
-            local_id = match.group(1) if match else auto
-            prefix = explicit_prefix or "CORE"
+        prefix = cls._normalize_identifier(prefix)
+        local_id = cls._normalize_identifier(local_id)
+        cls._validate_local_identifier("namespace prefix", prefix)
+        cls._validate_local_identifier("fix local_id", local_id)
 
         canonical_id = f"{prefix}.{local_id}"
-        if raw_code:
-            aliases.append(raw_code)
-        if canonical_id != raw_code:
-            aliases.append(canonical_id)
-            aliases.append(f"{prefix}_{local_id}")
+
+        aliases = [
+            cls._normalize_identifier(item) for item in (getattr(fix, "aliases", []) or [])
+        ]
+        raw_norm = cls._normalize_identifier(raw_code)
+        if raw_norm:
+            aliases.append(raw_norm)
+            if "_" in raw_norm:
+                aliases.append(raw_norm.replace("_", ".", 1))
         aliases.append(local_id)
+        for item in list(aliases):
+            if item and "." not in item and "_" not in item:
+                aliases.append(f"{prefix}.{item}")
 
         out_aliases: list[str] = []
         seen: set[str] = set()
@@ -112,7 +149,19 @@ class FixRegistry:
                 "Ensure default metadata values are provided on the class."
             ) from exc
         if isinstance(fix, Fix):
-            for attr in ("code", "name", "description", "categories", "priority", "dataset"):
+            for attr in (
+                "code",
+                "namespace_prefix",
+                "local_id",
+                "canonical_id",
+                "aliases",
+                "links",
+                "name",
+                "description",
+                "categories",
+                "priority",
+                "dataset",
+            ):
                 if hasattr(fix_cls, attr):
                     setattr(fix, attr, getattr(fix_cls, attr))
             fix.categories = list(getattr(fix, "categories", []) or [])
@@ -151,7 +200,7 @@ class FixRegistry:
     def register(cls, fix_cls: Type[Any]):
         fix = cls._instantiate_fix(fix_cls)
         cls._validate_fix_definition(fix, fix_cls)
-        code = cls._normalize_identifier(getattr(fix, "code", None) or "")
+        code = str(getattr(fix, "code", None) or "").strip().upper()
 
         if code in cls._registry:
             raise ValueError(f"Duplicate fix code '{code}' (already registered)")

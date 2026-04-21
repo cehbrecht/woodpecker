@@ -39,7 +39,7 @@ def normalize_ordered_codes(codes: Sequence[str]) -> tuple[str, ...]:
     out: list[str] = []
     seen: set[str] = set()
     for raw in codes:
-        code = str(raw).strip().upper()
+        code = str(raw).strip()
         if not code or code in seen:
             continue
         out.append(code)

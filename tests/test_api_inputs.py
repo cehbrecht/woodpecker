@@ -14,35 +14,49 @@ from woodpecker.inout import (
 
 
 def test_check_supports_xarray_dataset_input():
-    ds = xr.Dataset(coords={"time": [0, 1]}, attrs={"source_name": "c3s-cmip6-decadal.bad.nc"})
-    ds["time"].encoding["calendar"] = "proleptic_gregorian"
+    ds = xr.Dataset(
+        coords={"lat": [10.0, -10.0], "lon": [0.0]},
+        data_vars={"tas": (("lat", "lon"), [[280.0], [281.0]])},
+        attrs={"source_name": "example.nc"},
+    )
 
-    findings = check(ds, codes=["CMIP6D_0001", "CMIP6D_0002"])
+    findings = check(ds, codes=["COMMON_0002"])
 
     assert findings
-    assert {entry["code"] for entry in findings}.issuperset({"CMIP6D_0001", "CMIP6D_0002"})
+    assert {entry["code"] for entry in findings}.issuperset({"woodpecker.0002"})
 
 
 def test_fix_supports_xarray_dataset_input_write_mode():
     ds = xr.Dataset(
-        data_vars={"tas": ("time", [273.1, 274.2])},
+        data_vars={"tas": ("time", [0.0, 1.0], {"units": "degC"})},
         coords={"time": [0, 1]},
-        attrs={"source_name": "c3s-ipcc-atlas.dataset.tas.nc"},
+        attrs={"source_name": "example.nc"},
     )
-    ds["tas"].encoding["complevel"] = 4
 
-    stats = fix(ds, codes=["ATLAS_0001"], write=True)
+    stats = fix(ds, codes=["COMMON_0001"], write=True)
 
     assert stats["attempted"] == 1
     assert stats["changed"] == 1
-    assert ds["tas"].encoding["complevel"] == 1
-    assert ds["tas"].encoding["zlib"] is True
+    assert ds["tas"].attrs["units"] == "K"
 
 
-def test_check_supports_path_input(make_dummy_netcdf):
+def test_check_supports_path_input(make_dummy_netcdf, monkeypatch):
     source = make_dummy_netcdf("cmip6_bad.nc")
 
-    findings = check([source], codes=["CMIP6_0001"])
+    def _fake_run_check(*args, **kwargs):
+        _ = (args, kwargs)
+        return [
+            {
+                "path": str(Path(source)),
+                "code": "common.0001",
+                "name": "Common check",
+                "message": "synthetic finding",
+            }
+        ]
+
+    monkeypatch.setattr("woodpecker.api.run_check", _fake_run_check)
+
+    findings = check([source], codes=["COMMON_0001"])
 
     assert findings
     assert findings[0]["path"] == str(Path(source))
@@ -64,13 +78,12 @@ def test_output_adapter_target_paths_for_path_inputs():
 
 def test_fix_accepts_explicit_output_format():
     ds = xr.Dataset(
-        data_vars={"tas": ("time", [273.1, 274.2])},
+        data_vars={"tas": ("time", [0.0, 1.0], {"units": "degC"})},
         coords={"time": [0, 1]},
-        attrs={"source_name": "c3s-ipcc-atlas.dataset.tas.nc"},
+        attrs={"source_name": "example.nc"},
     )
-    ds["tas"].encoding["complevel"] = 4
 
-    stats = fix(ds, codes=["ATLAS_0001"], write=True, output_format="netcdf")
+    stats = fix(ds, codes=["COMMON_0001"], write=True, output_format="netcdf")
 
     assert stats["attempted"] == 1
     assert stats["changed"] == 1
@@ -108,29 +121,42 @@ def test_api_check_raises_on_unknown_fix_code(make_dummy_netcdf):
         check([source], codes=["DOESNOTEXIST"])
 
 
-def test_api_check_plan_uses_codes_from_plan(tmp_path: Path, make_dummy_netcdf):
+def test_api_check_plan_uses_codes_from_plan(tmp_path: Path, make_dummy_netcdf, monkeypatch):
     source = make_dummy_netcdf("cmip6_bad.nc")
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
-        '{"plans": [{"id": "cmip6-basic", "fixes": [{"id": "CMIP6_0001"}]}]}',
+        '{"plans": [{"id": "core.basic", "fixes": [{"id": "COMMON_0001"}]}]}',
         encoding="utf-8",
     )
+
+    def _fake_run_check(*args, **kwargs):
+        _ = (args, kwargs)
+        return [
+            {
+                "path": str(Path(source)),
+                "code": "common.0001",
+                "name": "Common check",
+                "message": "synthetic finding",
+            }
+        ]
+
+    monkeypatch.setattr("woodpecker.api.run_check", _fake_run_check)
 
     findings = check_plan(plan_path, inputs=[source])
 
     assert findings
-    assert findings[0]["code"] == "CMIP6_0001"
+    assert findings[0]["code"] == "common.0001"
 
 
 def test_api_fix_plan_uses_explicit_output_format_argument(tmp_path: Path, monkeypatch):
     ds = xr.Dataset(
-        data_vars={"tas": ("time", [273.1, 274.2])},
+        data_vars={"tas": ("time", [0.0, 1.0], {"units": "degC"})},
         coords={"time": [0, 1]},
-        attrs={"source_name": "c3s-ipcc-atlas.dataset.tas.nc"},
+        attrs={"source_name": "example.nc"},
     )
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
-        '{"plans": [{"id": "atlas-basic", "fixes": [{"id": "ATLAS_0001"}]}]}',
+        '{"plans": [{"id": "core.basic", "fixes": [{"id": "COMMON_0001"}]}]}',
         encoding="utf-8",
     )
 
@@ -155,10 +181,17 @@ def test_api_fix_plan_uses_explicit_output_format_argument(tmp_path: Path, monke
 
 
 def test_api_fix_plan_applies_fix_options_to_dataset_attrs(tmp_path: Path):
-    ds = xr.Dataset(attrs={"source_name": "c3s-cmip6.member.tas.nc"})
+    ds = xr.Dataset(
+        data_vars={
+            "a": ("x", [1.0, 2.0]),
+            "b": ("y", [3.0, 4.0]),
+        },
+        coords={"x": [0, 1], "y": [0, 1]},
+        attrs={"source_name": "example.nc"},
+    )
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
-        '{"plans": [{"id": "cmip6-options", "fixes": [{"id": "CMIP6_0001", "options": {"marker_attr": "custom_marker", "marker_value": "ok"}}]}]}',
+        '{"plans": [{"id": "core.options", "fixes": [{"id": "COMMON_0004", "options": {"dims": ["x", "y"]}}]}]}',
         encoding="utf-8",
     )
 
@@ -166,4 +199,5 @@ def test_api_fix_plan_applies_fix_options_to_dataset_attrs(tmp_path: Path):
 
     assert stats["attempted"] == 1
     assert stats["changed"] == 1
-    assert ds.attrs["custom_marker"] == "ok"
+    assert "y" not in ds["b"].dims
+    assert "x" in ds["b"].dims

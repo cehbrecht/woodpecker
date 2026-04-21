@@ -80,7 +80,7 @@ def test_load_fix_plan_from_json(tmp_path: Path):
     plan = load_fix_plan(plan_path)
 
     assert isinstance(plan, FixPlan)
-    assert [f.id for f in plan.fixes] == ["PLAN_0001", "PLAN_0002"]
+    assert [f.id for f in plan.fixes] == ["plan_0001", "plan_0002"]
     assert plan.fixes[0].options == {"mode": "fast"}
     assert plan.fixes[1].options == {}
 
@@ -94,7 +94,7 @@ def test_load_fix_plan_from_yaml(tmp_path: Path):
 
     plan = load_fix_plan(plan_path)
 
-    assert [f.id for f in plan.fixes] == ["PLAN_0001"]
+    assert [f.id for f in plan.fixes] == ["plan_0001"]
     assert plan.fixes[0].options == {"level": "strict"}
 
 
@@ -159,7 +159,7 @@ def test_load_fix_plan_document_json(tmp_path: Path):
     assert isinstance(document, FixPlanDocument)
     assert len(document.plans) == 1
     assert document.plans[0].id == "cmip6-basic"
-    assert document.plans[0].fixes[0].id == "CMIP6_0001"
+    assert document.plans[0].fixes[0].id == "cmip6_0001"
 
 
 def test_load_fix_plan_document_single_plan_shorthand(tmp_path: Path):
@@ -178,7 +178,7 @@ def test_load_fix_plan_document_single_plan_shorthand(tmp_path: Path):
 
     assert len(document.plans) == 1
     assert document.plans[0].id == "single"
-    assert document.plans[0].fixes[0].id == "CMIP6_0001"
+    assert document.plans[0].fixes[0].id == "cmip6_0001"
 
 
 def test_load_fix_plan_document_plan_entries_normalize_fix_ids(tmp_path: Path):
@@ -203,7 +203,7 @@ def test_load_fix_plan_document_plan_entries_normalize_fix_ids(tmp_path: Path):
     document = load_fix_plan_document(plan_path)
 
     fixes = document.plans[0].fixes
-    assert [item.id for item in fixes] == ["CMIP6_0001", "ATLAS_0001"]
+    assert [item.id for item in fixes] == ["cmip6_0001", "atlas_0001"]
     assert fixes[0].options["marker_attr"] == "my_marker"
 
 
@@ -242,6 +242,6 @@ def test_esa_cci_example_fix_plan_uses_plugin_cmip7_fix_codes_in_order():
     assert matched
     plan = matched[0]
     assert [plan.resolve_fix_identifier(item) for item in plan.fixes] == [
-        "CMIP7.0003",
-        "COMMON.0002",
+        "cmip7.0003",
+        "common.0002",
     ]
