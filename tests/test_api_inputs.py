@@ -20,10 +20,10 @@ def test_check_supports_xarray_dataset_input():
         attrs={"source_name": "example.nc"},
     )
 
-    findings = check(ds, codes=["COMMON_0002"])
+    findings = check(ds, codes=["woodpecker.ensure_latitude_is_increasing"])
 
     assert findings
-    assert {entry["code"] for entry in findings}.issuperset({"woodpecker.0002"})
+    assert {entry["code"] for entry in findings}.issuperset({"woodpecker.ensure_latitude_is_increasing"})
 
 
 def test_fix_supports_xarray_dataset_input_write_mode():
@@ -33,7 +33,7 @@ def test_fix_supports_xarray_dataset_input_write_mode():
         attrs={"source_name": "example.nc"},
     )
 
-    stats = fix(ds, codes=["COMMON_0001"], write=True)
+    stats = fix(ds, codes=["woodpecker.normalize_tas_units_to_kelvin"], write=True)
 
     assert stats["attempted"] == 1
     assert stats["changed"] == 1
@@ -48,7 +48,7 @@ def test_check_supports_path_input(make_dummy_netcdf, monkeypatch):
         return [
             {
                 "path": str(Path(source)),
-                "code": "common.0001",
+                "code": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Common check",
                 "message": "synthetic finding",
             }
@@ -56,7 +56,7 @@ def test_check_supports_path_input(make_dummy_netcdf, monkeypatch):
 
     monkeypatch.setattr("woodpecker.api.run_check", _fake_run_check)
 
-    findings = check([source], codes=["COMMON_0001"])
+    findings = check([source], codes=["woodpecker.normalize_tas_units_to_kelvin"])
 
     assert findings
     assert findings[0]["path"] == str(Path(source))
@@ -83,7 +83,7 @@ def test_fix_accepts_explicit_output_format():
         attrs={"source_name": "example.nc"},
     )
 
-    stats = fix(ds, codes=["COMMON_0001"], write=True, output_format="netcdf")
+    stats = fix(ds, codes=["woodpecker.normalize_tas_units_to_kelvin"], write=True, output_format="netcdf")
 
     assert stats["attempted"] == 1
     assert stats["changed"] == 1
@@ -117,7 +117,7 @@ def test_zarr_output_adapter_warns_and_fails_when_backend_unavailable(monkeypatc
 def test_api_check_raises_on_unknown_fix_code(make_dummy_netcdf):
     source = make_dummy_netcdf("cmip6_bad.nc")
 
-    with pytest.raises(ValueError, match=r"Unknown fix code\(s\): DOESNOTEXIST"):
+    with pytest.raises(ValueError, match=r"Unknown fix identifier\(s\): DOESNOTEXIST"):
         check([source], codes=["DOESNOTEXIST"])
 
 
@@ -125,7 +125,7 @@ def test_api_check_plan_uses_codes_from_plan(tmp_path: Path, make_dummy_netcdf, 
     source = make_dummy_netcdf("cmip6_bad.nc")
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
-        '{"plans": [{"id": "core.basic", "fixes": [{"id": "COMMON_0001"}]}]}',
+        '{"plans": [{"id": "core.basic", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]}]}',
         encoding="utf-8",
     )
 
@@ -134,7 +134,7 @@ def test_api_check_plan_uses_codes_from_plan(tmp_path: Path, make_dummy_netcdf, 
         return [
             {
                 "path": str(Path(source)),
-                "code": "common.0001",
+                "code": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Common check",
                 "message": "synthetic finding",
             }
@@ -145,7 +145,7 @@ def test_api_check_plan_uses_codes_from_plan(tmp_path: Path, make_dummy_netcdf, 
     findings = check_plan(plan_path, inputs=[source])
 
     assert findings
-    assert findings[0]["code"] == "common.0001"
+    assert findings[0]["code"] == "woodpecker.normalize_tas_units_to_kelvin"
 
 
 def test_api_fix_plan_uses_explicit_output_format_argument(tmp_path: Path, monkeypatch):
@@ -156,7 +156,7 @@ def test_api_fix_plan_uses_explicit_output_format_argument(tmp_path: Path, monke
     )
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
-        '{"plans": [{"id": "core.basic", "fixes": [{"id": "COMMON_0001"}]}]}',
+        '{"plans": [{"id": "core.basic", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]}]}',
         encoding="utf-8",
     )
 
@@ -191,7 +191,7 @@ def test_api_fix_plan_applies_fix_options_to_dataset_attrs(tmp_path: Path):
     )
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
-        '{"plans": [{"id": "core.options", "fixes": [{"id": "COMMON_0004", "options": {"dims": ["x", "y"]}}]}]}',
+        '{"plans": [{"id": "core.options", "fixes": [{"id": "woodpecker.merge_equivalent_dimensions", "options": {"dims": ["x", "y"]}}]}]}',
         encoding="utf-8",
     )
 

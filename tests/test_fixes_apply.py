@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from woodpecker.fixes.common import COMMON_0001
+from woodpecker.fixes.common import NormalizeTasUnitsToKelvinFix
 
 atlas_plugin = pytest.importorskip("woodpecker_atlas_plugin")
 cmip6d_plugin = pytest.importorskip("woodpecker_cmip6_decadal_plugin")
@@ -31,7 +31,7 @@ CMIP6D_0015 = cmip6d_plugin.CMIP6D_0015
 def test_cmip601_dummy_apply_write_sets_dummy_marker_attr():
     dataset = xr.Dataset(attrs={"source_name": "cmip6_member.nc"})
 
-    fix = CMIP6_0001()
+    fix = NormalizeTasUnitsToKelvinFix()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -444,7 +444,7 @@ def test_common01_apply_dry_run_reports_change_without_mutating_dataset():
     )
     dataset["tas"].attrs["units"] = "degreeC"
 
-    fix = COMMON_0001()
+    fix = NormalizeTasUnitsToKelvinFix()
     changed = fix.apply(dataset, dry_run=True)
 
     assert changed is True
@@ -459,7 +459,7 @@ def test_common01_apply_write_converts_celsius_to_kelvin_for_tas_variable():
     )
     dataset["tas"].attrs["units"] = "degreeC"
 
-    fix = COMMON_0001()
+    fix = NormalizeTasUnitsToKelvinFix()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True

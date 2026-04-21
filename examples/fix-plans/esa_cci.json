@@ -28,7 +28,7 @@
             "keep_global_attrs": true
           }
         },
-        {"fix": "common.0002"}
+        {"fix": "woodpecker.ensure_latitude_is_increasing"}
       ]
     },
     {
@@ -43,7 +43,7 @@
       },
       "fixes": [
         {
-          "fix": "common.0004",
+          "fix": "woodpecker.merge_equivalent_dimensions",
           "options": {
             "dims": ["bnds", "nv"]
           }
@@ -57,7 +57,7 @@
             "keep_global_attrs": true
           }
         },
-        {"fix": "common.0002"}
+        {"fix": "woodpecker.ensure_latitude_is_increasing"}
       ]
     }
   ]

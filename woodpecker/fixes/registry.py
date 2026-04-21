@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import asdict
 from typing import Any, Dict, List, Optional, Type
 
 from .base import Fix, GroupFix
@@ -17,7 +16,6 @@ class FixRegistry:
     """
 
     _registry: Dict[str, Type[Any]] = {}
-    _code_pattern = re.compile(r"^[A-Z0-9_]{4,32}$")
     _namespace_pattern = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
     _identifier_index: Dict[str, str] = {}
     _ambiguous_identifiers: set[str] = set()
@@ -55,15 +53,9 @@ class FixRegistry:
         token = cls._normalize_identifier(explicit)
         if token:
             return token
-
-        class_name = fix_cls.__name__
-        if class_name.endswith("Fix"):
-            class_name = class_name[: -len("Fix")]
-        # Common legacy pattern: PREFIX_0001 -> 0001
-        match = re.match(r"^[A-Z0-9]+_(\d{3,})$", class_name)
-        if match:
-            return match.group(1)
-        return cls._camel_to_snake(class_name)
+        if hasattr(fix_cls, "derived_local_id"):
+            return cls._normalize_identifier(str(fix_cls.derived_local_id()))
+        return cls._camel_to_snake(fix_cls.__name__)
 
     @classmethod
     def _validate_local_identifier(cls, label: str, value: str) -> None:
@@ -73,12 +65,11 @@ class FixRegistry:
             )
 
     @classmethod
-    def _derive_namespace_and_local_id(
-        cls, fix: Any, fix_cls: Type[Any]
-    ) -> tuple[str, str, str, list[str]]:
-        raw_code = str(getattr(fix, "code", "") or "").strip()
-        prefix = cls._derive_namespace_prefix(fix_cls, str(getattr(fix, "namespace_prefix", "") or ""))
-        local_id = cls._derive_fix_local_id(fix_cls, str(getattr(fix, "local_id", "") or ""))
+    def _derive_namespace_and_local_id(cls, fix_cls: Type[Any]) -> tuple[str, str, str, list[str]]:
+        prefix = cls._derive_namespace_prefix(
+            fix_cls, str(getattr(fix_cls, "namespace_prefix", "") or "")
+        )
+        local_id = cls._derive_fix_local_id(fix_cls, str(getattr(fix_cls, "local_id", "") or ""))
 
         prefix = cls._normalize_identifier(prefix)
         local_id = cls._normalize_identifier(local_id)
@@ -87,18 +78,8 @@ class FixRegistry:
 
         canonical_id = f"{prefix}.{local_id}"
 
-        aliases = [
-            cls._normalize_identifier(item) for item in (getattr(fix, "aliases", []) or [])
-        ]
-        raw_norm = cls._normalize_identifier(raw_code)
-        if raw_norm:
-            aliases.append(raw_norm)
-            if "_" in raw_norm:
-                aliases.append(raw_norm.replace("_", ".", 1))
+        aliases = [cls._normalize_identifier(item) for item in (getattr(fix_cls, "aliases", []) or [])]
         aliases.append(local_id)
-        for item in list(aliases):
-            if item and "." not in item and "_" not in item:
-                aliases.append(f"{prefix}.{item}")
 
         out_aliases: list[str] = []
         seen: set[str] = set()
@@ -112,7 +93,7 @@ class FixRegistry:
         return prefix, local_id, canonical_id, out_aliases
 
     @classmethod
-    def _register_identifier(cls, identifier: str, code: str) -> None:
+    def _register_identifier(cls, identifier: str, canonical_id: str) -> None:
         token = cls._normalize_identifier(identifier)
         if not token:
             return
@@ -120,9 +101,9 @@ class FixRegistry:
             return
         existing = cls._identifier_index.get(token)
         if existing is None:
-            cls._identifier_index[token] = code
+            cls._identifier_index[token] = canonical_id
             return
-        if existing == code:
+        if existing == canonical_id:
             return
         cls._identifier_index.pop(token, None)
         cls._ambiguous_identifiers.add(token)
@@ -134,10 +115,10 @@ class FixRegistry:
             raise ValueError(
                 f"Ambiguous fix identifier '{identifier}'. Use canonical '<prefix>.<local_id>' form."
             )
-        code = cls._identifier_index.get(token)
-        if code is None:
+        canonical_id = cls._identifier_index.get(token)
+        if canonical_id is None:
             raise KeyError(identifier)
-        return code
+        return canonical_id
 
     @staticmethod
     def _instantiate_fix(fix_cls: Type[Any]) -> Any:
@@ -150,7 +131,6 @@ class FixRegistry:
             ) from exc
         if isinstance(fix, Fix):
             for attr in (
-                "code",
                 "namespace_prefix",
                 "local_id",
                 "canonical_id",
@@ -169,18 +149,10 @@ class FixRegistry:
 
     @classmethod
     def _validate_fix_definition(cls, fix: Any, fix_cls: Type[Any]) -> None:
-        code = str(getattr(fix, "code", "") or "").strip()
         name = str(getattr(fix, "name", "") or "").strip()
         categories = getattr(fix, "categories", []) or []
         priority = getattr(fix, "priority", 10)
 
-        if not code:
-            raise ValueError(f"Fix {fix_cls.__name__} must define a non-empty 'code'")
-        if not cls._code_pattern.fullmatch(code):
-            raise ValueError(
-                f"Fix {fix_cls.__name__} has invalid code '{code}'. "
-                "Expected pattern: ^[A-Z0-9_]{4,16}$"
-            )
         if not name:
             raise ValueError(f"Fix {fix_cls.__name__} must define a non-empty 'name'")
         if not isinstance(priority, int):
@@ -193,30 +165,32 @@ class FixRegistry:
             )
 
     @classmethod
-    def registered_codes(cls) -> List[str]:
+    def registered_canonical_ids(cls) -> List[str]:
         return sorted(cls._registry.keys())
+
+    @classmethod
+    def registered_ids(cls) -> List[str]:
+        return cls.registered_canonical_ids()
 
     @classmethod
     def register(cls, fix_cls: Type[Any]):
         fix = cls._instantiate_fix(fix_cls)
         cls._validate_fix_definition(fix, fix_cls)
-        code = str(getattr(fix, "code", None) or "").strip().upper()
 
-        if code in cls._registry:
-            raise ValueError(f"Duplicate fix code '{code}' (already registered)")
+        prefix, local_id, canonical_id, aliases = cls._derive_namespace_and_local_id(fix_cls)
+        if canonical_id in cls._registry:
+            raise ValueError(f"Duplicate fix canonical id '{canonical_id}' (already registered)")
 
-        prefix, local_id, canonical_id, aliases = cls._derive_namespace_and_local_id(fix, fix_cls)
         setattr(fix_cls, "namespace_prefix", prefix)
         setattr(fix_cls, "local_id", local_id)
         setattr(fix_cls, "canonical_id", canonical_id)
         setattr(fix_cls, "aliases", aliases)
 
-        cls._registry[code] = fix_cls
-        cls._register_identifier(code, code)
-        cls._register_identifier(canonical_id, code)
-        cls._register_identifier(local_id, code)
+        cls._registry[canonical_id] = fix_cls
+        cls._register_identifier(canonical_id, canonical_id)
+        cls._register_identifier(local_id, canonical_id)
         for alias in aliases:
-            cls._register_identifier(alias, code)
+            cls._register_identifier(alias, canonical_id)
         return fix_cls  # decorator-friendly
 
     @classmethod
@@ -274,11 +248,20 @@ class FixRegistry:
         fixes = cls.discover()
         data = []
         for f in fixes:
-            # Support future Pydantic v2 models transparently
-            if hasattr(f, "model_dump"):
-                data.append(f.model_dump())
-            else:
-                data.append(asdict(f))
+            data.append(
+                {
+                    "id": getattr(f, "canonical_id", ""),
+                    "local_id": getattr(f, "local_id", ""),
+                    "namespace": getattr(f, "namespace_prefix", ""),
+                    "aliases": list(getattr(f, "aliases", []) or []),
+                    "links": list(getattr(f, "links", []) or []),
+                    "name": getattr(f, "name", ""),
+                    "description": getattr(f, "description", ""),
+                    "categories": list(getattr(f, "categories", []) or []),
+                    "dataset": getattr(f, "dataset", None),
+                    "priority": getattr(f, "priority", 10),
+                }
+            )
 
         with open(path, "w", encoding="utf-8") as fp:
             json.dump(data, fp, indent=2)

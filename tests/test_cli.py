@@ -14,8 +14,8 @@ def test_list_fixes_contains_known_codes():
     result = runner.invoke(cli, ["list-fixes", "--format", "text"])
 
     assert result.exit_code == 0
-    assert "COMMON_0001" in result.output
-    assert "COMMON_0002" in result.output
+    assert "woodpecker.normalize_tas_units_to_kelvin" in result.output
+    assert "woodpecker.ensure_latitude_is_increasing" in result.output
 
 
 def test_io_status_text_output_contains_expected_keys():
@@ -50,7 +50,7 @@ def test_check_returns_zero_when_no_findings(
 ):
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_decadal_ok.nc")
-    result = runner.invoke(cli, ["check", ".", "--select", "COMMON_0001"])
+    result = runner.invoke(cli, ["check", ".", "--select", "woodpecker.normalize_tas_units_to_kelvin"])
 
     assert result.exit_code == 0
     assert "No issues found" in result.output
@@ -68,7 +68,7 @@ def test_check_returns_nonzero_when_findings_exist(
         return [
             {
                 "path": "cmip6_bad.nc",
-                "code": "common.0001",
+                "code": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Common check",
                 "message": "synthetic finding",
             }
@@ -76,10 +76,10 @@ def test_check_returns_nonzero_when_findings_exist(
 
     monkeypatch.setattr("woodpecker.cli.run_check", _fake_run_check)
 
-    result = runner.invoke(cli, ["check", ".", "--select", "COMMON_0001"])
+    result = runner.invoke(cli, ["check", ".", "--select", "woodpecker.normalize_tas_units_to_kelvin"])
 
     assert result.exit_code == 1
-    assert "common.0001" in result.output
+    assert "woodpecker.normalize_tas_units_to_kelvin" in result.output
 
 
 def test_check_json_output_structure(
@@ -94,7 +94,7 @@ def test_check_json_output_structure(
         return [
             {
                 "path": "cmip6_bad.nc",
-                "code": "common.0001",
+                "code": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Common check",
                 "message": "synthetic finding",
             }
@@ -104,7 +104,7 @@ def test_check_json_output_structure(
 
     result = runner.invoke(
         cli,
-        ["check", ".", "--select", "COMMON_0001", "--format", "json"],
+        ["check", ".", "--select", "woodpecker.normalize_tas_units_to_kelvin", "--format", "json"],
     )
 
     assert result.exit_code == 1
@@ -112,7 +112,7 @@ def test_check_json_output_structure(
     assert isinstance(payload, list)
     assert payload
     assert {"path", "code", "name", "message"}.issubset(payload[0].keys())
-    assert payload[0]["code"] == "common.0001"
+    assert payload[0]["code"] == "woodpecker.normalize_tas_units_to_kelvin"
 
 
 def test_fix_write_cmip6d01_reports_no_change_for_empty_fallback_dataset(
@@ -127,7 +127,7 @@ def test_fix_write_cmip6d01_reports_no_change_for_empty_fallback_dataset(
             "fix",
             ".",
             "--select",
-            "COMMON_0001",
+            "woodpecker.normalize_tas_units_to_kelvin",
             "--force-apply",
             "--output-format",
             "netcdf",
@@ -163,7 +163,7 @@ def test_fix_json_output_contains_write_report(
             "fix",
             ".",
             "--select",
-            "COMMON_0001",
+            "woodpecker.normalize_tas_units_to_kelvin",
             "--output-format",
             "netcdf",
             "--format",
@@ -207,7 +207,7 @@ def test_fix_json_write_exits_nonzero_on_persist_failure(
             "fix",
             ".",
             "--select",
-            "COMMON_0001",
+            "woodpecker.normalize_tas_units_to_kelvin",
             "--format",
             "json",
         ],
@@ -227,7 +227,7 @@ def test_check_unknown_fix_code_returns_click_error(
     result = runner.invoke(cli, ["check", ".", "--select", "DOESNOTEXIST"])
 
     assert result.exit_code != 0
-    assert "Unknown fix code(s): DOESNOTEXIST" in result.output
+    assert "Unknown fix identifier(s): DOESNOTEXIST" in result.output
 
 
 def test_check_uses_plan_defaults(
@@ -237,7 +237,7 @@ def test_check_uses_plan_defaults(
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_bad.nc")
     Path("plan.json").write_text(
-        json.dumps({"plans": [{"id": "core.basic", "fixes": [{"id": "COMMON_0001"}]}]}),
+        json.dumps({"plans": [{"id": "core.basic", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]}]}),
         encoding="utf-8",
     )
 
@@ -246,7 +246,7 @@ def test_check_uses_plan_defaults(
         return [
             {
                 "path": "cmip6_bad.nc",
-                "code": "common.0001",
+                "code": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Common check",
                 "message": "configured by plan",
             }
@@ -257,7 +257,7 @@ def test_check_uses_plan_defaults(
     result = runner.invoke(cli, ["check", "--plan", "plan.json"])
 
     assert result.exit_code == 1
-    assert "common.0001" in result.output
+    assert "woodpecker.normalize_tas_units_to_kelvin" in result.output
 
 
 def test_fix_uses_auto_output_format_when_not_set(
@@ -267,7 +267,7 @@ def test_fix_uses_auto_output_format_when_not_set(
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_case.nc")
     Path("plan.json").write_text(
-        json.dumps({"plans": [{"id": "core.basic", "fixes": [{"id": "COMMON_0001"}]}]}),
+        json.dumps({"plans": [{"id": "core.basic", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]}]}),
         encoding="utf-8",
     )
 
@@ -307,7 +307,7 @@ def test_check_plan_applies_fix_options_to_message(
                     {
                         "id": "cmip6-msg",
                         "fixes": [
-                            {"id": "COMMON_0001", "options": {"message": "configured check message"}}
+                            {"id": "woodpecker.normalize_tas_units_to_kelvin", "options": {"message": "configured check message"}}
                         ],
                     }
                 ]
@@ -323,7 +323,7 @@ def test_check_plan_applies_fix_options_to_message(
         return [
             {
                 "path": "c3s-cmip6.member.nc",
-                "code": "common.0001",
+                "code": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Common check",
                 "message": message,
             }
@@ -343,7 +343,7 @@ def test_fix_writes_provenance_file_by_default(
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_case.nc")
 
-    result = runner.invoke(cli, ["fix", ".", "--select", "COMMON_0001"])
+    result = runner.invoke(cli, ["fix", ".", "--select", "woodpecker.normalize_tas_units_to_kelvin"])
 
     assert result.exit_code == 0
     prov_path = Path("woodpecker.prov.json")
@@ -376,7 +376,7 @@ def test_fix_force_apply_is_forwarded_to_runner(
 
     result = runner.invoke(
         cli,
-        ["fix", ".", "--select", "COMMON_0001", "--force-apply", "--format", "json"],
+        ["fix", ".", "--select", "woodpecker.normalize_tas_units_to_kelvin", "--force-apply", "--format", "json"],
     )
 
     assert result.exit_code == 0
@@ -408,7 +408,7 @@ def test_check_uses_json_plan_store_lookup(
                 {
                     "id": "cmip6-default",
                     "match": {"path_patterns": ["*cmip6_bad.nc"]},
-                    "fixes": [{"id": "COMMON_0001"}],
+                    "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                 }
             ]
         ),
@@ -420,7 +420,7 @@ def test_check_uses_json_plan_store_lookup(
         return [
             {
                 "path": "cmip6_bad.nc",
-                "code": "common.0001",
+                "code": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Common check",
                 "message": "from json store",
             }
@@ -434,7 +434,7 @@ def test_check_uses_json_plan_store_lookup(
     )
 
     assert result.exit_code == 1
-    assert "common.0001" in result.output
+    assert "woodpecker.normalize_tas_units_to_kelvin" in result.output
 
 
 def test_check_plan_store_requires_plan_id_when_multiple_match_without_path_filters(
@@ -448,12 +448,12 @@ def test_check_plan_store_requires_plan_id_when_multiple_match_without_path_filt
                 {
                     "id": "first",
                     "match": {"path_patterns": ["*cmip6_bad.nc"]},
-                    "fixes": [{"id": "COMMON_0001"}],
+                    "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                 },
                 {
                     "id": "second",
                     "match": {"path_patterns": ["*cmip6_bad.nc"]},
-                    "fixes": [{"id": "COMMON_0002"}],
+                    "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
                 },
             ]
         ),
@@ -481,12 +481,12 @@ def test_check_plan_store_plan_id_selects_specific_plan_without_path_filters(
                 {
                     "id": "first",
                     "match": {"path_patterns": ["*cmip6_bad.nc"]},
-                    "fixes": [{"id": "COMMON_0002"}],
+                    "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
                 },
                 {
                     "id": "second",
                     "match": {"path_patterns": ["*cmip6_bad.nc"]},
-                    "fixes": [{"id": "COMMON_0001"}],
+                    "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                 },
             ]
         ),
@@ -498,7 +498,7 @@ def test_check_plan_store_plan_id_selects_specific_plan_without_path_filters(
         return [
             {
                 "path": "cmip6_bad.nc",
-                "code": "common.0001",
+                "code": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Common check",
                 "message": "selected plan",
             }
@@ -519,7 +519,7 @@ def test_check_plan_store_plan_id_selects_specific_plan_without_path_filters(
     )
 
     assert result.exit_code == 1
-    assert "common.0001" in result.output
+    assert "woodpecker.normalize_tas_units_to_kelvin" in result.output
 
 
 def test_check_plan_id_without_plan_errors(
@@ -543,8 +543,8 @@ def test_check_plan_store_requires_plan_id_when_multiple_match(
         json.dumps(
             {
                 "plans": [
-                    {"id": "first", "fixes": [{"id": "COMMON_0001"}]},
-                    {"id": "second", "fixes": [{"id": "COMMON_0002"}]},
+                    {"id": "first", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]},
+                    {"id": "second", "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}]},
                 ]
             }
         ),
@@ -568,8 +568,8 @@ def test_check_plan_store_plan_id_selects_specific_plan(
         json.dumps(
             {
                 "plans": [
-                    {"id": "first", "fixes": [{"id": "COMMON_0002"}]},
-                    {"id": "second", "fixes": [{"id": "COMMON_0001"}]},
+                    {"id": "first", "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}]},
+                    {"id": "second", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]},
                 ]
             }
         ),
@@ -581,7 +581,7 @@ def test_check_plan_store_plan_id_selects_specific_plan(
         return [
             {
                 "path": "cmip6_bad.nc",
-                "code": "common.0001",
+                "code": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Common check",
                 "message": "selected plan",
             }
@@ -592,7 +592,7 @@ def test_check_plan_store_plan_id_selects_specific_plan(
     result = runner.invoke(cli, ["check", "--plan", "plan.json", "--plan-id", "second"])
 
     assert result.exit_code == 1
-    assert "common.0001" in result.output
+    assert "woodpecker.normalize_tas_units_to_kelvin" in result.output
 
 
 def test_list_plans_text_output(
@@ -604,11 +604,11 @@ def test_list_plans_text_output(
             [
                 {
                     "id": "alpha",
-                    "fixes": [{"id": "COMMON_0001"}],
+                    "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                 },
                 {
                     "id": "beta",
-                    "fixes": [{"id": "COMMON_0002"}, {"id": "COMMON_0003"}],
+                    "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}, {"id": "woodpecker.remove_coordinate_fill_value_encodings"}],
                 },
             ]
         ),
@@ -634,7 +634,7 @@ def test_list_plans_json_output(
             [
                 {
                     "id": "alpha",
-                    "fixes": [{"id": "COMMON_0001"}],
+                    "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                 }
             ]
         ),
@@ -678,8 +678,8 @@ def test_load_plans_from_plan_document_into_json_store(
         json.dumps(
             {
                 "plans": [
-                    {"id": "alpha", "fixes": [{"id": "COMMON_0001"}]},
-                    {"id": "beta", "fixes": [{"id": "COMMON_0002"}]},
+                    {"id": "alpha", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]},
+                    {"id": "beta", "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}]},
                 ]
             }
         ),
@@ -710,8 +710,8 @@ def test_load_plans_from_store_with_plan_id_filter(
     Path("source.json").write_text(
         json.dumps(
             [
-                {"id": "alpha", "fixes": [{"id": "COMMON_0001"}]},
-                {"id": "beta", "fixes": [{"id": "COMMON_0002"}]},
+                {"id": "alpha", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]},
+                {"id": "beta", "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}]},
             ]
         ),
         encoding="utf-8",

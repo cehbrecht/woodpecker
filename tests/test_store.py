@@ -17,8 +17,8 @@ def _sample_plan() -> FixPlan:
             path_patterns=["*cmip6*.nc"],
         ),
         fixes=[
-            FixRef(id="common.0001", options={"mode": "fast"}),
-            FixRef(id="common.0002"),
+            FixRef(id="woodpecker.normalize_tas_units_to_kelvin", options={"mode": "fast"}),
+            FixRef(id="woodpecker.ensure_latitude_is_increasing"),
         ],
     )
 
@@ -30,7 +30,7 @@ def test_fix_plan_serialization_roundtrip():
     restored = FixPlan.from_json(payload)
 
     assert restored == plan
-    assert restored.fixes[0].id == "common.0001"
+    assert restored.fixes[0].id == "woodpecker.normalize_tas_units_to_kelvin"
     assert restored.fixes[0].options == {"mode": "fast"}
 
 
@@ -43,7 +43,7 @@ def test_plan_matcher_requires_both_attrs_and_path_when_both_defined():
 
 
 def test_plan_matcher_general_applicability_without_matcher():
-    plan = FixPlan(id="plan-any", fixes=[FixRef(id="COMMON_0001")])
+    plan = FixPlan(id="plan-any", fixes=[FixRef(id="woodpecker.normalize_tas_units_to_kelvin")])
     ds = xr.Dataset(attrs={"anything": "value"})
 
     assert plan_matches_dataset(plan, ds) is True
@@ -64,7 +64,7 @@ def test_plan_matcher_path_only():
     plan = FixPlan(
         id="plan-path",
         match=DatasetMatcher(path_patterns=["*.zarr", "*decadal*.nc"]),
-        fixes=[FixRef(id="COMMON_0002")],
+        fixes=[FixRef(id="woodpecker.ensure_latitude_is_increasing")],
     )
     ds = xr.Dataset()
 
@@ -77,7 +77,7 @@ def test_plan_matcher_path_only():
 def test_json_store_save_list_lookup(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
     plan_1 = _sample_plan()
-    plan_2 = FixPlan(id="plan-2", fixes=[FixRef(id="COMMON_0003")])
+    plan_2 = FixPlan(id="plan-2", fixes=[FixRef(id="woodpecker.remove_coordinate_fill_value_encodings")])
 
     store.save_plan(plan_1)
     store.save_plan(plan_2)
@@ -96,13 +96,13 @@ def test_json_store_save_list_lookup(tmp_path):
 def test_json_store_save_replaces_existing_plan_id(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
 
-    store.save_plan(FixPlan(id="plan-1", description="old", fixes=[FixRef(id="COMMON_0001")]))
-    store.save_plan(FixPlan(id="plan-1", description="new", fixes=[FixRef(id="COMMON_0002")]))
+    store.save_plan(FixPlan(id="plan-1", description="old", fixes=[FixRef(id="woodpecker.normalize_tas_units_to_kelvin")]))
+    store.save_plan(FixPlan(id="plan-1", description="new", fixes=[FixRef(id="woodpecker.ensure_latitude_is_increasing")]))
 
     listed = store.list_plans()
     assert len(listed) == 1
     assert listed[0].description == "new"
-    assert listed[0].fixes[0].id == "common.0002"
+    assert listed[0].fixes[0].id == "woodpecker.ensure_latitude_is_increasing"
 
 
 def test_duckdb_store_save_list_lookup(tmp_path):
@@ -110,7 +110,7 @@ def test_duckdb_store_save_list_lookup(tmp_path):
 
     store = DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
     plan_1 = _sample_plan()
-    plan_2 = FixPlan(id="plan-2", fixes=[FixRef(id="COMMON_0003")])
+    plan_2 = FixPlan(id="plan-2", fixes=[FixRef(id="woodpecker.remove_coordinate_fill_value_encodings")])
 
     store.save_plan(plan_1)
     store.save_plan(plan_2)

@@ -5,12 +5,12 @@ from woodpecker.fixes.registry import Fix, FixRegistry, GroupFix, register_fix
 
 def test_registry_discovers_builtins():
     fixes = FixRegistry.discover()
-    codes = {fix.code for fix in fixes}
+    ids = {fix.canonical_id for fix in fixes}
 
     # Common non-project fix family (always available in core package).
-    assert "COMMON_0001" in codes
-    assert "COMMON_0002" in codes
-    assert "COMMON_0003" in codes
+    assert "woodpecker.normalize_tas_units_to_kelvin" in ids
+    assert "woodpecker.ensure_latitude_is_increasing" in ids
+    assert "woodpecker.remove_coordinate_fill_value_encodings" in ids
 
 
 def test_group_fix_is_group_fix_instance():
@@ -20,11 +20,11 @@ def test_group_fix_is_group_fix_instance():
         assert isinstance(maybe_group[0], GroupFix)
 
 
-def test_registry_rejects_invalid_code_pattern():
-    with pytest.raises(ValueError, match="invalid code"):
+def test_registry_rejects_invalid_local_identifier_pattern():
+    with pytest.raises(ValueError, match="Invalid fix local_id"):
 
         class _InvalidCodeFix:
-            code = "bad-code"
+            local_id = "bad-id"
             name = "Invalid code"
             description = ""
             categories = ["metadata"]
@@ -38,7 +38,6 @@ def test_registry_rejects_missing_name():
     with pytest.raises(ValueError, match="non-empty 'name'"):
 
         class _MissingNameFix:
-            code = "ABCD01"
             name = ""
             description = ""
             categories = ["metadata"]
@@ -54,7 +53,9 @@ def test_register_fix_decorator_alias_registers_class():
     ambiguous_snapshot = set(FixRegistry._ambiguous_identifiers)
 
     class _AliasFix(Fix):
-        code = "ALIAS_0001"
+        namespace_prefix = "test"
+        local_id = "alias_fix"
+        aliases = ["alias_lookup"]
         name = "Alias decorator fix"
         description = ""
         categories = ["metadata"]
@@ -64,17 +65,23 @@ def test_register_fix_decorator_alias_registers_class():
     try:
         registered = register_fix(_AliasFix)
         assert registered is _AliasFix
-        assert "ALIAS_0001" in FixRegistry.registered_codes()
-        assert FixRegistry.resolve_identifier("alias.0001") == "ALIAS_0001"
+        assert "test.alias_fix" in FixRegistry.registered_ids()
+        assert FixRegistry.resolve_identifier("alias_lookup") == "test.alias_fix"
     finally:
         FixRegistry._registry = registry_snapshot
         FixRegistry._identifier_index = identifier_snapshot
         FixRegistry._ambiguous_identifiers = ambiguous_snapshot
 
 
-def test_registry_resolves_canonical_and_legacy_aliases_for_known_fixes():
-    assert FixRegistry.resolve_identifier("COMMON_0001") == "COMMON_0001"
-    assert FixRegistry.resolve_identifier("common.0001") == "COMMON_0001"
+def test_registry_resolves_canonical_and_local_aliases_for_known_fixes():
+    assert (
+        FixRegistry.resolve_identifier("woodpecker.normalize_tas_units_to_kelvin")
+        == "woodpecker.normalize_tas_units_to_kelvin"
+    )
+    assert (
+        FixRegistry.resolve_identifier("normalize_tas_units_to_kelvin")
+        == "woodpecker.normalize_tas_units_to_kelvin"
+    )
 
 
 def test_registry_rejects_ambiguous_local_identifier():
@@ -83,7 +90,6 @@ def test_registry_rejects_ambiguous_local_identifier():
     ambiguous_snapshot = set(FixRegistry._ambiguous_identifiers)
 
     class _AmbiguousOne(Fix):
-        code = "ALIAS_0010"
         namespace_prefix = "alpha"
         local_id = "shared"
         name = "Ambiguous One"
@@ -93,7 +99,6 @@ def test_registry_rejects_ambiguous_local_identifier():
         dataset = None
 
     class _AmbiguousTwo(Fix):
-        code = "ALIAS_0020"
         namespace_prefix = "beta"
         local_id = "shared"
         name = "Ambiguous Two"

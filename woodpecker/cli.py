@@ -89,12 +89,12 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
         return
 
     if fmt == "md":
-        click.echo("| Code | Name | Description | Categories | Dataset | Priority |")
-        click.echo("|------|------|-------------|------------|---------|---------|")
+        click.echo("| ID | Name | Description | Categories | Dataset | Priority |")
+        click.echo("|----|------|-------------|------------|---------|---------|")
         for f in fixes:
             cats = ", ".join(getattr(f, "categories", []) or [])
             click.echo(
-                f"| {f.code} | {f.name} | {f.description} | {cats} | {f.dataset or ''} | {f.priority} |"
+                f"| {f.canonical_id} | {f.name} | {f.description} | {cats} | {f.dataset or ''} | {f.priority} |"
             )
         return
 
@@ -102,7 +102,7 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
     for f in fixes:
         cats = ", ".join(getattr(f, "categories", []) or [])
         click.echo(
-            f"{f.code}: {f.description} (cats: {cats}; dataset: {f.dataset or '-'}; priority: {f.priority})"
+            f"{f.canonical_id}: {f.description} (cats: {cats}; dataset: {f.dataset or '-'}; priority: {f.priority})"
         )
 
 
@@ -442,9 +442,7 @@ def fix(
         provenance_source = format_provenance_source(context, store_type, plan)
         prov = build_prov_document(
             inputs=context.inputs,
-            selected_codes=[
-                getattr(fix, "canonical_id", getattr(fix, "code", "")) for fix in context.fixes
-            ],
+            selected_codes=[getattr(fix, "canonical_id", "") for fix in context.fixes],
             selected_fixes=context.fixes,
             stats=stats,
             mode="dry-run" if dry_run else "write",

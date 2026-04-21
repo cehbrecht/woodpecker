@@ -5,6 +5,7 @@ import json
 from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
 
+from woodpecker.fixes.base import Fix
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.identity import dataset_type_matches_declared, resolve_dataset_identity
 from woodpecker.inout import DataInput, get_output_adapter
@@ -37,7 +38,7 @@ def _validate_selected_codes(selected_codes: set[str]) -> None:
             unknown.append(code)
     if unknown:
         unknown_text = ", ".join(unknown)
-        raise ValueError(f"Unknown fix code(s): {unknown_text}")
+        raise ValueError(f"Unknown fix identifier(s): {unknown_text}")
 
 
 def _resolve_identifiers(identifiers: Sequence[str], *, strict: bool = False) -> list[str]:
@@ -104,22 +105,26 @@ def select_fixes(
     resolved_ordered = _resolve_identifiers(tuple(ordered), strict=False)
 
     if resolved_ordered:
-        by_code = {getattr(fix, "code", ""): fix for fix in fixes}
-        missing = [code for code in resolved_ordered if code not in by_code]
+        by_id = {getattr(fix, "canonical_id", ""): fix for fix in fixes}
+        missing = [item for item in resolved_ordered if item not in by_id]
         if strict_codes and missing:
             raise ValueError(
-                "Selected fix code(s) not available with current dataset/category filters: "
+                "Selected fix identifier(s) not available with current dataset/category filters: "
                 + ", ".join(missing)
             )
-        selected = [by_code[code] for code in resolved_ordered if code in by_code]
+        selected = [by_id[item] for item in resolved_ordered if item in by_id]
     elif not resolved_selected_codes:
         selected = fixes
     else:
-        selected = [fix for fix in fixes if getattr(fix, "code", "") in resolved_selected_codes]
+        selected = [
+            fix
+            for fix in fixes
+            if getattr(fix, "canonical_id", "") in resolved_selected_codes
+        ]
 
     if normalized_fix_options:
         for fix in selected:
-            options = normalized_fix_options.get(getattr(fix, "code", ""))
+            options = normalized_fix_options.get(getattr(fix, "canonical_id", ""))
             if options and hasattr(fix, "configure"):
                 fix.configure(options)
 
@@ -142,7 +147,7 @@ def run_check(inputs: Iterable[DataInput], fixes: Iterable[Any]) -> List[Dict[st
                 findings.append(
                     {
                         "path": data_input.reference,
-                        "code": getattr(fix, "canonical_id", getattr(fix, "code", "")),
+                        "code": getattr(fix, "canonical_id", ""),
                         "name": fix.name,
                         "message": message,
                     }
@@ -184,7 +189,7 @@ def run_fix(
             if fix.apply(dataset, dry_run=dry_run):
                 changed += 1
                 dataset_changed = True
-                applied_codes.append(getattr(fix, "canonical_id", getattr(fix, "code", "")))
+                applied_codes.append(getattr(fix, "canonical_id", ""))
         if dataset_changed and not dry_run:
             if embed_provenance_metadata:
                 dataset.attrs["woodpecker_provenance"] = json.dumps(
@@ -272,7 +277,10 @@ def apply_fix_plan(ds: Any, plan: FixPlan, registry: Any) -> Any:
         if not should_apply:
             continue
 
-        if hasattr(fix, "fix"):
+        fix_impl = getattr(type(fix), "fix", None)
+        has_custom_fix_impl = callable(fix_impl) and fix_impl is not Fix.fix
+
+        if has_custom_fix_impl:
             invoke_with_optional_options(fix.fix, ds, ref.options)
         elif hasattr(fix, "apply"):
             fix.apply(ds, dry_run=False)

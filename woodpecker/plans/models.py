@@ -50,7 +50,7 @@ class FixRef:
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> FixRef:
         return cls(
-            id=str(payload.get("fix", payload.get("id", payload.get("code", "")))),
+            id=str(payload.get("fix", payload.get("id", ""))),
             options=dict(payload.get("options", {}) or {}),
             links=[dict(item) for item in list(payload.get("links", []) or [])],
         )
@@ -84,7 +84,7 @@ def parse_fix_ref(item: Any) -> FixRef:
         return FixRef(id=item)
     if not isinstance(item, Mapping):
         raise ValueError("Each fix entry must be a string or object")
-    fix_id = item.get("fix", item.get("id", item.get("code", "")))
+    fix_id = item.get("fix", item.get("id", ""))
     return FixRef(
         id=str(fix_id),
         options=dict(item.get("options", {}) or {}),
@@ -124,9 +124,6 @@ class FixPlan:
             return token
         if "." in token:
             return token
-        if "_" in token:
-            left, right = token.split("_", 1)
-            return f"{left}.{right}"
         if self.namespace:
             return f"{self.namespace}.{token}"
         return token

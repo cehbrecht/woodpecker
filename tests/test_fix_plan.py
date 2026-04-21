@@ -4,15 +4,16 @@ from pathlib import Path
 import pytest
 import xarray as xr
 
-from woodpecker.fixes.registry import FixRegistry, register_fix
+from woodpecker.fixes.registry import Fix, FixRegistry, register_fix
 from woodpecker.plans.io import load_fix_plan, load_fix_plan_document
 from woodpecker.plans.matcher import plan_matches_dataset
 from woodpecker.plans.models import FixPlan, FixPlanDocument
 from woodpecker.plans.runner import apply_fix_plan
 
 
-class _FixMethodFix:
-    code = "PLAN_0001"
+class _FixMethodFix(Fix):
+    namespace_prefix = "plan_test"
+    local_id = "fix_method"
     name = "Plan fix method"
     description = ""
     categories = ["metadata"]
@@ -32,8 +33,9 @@ class _FixMethodFix:
         return dataset
 
 
-class _ApplyMethodFix:
-    code = "PLAN_0002"
+class _ApplyMethodFix(Fix):
+    namespace_prefix = "plan_test"
+    local_id = "apply_method"
     name = "Plan apply method"
     description = ""
     categories = ["metadata"]
@@ -55,8 +57,9 @@ class _ApplyMethodFix:
         return True
 
 
-class _TypeErrorInsideMethodFix:
-    code = "PLAN_0003"
+class _TypeErrorInsideMethodFix(Fix):
+    namespace_prefix = "plan_test"
+    local_id = "type_error_inside_method"
     name = "Plan type error fix"
     description = ""
     categories = ["metadata"]
@@ -73,14 +76,14 @@ class _TypeErrorInsideMethodFix:
 def test_load_fix_plan_from_json(tmp_path: Path):
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
-        '{"fixes": [{"id": "PLAN_0001", "options": {"mode": "fast"}}, "PLAN_0002"]}',
+        '{"fixes": [{"id": "plan_test.fix_method", "options": {"mode": "fast"}}, "plan_test.apply_method"]}',
         encoding="utf-8",
     )
 
     plan = load_fix_plan(plan_path)
 
     assert isinstance(plan, FixPlan)
-    assert [f.id for f in plan.fixes] == ["plan_0001", "plan_0002"]
+    assert [f.id for f in plan.fixes] == ["plan_test.fix_method", "plan_test.apply_method"]
     assert plan.fixes[0].options == {"mode": "fast"}
     assert plan.fixes[1].options == {}
 
@@ -88,25 +91,27 @@ def test_load_fix_plan_from_json(tmp_path: Path):
 def test_load_fix_plan_from_yaml(tmp_path: Path):
     plan_path = tmp_path / "plan.yaml"
     plan_path.write_text(
-        "fixes:\n  - id: PLAN_0001\n    options:\n      level: strict\n",
+        "fixes:\n  - id: plan_test.fix_method\n    options:\n      level: strict\n",
         encoding="utf-8",
     )
 
     plan = load_fix_plan(plan_path)
 
-    assert [f.id for f in plan.fixes] == ["plan_0001"]
+    assert [f.id for f in plan.fixes] == ["plan_test.fix_method"]
     assert plan.fixes[0].options == {"level": "strict"}
 
 
 def test_apply_plan_calls_check_then_fix_and_passes_options():
     register_fix(_FixMethodFix)
     ds = xr.Dataset()
-    plan = FixPlan.from_mapping({"fixes": [{"id": "PLAN_0001", "options": {"alpha": 1}}]})
+    plan = FixPlan.from_mapping(
+        {"fixes": [{"id": "plan_test.fix_method", "options": {"alpha": 1}}]}
+    )
 
     try:
         apply_fix_plan(ds, plan, FixRegistry)
     finally:
-        FixRegistry._registry.pop("PLAN_0001", None)
+        FixRegistry._registry.pop("plan_test.fix_method", None)
 
     assert ds.attrs["trace"] == [("check", {"alpha": 1}), ("fix", {"alpha": 1})]
 
@@ -114,12 +119,14 @@ def test_apply_plan_calls_check_then_fix_and_passes_options():
 def test_apply_plan_falls_back_to_apply_when_fix_method_missing():
     register_fix(_ApplyMethodFix)
     ds = xr.Dataset()
-    plan = FixPlan.from_mapping({"fixes": [{"id": "PLAN_0002", "options": {"beta": 2}}]})
+    plan = FixPlan.from_mapping(
+        {"fixes": [{"id": "plan_test.apply_method", "options": {"beta": 2}}]}
+    )
 
     try:
         apply_fix_plan(ds, plan, FixRegistry)
     finally:
-        FixRegistry._registry.pop("PLAN_0002", None)
+        FixRegistry._registry.pop("plan_test.apply_method", None)
 
     assert ds.attrs["trace"] == [("check", {"beta": 2}), ("apply", {"beta": 2}, False)]
 
@@ -127,13 +134,15 @@ def test_apply_plan_falls_back_to_apply_when_fix_method_missing():
 def test_apply_plan_does_not_mask_type_error_from_fix_method():
     register_fix(_TypeErrorInsideMethodFix)
     ds = xr.Dataset()
-    plan = FixPlan.from_mapping({"fixes": [{"id": "PLAN_0003", "options": {"gamma": 3}}]})
+    plan = FixPlan.from_mapping(
+        {"fixes": [{"id": "plan_test.type_error_inside_method", "options": {"gamma": 3}}]}
+    )
 
     try:
         with pytest.raises(TypeError, match="internal check bug"):
             apply_fix_plan(ds, plan, FixRegistry)
     finally:
-        FixRegistry._registry.pop("PLAN_0003", None)
+        FixRegistry._registry.pop("plan_test.type_error_inside_method", None)
 
 
 def test_load_fix_plan_document_json(tmp_path: Path):
@@ -243,5 +252,5 @@ def test_esa_cci_example_fix_plan_uses_plugin_cmip7_fix_codes_in_order():
     plan = matched[0]
     assert [plan.resolve_fix_identifier(item) for item in plan.fixes] == [
         "cmip7.0003",
-        "common.0002",
+        "woodpecker.ensure_latitude_is_increasing",
     ]

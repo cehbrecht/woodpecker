@@ -3,7 +3,6 @@ from __future__ import annotations
 import xarray as xr
 
 from ..registry import Fix, FixRegistry
-from .constants import COMMON_PREFIX
 
 
 def _lat_coord_name(dataset: xr.Dataset) -> str | None:
@@ -53,8 +52,7 @@ def _apply_lat_flip(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class COMMON_0002(Fix):
-    code = f"{COMMON_PREFIX}0002"
+class EnsureLatitudeIsIncreasingFix(Fix):
     name = "Ensure latitude is increasing"
     description = "Flips datasets with decreasing latitude coordinates to increasing order."
     categories = ["structure"]
