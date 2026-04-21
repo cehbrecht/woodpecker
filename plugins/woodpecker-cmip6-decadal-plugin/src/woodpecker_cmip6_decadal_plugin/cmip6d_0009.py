@@ -35,7 +35,7 @@ def _apply_start_token_fix(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class DecadalStartTokenNormalizationFix(Fix):
-    local_id = "0009"
+    local_id = "start_token_normalization"
     name = "Decadal start token normalization"
     description = (
         "Normalizes CMIP6-decadal startdate and sub_experiment_id to the canonical sYYYY11 token."

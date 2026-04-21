@@ -8,7 +8,7 @@
       "links": [
         {
           "rel": "docs",
-          "href": "https://cehbrecht.github.io/woodpecker/fixes.html#atlas.0001",
+          "href": "https://cehbrecht.github.io/woodpecker/fixes.html#atlas.encoding_cleanup",
           "title": "ATLAS fix documentation"
         }
       ],
@@ -19,10 +19,10 @@
       },
       "fixes": [
         {
-          "fix": "0001"
+          "fix": "encoding_cleanup"
         },
         {
-          "fix": "0002"
+          "fix": "project_id_normalization"
         }
       ]
     }

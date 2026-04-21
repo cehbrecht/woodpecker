@@ -78,7 +78,7 @@ def _apply_atlas_encoding_cleanup(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class AtlasEncodingCleanupFix(Fix):
-    local_id = "0001"
+    local_id = "encoding_cleanup"
     name = "ATLAS encoding cleanup"
     description = "Applies rook-equivalent ATLAS deflation/encoding cleanup."
     categories = ["encoding"]

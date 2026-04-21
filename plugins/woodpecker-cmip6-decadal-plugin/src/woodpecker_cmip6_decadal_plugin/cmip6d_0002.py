@@ -66,7 +66,7 @@ def _apply_calendar_fix(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class DecadalCalendarNormalizationFix(Fix):
-    local_id = "0002"
+    local_id = "calendar_normalization"
     name = "Decadal calendar normalization"
     description = "Normalizes CMIP6-decadal time calendar from proleptic_gregorian to standard."
     categories = ["metadata", "calendar"]

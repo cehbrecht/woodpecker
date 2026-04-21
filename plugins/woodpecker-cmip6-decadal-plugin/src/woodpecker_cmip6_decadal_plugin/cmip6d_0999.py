@@ -21,7 +21,7 @@ from .cmip6d_0015 import DecadalLeadtimeCoordinateFix
 
 @FixRegistry.register
 class Cmip6DecadalFullFixSuiteFix(GroupFix):
-    local_id = "0999"
+    local_id = "full_fix_suite"
     name = "CMIP6 Decadal: full fix suite"
     description = (
         "Applies all CMIP6-decadal fixes (DecadalTimeMetadataFix–DecadalLeadtimeCoordinateFix) in sequence: "

@@ -80,7 +80,7 @@ def _apply_leadtime_fix(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class DecadalLeadtimeCoordinateFix(Fix):
-    local_id = "0015"
+    local_id = "leadtime_coordinate"
     name = "Decadal leadtime coordinate"
     description = (
         "Adds or normalizes CMIP6-decadal leadtime coordinate values from time and reftime."

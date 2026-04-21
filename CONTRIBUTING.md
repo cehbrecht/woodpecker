@@ -49,10 +49,10 @@ make docs-serve  # generate docs artifacts + run mkdocs serve
 
 ```bash
 woodpecker io-status
-woodpecker check . --select cmip6_decadal.0001
-woodpecker fix . --select cmip6_decadal.0001
-woodpecker fix . --select cmip6_decadal.0001 --dry-run
-woodpecker fix . --select cmip6_decadal.0001 --force-apply
+woodpecker check . --select cmip6_decadal.time_metadata
+woodpecker fix . --select cmip6_decadal.time_metadata
+woodpecker fix . --select cmip6_decadal.time_metadata --dry-run
+woodpecker fix . --select cmip6_decadal.time_metadata --force-apply
 woodpecker fix --plan plan.json
 ```
 
@@ -145,13 +145,13 @@ import woodpecker
 
 ds = xr.Dataset(attrs={"source_name": "atlas_bad.nc"})
 
-findings = woodpecker.check(ds, codes=["atlas.0001"])
-stats = woodpecker.fix(ds, codes=["atlas.0001"], write=True)
+findings = woodpecker.check(ds, codes=["atlas.encoding_cleanup"])
+stats = woodpecker.fix(ds, codes=["atlas.encoding_cleanup"], write=True)
 
 # Fix plan helpers
 findings_plan = woodpecker.check_plan("plan.json", inputs=["./data"])
 stats_plan = woodpecker.fix_plan("plan.json", inputs=ds, write=True)
 
 # Path input works as well
-findings_from_paths = woodpecker.check(["./data"], codes=["atlas.0001"])
+findings_from_paths = woodpecker.check(["./data"], codes=["atlas.encoding_cleanup"])
 ```

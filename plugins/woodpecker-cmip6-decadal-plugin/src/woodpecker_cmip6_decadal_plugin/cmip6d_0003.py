@@ -33,7 +33,7 @@ def _apply_realization_var_fix(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class DecadalRealizationVariableFix(Fix):
-    local_id = "0003"
+    local_id = "realization_variable"
     name = "Decadal realization variable"
     description = (
         "Adds realization data variable from realization_index for CMIP6-decadal datasets."

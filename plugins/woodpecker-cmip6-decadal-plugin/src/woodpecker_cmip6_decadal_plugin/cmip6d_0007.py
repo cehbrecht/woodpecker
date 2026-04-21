@@ -23,7 +23,7 @@ def _apply_fillvalue_encoding_cleanup(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class DecadalFillValueEncodingCleanupFix(Fix):
-    local_id = "0007"
+    local_id = "fillvalue_encoding_cleanup"
     name = "Decadal _FillValue encoding cleanup"
     description = (
         "Removes stale '_FillValue' encoding entries from realization and bounds variables "

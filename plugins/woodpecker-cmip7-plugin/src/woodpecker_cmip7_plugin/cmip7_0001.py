@@ -24,7 +24,7 @@ def _apply_project_id(dataset: xr.Dataset) -> bool:
 
 @register_fix
 class EnsureProjectIdIsPresentFix(Fix):
-    local_id = "0001"
+    local_id = "ensure_project_id_present"
     name = "Ensure project_id is present (plugin)"
     description = "Sets project_id from dataset identifier metadata when missing."
     categories = ["metadata"]

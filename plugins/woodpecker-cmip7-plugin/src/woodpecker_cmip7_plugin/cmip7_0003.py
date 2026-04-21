@@ -69,7 +69,7 @@ def _apply_dim_renames(dataset: xr.Dataset, dim_map: dict[str, str]) -> bool:
 
 @register_fix
 class ConfigurableCmip7ReformatBridgeFix(Fix):
-    local_id = "0003"
+    local_id = "configurable_reformat_bridge"
     name = "Configurable CMIP7 reformat bridge (plugin)"
     description = (
         "Applies workflow-driven variable/dimension remapping and selected metadata updates."

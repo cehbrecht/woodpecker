@@ -28,7 +28,7 @@ def _apply_realization_comment_fix(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class DecadalRealizationCommentNormalizationFix(Fix):
-    local_id = "0005"
+    local_id = "realization_comment_normalization"
     name = "Decadal realization comment normalization"
     description = "Normalizes realization comment to the full CMIP6-decadal ripf guidance text."
     categories = ["metadata"]

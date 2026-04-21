@@ -86,7 +86,7 @@ def _apply_reftime_fix(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class DecadalReftimeCoordinateFix(Fix):
-    local_id = "0014"
+    local_id = "reftime_coordinate"
     name = "Decadal reftime coordinate"
     description = "Adds or normalizes CMIP6-decadal scalar reftime coordinate and metadata."
     categories = ["metadata", "structure"]

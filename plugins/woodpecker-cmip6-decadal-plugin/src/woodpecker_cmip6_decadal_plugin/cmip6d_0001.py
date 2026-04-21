@@ -22,7 +22,7 @@ def _apply_time_long_name_fix(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class DecadalTimeMetadataFix(Fix):
-    local_id = "0001"
+    local_id = "time_metadata"
     name = "Decadal time metadata"
     description = "Ensures CMIP6-decadal time coordinate has long_name='valid_time'."
     categories = ["metadata"]

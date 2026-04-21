@@ -3,7 +3,8 @@
 Reference external plugin package for Woodpecker.
 
 This package is the canonical CMIP7 fix source for Woodpecker and provides
-`cmip7.0001`, `cmip7.0002`, and `cmip7.0003`.
+`cmip7.ensure_project_id_present`, `cmip7.rename_temp_variable_to_tas`, and
+`cmip7.configurable_reformat_bridge`.
 
 ## Install
 

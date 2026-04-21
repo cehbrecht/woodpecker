@@ -23,7 +23,7 @@ def _apply_coordinates_encoding_cleanup(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class DecadalCoordinatesEncodingCleanupFix(Fix):
-    local_id = "0004"
+    local_id = "coordinates_encoding_cleanup"
     name = "Decadal coordinates encoding cleanup"
     description = (
         "Removes stale 'coordinates' encoding entries from realization and bounds variables "

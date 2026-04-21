@@ -65,7 +65,7 @@ def _apply_model_global_attrs_fix(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class DecadalModelGlobalAttributesFix(Fix):
-    local_id = "0013"
+    local_id = "model_global_attributes"
     name = "Decadal model global attributes"
     description = "Normalizes model-specific global metadata fields for CMIP6-decadal datasets."
     categories = ["metadata"]

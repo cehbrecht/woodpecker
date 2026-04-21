@@ -199,8 +199,8 @@ def test_load_fix_plan_document_plan_entries_normalize_fix_ids(tmp_path: Path):
                     {
                         "id": "mixed-case",
                         "fixes": [
-                            {"id": "cmip6.0001", "options": {"marker_attr": "my_marker"}},
-                            {"id": "atlas.0001", "options": {}},
+                            {"id": "cmip6.dummy_placeholder", "options": {"marker_attr": "my_marker"}},
+                            {"id": "atlas.encoding_cleanup", "options": {}},
                         ],
                     }
                 ]
@@ -212,7 +212,7 @@ def test_load_fix_plan_document_plan_entries_normalize_fix_ids(tmp_path: Path):
     document = load_fix_plan_document(plan_path)
 
     fixes = document.plans[0].fixes
-    assert [item.id for item in fixes] == ["cmip6.0001", "atlas.0001"]
+    assert [item.id for item in fixes] == ["cmip6.dummy_placeholder", "atlas.encoding_cleanup"]
     assert fixes[0].options["marker_attr"] == "my_marker"
 
 
@@ -251,6 +251,6 @@ def test_esa_cci_example_fix_plan_uses_plugin_cmip7_fix_codes_in_order():
     assert matched
     plan = matched[0]
     assert [plan.resolve_fix_identifier(item) for item in plan.fixes] == [
-        "cmip7.0003",
+        "cmip7.configurable_reformat_bridge",
         "woodpecker.ensure_latitude_is_increasing",
     ]

@@ -9,7 +9,7 @@ Woodpecker is a lightweight, code-based catalog of common dataset fixes for clim
 
 Dataset-specific fix families are provided by external plugins.
 
-Each fix has a local ID plus a canonical ID in `<prefix>.<local_id>` form (for example `cmip6_decadal.0001`).
+Each fix has a local ID plus a canonical ID in `<prefix>.<local_id>` form (for example `cmip6_decadal.time_metadata`).
 
 Contributor and developer docs live in `CONTRIBUTING.md`.
 
@@ -68,9 +68,9 @@ Typical flow:
 Core commands:
 
     woodpecker list-fixes
-    woodpecker check . --select cmip6_decadal.0001
-    woodpecker fix . --select cmip6_decadal.0001 --dry-run
-    woodpecker fix . --select cmip6_decadal.0001
+    woodpecker check . --select cmip6_decadal.time_metadata
+    woodpecker fix . --select cmip6_decadal.time_metadata --dry-run
+    woodpecker fix . --select cmip6_decadal.time_metadata
 
 ### Using FixPlanStore
 
@@ -88,8 +88,8 @@ Examples:
 
 ### Direct fix selection
 
-    woodpecker check . --select cmip6_decadal.0001
-    woodpecker fix . --select cmip6_decadal.0001
+    woodpecker check . --select cmip6_decadal.time_metadata
+    woodpecker fix . --select cmip6_decadal.time_metadata
 
 ### Force-apply
 
@@ -183,13 +183,13 @@ Example plan documents live in `examples/fix-plans`.
 
 Woodpecker writes a PROV-JSON provenance file by default when running `fix`.
 
-    woodpecker fix . --select cmip6_decadal.0001
-    woodpecker fix . --select cmip6_decadal.0001 --provenance-path run_01.prov.json
-    woodpecker fix . --select cmip6_decadal.0001 --no-provenance
+    woodpecker fix . --select cmip6_decadal.time_metadata
+    woodpecker fix . --select cmip6_decadal.time_metadata --provenance-path run_01.prov.json
+    woodpecker fix . --select cmip6_decadal.time_metadata --no-provenance
 
 Embedded metadata:
 
-    woodpecker fix . --select cmip6_decadal.0001 --embed-provenance-metadata --output-format netcdf
+    woodpecker fix . --select cmip6_decadal.time_metadata --embed-provenance-metadata --output-format netcdf
 
 ## GitHub Pages
 

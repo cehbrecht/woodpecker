@@ -28,7 +28,7 @@ def _apply_atlas_project_id(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class AtlasProjectIdNormalizationFix(Fix):
-    local_id = "0002"
+    local_id = "project_id_normalization"
     name = "ATLAS project_id normalization"
     description = "Adds or normalizes ATLAS project_id from dataset identifier prefix."
     categories = ["metadata"]

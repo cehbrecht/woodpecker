@@ -20,7 +20,7 @@ def _apply_temp_to_tas_rename(dataset: xr.Dataset) -> bool:
 
 @register_fix
 class RenameTempVariableToTasFix(Fix):
-    local_id = "0002"
+    local_id = "rename_temp_variable_to_tas"
     name = "Rename temp variable to tas (plugin)"
     description = "Renames data variable temp to tas when tas is missing."
     categories = ["structure", "metadata"]

@@ -27,7 +27,7 @@ def _apply_realization_dtype_fix(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class DecadalRealizationDtypeNormalizationFix(Fix):
-    local_id = "0006"
+    local_id = "realization_dtype_normalization"
     name = "Decadal realization dtype normalization"
     description = "Normalizes realization data variable dtype to int32 for CMIP6-decadal datasets."
     categories = ["metadata", "structure"]

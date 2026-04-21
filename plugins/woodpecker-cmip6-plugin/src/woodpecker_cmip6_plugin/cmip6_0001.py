@@ -12,7 +12,7 @@ def _is_cmip6_non_decadal(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class Cmip6DummyPlaceholderFix(Fix):
-    local_id = "0001"
+    local_id = "dummy_placeholder"
     name = "CMIP6 dummy placeholder"
     description = "Dummy placeholder for future non-decadal CMIP6 fixes."
     categories = ["metadata"]

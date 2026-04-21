@@ -36,7 +36,7 @@ def _apply_realization_index_fix(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class DecadalRealizationIndexNormalizationFix(Fix):
-    local_id = "0011"
+    local_id = "realization_index_normalization"
     name = "Decadal realization_index normalization"
     description = "Normalizes CMIP6-decadal realization_index global attribute to integer type."
     categories = ["metadata"]
