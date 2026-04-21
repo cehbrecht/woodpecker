@@ -65,7 +65,6 @@ Notes:
 Fix author contract (minimal):
 - metadata: `local_id`, `name`, `description`, `categories`, `priority`, `dataset`
 - methods: `matches(dataset)`, `check(dataset) -> list[str]`, `apply(dataset, dry_run=True) -> bool`
-- reference template: `woodpecker/fixes/fix_template.py`
 
 Performance guidance:
 - keep `matches()` fast and deterministic (metadata-only checks where possible)

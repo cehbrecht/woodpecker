@@ -21,12 +21,6 @@ EXPECTED_LEADTIME_ATTRS = {
 }
 
 
-def is_cmip6_netcdf(dataset: xr.Dataset) -> bool:
-    """Return True for source names that look like CMIP6 NetCDF files."""
-    source = lower_source_name(dataset)
-    return source.endswith(".nc") and "cmip6" in source
-
-
 def is_cmip6_decadal_netcdf(dataset: xr.Dataset) -> bool:
     """Return True for source names that look like CMIP6-decadal NetCDF files."""
     source = lower_source_name(dataset)
