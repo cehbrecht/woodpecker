@@ -19,7 +19,7 @@
       },
       "fixes": [
         {
-          "fix": "configurable_reformat_bridge",
+          "fix": "cmip7.configurable_reformat_bridge",
           "options": {
             "realm": "atmos",
             "branded_variable": "prw_tavg-u-hxy-u",
@@ -49,7 +49,7 @@
           }
         },
         {
-          "fix": "configurable_reformat_bridge",
+          "fix": "cmip7.configurable_reformat_bridge",
           "options": {
             "realm": "atmos",
             "branded_variable": "prw_tavg-u-hxy-u",

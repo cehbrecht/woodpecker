@@ -19,10 +19,10 @@
       },
       "fixes": [
         {
-          "fix": "encoding_cleanup"
+          "fix": "atlas.encoding_cleanup"
         },
         {
-          "fix": "project_id_normalization"
+          "fix": "atlas.project_id_normalization"
         }
       ]
     }
