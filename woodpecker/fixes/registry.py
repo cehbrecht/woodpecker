@@ -25,10 +25,12 @@ class FixRegistry:
         return str(identifier).strip().lower()
 
     @classmethod
-    def _derive_namespace_prefix(cls, fix_cls: Type[Any], explicit: str) -> str:
-        token = cls._normalize_identifier(explicit)
-        if token:
-            return token
+    def _infer_namespace_prefix_from_module(cls, fix_cls: Type[Any]) -> str:
+        """Infer a namespace prefix from the fix module path.
+
+        This is intentionally isolated so registry-level prefix ownership can
+        replace module inference later without touching caller flow.
+        """
 
         module = getattr(fix_cls, "__module__", "")
         if module.startswith("woodpecker.fixes.") or module == "woodpecker.fixes":
@@ -42,6 +44,13 @@ class FixRegistry:
             package = package[: -len("_plugin")]
         return package or "woodpecker"
 
+    @classmethod
+    def _derive_namespace_prefix(cls, fix_cls: Type[Any], explicit: str) -> str:
+        token = cls._normalize_identifier(explicit)
+        if token:
+            return token
+        return cls._infer_namespace_prefix_from_module(fix_cls)
+
     @staticmethod
     def _camel_to_snake(name: str) -> str:
         first = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", name)
@@ -50,11 +59,21 @@ class FixRegistry:
 
     @classmethod
     def _derive_fix_local_id(cls, fix_cls: Type[Any], explicit: str) -> str:
+        """Derive local_id with precedence:
+
+        1) explicit class/local `local_id`
+        2) optional `derived_local_id()`
+        3) class name transformed to snake_case
+        """
+
         token = cls._normalize_identifier(explicit)
         if token:
             return token
-        if hasattr(fix_cls, "derived_local_id"):
-            return cls._normalize_identifier(str(fix_cls.derived_local_id()))
+
+        derived = getattr(fix_cls, "derived_local_id", None)
+        if callable(derived):
+            return cls._normalize_identifier(str(derived()))
+
         return cls._camel_to_snake(fix_cls.__name__)
 
     @classmethod
@@ -63,6 +82,57 @@ class FixRegistry:
             raise ValueError(
                 f"Invalid {label} '{value}'. Expected lowercase snake_case identifier."
             )
+
+    @classmethod
+    def _validate_qualified_identifier(cls, label: str, value: str) -> None:
+        parts = value.split(".")
+        if len(parts) != 2:
+            raise ValueError(
+                f"Invalid {label} '{value}'. Expected '<prefix>.<local_id>' with snake_case tokens."
+            )
+
+        prefix, local_id = parts
+        cls._validate_local_identifier(f"{label} prefix", prefix)
+        cls._validate_local_identifier(f"{label} local_id", local_id)
+
+    @classmethod
+    def _derive_aliases(
+        cls,
+        *,
+        prefix: str,
+        canonical_id: str,
+        declared_aliases: Any,
+    ) -> list[str]:
+        if declared_aliases is None:
+            return []
+        if isinstance(declared_aliases, str):
+            raw_aliases = [declared_aliases]
+        elif isinstance(declared_aliases, (list, tuple, set)):
+            raw_aliases = list(declared_aliases)
+        else:
+            raise ValueError("Invalid aliases declaration. Expected a string or list of strings.")
+
+        out_aliases: list[str] = []
+        seen: set[str] = set()
+        for item in raw_aliases:
+            alias = cls._normalize_identifier(str(item))
+            if not alias:
+                continue
+
+            if "." in alias:
+                cls._validate_qualified_identifier("alias", alias)
+                candidates = [alias]
+            else:
+                cls._validate_local_identifier("alias", alias)
+                candidates = [alias, f"{prefix}.{alias}"]
+
+            for candidate in candidates:
+                if candidate == canonical_id or candidate in seen:
+                    continue
+                seen.add(candidate)
+                out_aliases.append(candidate)
+
+        return out_aliases
 
     @classmethod
     def _derive_namespace_and_local_id(cls, fix_cls: Type[Any]) -> tuple[str, str, str, list[str]]:
@@ -78,17 +148,11 @@ class FixRegistry:
 
         canonical_id = f"{prefix}.{local_id}"
 
-        aliases = [cls._normalize_identifier(item) for item in (getattr(fix_cls, "aliases", []) or [])]
-        aliases.append(local_id)
-
-        out_aliases: list[str] = []
-        seen: set[str] = set()
-        for alias in aliases:
-            norm = cls._normalize_identifier(alias)
-            if not norm or norm == canonical_id or norm in seen:
-                continue
-            seen.add(norm)
-            out_aliases.append(norm)
+        out_aliases = cls._derive_aliases(
+            prefix=prefix,
+            canonical_id=canonical_id,
+            declared_aliases=getattr(fix_cls, "aliases", None),
+        )
 
         return prefix, local_id, canonical_id, out_aliases
 
