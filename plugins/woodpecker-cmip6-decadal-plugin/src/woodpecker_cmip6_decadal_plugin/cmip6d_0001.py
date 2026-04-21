@@ -4,7 +4,6 @@ import xarray as xr
 
 from woodpecker.fixes.registry import Fix, FixRegistry
 
-from .constants import CMIP6D_PREFIX
 from .helpers import is_cmip6_decadal_netcdf
 
 
@@ -22,8 +21,8 @@ def _apply_time_long_name_fix(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class CMIP6D_0001(Fix):
-    code = f"{CMIP6D_PREFIX}0001"
+class DecadalTimeMetadataFix(Fix):
+    local_id = "0001"
     name = "Decadal time metadata"
     description = "Ensures CMIP6-decadal time coordinate has long_name='valid_time'."
     categories = ["metadata"]

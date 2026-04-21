@@ -53,7 +53,7 @@ def test_plan_matcher_attrs_only():
     plan = FixPlan(
         id="plan-attrs",
         match=DatasetMatcher(attrs={"project_id": "CMIP7"}),
-        fixes=[FixRef(id="CMIP7_0001")],
+        fixes=[FixRef(id="cmip7.0001")],
     )
 
     assert plan_matches_dataset(plan, xr.Dataset(attrs={"project_id": "CMIP7"})) is True
@@ -150,14 +150,14 @@ def test_duckdb_lookup_skips_decoding_nonmatching_fixes_payload(tmp_path):
         FixPlan(
             id="atlas",
             match=DatasetMatcher(path_patterns=["*atlas*.nc"]),
-            fixes=[FixRef(id="ATLAS_0001")],
+            fixes=[FixRef(id="atlas.0001")],
         )
     )
     store.save_plan(
         FixPlan(
             id="cmip6",
             match=DatasetMatcher(path_patterns=["*cmip6*.nc"]),
-            fixes=[FixRef(id="CMIP6_0001")],
+            fixes=[FixRef(id="cmip6.0001")],
         )
     )
 

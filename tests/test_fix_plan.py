@@ -199,8 +199,8 @@ def test_load_fix_plan_document_plan_entries_normalize_fix_ids(tmp_path: Path):
                     {
                         "id": "mixed-case",
                         "fixes": [
-                            {"id": "cmip6_0001", "options": {"marker_attr": "my_marker"}},
-                            {"id": "ATLAS_0001", "options": {}},
+                            {"id": "cmip6.0001", "options": {"marker_attr": "my_marker"}},
+                            {"id": "atlas.0001", "options": {}},
                         ],
                     }
                 ]
@@ -212,7 +212,7 @@ def test_load_fix_plan_document_plan_entries_normalize_fix_ids(tmp_path: Path):
     document = load_fix_plan_document(plan_path)
 
     fixes = document.plans[0].fixes
-    assert [item.id for item in fixes] == ["cmip6_0001", "atlas_0001"]
+    assert [item.id for item in fixes] == ["cmip6.0001", "atlas.0001"]
     assert fixes[0].options["marker_attr"] == "my_marker"
 
 

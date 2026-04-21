@@ -5,7 +5,6 @@ import xarray as xr
 from woodpecker.fixes.common.helpers import remove_encoding_key, vars_with_encoding_key
 from woodpecker.fixes.registry import Fix, FixRegistry
 
-from .constants import CMIP6D_PREFIX
 from .helpers import is_cmip6_decadal_netcdf
 
 
@@ -23,8 +22,8 @@ def _apply_coordinates_encoding_cleanup(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class CMIP6D_0004(Fix):
-    code = f"{CMIP6D_PREFIX}0004"
+class DecadalCoordinatesEncodingCleanupFix(Fix):
+    local_id = "0004"
     name = "Decadal coordinates encoding cleanup"
     description = (
         "Removes stale 'coordinates' encoding entries from realization and bounds variables "

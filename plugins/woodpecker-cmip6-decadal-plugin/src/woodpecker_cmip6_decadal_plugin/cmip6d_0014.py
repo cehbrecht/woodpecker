@@ -5,7 +5,6 @@ import xarray as xr
 
 from woodpecker.fixes.registry import Fix, FixRegistry
 
-from .constants import CMIP6D_PREFIX
 from .helpers import extract_start_year as _extract_start_year
 from .helpers import is_cmip6_decadal_netcdf
 
@@ -86,8 +85,8 @@ def _apply_reftime_fix(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class CMIP6D_0014(Fix):
-    code = f"{CMIP6D_PREFIX}0014"
+class DecadalReftimeCoordinateFix(Fix):
+    local_id = "0014"
     name = "Decadal reftime coordinate"
     description = "Adds or normalizes CMIP6-decadal scalar reftime coordinate and metadata."
     categories = ["metadata", "structure"]
