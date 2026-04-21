@@ -2,7 +2,15 @@
   "plans": [
     {
       "id": "atlas-basic",
+      "namespace": "ATLAS",
       "description": "Concrete ATLAS plan for atlas*.nc files",
+      "links": [
+        {
+          "rel": "docs",
+          "href": "https://cehbrecht.github.io/woodpecker/fixes.html#ATLAS_0001",
+          "title": "ATLAS fix documentation"
+        }
+      ],
       "match": {
         "path_patterns": [
           "*atlas*.nc"
@@ -10,10 +18,10 @@
       },
       "fixes": [
         {
-          "id": "ATLAS_0001"
+          "fix": "0001"
         },
         {
-          "id": "ATLAS_0002"
+          "fix": "0002"
         }
       ]
     }

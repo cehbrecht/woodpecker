@@ -241,4 +241,7 @@ def test_esa_cci_example_fix_plan_uses_plugin_cmip7_fix_codes_in_order():
 
     assert matched
     plan = matched[0]
-    assert [item.id for item in plan.fixes] == ["CMIP7_0003", "COMMON_0002"]
+    assert [plan.resolve_fix_identifier(item) for item in plan.fixes] == [
+        "CMIP7.0003",
+        "COMMON.0002",
+    ]

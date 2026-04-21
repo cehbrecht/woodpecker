@@ -9,6 +9,7 @@ from typing import Any, Mapping
 class FixRef:
     id: str
     options: dict[str, Any] = field(default_factory=dict)
+    links: list[dict[str, str]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         self.id = str(self.id).strip().upper()
@@ -16,13 +17,43 @@ class FixRef:
             raise ValueError("FixRef.id must be a non-empty string")
         if not isinstance(self.options, dict):
             raise ValueError("FixRef.options must be a mapping/object")
+        if not isinstance(self.links, list):
+            raise ValueError("FixRef.links must be a list")
+        for item in self.links:
+            if not isinstance(item, dict) or not item.get("rel") or not item.get("href"):
+                raise ValueError("FixRef.links entries must contain rel and href")
+
+    @property
+    def id(self) -> str:
+        """Backward-compatible alias for legacy code paths."""
+
+        return self._id
+
+    @id.setter
+    def id(self, value: str) -> None:
+        self._id = str(value).strip().upper()
+
+    @property
+    def fix(self) -> str:
+        return self.id
+
+    @fix.setter
+    def fix(self, value: str) -> None:
+        self.id = value
 
     def to_dict(self) -> dict[str, Any]:
-        return {"id": self.id, "options": dict(self.options)}
+        payload: dict[str, Any] = {"fix": self.id, "options": dict(self.options)}
+        if self.links:
+            payload["links"] = [dict(item) for item in self.links]
+        return payload
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> FixRef:
-        return cls(id=str(payload.get("id", "")), options=dict(payload.get("options", {}) or {}))
+        return cls(
+            id=str(payload.get("fix", payload.get("id", payload.get("code", "")))),
+            options=dict(payload.get("options", {}) or {}),
+            links=[dict(item) for item in list(payload.get("links", []) or [])],
+        )
 
 
 @dataclass
@@ -53,28 +84,55 @@ def parse_fix_ref(item: Any) -> FixRef:
         return FixRef(id=item)
     if not isinstance(item, Mapping):
         raise ValueError("Each fix entry must be a string or object")
-    fix_id = item.get("id", item.get("code", ""))
-    return FixRef(id=str(fix_id), options=dict(item.get("options", {}) or {}))
+    fix_id = item.get("fix", item.get("id", item.get("code", "")))
+    return FixRef(
+        id=str(fix_id),
+        options=dict(item.get("options", {}) or {}),
+        links=[dict(link) for link in list(item.get("links", []) or [])],
+    )
 
 
 @dataclass
 class FixPlan:
     id: str = ""
+    namespace: str = ""
     description: str = ""
     match: DatasetMatcher | None = None
     fixes: list[FixRef] = field(default_factory=list)
+    links: list[dict[str, str]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         self.id = str(self.id).strip()
+        self.namespace = str(self.namespace).strip().upper()
         self.description = str(self.description)
+        if not isinstance(self.links, list):
+            raise ValueError("FixPlan.links must be a list")
+        for item in self.links:
+            if not isinstance(item, dict) or not item.get("rel") or not item.get("href"):
+                raise ValueError("FixPlan.links entries must contain rel and href")
+
+    def resolve_fix_identifier(self, ref: FixRef) -> str:
+        token = str(ref.fix).strip()
+        if not token:
+            return token
+        if "." in token or "_" in token:
+            return token
+        if self.namespace:
+            return f"{self.namespace}.{token}"
+        return token
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        payload: dict[str, Any] = {
             "id": self.id,
             "description": self.description,
             "match": self.match.to_dict() if self.match is not None else None,
             "fixes": [fix.to_dict() for fix in self.fixes],
         }
+        if self.namespace:
+            payload["namespace"] = self.namespace
+        if self.links:
+            payload["links"] = [dict(item) for item in self.links]
+        return payload
 
     def to_json(self) -> str:
         return json.dumps(self.to_dict(), ensure_ascii=False)
@@ -84,9 +142,11 @@ class FixPlan:
         raw_match = payload.get("match")
         return cls(
             id=str(payload.get("id", "")),
+            namespace=str(payload.get("namespace", payload.get("prefix", ""))),
             description=str(payload.get("description", "")),
             match=DatasetMatcher.from_dict(raw_match) if isinstance(raw_match, Mapping) else None,
             fixes=[parse_fix_ref(item) for item in list(payload.get("fixes", []) or [])],
+            links=[dict(item) for item in list(payload.get("links", []) or [])],
         )
 
     @classmethod

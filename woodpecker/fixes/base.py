@@ -11,6 +11,11 @@ class Fix:
     """Catalog metadata about a fix plus check/apply behavior hooks."""
 
     code: str = ""
+    namespace_prefix: str = ""
+    local_id: str = ""
+    canonical_id: str = ""
+    aliases: List[str] = field(default_factory=list)
+    links: List[dict[str, str]] = field(default_factory=list)
     name: str = ""
     description: str = ""
     categories: List[str] = field(default_factory=list)

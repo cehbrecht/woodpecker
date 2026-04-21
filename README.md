@@ -9,7 +9,8 @@ Woodpecker is a lightweight, code-based catalog of common dataset fixes for clim
 
 Dataset-specific fix families are provided by external plugins.
 
-Each fix has a stable code (for example `CMIP6D_0001`) so tools and services can reference it directly.
+Each fix has a local ID plus a canonical ID in `<prefix>.<local_id>` form (for example `CMIP6D.0001`).
+Legacy underscore IDs (for example `CMIP6D_0001`) are supported as aliases.
 
 Contributor and developer docs live in `CONTRIBUTING.md`.
 
@@ -19,10 +20,10 @@ Woodpecker is built around three simple concepts:
 
 - **Fix**  
   An executable rule that checks and optionally fixes a dataset.  
-  Each fix has a stable code (for example `CMIP6D_0001`).
+    Each fix belongs to one namespace prefix and has a stable local ID.
 
 - **FixPlan**  
-  A declarative list of fixes (with optional parameters) applied in order.
+    A declarative list of plan steps (`fix` + optional `options`) applied in order.
 
 - **FixPlanStore**  
   A lookup layer that returns matching `FixPlan`s for a dataset (currently with JSON and DuckDB backends).
@@ -43,6 +44,8 @@ For the default JSON backend, the on-disk format is:
     {
       "plans": [ ... ]
     }
+
+Plan IDs are explicit and stable. Matching (`match.attrs`, `match.path_patterns`) is independent from IDs.
 
 ## Quickstart
 

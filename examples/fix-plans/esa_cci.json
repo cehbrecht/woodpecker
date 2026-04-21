@@ -2,7 +2,15 @@
   "plans": [
     {
       "id": "esa-cci-zarr",
+      "namespace": "CMIP7",
       "description": "CMIP7/ESA CCI zarr-style inputs",
+      "links": [
+        {
+          "rel": "issue",
+          "href": "https://github.com/cehbrecht/woodpecker/issues",
+          "title": "Track ESA CCI fix discussions"
+        }
+      ],
       "match": {
         "path_patterns": [
           "*ESACCI-WATERVAPOUR-*.zarr"
@@ -10,7 +18,7 @@
       },
       "fixes": [
         {
-          "id": "CMIP7_0003",
+          "fix": "0003",
           "options": {
             "realm": "atmos",
             "branded_variable": "prw_tavg-u-hxy-u",
@@ -19,11 +27,12 @@
             "keep_global_attrs": true
           }
         },
-        {"id": "COMMON_0002"}
+        {"fix": "COMMON.0002"}
       ]
     },
     {
       "id": "esa-cci-dotname",
+      "namespace": "CMIP7",
       "description": "CMIP7/ESA CCI dot-name inputs",
       "match": {
         "path_patterns": [
@@ -32,13 +41,13 @@
       },
       "fixes": [
         {
-          "id": "COMMON_0004",
+          "fix": "COMMON.0004",
           "options": {
             "dims": ["bnds", "nv"]
           }
         },
         {
-          "id": "CMIP7_0003",
+          "fix": "0003",
           "options": {
             "realm": "atmos",
             "branded_variable": "prw_tavg-u-hxy-u",
@@ -46,7 +55,7 @@
             "keep_global_attrs": true
           }
         },
-        {"id": "COMMON_0002"}
+        {"fix": "COMMON.0002"}
       ]
     }
   ]

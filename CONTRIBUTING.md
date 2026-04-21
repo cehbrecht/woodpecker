@@ -78,16 +78,18 @@ Use existing fixes as examples and keep behavior deterministic.
 Woodpecker uses one schema for both plan files and plan stores:
 
 - `FixPlanDocument`: top-level container with `plans: [...]`.
-- `FixPlan`: plan entry with `id`, `description`, optional `match`, and ordered `fixes`.
-- `FixRef`: each fix entry (`id`, optional `options`).
+- `FixPlan`: plan entry with `id`, optional `namespace`, `description`, optional `match`, ordered `fixes`, optional `links`.
+- `FixRef`: each step entry (`fix`, optional `options`, optional `links`).
 
 Common `FixPlan` fields:
 
 - `id`: optional plan identifier.
+- `namespace`: optional local-ID namespace prefix.
 - `description`: optional human-readable description.
 - `match.attrs`: key/value attribute matcher for dataset metadata.
 - `match.path_patterns`: optional fnmatch-style path patterns.
-- `fixes`: ordered list of fix refs. Each item can be a string code or object.
+- `fixes`: ordered list of fix refs. Each item can be a string or object with `fix` and `options`.
+- `links`: optional list of `{rel, href, title?}` references (errata/issues/docs).
 
 Minimal `FixPlanDocument` example:
 
@@ -96,24 +98,26 @@ Minimal `FixPlanDocument` example:
   "plans": [
     {
       "id": "atlas-basic",
+      "namespace": "ATLAS",
       "description": "ATLAS plan",
       "match": {
         "path_patterns": ["*atlas*.nc"]
       },
       "fixes": [
-        "ATLAS_0001",
-        {"id": "COMMON_0002"}
+        "0001",
+        {"fix": "COMMON.0002"}
       ]
     },
     {
       "id": "esa-cci-zarr",
+      "namespace": "CMIP7",
       "description": "Default ESA CCI zarr plan",
       "match": {
         "path_patterns": ["*ESACCI-WATERVAPOUR-*.zarr"]
       },
       "fixes": [
-        "CMIP7_0003",
-        {"id": "COMMON_0002"}
+        "0003",
+        {"fix": "COMMON.0002"}
       ]
     }
   ]

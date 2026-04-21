@@ -108,3 +108,13 @@ def test_register_fix_decorator_alias_registers_class():
     assert registered is _AliasFix
     assert "ALIAS_0001" in FixRegistry.registered_codes()
     FixRegistry._registry.pop("ALIAS_0001", None)
+
+
+def test_registry_resolves_canonical_and_legacy_aliases_for_known_fixes():
+    assert FixRegistry.resolve_identifier("ATLAS_0001") == "ATLAS_0001"
+    assert FixRegistry.resolve_identifier("ATLAS.0001") == "ATLAS_0001"
+
+
+def test_registry_rejects_ambiguous_local_identifier():
+    with pytest.raises(ValueError, match="Ambiguous fix identifier"):
+        FixRegistry.resolve_identifier("0001")

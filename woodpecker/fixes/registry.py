@@ -18,6 +18,89 @@ class FixRegistry:
 
     _registry: Dict[str, Type[Any]] = {}
     _code_pattern = re.compile(r"^[A-Z0-9_]{4,16}$")
+    _identifier_index: Dict[str, str] = {}
+    _ambiguous_identifiers: set[str] = set()
+
+    @staticmethod
+    def _normalize_identifier(identifier: str) -> str:
+        return str(identifier).strip().upper()
+
+    @classmethod
+    def _derive_namespace_and_local_id(
+        cls, fix: Any, fix_cls: Type[Any]
+    ) -> tuple[str, str, str, list[str]]:
+        raw_code = cls._normalize_identifier(str(getattr(fix, "code", "") or ""))
+        explicit_prefix = cls._normalize_identifier(str(getattr(fix, "namespace_prefix", "") or ""))
+        explicit_local = cls._normalize_identifier(str(getattr(fix, "local_id", "") or ""))
+
+        prefix = explicit_prefix
+        local_id = explicit_local
+        aliases = [cls._normalize_identifier(item) for item in (getattr(fix, "aliases", []) or [])]
+
+        if prefix and local_id:
+            pass
+        elif "." in raw_code:
+            prefix, local_id = raw_code.split(".", 1)
+        elif "_" in raw_code:
+            prefix, local_id = raw_code.split("_", 1)
+        elif raw_code and prefix:
+            local_id = raw_code
+        elif raw_code:
+            # Fallback for simple direct-use fixes without explicit namespace metadata.
+            prefix = "CORE"
+            local_id = raw_code
+        else:
+            auto = cls._normalize_identifier(fix_cls.__name__)
+            match = re.search(r"(?:_|)(\d{3,})$", auto)
+            local_id = match.group(1) if match else auto
+            prefix = explicit_prefix or "CORE"
+
+        canonical_id = f"{prefix}.{local_id}"
+        if raw_code:
+            aliases.append(raw_code)
+        if canonical_id != raw_code:
+            aliases.append(canonical_id)
+            aliases.append(f"{prefix}_{local_id}")
+        aliases.append(local_id)
+
+        out_aliases: list[str] = []
+        seen: set[str] = set()
+        for alias in aliases:
+            norm = cls._normalize_identifier(alias)
+            if not norm or norm == canonical_id or norm in seen:
+                continue
+            seen.add(norm)
+            out_aliases.append(norm)
+
+        return prefix, local_id, canonical_id, out_aliases
+
+    @classmethod
+    def _register_identifier(cls, identifier: str, code: str) -> None:
+        token = cls._normalize_identifier(identifier)
+        if not token:
+            return
+        if token in cls._ambiguous_identifiers:
+            return
+        existing = cls._identifier_index.get(token)
+        if existing is None:
+            cls._identifier_index[token] = code
+            return
+        if existing == code:
+            return
+        cls._identifier_index.pop(token, None)
+        cls._ambiguous_identifiers.add(token)
+
+    @classmethod
+    def resolve_identifier(cls, identifier: str) -> str:
+        token = cls._normalize_identifier(identifier)
+        if token in cls._ambiguous_identifiers:
+            raise ValueError(
+                f"Ambiguous fix identifier '{identifier}'. Use canonical '<prefix>.<local_id>' form."
+            )
+        code = cls._identifier_index.get(token)
+        if code is None:
+            raise KeyError(identifier)
+        return code
 
     @staticmethod
     def _instantiate_fix(fix_cls: Type[Any]) -> Any:
@@ -68,12 +151,23 @@ class FixRegistry:
     def register(cls, fix_cls: Type[Any]):
         fix = cls._instantiate_fix(fix_cls)
         cls._validate_fix_definition(fix, fix_cls)
-        code = getattr(fix, "code", None)
+        code = cls._normalize_identifier(getattr(fix, "code", None) or "")
 
         if code in cls._registry:
             raise ValueError(f"Duplicate fix code '{code}' (already registered)")
 
+        prefix, local_id, canonical_id, aliases = cls._derive_namespace_and_local_id(fix, fix_cls)
+        setattr(fix_cls, "namespace_prefix", prefix)
+        setattr(fix_cls, "local_id", local_id)
+        setattr(fix_cls, "canonical_id", canonical_id)
+        setattr(fix_cls, "aliases", aliases)
+
         cls._registry[code] = fix_cls
+        cls._register_identifier(code, code)
+        cls._register_identifier(canonical_id, code)
+        cls._register_identifier(local_id, code)
+        for alias in aliases:
+            cls._register_identifier(alias, code)
         return fix_cls  # decorator-friendly
 
     @classmethod
