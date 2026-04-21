@@ -30,14 +30,14 @@
 </style>
 </head>
 <body>
-<h1>Woodpecker Fix Codes</h1>
+<h1>Woodpecker Fix IDs</h1>
 <p class="hint">Search and click a code to get a stable anchor (useful for errata links). Source labels show whether each fix is built in or provided by an entry point plugin.</p>
 
 <div class="summary">
-  <span class="pill"><strong>Total</strong>: 26</span>
+  <span class="pill"><strong>Total</strong>: 4</span>
   <span class="pill"><strong>Core</strong>: 4</span>
-  <span class="pill"><strong>Plugin</strong>: 22</span>
-  <span class="pill"><strong>Plugin Packages</strong>: 4</span>
+  <span class="pill"><strong>Plugin</strong>: 0</span>
+  <span class="pill"><strong>Plugin Packages</strong>: 0</span>
 </div>
 
 <div class="controls">
@@ -65,7 +65,7 @@
     <tbody>
     
       <tr class="fix-row" data-source-kind="core">
-        <td id="COMMON_0001"><a href="#COMMON_0001"><code>COMMON_0001</code></a></td>
+        <td id=""><a href="#"><code></code></a></td>
         <td>Normalize tas-like units to Kelvin</td>
         <td>Converts tas/temp from Celsius-like units to Kelvin.</td>
         <td>metadata, units</td>
@@ -79,7 +79,7 @@
       </tr>
     
       <tr class="fix-row" data-source-kind="core">
-        <td id="COMMON_0004"><a href="#COMMON_0004"><code>COMMON_0004</code></a></td>
+        <td id=""><a href="#"><code></code></a></td>
         <td>Merge equivalent dimensions</td>
         <td>Merges two or more same-sized dimensions into the first configured dimension.</td>
         <td>structure</td>
@@ -93,7 +93,7 @@
       </tr>
     
       <tr class="fix-row" data-source-kind="core">
-        <td id="COMMON_0002"><a href="#COMMON_0002"><code>COMMON_0002</code></a></td>
+        <td id=""><a href="#"><code></code></a></td>
         <td>Ensure latitude is increasing</td>
         <td>Flips datasets with decreasing latitude coordinates to increasing order.</td>
         <td>structure</td>
@@ -107,7 +107,7 @@
       </tr>
     
       <tr class="fix-row" data-source-kind="core">
-        <td id="COMMON_0003"><a href="#COMMON_0003"><code>COMMON_0003</code></a></td>
+        <td id=""><a href="#"><code></code></a></td>
         <td>Remove coordinate FillValue encodings</td>
         <td>Removes _FillValue encoding entries from common coordinate variables.</td>
         <td>metadata, structure</td>
@@ -116,416 +116,6 @@
         <td>
           
             <span class="source-badge source-core">core</span>
-          
-        </td>
-      </tr>
-    
-    </tbody>
-  </table>
-</section>
-
-<section class="group-section" data-group-kind="plugin">
-  <h2 class="group-title">Plugin: woodpecker_atlas_plugin (2)</h2>
-  <table class="fixes-table">
-    <thead>
-      <tr>
-        <th>Code</th>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Categories</th>
-        <th>Dataset</th>
-        <th>Priority</th>
-        <th>Source</th>
-      </tr>
-    </thead>
-    <tbody>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="ATLAS_0001"><a href="#ATLAS_0001"><code>ATLAS_0001</code></a></td>
-        <td>ATLAS encoding cleanup</td>
-        <td>Applies rook-equivalent ATLAS deflation/encoding cleanup.</td>
-        <td>encoding</td>
-        <td>ATLAS</td>
-        <td>20</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_atlas_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="ATLAS_0002"><a href="#ATLAS_0002"><code>ATLAS_0002</code></a></td>
-        <td>ATLAS project_id normalization</td>
-        <td>Adds or normalizes ATLAS project_id from dataset identifier prefix.</td>
-        <td>metadata</td>
-        <td>ATLAS</td>
-        <td>21</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_atlas_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-    </tbody>
-  </table>
-</section>
-
-<section class="group-section" data-group-kind="plugin">
-  <h2 class="group-title">Plugin: woodpecker_cmip6_decadal_plugin (16)</h2>
-  <table class="fixes-table">
-    <thead>
-      <tr>
-        <th>Code</th>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Categories</th>
-        <th>Dataset</th>
-        <th>Priority</th>
-        <th>Source</th>
-      </tr>
-    </thead>
-    <tbody>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6D_0001"><a href="#CMIP6D_0001"><code>CMIP6D_0001</code></a></td>
-        <td>Decadal time metadata</td>
-        <td>Ensures CMIP6-decadal time coordinate has long_name=&#39;valid_time&#39;.</td>
-        <td>metadata</td>
-        <td>CMIP6-decadal</td>
-        <td>10</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_decadal_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6D_0002"><a href="#CMIP6D_0002"><code>CMIP6D_0002</code></a></td>
-        <td>Decadal calendar normalization</td>
-        <td>Normalizes CMIP6-decadal time calendar from proleptic_gregorian to standard.</td>
-        <td>metadata, calendar</td>
-        <td>CMIP6-decadal</td>
-        <td>11</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_decadal_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6D_0003"><a href="#CMIP6D_0003"><code>CMIP6D_0003</code></a></td>
-        <td>Decadal realization variable</td>
-        <td>Adds realization data variable from realization_index for CMIP6-decadal datasets.</td>
-        <td>metadata</td>
-        <td>CMIP6-decadal</td>
-        <td>12</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_decadal_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6D_0004"><a href="#CMIP6D_0004"><code>CMIP6D_0004</code></a></td>
-        <td>Decadal coordinates encoding cleanup</td>
-        <td>Removes stale &#39;coordinates&#39; encoding entries from realization and bounds variables in CMIP6-decadal datasets.</td>
-        <td>encoding, metadata</td>
-        <td>CMIP6-decadal</td>
-        <td>13</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_decadal_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6D_0005"><a href="#CMIP6D_0005"><code>CMIP6D_0005</code></a></td>
-        <td>Decadal realization comment normalization</td>
-        <td>Normalizes realization comment to the full CMIP6-decadal ripf guidance text.</td>
-        <td>metadata</td>
-        <td>CMIP6-decadal</td>
-        <td>14</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_decadal_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6D_0006"><a href="#CMIP6D_0006"><code>CMIP6D_0006</code></a></td>
-        <td>Decadal realization dtype normalization</td>
-        <td>Normalizes realization data variable dtype to int32 for CMIP6-decadal datasets.</td>
-        <td>metadata, structure</td>
-        <td>CMIP6-decadal</td>
-        <td>15</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_decadal_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6D_0007"><a href="#CMIP6D_0007"><code>CMIP6D_0007</code></a></td>
-        <td>Decadal _FillValue encoding cleanup</td>
-        <td>Removes stale &#39;_FillValue&#39; encoding entries from realization and bounds variables in CMIP6-decadal datasets.</td>
-        <td>encoding, metadata</td>
-        <td>CMIP6-decadal</td>
-        <td>16</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_decadal_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6D_0008"><a href="#CMIP6D_0008"><code>CMIP6D_0008</code></a></td>
-        <td>Decadal further_info_url normalization</td>
-        <td>Normalizes malformed CMIP6-decadal further_info_url variant separators from &#39;-&#39; to &#39;.&#39;.</td>
-        <td>metadata</td>
-        <td>CMIP6-decadal</td>
-        <td>17</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_decadal_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6D_0009"><a href="#CMIP6D_0009"><code>CMIP6D_0009</code></a></td>
-        <td>Decadal start token normalization</td>
-        <td>Normalizes CMIP6-decadal startdate and sub_experiment_id to the canonical sYYYY11 token.</td>
-        <td>metadata</td>
-        <td>CMIP6-decadal</td>
-        <td>18</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_decadal_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6D_0010"><a href="#CMIP6D_0010"><code>CMIP6D_0010</code></a></td>
-        <td>Decadal realization long_name normalization</td>
-        <td>Normalizes realization long_name metadata to &#39;realization&#39; for CMIP6-decadal datasets.</td>
-        <td>metadata</td>
-        <td>CMIP6-decadal</td>
-        <td>19</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_decadal_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6D_0011"><a href="#CMIP6D_0011"><code>CMIP6D_0011</code></a></td>
-        <td>Decadal realization_index normalization</td>
-        <td>Normalizes CMIP6-decadal realization_index global attribute to integer type.</td>
-        <td>metadata</td>
-        <td>CMIP6-decadal</td>
-        <td>20</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_decadal_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6D_0012"><a href="#CMIP6D_0012"><code>CMIP6D_0012</code></a></td>
-        <td>Decadal leadtime metadata normalization</td>
-        <td>Normalizes CMIP6-decadal leadtime metadata (units, long_name, standard_name).</td>
-        <td>metadata</td>
-        <td>CMIP6-decadal</td>
-        <td>21</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_decadal_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6D_0013"><a href="#CMIP6D_0013"><code>CMIP6D_0013</code></a></td>
-        <td>Decadal model global attributes</td>
-        <td>Normalizes model-specific global metadata fields for CMIP6-decadal datasets.</td>
-        <td>metadata</td>
-        <td>CMIP6-decadal</td>
-        <td>22</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_decadal_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6D_0014"><a href="#CMIP6D_0014"><code>CMIP6D_0014</code></a></td>
-        <td>Decadal reftime coordinate</td>
-        <td>Adds or normalizes CMIP6-decadal scalar reftime coordinate and metadata.</td>
-        <td>metadata, structure</td>
-        <td>CMIP6-decadal</td>
-        <td>23</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_decadal_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6D_0015"><a href="#CMIP6D_0015"><code>CMIP6D_0015</code></a></td>
-        <td>Decadal leadtime coordinate</td>
-        <td>Adds or normalizes CMIP6-decadal leadtime coordinate values from time and reftime.</td>
-        <td>metadata, structure</td>
-        <td>CMIP6-decadal</td>
-        <td>24</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_decadal_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6D_0999"><a href="#CMIP6D_0999"><code>CMIP6D_0999</code></a></td>
-        <td>CMIP6 Decadal: full fix suite</td>
-        <td>Applies all CMIP6-decadal fixes (CMIP6D_0001–CMIP6D_0015) in sequence: calendar, encoding, realization metadata, start-token normalisation, model-specific global attributes, and leadtime/reftime coordinates.<div class="member-codes">Members: <code>CMIP6D_0001</code>, <code>CMIP6D_0002</code>, <code>CMIP6D_0003</code>, <code>CMIP6D_0004</code>, <code>CMIP6D_0005</code>, <code>CMIP6D_0006</code>, <code>CMIP6D_0007</code>, <code>CMIP6D_0008</code>, <code>CMIP6D_0009</code>, <code>CMIP6D_0010</code>, <code>CMIP6D_0011</code>, <code>CMIP6D_0012</code>, <code>CMIP6D_0013</code>, <code>CMIP6D_0014</code>, <code>CMIP6D_0015</code></div></td>
-        <td>metadata, calendar, encoding, structure</td>
-        <td>CMIP6-decadal</td>
-        <td>99</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_decadal_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-    </tbody>
-  </table>
-</section>
-
-<section class="group-section" data-group-kind="plugin">
-  <h2 class="group-title">Plugin: woodpecker_cmip6_plugin (1)</h2>
-  <table class="fixes-table">
-    <thead>
-      <tr>
-        <th>Code</th>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Categories</th>
-        <th>Dataset</th>
-        <th>Priority</th>
-        <th>Source</th>
-      </tr>
-    </thead>
-    <tbody>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP6_0001"><a href="#CMIP6_0001"><code>CMIP6_0001</code></a></td>
-        <td>CMIP6 dummy placeholder</td>
-        <td>Dummy placeholder for future non-decadal CMIP6 fixes.</td>
-        <td>metadata</td>
-        <td>cmip6</td>
-        <td>40</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip6_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-    </tbody>
-  </table>
-</section>
-
-<section class="group-section" data-group-kind="plugin">
-  <h2 class="group-title">Plugin: woodpecker_cmip7_plugin (3)</h2>
-  <table class="fixes-table">
-    <thead>
-      <tr>
-        <th>Code</th>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Categories</th>
-        <th>Dataset</th>
-        <th>Priority</th>
-        <th>Source</th>
-      </tr>
-    </thead>
-    <tbody>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP7_0001"><a href="#CMIP7_0001"><code>CMIP7_0001</code></a></td>
-        <td>Ensure project_id is present (plugin)</td>
-        <td>Sets project_id from dataset identifier metadata when missing.</td>
-        <td>metadata</td>
-        <td>CMIP7</td>
-        <td>41</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip7_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP7_0002"><a href="#CMIP7_0002"><code>CMIP7_0002</code></a></td>
-        <td>Rename temp variable to tas (plugin)</td>
-        <td>Renames data variable temp to tas when tas is missing.</td>
-        <td>structure, metadata</td>
-        <td>CMIP7</td>
-        <td>42</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip7_plugin</code></div>
-          
-        </td>
-      </tr>
-    
-      <tr class="fix-row" data-source-kind="plugin">
-        <td id="CMIP7_0003"><a href="#CMIP7_0003"><code>CMIP7_0003</code></a></td>
-        <td>Configurable CMIP7 reformat bridge (plugin)</td>
-        <td>Applies workflow-driven variable/dimension remapping and selected metadata updates.</td>
-        <td>structure, metadata</td>
-        <td>CMIP7</td>
-        <td>43</td>
-        <td>
-          
-            <span class="source-badge source-plugin">plugin</span>
-            <div class="source-package"><code>woodpecker_cmip7_plugin</code></div>
           
         </td>
       </tr>

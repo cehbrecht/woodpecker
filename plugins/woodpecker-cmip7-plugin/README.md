@@ -3,7 +3,7 @@
 Reference external plugin package for Woodpecker.
 
 This package is the canonical CMIP7 fix source for Woodpecker and provides
-`CMIP7_0001`, `CMIP7_0002`, and `CMIP7_0003`.
+`cmip7.0001`, `cmip7.0002`, and `cmip7.0003`.
 
 ## Install
 
@@ -18,3 +18,4 @@ woodpecker list-fixes --dataset CMIP7
 ```
 
 You should see `CMIP7_*` fixes after installation.
+You should see `cmip7.*` fixes after installation.

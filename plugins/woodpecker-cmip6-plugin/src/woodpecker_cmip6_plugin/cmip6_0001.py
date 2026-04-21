@@ -35,7 +35,7 @@ class Cmip6DummyPlaceholderFix(Fix):
         if dry_run:
             return True
         config = getattr(self, "config", {}) or {}
-        marker_attr = str(config.get("marker_attr", "woodpecker_fix_CMIP6_0001"))
+        marker_attr = str(config.get("marker_attr", "woodpecker_fix_cmip6_0001"))
         marker_value = str(config.get("marker_value", "applied"))
         dataset.attrs[marker_attr] = marker_value
         return True

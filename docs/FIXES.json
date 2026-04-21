@@ -1,199 +1,11 @@
 [
   {
-    "code": "CMIP6D_0001",
-    "name": "Decadal time metadata",
-    "description": "Ensures CMIP6-decadal time coordinate has long_name='valid_time'.",
-    "categories": [
-      "metadata"
+    "id": "woodpecker.normalize_tas_units_to_kelvin",
+    "local_id": "normalize_tas_units_to_kelvin",
+    "namespace": "woodpecker",
+    "aliases": [
+      "normalize_tas_units_to_kelvin"
     ],
-    "dataset": "CMIP6-decadal",
-    "priority": 10,
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
-  },
-  {
-    "code": "CMIP6D_0002",
-    "name": "Decadal calendar normalization",
-    "description": "Normalizes CMIP6-decadal time calendar from proleptic_gregorian to standard.",
-    "categories": [
-      "metadata",
-      "calendar"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 11,
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
-  },
-  {
-    "code": "CMIP6D_0003",
-    "name": "Decadal realization variable",
-    "description": "Adds realization data variable from realization_index for CMIP6-decadal datasets.",
-    "categories": [
-      "metadata"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 12,
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
-  },
-  {
-    "code": "CMIP6D_0004",
-    "name": "Decadal coordinates encoding cleanup",
-    "description": "Removes stale 'coordinates' encoding entries from realization and bounds variables in CMIP6-decadal datasets.",
-    "categories": [
-      "encoding",
-      "metadata"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 13,
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
-  },
-  {
-    "code": "CMIP6D_0005",
-    "name": "Decadal realization comment normalization",
-    "description": "Normalizes realization comment to the full CMIP6-decadal ripf guidance text.",
-    "categories": [
-      "metadata"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 14,
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
-  },
-  {
-    "code": "CMIP6D_0006",
-    "name": "Decadal realization dtype normalization",
-    "description": "Normalizes realization data variable dtype to int32 for CMIP6-decadal datasets.",
-    "categories": [
-      "metadata",
-      "structure"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 15,
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
-  },
-  {
-    "code": "CMIP6D_0007",
-    "name": "Decadal _FillValue encoding cleanup",
-    "description": "Removes stale '_FillValue' encoding entries from realization and bounds variables in CMIP6-decadal datasets.",
-    "categories": [
-      "encoding",
-      "metadata"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 16,
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
-  },
-  {
-    "code": "CMIP6D_0008",
-    "name": "Decadal further_info_url normalization",
-    "description": "Normalizes malformed CMIP6-decadal further_info_url variant separators from '-' to '.'.",
-    "categories": [
-      "metadata"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 17,
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
-  },
-  {
-    "code": "CMIP6D_0009",
-    "name": "Decadal start token normalization",
-    "description": "Normalizes CMIP6-decadal startdate and sub_experiment_id to the canonical sYYYY11 token.",
-    "categories": [
-      "metadata"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 18,
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
-  },
-  {
-    "code": "CMIP6D_0010",
-    "name": "Decadal realization long_name normalization",
-    "description": "Normalizes realization long_name metadata to 'realization' for CMIP6-decadal datasets.",
-    "categories": [
-      "metadata"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 19,
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
-  },
-  {
-    "code": "ATLAS_0001",
-    "name": "ATLAS encoding cleanup",
-    "description": "Applies rook-equivalent ATLAS deflation/encoding cleanup.",
-    "categories": [
-      "encoding"
-    ],
-    "dataset": "ATLAS",
-    "priority": 20,
-    "source": "plugin:woodpecker_atlas_plugin"
-  },
-  {
-    "code": "CMIP6D_0011",
-    "name": "Decadal realization_index normalization",
-    "description": "Normalizes CMIP6-decadal realization_index global attribute to integer type.",
-    "categories": [
-      "metadata"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 20,
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
-  },
-  {
-    "code": "ATLAS_0002",
-    "name": "ATLAS project_id normalization",
-    "description": "Adds or normalizes ATLAS project_id from dataset identifier prefix.",
-    "categories": [
-      "metadata"
-    ],
-    "dataset": "ATLAS",
-    "priority": 21,
-    "source": "plugin:woodpecker_atlas_plugin"
-  },
-  {
-    "code": "CMIP6D_0012",
-    "name": "Decadal leadtime metadata normalization",
-    "description": "Normalizes CMIP6-decadal leadtime metadata (units, long_name, standard_name).",
-    "categories": [
-      "metadata"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 21,
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
-  },
-  {
-    "code": "CMIP6D_0013",
-    "name": "Decadal model global attributes",
-    "description": "Normalizes model-specific global metadata fields for CMIP6-decadal datasets.",
-    "categories": [
-      "metadata"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 22,
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
-  },
-  {
-    "code": "CMIP6D_0014",
-    "name": "Decadal reftime coordinate",
-    "description": "Adds or normalizes CMIP6-decadal scalar reftime coordinate and metadata.",
-    "categories": [
-      "metadata",
-      "structure"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 23,
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
-  },
-  {
-    "code": "CMIP6D_0015",
-    "name": "Decadal leadtime coordinate",
-    "description": "Adds or normalizes CMIP6-decadal leadtime coordinate values from time and reftime.",
-    "categories": [
-      "metadata",
-      "structure"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 24,
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
-  },
-  {
-    "code": "COMMON_0001",
     "name": "Normalize tas-like units to Kelvin",
     "description": "Converts tas/temp from Celsius-like units to Kelvin.",
     "categories": [
@@ -205,7 +17,12 @@
     "source": "core"
   },
   {
-    "code": "COMMON_0004",
+    "id": "woodpecker.merge_equivalent_dimensions",
+    "local_id": "merge_equivalent_dimensions",
+    "namespace": "woodpecker",
+    "aliases": [
+      "merge_equivalent_dimensions"
+    ],
     "name": "Merge equivalent dimensions",
     "description": "Merges two or more same-sized dimensions into the first configured dimension.",
     "categories": [
@@ -216,7 +33,12 @@
     "source": "core"
   },
   {
-    "code": "COMMON_0002",
+    "id": "woodpecker.ensure_latitude_is_increasing",
+    "local_id": "ensure_latitude_is_increasing",
+    "namespace": "woodpecker",
+    "aliases": [
+      "ensure_latitude_is_increasing"
+    ],
     "name": "Ensure latitude is increasing",
     "description": "Flips datasets with decreasing latitude coordinates to increasing order.",
     "categories": [
@@ -227,7 +49,12 @@
     "source": "core"
   },
   {
-    "code": "COMMON_0003",
+    "id": "woodpecker.remove_coordinate_fill_value_encodings",
+    "local_id": "remove_coordinate_fill_value_encodings",
+    "namespace": "woodpecker",
+    "aliases": [
+      "remove_coordinate_fill_value_encodings"
+    ],
     "name": "Remove coordinate FillValue encodings",
     "description": "Removes _FillValue encoding entries from common coordinate variables.",
     "categories": [
@@ -237,82 +64,5 @@
     "dataset": null,
     "priority": 34,
     "source": "core"
-  },
-  {
-    "code": "CMIP6_0001",
-    "name": "CMIP6 dummy placeholder",
-    "description": "Dummy placeholder for future non-decadal CMIP6 fixes.",
-    "categories": [
-      "metadata"
-    ],
-    "dataset": "cmip6",
-    "priority": 40,
-    "source": "plugin:woodpecker_cmip6_plugin"
-  },
-  {
-    "code": "CMIP7_0001",
-    "name": "Ensure project_id is present (plugin)",
-    "description": "Sets project_id from dataset identifier metadata when missing.",
-    "categories": [
-      "metadata"
-    ],
-    "dataset": "CMIP7",
-    "priority": 41,
-    "source": "plugin:woodpecker_cmip7_plugin"
-  },
-  {
-    "code": "CMIP7_0002",
-    "name": "Rename temp variable to tas (plugin)",
-    "description": "Renames data variable temp to tas when tas is missing.",
-    "categories": [
-      "structure",
-      "metadata"
-    ],
-    "dataset": "CMIP7",
-    "priority": 42,
-    "source": "plugin:woodpecker_cmip7_plugin"
-  },
-  {
-    "code": "CMIP7_0003",
-    "name": "Configurable CMIP7 reformat bridge (plugin)",
-    "description": "Applies workflow-driven variable/dimension remapping and selected metadata updates.",
-    "categories": [
-      "structure",
-      "metadata"
-    ],
-    "dataset": "CMIP7",
-    "priority": 43,
-    "source": "plugin:woodpecker_cmip7_plugin"
-  },
-  {
-    "code": "CMIP6D_0999",
-    "name": "CMIP6 Decadal: full fix suite",
-    "description": "Applies all CMIP6-decadal fixes (CMIP6D_0001\u2013CMIP6D_0015) in sequence: calendar, encoding, realization metadata, start-token normalisation, model-specific global attributes, and leadtime/reftime coordinates.",
-    "categories": [
-      "metadata",
-      "calendar",
-      "encoding",
-      "structure"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 99,
-    "member_codes": [
-      "CMIP6D_0001",
-      "CMIP6D_0002",
-      "CMIP6D_0003",
-      "CMIP6D_0004",
-      "CMIP6D_0005",
-      "CMIP6D_0006",
-      "CMIP6D_0007",
-      "CMIP6D_0008",
-      "CMIP6D_0009",
-      "CMIP6D_0010",
-      "CMIP6D_0011",
-      "CMIP6D_0012",
-      "CMIP6D_0013",
-      "CMIP6D_0014",
-      "CMIP6D_0015"
-    ],
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   }
 ]

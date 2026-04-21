@@ -9,8 +9,7 @@ Woodpecker is a lightweight, code-based catalog of common dataset fixes for clim
 
 Dataset-specific fix families are provided by external plugins.
 
-Each fix has a local ID plus a canonical ID in `<prefix>.<local_id>` form (for example `CMIP6D.0001`).
-Legacy underscore IDs (for example `CMIP6D_0001`) are supported as aliases.
+Each fix has a local ID plus a canonical ID in `<prefix>.<local_id>` form (for example `cmip6_decadal.0001`).
 
 Contributor and developer docs live in `CONTRIBUTING.md`.
 
@@ -69,9 +68,9 @@ Typical flow:
 Core commands:
 
     woodpecker list-fixes
-    woodpecker check . --select CMIP6D_0001
-    woodpecker fix . --select CMIP6D_0001 --dry-run
-    woodpecker fix . --select CMIP6D_0001
+    woodpecker check . --select cmip6_decadal.0001
+    woodpecker fix . --select cmip6_decadal.0001 --dry-run
+    woodpecker fix . --select cmip6_decadal.0001
 
 ### Using FixPlanStore
 
@@ -89,8 +88,8 @@ Examples:
 
 ### Direct fix selection
 
-    woodpecker check . --select CMIP6D_0001
-    woodpecker fix . --select CMIP6D_0001
+    woodpecker check . --select cmip6_decadal.0001
+    woodpecker fix . --select cmip6_decadal.0001
 
 ### Force-apply
 
@@ -155,8 +154,8 @@ Minimal example:
     from woodpecker.fixes.registry import Fix, register_fix
 
     @register_fix
-    class EXTERNAL_0001(Fix):
-        code = "EXTERNAL_0001"
+    class ExternalDemoFix(Fix):
+        local_id = "demo"
         name = "External demo fix"
         description = "A minimal plugin-provided fix."
         categories = ["metadata"]
@@ -184,13 +183,13 @@ Example plan documents live in `examples/fix-plans`.
 
 Woodpecker writes a PROV-JSON provenance file by default when running `fix`.
 
-    woodpecker fix . --select CMIP6D_0001
-    woodpecker fix . --select CMIP6D_0001 --provenance-path run_01.prov.json
-    woodpecker fix . --select CMIP6D_0001 --no-provenance
+    woodpecker fix . --select cmip6_decadal.0001
+    woodpecker fix . --select cmip6_decadal.0001 --provenance-path run_01.prov.json
+    woodpecker fix . --select cmip6_decadal.0001 --no-provenance
 
 Embedded metadata:
 
-    woodpecker fix . --select CMIP6D_0001 --embed-provenance-metadata --output-format netcdf
+    woodpecker fix . --select cmip6_decadal.0001 --embed-provenance-metadata --output-format netcdf
 
 ## GitHub Pages
 
