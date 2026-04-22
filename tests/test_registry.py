@@ -21,7 +21,7 @@ def test_group_fix_is_group_fix_instance():
 
 
 def test_registry_rejects_invalid_local_identifier_pattern():
-    with pytest.raises(ValueError, match="Invalid fix local_id"):
+    with pytest.raises(ValueError, match="Invalid local_id"):
 
         class _InvalidCodeFix:
             local_id = "bad-id"
@@ -237,7 +237,7 @@ def test_registry_rejects_ambiguous_local_identifier():
     try:
         register_fix(_AmbiguousOne)
         register_fix(_AmbiguousTwo)
-        with pytest.raises(ValueError, match="Ambiguous fix identifier"):
+        with pytest.raises(ValueError, match="Ambiguous identifier"):
             FixRegistry.resolve_identifier("shared")
     finally:
         FixRegistry._registry = registry_snapshot

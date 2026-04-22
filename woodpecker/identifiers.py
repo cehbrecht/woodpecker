@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Iterable
 
 _IDENTIFIER_PART_PATTERN = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
 
@@ -12,7 +11,7 @@ class IdentifierSet:
     prefix: str
     local_id: str
     canonical_id: str
-    aliases: tuple[str, ...]
+    aliases: tuple[str, ...] = ()
 
 
 class IdentifierRules:
@@ -41,8 +40,10 @@ class IdentifierRules:
     @staticmethod
     def derive_local_id_from_name(name: str) -> str:
         class_name = str(name or "")
-        if class_name.endswith("Fix"):
-            class_name = class_name[: -len("Fix")]
+        for suffix in ("Fix", "Plan"):
+            if class_name.endswith(suffix):
+                class_name = class_name[: -len(suffix)]
+                break
 
         first = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", class_name)
         second = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", first)
@@ -59,7 +60,7 @@ class IdentifierRules:
             raw_aliases: list[object] = []
         elif isinstance(declared_aliases, str):
             raw_aliases = [declared_aliases]
-        elif isinstance(declared_aliases, Iterable):
+        elif isinstance(declared_aliases, (list, tuple, set)):
             raw_aliases = list(declared_aliases)
         else:
             raise ValueError("Invalid aliases declaration. Expected a string or list of strings.")
@@ -97,7 +98,7 @@ class IdentifierRules:
         normalized_local_id = cls.normalize(local_id)
 
         cls.validate_local_id("namespace prefix", normalized_prefix)
-        cls.validate_local_id("fix local_id", normalized_local_id)
+        cls.validate_local_id("local_id", normalized_local_id)
 
         canonical_id = f"{normalized_prefix}.{normalized_local_id}"
         expanded_aliases = cls.expand_aliases(normalized_prefix, canonical_id, aliases)
@@ -149,7 +150,7 @@ class IdentifierResolver:
         token = IdentifierRules.normalize(identifier)
         if token in self._ambiguous_identifiers:
             raise ValueError(
-                f"Ambiguous fix identifier '{identifier}'. Use canonical '<prefix>.<local_id>' form."
+                f"Ambiguous identifier '{identifier}'. Use canonical '<prefix>.<local_id>' form."
             )
 
         canonical_id = self._identifier_index.get(token)

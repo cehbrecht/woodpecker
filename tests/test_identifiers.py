@@ -14,6 +14,14 @@ def test_identifier_rules_build_creates_canonical_identifier_set():
     )
 
 
+def test_identifier_rules_derive_local_id_from_name_strips_fix_and_plan_suffixes():
+    assert (
+        IdentifierRules.derive_local_id_from_name("NormalizeTasUnitsToKelvinFix")
+        == "normalize_tas_units_to_kelvin"
+    )
+    assert IdentifierRules.derive_local_id_from_name("AtlasMonitoringPlan") == "atlas_monitoring"
+
+
 def test_identifier_rules_expand_aliases_for_local_and_qualified_values():
     aliases = IdentifierRules.expand_aliases(
         prefix="atlas",
@@ -70,5 +78,5 @@ def test_identifier_resolver_rejects_ambiguous_identifiers():
         )
     )
 
-    with pytest.raises(ValueError, match="Ambiguous fix identifier"):
+    with pytest.raises(ValueError, match="Ambiguous identifier"):
         resolver.resolve("shared")
