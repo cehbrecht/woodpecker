@@ -50,7 +50,9 @@ def test_check_returns_zero_when_no_findings(
 ):
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_decadal_ok.nc")
-    result = runner.invoke(cli, ["check", ".", "--select", "woodpecker.normalize_tas_units_to_kelvin"])
+    result = runner.invoke(
+        cli, ["check", ".", "--select", "woodpecker.normalize_tas_units_to_kelvin"]
+    )
 
     assert result.exit_code == 0
     assert "No issues found" in result.output
@@ -76,7 +78,9 @@ def test_check_returns_nonzero_when_findings_exist(
 
     monkeypatch.setattr("woodpecker.cli.run_check", _fake_run_check)
 
-    result = runner.invoke(cli, ["check", ".", "--select", "woodpecker.normalize_tas_units_to_kelvin"])
+    result = runner.invoke(
+        cli, ["check", ".", "--select", "woodpecker.normalize_tas_units_to_kelvin"]
+    )
 
     assert result.exit_code == 1
     assert "woodpecker.normalize_tas_units_to_kelvin" in result.output
@@ -237,7 +241,16 @@ def test_check_uses_plan_defaults(
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_bad.nc")
     Path("plan.json").write_text(
-        json.dumps({"plans": [{"id": "core.basic", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]}]}),
+        json.dumps(
+            {
+                "plans": [
+                    {
+                        "id": "core.basic",
+                        "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                    }
+                ]
+            }
+        ),
         encoding="utf-8",
     )
 
@@ -267,7 +280,16 @@ def test_fix_uses_auto_output_format_when_not_set(
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_case.nc")
     Path("plan.json").write_text(
-        json.dumps({"plans": [{"id": "core.basic", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]}]}),
+        json.dumps(
+            {
+                "plans": [
+                    {
+                        "id": "core.basic",
+                        "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                    }
+                ]
+            }
+        ),
         encoding="utf-8",
     )
 
@@ -307,7 +329,10 @@ def test_check_plan_applies_fix_options_to_message(
                     {
                         "id": "cmip6-msg",
                         "fixes": [
-                            {"id": "woodpecker.normalize_tas_units_to_kelvin", "options": {"message": "configured check message"}}
+                            {
+                                "id": "woodpecker.normalize_tas_units_to_kelvin",
+                                "options": {"message": "configured check message"},
+                            }
                         ],
                     }
                 ]
@@ -343,7 +368,9 @@ def test_fix_writes_provenance_file_by_default(
     runner, make_dummy_netcdf = isolated_cli_workspace
     make_dummy_netcdf("cmip6_case.nc")
 
-    result = runner.invoke(cli, ["fix", ".", "--select", "woodpecker.normalize_tas_units_to_kelvin"])
+    result = runner.invoke(
+        cli, ["fix", ".", "--select", "woodpecker.normalize_tas_units_to_kelvin"]
+    )
 
     assert result.exit_code == 0
     prov_path = Path("woodpecker.prov.json")
@@ -376,7 +403,15 @@ def test_fix_force_apply_is_forwarded_to_runner(
 
     result = runner.invoke(
         cli,
-        ["fix", ".", "--select", "woodpecker.normalize_tas_units_to_kelvin", "--force-apply", "--format", "json"],
+        [
+            "fix",
+            ".",
+            "--select",
+            "woodpecker.normalize_tas_units_to_kelvin",
+            "--force-apply",
+            "--format",
+            "json",
+        ],
     )
 
     assert result.exit_code == 0
@@ -608,7 +643,10 @@ def test_list_plans_text_output(
                 },
                 {
                     "id": "beta",
-                    "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}, {"id": "woodpecker.remove_coordinate_fill_value_encodings"}],
+                    "fixes": [
+                        {"id": "woodpecker.ensure_latitude_is_increasing"},
+                        {"id": "woodpecker.remove_coordinate_fill_value_encodings"},
+                    ],
                 },
             ]
         ),

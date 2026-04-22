@@ -177,6 +177,7 @@ def test_registry_local_id_derivation_falls_back_to_class_name_snake_case():
     class FallbackFromClassNameFix:
         namespace_prefix = "test"
         name = "Fallback local id"
+
         def matches(self, dataset):
             return True
 

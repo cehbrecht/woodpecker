@@ -79,7 +79,6 @@ def test_fix_metadata_is_class_level_and_config_is_instance_runtime_state():
     assert _BaseMetadataFix.categories == ["metadata"]
 
 
-
 def test_fix_metadata_accessor_returns_copied_mutable_fields():
     meta = _BaseMetadataFix.class_metadata()
 
@@ -90,13 +89,10 @@ def test_fix_metadata_accessor_returns_copied_mutable_fields():
     assert _BaseMetadataFix.aliases == ["base_metadata_alias"]
 
 
-
 def test_group_fix_member_config_accepts_canonical_or_local_member_keys():
     ds = xr.Dataset(attrs={"source_name": "dummy.nc"})
 
-    group_local = _ContainerGroupFix().configure(
-        {"members": {"member_fix": {"marker": "local"}}}
-    )
+    group_local = _ContainerGroupFix().configure({"members": {"member_fix": {"marker": "local"}}})
     changed_local = group_local.apply(ds, dry_run=False)
 
     assert changed_local is True

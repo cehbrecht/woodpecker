@@ -28,8 +28,10 @@ def test_common04_apply_write_merges_equivalent_dims():
         },
     )
 
-    changed = MergeEquivalentDimensionsFix().configure({"dims": ["bnds", "nv"]}).apply(
-        dataset, dry_run=False
+    changed = (
+        MergeEquivalentDimensionsFix()
+        .configure({"dims": ["bnds", "nv"]})
+        .apply(dataset, dry_run=False)
     )
 
     assert changed is True

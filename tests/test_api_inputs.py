@@ -23,7 +23,9 @@ def test_check_supports_xarray_dataset_input():
     findings = check(ds, codes=["woodpecker.ensure_latitude_is_increasing"])
 
     assert findings
-    assert {entry["code"] for entry in findings}.issuperset({"woodpecker.ensure_latitude_is_increasing"})
+    assert {entry["code"] for entry in findings}.issuperset(
+        {"woodpecker.ensure_latitude_is_increasing"}
+    )
 
 
 def test_fix_supports_xarray_dataset_input_write_mode():
@@ -83,7 +85,9 @@ def test_fix_accepts_explicit_output_format():
         attrs={"source_name": "example.nc"},
     )
 
-    stats = fix(ds, codes=["woodpecker.normalize_tas_units_to_kelvin"], write=True, output_format="netcdf")
+    stats = fix(
+        ds, codes=["woodpecker.normalize_tas_units_to_kelvin"], write=True, output_format="netcdf"
+    )
 
     assert stats["attempted"] == 1
     assert stats["changed"] == 1

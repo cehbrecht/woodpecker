@@ -97,7 +97,10 @@ def test_select_fixes_respects_ordered_codes_sequence():
     )
     ordered = [fix.canonical_id for fix in fixes]
 
-    assert ordered[:2] == ["woodpecker.normalize_tas_units_to_kelvin", "woodpecker.ensure_latitude_is_increasing"]
+    assert ordered[:2] == [
+        "woodpecker.normalize_tas_units_to_kelvin",
+        "woodpecker.ensure_latitude_is_increasing",
+    ]
 
 
 def test_run_fix_can_embed_provenance_metadata_on_write():
