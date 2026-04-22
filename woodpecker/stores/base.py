@@ -21,4 +21,6 @@ class FixPlanStore(ABC):
         raise NotImplementedError
 
     def get_plan(self, identifier: str) -> FixPlan:
+        # If this becomes a hot path, concrete stores can cache FixPlanIndex and
+        # invalidate on save_plan(); keep base class behavior stateless and minimal.
         return FixPlanIndex(self.list_plans()).get(identifier)
