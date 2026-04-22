@@ -8,18 +8,24 @@ from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_validator,
 from woodpecker.identifiers import IdentifierRules, IdentifierSet, coerce_scoped_identifier
 
 
-def _validate_link_entry(item: Any) -> dict[str, str]:
-    if not isinstance(item, dict) or not item.get("rel") or not item.get("href"):
-        raise ValueError("Link entries must contain rel and href")
-    return dict(item)
+class Link(BaseModel):
+    """A typed hyperlink reference used in fix plans and fix refs."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    rel: str
+    href: str
+    title: str | None = None
 
 
 class FixRef(BaseModel):
     """Reference to a fix within a plan, carrying an identifier and optional options."""
 
+    model_config = ConfigDict(extra="forbid")
+
     id: str
     options: dict[str, Any] = Field(default_factory=dict)
-    links: list[dict[str, str]] = Field(default_factory=list)
+    links: list[Link] = Field(default_factory=list)
 
     @field_validator("id", mode="before")
     @classmethod
@@ -44,17 +50,13 @@ class FixRef(BaseModel):
 
     @field_validator("links", mode="before")
     @classmethod
-    def _coerce_links(cls, v: object) -> list[dict[str, str]]:
-        if v is None:
-            return []
-        if not isinstance(v, list):
-            raise ValueError("FixRef.links must be a list")
-        return [_validate_link_entry(item) for item in v]
+    def _coerce_links(cls, v: object) -> list[Any]:
+        return [] if v is None else v
 
     def to_dict(self) -> dict[str, Any]:
         payload: dict[str, Any] = {"id": self.id, "options": dict(self.options)}
         if self.links:
-            payload["links"] = [dict(item) for item in self.links]
+            payload["links"] = [link.model_dump(exclude_none=True) for link in self.links]
         return payload
 
     @classmethod
@@ -64,6 +66,8 @@ class FixRef(BaseModel):
 
 class DatasetMatcher(BaseModel):
     """Criteria for matching datasets by attributes or path patterns."""
+
+    model_config = ConfigDict(extra="forbid")
 
     attrs: dict[str, Any] = Field(default_factory=dict)
     path_patterns: list[str] = Field(default_factory=list)
@@ -87,7 +91,7 @@ class DatasetMatcher(BaseModel):
         return [str(p) for p in v]
 
     def to_dict(self) -> dict[str, Any]:
-        return {"attrs": dict(self.attrs), "path_patterns": list(self.path_patterns)}
+        return self.model_dump()
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> DatasetMatcher:
@@ -116,10 +120,7 @@ class ProviderMetadata(BaseModel):
         return stripped or None
 
     def to_dict(self) -> dict[str, str]:
-        payload = {"name": self.name}
-        if self.version:
-            payload["version"] = self.version
-        return payload
+        return self.model_dump(exclude_none=True)
 
     @classmethod
     def from_mapping(cls, payload: Mapping[str, Any]) -> ProviderMetadata:
@@ -149,12 +150,7 @@ def parse_fix_ref(item: Any) -> FixRef:
         return FixRef(id=item)
     if not isinstance(item, Mapping):
         raise ValueError("Each fix entry must be a string or object")
-    fix_id = item.get("id", "")
-    return FixRef(
-        id=str(fix_id),
-        options=dict(item.get("options", {}) or {}),
-        links=[dict(link) for link in list(item.get("links", []) or [])],
-    )
+    return FixRef.model_validate(dict(item))
 
 
 class FixPlan(BaseModel):
@@ -165,7 +161,7 @@ class FixPlan(BaseModel):
     canonical id is assembled and an ``IdentifierSet`` is attached.
     """
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(extra="forbid")
 
     id: str = ""
     local_id: str = ""
@@ -173,7 +169,7 @@ class FixPlan(BaseModel):
     description: str = ""
     match: DatasetMatcher | None = None
     fixes: list[FixRef] = Field(default_factory=list)
-    links: list[dict[str, str]] = Field(default_factory=list)
+    links: list[Link] = Field(default_factory=list)
     runtime_metadata: FixPlanRuntimeMetadata | None = Field(default=None, repr=False)
 
     _identifier_set: IdentifierSet | None = PrivateAttr(default=None)
@@ -194,12 +190,8 @@ class FixPlan(BaseModel):
 
     @field_validator("links", mode="before")
     @classmethod
-    def _coerce_links(cls, v: object) -> list[dict[str, str]]:
-        if v is None:
-            return []
-        if not isinstance(v, list):
-            raise ValueError("FixPlan.links must be a list")
-        return [_validate_link_entry(item) for item in v]
+    def _coerce_links(cls, v: object) -> list[Any]:
+        return [] if v is None else v
 
     @model_validator(mode="after")
     def _resolve_and_scope(self) -> FixPlan:
@@ -238,24 +230,14 @@ class FixPlan(BaseModel):
         return token
 
     def to_dict(self) -> dict[str, Any]:
-        fix_entries: list[dict[str, Any]] = []
-        for fix in self.fixes:
-            row: dict[str, Any] = {
-                "id": fix.id,
-                "options": dict(fix.options),
-            }
-            if fix.links:
-                row["links"] = [dict(item) for item in fix.links]
-            fix_entries.append(row)
-
         payload: dict[str, Any] = {
             "id": self.id,
             "description": self.description,
             "match": self.match.to_dict() if self.match is not None else None,
-            "fixes": fix_entries,
+            "fixes": [fix.to_dict() for fix in self.fixes],
         }
         if self.links:
-            payload["links"] = [dict(item) for item in self.links]
+            payload["links"] = [link.model_dump(exclude_none=True) for link in self.links]
         return payload
 
     def runtime_metadata_dict(self) -> dict[str, Any] | None:
@@ -278,10 +260,7 @@ class FixPlan(BaseModel):
 
     @classmethod
     def from_json(cls, payload: str) -> FixPlan:
-        data = json.loads(payload)
-        if not isinstance(data, Mapping):
-            raise ValueError("FixPlan JSON payload must decode to an object")
-        return cls.from_dict(data)
+        return cls.model_validate_json(payload)
 
     @classmethod
     def from_mapping(cls, payload: Mapping[str, Any]) -> FixPlan:
@@ -291,6 +270,8 @@ class FixPlan(BaseModel):
 
 class FixPlanDocument(BaseModel):
     """A versioned collection of fix plans."""
+
+    model_config = ConfigDict(extra="forbid")
 
     schema_version: int = 1
     plans: list[FixPlan] = Field(default_factory=list)
@@ -323,8 +304,9 @@ class FixPlanDocument(BaseModel):
         schema_version = cls._coerce_schema_version(payload.get("schema_version", 1))
         raw_plans = payload.get("plans")
         if raw_plans is None:
-            # Single-plan shorthand: treat top-level object as one FixPlan.
-            return cls(schema_version=schema_version, plans=[FixPlan.from_mapping(payload)])
+            # Single-plan shorthand: strip document-level keys before constructing FixPlan.
+            plan_payload = {k: v for k, v in payload.items() if k != "schema_version"}
+            return cls(schema_version=schema_version, plans=[FixPlan.from_mapping(plan_payload)])
         if not isinstance(raw_plans, list):
             raise ValueError("FixPlanDocument 'plans' must be a list")
         return cls(
