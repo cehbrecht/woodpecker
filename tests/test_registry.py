@@ -1,6 +1,24 @@
 import pytest
 
 from woodpecker.fixes.registry import Fix, FixRegistry, GroupFix, register_fix
+from woodpecker.identifiers import IdentifierResolver
+
+
+def _snapshot_registry_state():
+    return (
+        dict(FixRegistry._registry),
+        dict(FixRegistry._resolver._identifier_index),
+        set(FixRegistry._resolver._ambiguous_identifiers),
+    )
+
+
+def _restore_registry_state(snapshot):
+    registry_snapshot, index_snapshot, ambiguous_snapshot = snapshot
+    FixRegistry._registry = registry_snapshot
+    FixRegistry._resolver = IdentifierResolver(
+        index=index_snapshot,
+        ambiguous_identifiers=ambiguous_snapshot,
+    )
 
 
 def test_registry_discovers_builtins():
@@ -48,9 +66,7 @@ def test_registry_rejects_missing_name():
 
 
 def test_register_fix_decorator_alias_registers_class():
-    registry_snapshot = dict(FixRegistry._registry)
-    identifier_snapshot = dict(FixRegistry._identifier_index)
-    ambiguous_snapshot = set(FixRegistry._ambiguous_identifiers)
+    snapshot = _snapshot_registry_state()
 
     class _AliasFix(Fix):
         namespace_prefix = "test"
@@ -69,15 +85,11 @@ def test_register_fix_decorator_alias_registers_class():
         assert FixRegistry.resolve_identifier("alias_lookup") == "test.alias_fix"
         assert FixRegistry.resolve_identifier("test.alias_lookup") == "test.alias_fix"
     finally:
-        FixRegistry._registry = registry_snapshot
-        FixRegistry._identifier_index = identifier_snapshot
-        FixRegistry._ambiguous_identifiers = ambiguous_snapshot
+        _restore_registry_state(snapshot)
 
 
 def test_registry_supports_fully_qualified_aliases_without_local_expansion():
-    registry_snapshot = dict(FixRegistry._registry)
-    identifier_snapshot = dict(FixRegistry._identifier_index)
-    ambiguous_snapshot = set(FixRegistry._ambiguous_identifiers)
+    snapshot = _snapshot_registry_state()
 
     class _QualifiedAliasFix(Fix):
         namespace_prefix = "test"
@@ -95,9 +107,7 @@ def test_registry_supports_fully_qualified_aliases_without_local_expansion():
         with pytest.raises(KeyError):
             FixRegistry.resolve_identifier("explicit_lookup")
     finally:
-        FixRegistry._registry = registry_snapshot
-        FixRegistry._identifier_index = identifier_snapshot
-        FixRegistry._ambiguous_identifiers = ambiguous_snapshot
+        _restore_registry_state(snapshot)
 
 
 def test_registry_rejects_invalid_alias_syntax():
@@ -117,9 +127,7 @@ def test_registry_rejects_invalid_alias_syntax():
 
 
 def test_registry_local_id_derivation_precedence_explicit_over_derived():
-    registry_snapshot = dict(FixRegistry._registry)
-    identifier_snapshot = dict(FixRegistry._identifier_index)
-    ambiguous_snapshot = set(FixRegistry._ambiguous_identifiers)
+    snapshot = _snapshot_registry_state()
 
     class _ExplicitLocalIdWinsFix(Fix):
         namespace_prefix = "test"
@@ -138,15 +146,11 @@ def test_registry_local_id_derivation_precedence_explicit_over_derived():
         register_fix(_ExplicitLocalIdWinsFix)
         assert _ExplicitLocalIdWinsFix.canonical_id == "test.explicit_local"
     finally:
-        FixRegistry._registry = registry_snapshot
-        FixRegistry._identifier_index = identifier_snapshot
-        FixRegistry._ambiguous_identifiers = ambiguous_snapshot
+        _restore_registry_state(snapshot)
 
 
 def test_registry_local_id_derivation_uses_derived_when_local_missing():
-    registry_snapshot = dict(FixRegistry._registry)
-    identifier_snapshot = dict(FixRegistry._identifier_index)
-    ambiguous_snapshot = set(FixRegistry._ambiguous_identifiers)
+    snapshot = _snapshot_registry_state()
 
     class _DerivedLocalIdFix(Fix):
         namespace_prefix = "test"
@@ -164,15 +168,11 @@ def test_registry_local_id_derivation_uses_derived_when_local_missing():
         register_fix(_DerivedLocalIdFix)
         assert _DerivedLocalIdFix.canonical_id == "test.derived_local"
     finally:
-        FixRegistry._registry = registry_snapshot
-        FixRegistry._identifier_index = identifier_snapshot
-        FixRegistry._ambiguous_identifiers = ambiguous_snapshot
+        _restore_registry_state(snapshot)
 
 
 def test_registry_local_id_derivation_falls_back_to_class_name_snake_case():
-    registry_snapshot = dict(FixRegistry._registry)
-    identifier_snapshot = dict(FixRegistry._identifier_index)
-    ambiguous_snapshot = set(FixRegistry._ambiguous_identifiers)
+    snapshot = _snapshot_registry_state()
 
     class FallbackFromClassNameFix:
         namespace_prefix = "test"
@@ -195,9 +195,7 @@ def test_registry_local_id_derivation_falls_back_to_class_name_snake_case():
         register_fix(FallbackFromClassNameFix)
         assert FallbackFromClassNameFix.canonical_id == "test.fallback_from_class_name"
     finally:
-        FixRegistry._registry = registry_snapshot
-        FixRegistry._identifier_index = identifier_snapshot
-        FixRegistry._ambiguous_identifiers = ambiguous_snapshot
+        _restore_registry_state(snapshot)
 
 
 def test_registry_resolves_canonical_and_local_aliases_for_known_fixes():
@@ -212,9 +210,7 @@ def test_registry_resolves_canonical_and_local_aliases_for_known_fixes():
 
 
 def test_registry_rejects_ambiguous_local_identifier():
-    registry_snapshot = dict(FixRegistry._registry)
-    identifier_snapshot = dict(FixRegistry._identifier_index)
-    ambiguous_snapshot = set(FixRegistry._ambiguous_identifiers)
+    snapshot = _snapshot_registry_state()
 
     class _AmbiguousOne(Fix):
         namespace_prefix = "alpha"
@@ -240,6 +236,4 @@ def test_registry_rejects_ambiguous_local_identifier():
         with pytest.raises(ValueError, match="Ambiguous identifier"):
             FixRegistry.resolve_identifier("shared")
     finally:
-        FixRegistry._registry = registry_snapshot
-        FixRegistry._identifier_index = identifier_snapshot
-        FixRegistry._ambiguous_identifiers = ambiguous_snapshot
+        _restore_registry_state(snapshot)

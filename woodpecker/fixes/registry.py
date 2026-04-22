@@ -17,19 +17,7 @@ class FixRegistry:
     """
 
     _registry: Dict[str, Type[Any]] = {}
-    _identifier_index: Dict[str, str] = {}
-    _ambiguous_identifiers: set[str] = set()
-
-    @staticmethod
-    def _normalize_identifier(identifier: str) -> str:
-        return IdentifierRules.normalize(identifier)
-
-    @classmethod
-    def _identifier_resolver(cls) -> IdentifierResolver:
-        return IdentifierResolver(
-            index=cls._identifier_index,
-            ambiguous_identifiers=cls._ambiguous_identifiers,
-        )
+    _resolver: IdentifierResolver = IdentifierResolver()
 
     @classmethod
     def _infer_namespace_prefix_from_module(cls, fix_cls: Type[Any]) -> str:
@@ -44,7 +32,7 @@ class FixRegistry:
             return "woodpecker"
 
         package = module.split(".", 1)[0]
-        package = cls._normalize_identifier(package)
+        package = IdentifierRules.normalize(package)
         if package.startswith("woodpecker_"):
             package = package[len("woodpecker_") :]
         if package.endswith("_plugin"):
@@ -53,7 +41,7 @@ class FixRegistry:
 
     @classmethod
     def _derive_namespace_prefix(cls, fix_cls: Type[Any], explicit: str) -> str:
-        token = cls._normalize_identifier(explicit)
+        token = IdentifierRules.normalize(explicit)
         if token:
             return token
         return cls._infer_namespace_prefix_from_module(fix_cls)
@@ -67,7 +55,7 @@ class FixRegistry:
         3) class name transformed to snake_case
         """
 
-        token = cls._normalize_identifier(explicit)
+        token = IdentifierRules.normalize(explicit)
         if token:
             return token
 
@@ -94,7 +82,7 @@ class FixRegistry:
 
     @classmethod
     def resolve_identifier(cls, identifier: str) -> str:
-        return cls._identifier_resolver().resolve(identifier)
+        return cls._resolver.resolve(identifier)
 
     @staticmethod
     def _instantiate_fix(fix_cls: Type[Any]) -> Any:
@@ -149,7 +137,7 @@ class FixRegistry:
         setattr(fix_cls, "aliases", list(identifier_set.aliases))
 
         cls._registry[identifier_set.canonical_id] = fix_cls
-        cls._identifier_resolver().register(identifier_set, include_local_id=True)
+        cls._resolver.register(identifier_set, include_local_id=True)
         return fix_cls  # decorator-friendly
 
     @classmethod

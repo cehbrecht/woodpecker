@@ -110,7 +110,7 @@ class FixPlan:
 
     def __post_init__(self) -> None:
         self.id = IdentifierRules.normalize(self.id)
-        self.local_id = IdentifierRules.normalize(self.local_id) or self.id
+        self.local_id = IdentifierRules.normalize(self.local_id)
         self.namespace = IdentifierRules.normalize(self.namespace)
         self.description = str(self.description)
         if not isinstance(self.links, list):
@@ -119,10 +119,21 @@ class FixPlan:
             if not isinstance(item, dict) or not item.get("rel") or not item.get("href"):
                 raise ValueError("FixPlan.links entries must contain rel and href")
 
+        if self.id and "." in self.id:
+            IdentifierRules.validate_canonical_id("FixPlan.id", self.id)
+            id_prefix, id_local = self.id.split(".", 1)
+            if not self.namespace:
+                self.namespace = id_prefix
+            if not self.local_id:
+                self.local_id = id_local
+        elif self.id and not self.local_id:
+            self.local_id = self.id
+
         if self.namespace and self.local_id:
-            self.id = f"{self.namespace}.{self.local_id}"
-        elif self.id and "." in self.id and not self.namespace:
-            self.namespace, self.local_id = self.id.split(".", 1)
+            identifiers = IdentifierRules.build(self.namespace, self.local_id)
+            self.namespace = identifiers.prefix
+            self.local_id = identifiers.local_id
+            self.id = identifiers.canonical_id
 
         # Keep canonical IDs as primary plan identity for fixes.
         self.fixes = [
@@ -170,13 +181,16 @@ class FixPlan:
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> FixPlan:
         raw_match = payload.get("match")
-        plan_id = str(payload.get("id", ""))
-        namespace = str(payload.get("namespace", payload.get("prefix", "")))
-        local_id = str(payload.get("local_id", ""))
+        plan_id = IdentifierRules.normalize(payload.get("id", ""))
+        namespace = IdentifierRules.normalize(payload.get("namespace", payload.get("prefix", "")))
+        local_id = IdentifierRules.normalize(payload.get("local_id", ""))
         if plan_id and "." in plan_id and not namespace:
             namespace, local_id = plan_id.split(".", 1)
         if not local_id:
-            local_id = str(payload.get("id", ""))
+            if plan_id and "." in plan_id:
+                _, local_id = plan_id.split(".", 1)
+            else:
+                local_id = plan_id
         return cls(
             id=plan_id,
             local_id=local_id,
