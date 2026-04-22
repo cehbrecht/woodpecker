@@ -1,6 +1,12 @@
 import pytest
 
-from woodpecker.identifiers import IdentifierResolver, IdentifierRules, IdentifierSet
+from woodpecker.identifiers import (
+    IdentifierResolver,
+    IdentifierRules,
+    IdentifierSet,
+    build_identifier_resolver,
+    coerce_scoped_identifier,
+)
 
 
 def test_identifier_rules_build_creates_canonical_identifier_set():
@@ -80,3 +86,39 @@ def test_identifier_resolver_rejects_ambiguous_identifiers():
 
     with pytest.raises(ValueError, match="Ambiguous identifier"):
         resolver.resolve("shared")
+
+
+def test_coerce_scoped_identifier_builds_identifier_set_from_canonical_id():
+    resolved = coerce_scoped_identifier(
+        canonical_id="atlas.basic",
+        local_id="",
+        namespace_prefix="",
+        canonical_label="FixPlan.id",
+    )
+
+    assert resolved.canonical_id == "atlas.basic"
+    assert resolved.namespace_prefix == "atlas"
+    assert resolved.local_id == "basic"
+    assert resolved.identifier_set == IdentifierSet(
+        prefix="atlas",
+        local_id="basic",
+        canonical_id="atlas.basic",
+        aliases=(),
+    )
+
+
+def test_build_identifier_resolver_registers_identifier_sets():
+    resolver = build_identifier_resolver(
+        [
+            IdentifierSet(
+                prefix="atlas",
+                local_id="cleanup",
+                canonical_id="atlas.cleanup",
+                aliases=("encoding_cleanup",),
+            )
+        ]
+    )
+
+    assert resolver.resolve("atlas.cleanup") == "atlas.cleanup"
+    assert resolver.resolve("cleanup") == "atlas.cleanup"
+    assert resolver.resolve("encoding_cleanup") == "atlas.cleanup"

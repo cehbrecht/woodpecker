@@ -4,7 +4,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
-from woodpecker.identifiers import IdentifierSet, IdentifierRules
+from woodpecker.identifiers import IdentifierSet, IdentifierRules, coerce_scoped_identifier
 
 
 def _validate_links(field_name: str, value: object) -> list[dict[str, str]]:
@@ -17,36 +17,6 @@ def _validate_links(field_name: str, value: object) -> list[dict[str, str]]:
             raise ValueError(f"{field_name} entries must contain rel and href")
         validated.append(dict(item))
     return validated
-
-
-def _resolve_plan_identifier_set(
-    *,
-    plan_id: object,
-    local_id: object,
-    namespace_prefix: object,
-) -> tuple[str, str, str, IdentifierSet | None]:
-    normalized_id = IdentifierRules.normalize(plan_id)
-    normalized_local_id = IdentifierRules.normalize(local_id)
-    normalized_prefix = IdentifierRules.normalize(namespace_prefix)
-
-    if normalized_id and "." in normalized_id:
-        IdentifierRules.validate_canonical_id("FixPlan.id", normalized_id)
-        parsed_prefix, parsed_local_id = normalized_id.split(".", 1)
-        if not normalized_prefix:
-            normalized_prefix = parsed_prefix
-        if not normalized_local_id:
-            normalized_local_id = parsed_local_id
-    elif normalized_id and not normalized_local_id:
-        normalized_local_id = normalized_id
-
-    identifier_set: IdentifierSet | None = None
-    if normalized_prefix and normalized_local_id:
-        identifier_set = IdentifierRules.build(normalized_prefix, normalized_local_id)
-        normalized_prefix = identifier_set.prefix
-        normalized_local_id = identifier_set.local_id
-        normalized_id = identifier_set.canonical_id
-
-    return normalized_id, normalized_local_id, normalized_prefix, identifier_set
 
 
 @dataclass
@@ -130,13 +100,16 @@ class FixPlan:
     _identifier_set: IdentifierSet | None = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
-        self.id, self.local_id, self.namespace_prefix, self._identifier_set = (
-            _resolve_plan_identifier_set(
-                plan_id=self.id,
-                local_id=self.local_id,
-                namespace_prefix=self.namespace_prefix,
-            )
+        resolved = coerce_scoped_identifier(
+            canonical_id=self.id,
+            local_id=self.local_id,
+            namespace_prefix=self.namespace_prefix,
+            canonical_label="FixPlan.id",
         )
+        self.id = resolved.canonical_id
+        self.local_id = resolved.local_id
+        self.namespace_prefix = resolved.namespace_prefix
+        self._identifier_set = resolved.identifier_set
         self.description = str(self.description)
         self.links = _validate_links("FixPlan.links", self.links)
 

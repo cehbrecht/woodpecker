@@ -14,6 +14,14 @@ class IdentifierSet:
     aliases: tuple[str, ...] = ()
 
 
+@dataclass(frozen=True)
+class ScopedIdentifierResolution:
+    canonical_id: str
+    local_id: str
+    namespace_prefix: str
+    identifier_set: IdentifierSet | None
+
+
 class IdentifierRules:
     @staticmethod
     def normalize(value: object) -> str:
@@ -157,3 +165,54 @@ class IdentifierResolver:
         if canonical_id is None:
             raise KeyError(identifier)
         return canonical_id
+
+
+def coerce_scoped_identifier(
+    *,
+    canonical_id: object,
+    local_id: object,
+    namespace_prefix: object,
+    canonical_label: str,
+) -> ScopedIdentifierResolution:
+    normalized_canonical_id = IdentifierRules.normalize(canonical_id)
+    normalized_local_id = IdentifierRules.normalize(local_id)
+    normalized_prefix = IdentifierRules.normalize(namespace_prefix)
+
+    if normalized_canonical_id and "." in normalized_canonical_id:
+        IdentifierRules.validate_canonical_id(canonical_label, normalized_canonical_id)
+        parsed_prefix, parsed_local_id = normalized_canonical_id.split(".", 1)
+        if not normalized_prefix:
+            normalized_prefix = parsed_prefix
+        if not normalized_local_id:
+            normalized_local_id = parsed_local_id
+    elif normalized_canonical_id and not normalized_local_id:
+        normalized_local_id = normalized_canonical_id
+
+    identifier_set: IdentifierSet | None = None
+    if normalized_prefix and normalized_local_id:
+        identifier_set = IdentifierRules.build(normalized_prefix, normalized_local_id)
+        normalized_prefix = identifier_set.prefix
+        normalized_local_id = identifier_set.local_id
+        normalized_canonical_id = identifier_set.canonical_id
+
+    return ScopedIdentifierResolution(
+        canonical_id=normalized_canonical_id,
+        local_id=normalized_local_id,
+        namespace_prefix=normalized_prefix,
+        identifier_set=identifier_set,
+    )
+
+
+def build_identifier_resolver(
+    identifier_sets: list[IdentifierSet], include_local_id: bool = True
+) -> IdentifierResolver:
+    """Build a resolver pre-populated from identifier sets.
+
+    This utility is useful for stores that need duplicate detection, shorthand
+    lookups, and canonical identifier resolution via one shared resolver model.
+    """
+
+    resolver = IdentifierResolver()
+    for identifier_set in identifier_sets:
+        resolver.register(identifier_set, include_local_id=include_local_id)
+    return resolver
