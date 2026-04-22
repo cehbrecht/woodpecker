@@ -7,6 +7,7 @@ from typing import Any
 from ..plans.matcher import plan_matches_dataset
 from ..plans.models import DatasetMatcher, FixPlan, FixRef
 from .base import FixPlanStore
+from .index import FixPlanIndex
 
 
 class DuckDBFixPlanStore(FixPlanStore):
@@ -67,6 +68,7 @@ class DuckDBFixPlanStore(FixPlanStore):
     def save_plan(self, plan: FixPlan) -> None:
         match_json = json.dumps(plan.match.to_dict()) if plan.match is not None else None
         fixes_json = json.dumps([item.to_dict() for item in plan.fixes])
+        plan_id = FixPlanIndex.canonical_plan_id(plan)
 
         with self._connect() as con:
             con.execute(
@@ -74,7 +76,7 @@ class DuckDBFixPlanStore(FixPlanStore):
                 INSERT OR REPLACE INTO fix_plans (id, description, match_json, fixes_json)
                 VALUES (?, ?, ?, ?)
                 """,
-                [plan.id, plan.description, match_json, fixes_json],
+                [plan_id, plan.description, match_json, fixes_json],
             )
 
     @staticmethod

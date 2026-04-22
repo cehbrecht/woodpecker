@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from ..plans.models import FixPlan
+from .index import FixPlanIndex
 
 
 class FixPlanStore(ABC):
@@ -18,3 +19,6 @@ class FixPlanStore(ABC):
     @abstractmethod
     def save_plan(self, plan: FixPlan) -> None:
         raise NotImplementedError
+
+    def get_plan(self, identifier: str) -> FixPlan:
+        return FixPlanIndex(self.list_plans()).get(identifier)
