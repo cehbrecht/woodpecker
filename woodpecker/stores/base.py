@@ -8,6 +8,13 @@ from .index import FixPlanIndex
 
 
 class FixPlanStore(ABC):
+    """Abstract base for fix-plan storage backends.
+
+    Backends must implement ``lookup``, ``list_plans``, and ``save_plan``.
+    ``get_plan`` is provided for free via ``FixPlanIndex`` and does not need
+    to be overridden unless the backend wants to optimize the hot path.
+    """
+
     @abstractmethod
     def lookup(self, dataset: Any, path: str | None = None) -> list[FixPlan]:
         raise NotImplementedError

@@ -248,7 +248,7 @@ def test_fix_plan_identity_uses_identifier_set_when_prefix_and_local_available()
     plan = FixPlan(id="atlas.atlas_basic", fixes=[FixRef(id="atlas.encoding_cleanup")])
 
     assert plan.identifier_set is not None
-    assert plan.identifier_set.prefix == "atlas"
+    assert plan.identifier_set.namespace_prefix == "atlas"
     assert plan.identifier_set.local_id == "atlas_basic"
     assert plan.identifier_set.canonical_id == "atlas.atlas_basic"
     assert plan.namespace_prefix == "atlas"

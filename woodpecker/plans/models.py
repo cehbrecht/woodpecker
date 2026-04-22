@@ -4,7 +4,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
-from woodpecker.identifiers import IdentifierSet, IdentifierRules, coerce_scoped_identifier
+from woodpecker.identifiers import IdentifierRules, IdentifierSet, coerce_scoped_identifier
 
 
 def _validate_links(field_name: str, value: object) -> list[dict[str, str]]:
@@ -21,6 +21,8 @@ def _validate_links(field_name: str, value: object) -> list[dict[str, str]]:
 
 @dataclass
 class FixRef:
+    """Reference to a fix within a plan, carrying an identifier and optional options."""
+
     id: str
     options: dict[str, Any] = field(default_factory=dict)
     links: list[dict[str, str]] = field(default_factory=list)
@@ -90,6 +92,13 @@ def parse_fix_ref(item: Any) -> FixRef:
 
 @dataclass
 class FixPlan:
+    """A fix plan: an optionally scoped set of fix references with dataset matching rules.
+
+    The ``id`` field accepts either a canonical ``<namespace>.<local_id>`` form or a
+    bare local id.  When a ``namespace_prefix`` is provided alongside a bare id, the
+    canonical id is assembled and an ``IdentifierSet`` is attached.
+    """
+
     id: str = ""
     local_id: str = ""
     namespace_prefix: str = ""
@@ -164,14 +173,22 @@ class FixPlan:
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> FixPlan:
+        """Deserialize a ``FixPlan`` from a plain mapping.
+
+        The ``namespace`` JSON key maps to ``namespace_prefix`` internally.
+        Fix entries may be plain id strings or ``{id, options, links}`` objects.
+        """
         raw_match = payload.get("match")
+        raw_fixes = payload.get("fixes", []) or []
+        if not isinstance(raw_fixes, list):
+            raise ValueError("FixPlan 'fixes' must be a list")
         return cls(
             id=str(payload.get("id", "")),
             local_id=str(payload.get("local_id", "")),
             namespace_prefix=str(payload.get("namespace", "")),
             description=str(payload.get("description", "")),
             match=DatasetMatcher.from_dict(raw_match) if isinstance(raw_match, Mapping) else None,
-            fixes=[parse_fix_ref(item) for item in list(payload.get("fixes", []) or [])],
+            fixes=[parse_fix_ref(item) for item in raw_fixes],
             links=[dict(item) for item in list(payload.get("links", []) or [])],
         )
 
@@ -184,9 +201,7 @@ class FixPlan:
 
     @classmethod
     def from_mapping(cls, payload: Mapping[str, Any]) -> FixPlan:
-        items = payload.get("fixes", [])
-        if not isinstance(items, list):
-            raise ValueError("FixPlan 'fixes' must be a list")
+        """Parse a ``FixPlan`` from an external mapping (alias for ``from_dict``)."""
         return cls.from_dict(payload)
 
 

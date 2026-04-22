@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Optional, Type
 
 from woodpecker.identifiers import IdentifierResolver, IdentifierRules
 
@@ -16,7 +16,7 @@ class FixRegistry:
       entry points or a DB/index without changing callers.
     """
 
-    _registry: Dict[str, Type[Any]] = {}
+    _registry: dict[str, Type[Any]] = {}
     _resolver: IdentifierResolver = IdentifierResolver()
 
     @classmethod
@@ -75,7 +75,7 @@ class FixRegistry:
         local_id = cls._derive_fix_local_id(fix_cls, str(getattr(fix_cls, "local_id", "") or ""))
 
         return IdentifierRules.build(
-            prefix=prefix,
+            namespace_prefix=prefix,
             local_id=local_id,
             aliases=getattr(fix_cls, "aliases", None),
         )
@@ -113,11 +113,11 @@ class FixRegistry:
             )
 
     @classmethod
-    def registered_canonical_ids(cls) -> List[str]:
+    def registered_canonical_ids(cls) -> list[str]:
         return sorted(cls._registry.keys())
 
     @classmethod
-    def registered_ids(cls) -> List[str]:
+    def registered_ids(cls) -> list[str]:
         return cls.registered_canonical_ids()
 
     @classmethod
@@ -131,7 +131,7 @@ class FixRegistry:
                 f"Duplicate fix canonical id '{identifier_set.canonical_id}' (already registered)"
             )
 
-        setattr(fix_cls, "namespace_prefix", identifier_set.prefix)
+        setattr(fix_cls, "namespace_prefix", identifier_set.namespace_prefix)
         setattr(fix_cls, "local_id", identifier_set.local_id)
         setattr(fix_cls, "canonical_id", identifier_set.canonical_id)
         setattr(fix_cls, "aliases", list(identifier_set.aliases))
@@ -141,7 +141,7 @@ class FixRegistry:
         return fix_cls  # decorator-friendly
 
     @classmethod
-    def discover(cls, filters: Optional[Dict[str, Any]] = None) -> List[Fix]:
+    def discover(cls, filters: Optional[dict[str, Any]] = None) -> list[Fix]:
         """Return instantiated Fix objects, optionally filtered.
 
         Example:
