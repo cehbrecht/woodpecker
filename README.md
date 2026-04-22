@@ -9,7 +9,20 @@ Woodpecker is a lightweight, code-based catalog of common dataset fixes for clim
 
 Dataset-specific fix families are provided as external plugins.
 
+Example: a dataset may use Celsius instead of Kelvin, contain inconsistent
+dimension names, or need metadata normalization. Woodpecker can detect and
+apply known fixes consistently.
+
 Contributor and developer docs live in `CONTRIBUTING.md`.
+
+---
+
+## Why Woodpecker?
+
+* Reuse known dataset fixes across workflows
+* Keep fix logic versioned and testable in code
+* Apply fixes consistently in automated pipelines
+* Extend with project-specific plugins
 
 ---
 
@@ -17,22 +30,29 @@ Contributor and developer docs live in `CONTRIBUTING.md`.
 
 ### Fix
 
-An executable rule that checks and optionally repairs a dataset attribute.
+An executable rule that checks and optionally repairs a dataset issue.
+
 Fixes are registered in the `FixRegistry` and discovered at runtime via
 Python entry points.
 
 ### Fix Identifiers
 
-Every fix and plan has a stable, scoped identifier.
+Every fix and plan has a stable, scoped identifier:
 
-- **`namespace_prefix`** — the owning namespace, e.g. `cmip6_decadal`, `atlas`, `woodpecker`
-- **`local_id`** — a snake_case name unique within that namespace, e.g. `time_metadata`
-- **canonical id** — the fully-qualified form `<namespace_prefix>.<local_id>`, e.g. `cmip6_decadal.time_metadata`
+* **`namespace_prefix`** — owning namespace, e.g. `cmip6_decadal`, `atlas`, `woodpecker`
+* **`local_id`** — snake_case identifier unique within that namespace
+* **canonical id** — `<namespace_prefix>.<local_id>`
 
-The canonical id is what gets stored in plans, passed on the CLI, and resolved
-by the `IdentifierResolver`.  Short (local) ids can also be used when unambiguous.
+Examples:
 
-Fix classes declare their identifier as class attributes:
+* `cmip6_decadal.time_metadata`
+* `atlas.encoding_cleanup`
+* `woodpecker.normalize_units`
+
+Canonical ids are stored in plans, used on the CLI, and resolved through the
+`IdentifierResolver`. Short local ids can also be used when unambiguous.
+
+Fix classes declare identifiers as class attributes:
 
 ```python
 class TimeMetadataFix(Fix):
@@ -40,38 +60,57 @@ class TimeMetadataFix(Fix):
     local_id = "time_metadata"
 ```
 
-The registry normalizes and validates these at registration time, then
-sets `canonical_id` on the class.
+The registry validates these and derives:
+
+```python
+canonical_id = "cmip6_decadal.time_metadata"
+```
 
 ### FixPlan
 
 A declarative list of fix references (`id` + optional `options`) applied in order
-to a matching dataset.  Plans can be scoped to a namespace so that unqualified
-fix ids are resolved automatically:
+to a matching dataset.
+
+Plans can match datasets using metadata and file path patterns. Plans may also
+declare a namespace so unqualified fix ids resolve automatically.
 
 ```json
 {
   "id": "atlas.encoding_cleanup_suite",
   "namespace": "atlas",
-  "match": { "path_patterns": ["*atlas*.nc"] },
+  "match": {
+    "path_patterns": ["*atlas*.nc"]
+  },
   "fixes": [
-    { "id": "encoding_cleanup", "options": { "mode": "strict" } },
-    { "id": "project_id_normalization" }
+    {
+      "id": "encoding_cleanup",
+      "options": {
+        "mode": "strict"
+      }
+    },
+    {
+      "id": "project_id_normalization"
+    }
   ]
 }
 ```
 
 ### FixPlanStore
 
-A lookup layer that returns matching `FixPlan`s for a given dataset.
-Plans are retrieved by canonical id, local id, or alias via `FixPlanIndex`.
-Current backends: JSON (default) and DuckDB.
+A lookup layer that returns matching `FixPlan`s for a dataset.
+
+Plans can be retrieved by canonical id, local id, or alias.
+
+Current backends:
+
+* JSON (default)
+* DuckDB
 
 Plans are accessed through a store on the CLI:
 
-- `--store` — backend type (`json` or `duckdb`, default: `json`)
-- `--plan` — store location (file path)
-- `--plan-id` — optionally select a specific plan by id
+* `--store` — backend type (`json` or `duckdb`, default: `json`)
+* `--plan` — store location (file path)
+* `--plan-id` — optionally select a specific plan by id
 
 ---
 
@@ -94,7 +133,7 @@ pip install -e ".[full]"
 
 ## Usage
 
-```
+```text
 discover fixes → check datasets → apply selected fixes
 ```
 
@@ -103,8 +142,8 @@ discover fixes → check datasets → apply selected fixes
 ```bash
 woodpecker list-fixes
 woodpecker check . --select cmip6_decadal.time_metadata
-woodpecker fix  . --select cmip6_decadal.time_metadata --dry-run
-woodpecker fix  . --select cmip6_decadal.time_metadata
+woodpecker fix . --select cmip6_decadal.time_metadata --dry-run
+woodpecker fix . --select cmip6_decadal.time_metadata
 ```
 
 ### Using a FixPlanStore
@@ -112,7 +151,7 @@ woodpecker fix  . --select cmip6_decadal.time_metadata
 ```bash
 # default JSON backend
 woodpecker check --plan plans.json
-woodpecker fix   --plan plans.json --dry-run
+woodpecker fix --plan plans.json --dry-run
 
 # explicit backend
 woodpecker check --store duckdb --plan plans.duckdb
@@ -124,44 +163,46 @@ woodpecker fix --plan plans.json --plan-id atlas.encoding_cleanup_suite
 ### List stored plans
 
 ```bash
-woodpecker list-plans --store json  --plan plans.json
+woodpecker list-plans --store json --plan plans.json
 woodpecker list-plans --store duckdb --plan plans.duckdb --format json
 ```
 
 ### Force-apply
 
-`--force-apply` skips `matches()` prefiltering before `apply()` — useful
-when fix selection is already explicit via `--select` or a plan.
+`--force-apply` skips `matches()` prefiltering before `apply()`.
+
+Useful when fix selection is already explicit via `--select` or a plan.
 
 ---
 
 ## Plugins
 
 Core Woodpecker provides fixes that apply across datasets.
-Dataset-specific fixes live in plugins discovered via the `woodpecker.plugins`
-entry point group.
+
+Dataset-specific fixes live in plugins discovered via the
+`woodpecker.plugins` entry point group.
 
 ### Bundled plugins
 
-The repository ships four local plugins under `plugins/`:
+The repository ships local plugins under `plugins/`:
 
-| Plugin package | Namespace prefix |
-|---|---|
-| `woodpecker-atlas-plugin` | `atlas` |
-| `woodpecker-cmip6-plugin` | `cmip6` |
-| `woodpecker-cmip6-decadal-plugin` | `cmip6_decadal` |
-| `woodpecker-cmip7-plugin` | `cmip7` |
+| Plugin package                    | Namespace prefix |
+| --------------------------------- | ---------------- |
+| `woodpecker-atlas-plugin`         | `atlas`          |
+| `woodpecker-cmip6-plugin`         | `cmip6`          |
+| `woodpecker-cmip6-decadal-plugin` | `cmip6_decadal`  |
+| `woodpecker-cmip7-plugin`         | `cmip7`          |
 
-Install them (editable mode):
+Install them:
 
 ```bash
-make install-plugins   # installs woodpecker first, then all plugins
-make dev               # full dev setup including plugins and extras
+make install-plugins
+make dev
 ```
 
 ### Writing a plugin
 
-`pyproject.toml`:
+`pyproject.toml`
 
 ```toml
 [project]
@@ -173,7 +214,7 @@ dependencies = ["woodpecker>=0.2.0"]
 example = "woodpecker_example_plugin"
 ```
 
-`woodpecker_example_plugin/__init__.py`:
+`woodpecker_example_plugin/__init__.py`
 
 ```python
 from woodpecker.fixes.registry import Fix, register_fix
@@ -195,7 +236,11 @@ class ExternalDemoFix(Fix):
         return False
 ```
 
-The registry derives `canonical_id = "example.demo"` automatically.
+Derived canonical id:
+
+```text
+example.demo
+```
 
 ---
 
@@ -204,8 +249,8 @@ The registry derives `canonical_id = "example.demo"` automatically.
 Example plan documents live in `examples/fix-plans/`.
 
 ```bash
-woodpecker check      --plan examples/fix-plans/atlas.json
-woodpecker fix        --plan examples/fix-plans/atlas.json --dry-run
+woodpecker check --plan examples/fix-plans/atlas.json
+woodpecker fix --plan examples/fix-plans/atlas.json --dry-run
 woodpecker list-plans --plan examples/fix-plans/atlas.json
 ```
 
@@ -222,9 +267,14 @@ woodpecker fix . --select cmip6_decadal.time_metadata --no-provenance
 woodpecker fix . --select cmip6_decadal.time_metadata --embed-provenance-metadata --output-format netcdf
 ```
 
+Provenance records can evolve further to include plugin/version metadata.
+
 ---
 
 ## GitHub Pages
 
-Docs are built and deployed to GitHub Pages automatically on every push that
-touches `woodpecker/`, `docs/`, or `scripts/`.
+Docs are built and deployed automatically on pushes touching:
+
+* `woodpecker/`
+* `docs/`
+* `scripts/`
