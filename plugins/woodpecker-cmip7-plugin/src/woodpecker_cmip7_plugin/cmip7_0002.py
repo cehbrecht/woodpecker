@@ -4,8 +4,6 @@ import xarray as xr
 
 from woodpecker.fixes.registry import Fix, register_fix
 
-from .constants import CMIP7_PREFIX
-
 
 def _needs_temp_to_tas_rename(dataset: xr.Dataset) -> bool:
     return "temp" in dataset.data_vars and "tas" not in dataset.data_vars
@@ -21,8 +19,8 @@ def _apply_temp_to_tas_rename(dataset: xr.Dataset) -> bool:
 
 
 @register_fix
-class CMIP7_0002(Fix):
-    code = f"{CMIP7_PREFIX}0002"
+class RenameTempVariableToTasFix(Fix):
+    local_id = "rename_temp_variable_to_tas"
     name = "Rename temp variable to tas (plugin)"
     description = "Renames data variable temp to tas when tas is missing."
     categories = ["structure", "metadata"]

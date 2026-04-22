@@ -88,10 +88,19 @@ def test_run_fix_skips_fixes_for_other_dataset_types():
 
 
 def test_select_fixes_respects_ordered_codes_sequence():
-    fixes = select_fixes(ordered_codes=["CMIP6_0001", "ATLAS_0001"], strict_codes=True)
-    ordered = [fix.code for fix in fixes]
+    fixes = select_fixes(
+        ordered_codes=[
+            "woodpecker.normalize_tas_units_to_kelvin",
+            "woodpecker.ensure_latitude_is_increasing",
+        ],
+        strict_codes=True,
+    )
+    ordered = [fix.canonical_id for fix in fixes]
 
-    assert ordered[:2] == ["CMIP6_0001", "ATLAS_0001"]
+    assert ordered[:2] == [
+        "woodpecker.normalize_tas_units_to_kelvin",
+        "woodpecker.ensure_latitude_is_increasing",
+    ]
 
 
 def test_run_fix_can_embed_provenance_metadata_on_write():

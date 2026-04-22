@@ -12,10 +12,10 @@ help:
 	@echo "Common targets (run after conda env is activated):"
 	@echo "  make install    - install package in editable mode"
 	@echo "  make install-uv - install package in editable mode via uv"
-	@echo "  make install-plugins    - install current local plugin packages"
-	@echo "  make install-plugins-uv - install local plugin packages via uv"
-	@echo "  make dev        - install package + docs + dev + full extras + plugins"
-	@echo "  make dev-uv     - dev install via uv (same extras/plugins as make dev)"
+	@echo "  make install-plugins    - install woodpecker then local plugin packages"
+	@echo "  make install-plugins-uv - install woodpecker then local plugin packages via uv"
+	@echo "  make dev        - install package + extras + plugins (recommended)"
+	@echo "  make dev-uv     - dev install via uv (same as make dev)"
 	@echo "  make format     - run Ruff formatter"
 	@echo "  make lint       - run Ruff lint checks"
 	@echo "  make lint-fix   - auto-fix Ruff lint issues"
@@ -31,17 +31,19 @@ install:
 install-uv:
 	uv pip install --python "$(PYTHON)" -e .
 
-install-plugins:
+install-plugins: install
 	pip install $(PLUGIN_INSTALL_ARGS)
 
-install-plugins-uv:
+install-plugins-uv: install-uv
 	uv pip install --python "$(PYTHON)" $(PLUGIN_INSTALL_ARGS)
 
-dev: install-plugins
+dev:
 	pip install -e ".[docs,dev,full]"
+	pip install $(PLUGIN_INSTALL_ARGS)
 
-dev-uv: install-plugins-uv
+dev-uv:
 	uv pip install --python "$(PYTHON)" -e ".[docs,dev,full]"
+	uv pip install --python "$(PYTHON)" $(PLUGIN_INSTALL_ARGS)
 
 format:
 	ruff format .

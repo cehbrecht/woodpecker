@@ -7,188 +7,274 @@
 
 Woodpecker is a lightweight, code-based catalog of common dataset fixes for climate processing.
 
-Dataset-specific fix families are provided by external plugins.
+Dataset-specific fix families are provided as external plugins.
 
-Each fix has a stable code (for example `CMIP6D_0001`) so tools and services can reference it directly.
+Example: a dataset may use Celsius instead of Kelvin, contain inconsistent
+dimension names, or need metadata normalization. Woodpecker can detect and
+apply known fixes consistently.
 
 Contributor and developer docs live in `CONTRIBUTING.md`.
 
+---
+
+## Why Woodpecker?
+
+* Reuse known dataset fixes across workflows
+* Keep fix logic versioned and testable in code
+* Apply fixes consistently in automated pipelines
+* Extend with project-specific plugins
+
+---
+
 ## Core Concepts
 
-Woodpecker is built around three simple concepts:
+### Fix
 
-- **Fix**  
-  An executable rule that checks and optionally fixes a dataset.  
-  Each fix has a stable code (for example `CMIP6D_0001`).
+An executable rule that checks and optionally repairs a dataset issue.
 
-- **FixPlan**  
-  A declarative list of fixes (with optional parameters) applied in order.
+Fixes are registered in the `FixRegistry` and discovered at runtime via
+Python entry points.
 
-- **FixPlanStore**  
-  A lookup layer that returns matching `FixPlan`s for a dataset (currently with JSON and DuckDB backends).
+### Fix Identifiers
 
-Implementation note:
-- A design-stub placeholder for a future Elasticsearch-backed store is in `woodpecker/stores/elasticsearch_store.py`.
+Every fix and plan has a stable, scoped identifier:
 
-### Plan access model
-
-All plans are accessed through a `FixPlanStore`.
-
-- `--store` selects the backend (default: `json`)
-- `--plan` provides the location interpreted by that backend
-- `--plan-id` optionally selects a specific `FixPlan`
-
-For the default JSON backend, the on-disk format is:
-
-    {
-      "plans": [ ... ]
-    }
-
-## Quickstart
-
-Conda setup:
-
-    conda env create -f environment.yml
-    conda activate woodpecker
-    make dev
-    make list-fixes
-
-Optional DuckDB support:
-
-    pip install -e ".[full]"
-
-## Usage
-
-Typical flow:
-
-    discover fixes → check datasets → apply selected fixes
-
-Core commands:
-
-    woodpecker list-fixes
-    woodpecker check . --select CMIP6D_0001
-    woodpecker fix . --select CMIP6D_0001 --dry-run
-    woodpecker fix . --select CMIP6D_0001
-
-### Using FixPlanStore
+* **`namespace_prefix`** — owning namespace, e.g. `cmip6_decadal`, `atlas`, `woodpecker`
+* **`local_id`** — snake_case identifier unique within that namespace
+* **canonical id** — `<namespace_prefix>.<local_id>`
 
 Examples:
 
-    # default JSON backend
-    woodpecker check --plan plans.json
+* `cmip6_decadal.time_metadata`
+* `atlas.encoding_cleanup`
+* `woodpecker.normalize_units`
 
-    # explicit backend selection
-    woodpecker check --store json --plan plans.json
-    woodpecker check --store duckdb --plan plans.duckdb
+Canonical ids are stored in plans, used on the CLI, and resolved through the
+`IdentifierResolver`. Short local ids can also be used when unambiguous.
 
-    # select a specific plan
-    woodpecker fix --plan plans.json --plan-id atlas-basic
+Fix classes declare identifiers as class attributes:
+
+```python
+class TimeMetadataFix(Fix):
+    namespace_prefix = "cmip6_decadal"
+    local_id = "time_metadata"
+```
+
+The registry validates these and derives:
+
+```python
+canonical_id = "cmip6_decadal.time_metadata"
+```
+
+### FixPlan
+
+A declarative list of fix references (`id` + optional `options`) applied in order
+to a matching dataset.
+
+Plans can match datasets using metadata and file path patterns. Plans may also
+declare a namespace so unqualified fix ids resolve automatically.
+
+```json
+{
+  "id": "atlas.encoding_cleanup_suite",
+  "namespace": "atlas",
+  "match": {
+    "path_patterns": ["*atlas*.nc"]
+  },
+  "fixes": [
+    {
+      "id": "encoding_cleanup",
+      "options": {
+        "mode": "strict"
+      }
+    },
+    {
+      "id": "project_id_normalization"
+    }
+  ]
+}
+```
+
+### FixPlanStore
+
+A lookup layer that returns matching `FixPlan`s for a dataset.
+
+Plans can be retrieved by canonical id, local id, or alias.
+
+Current backends:
+
+* JSON (default)
+* DuckDB
+
+Plans are accessed through a store on the CLI:
+
+* `--store` — backend type (`json` or `duckdb`, default: `json`)
+* `--plan` — store location (file path)
+* `--plan-id` — optionally select a specific plan by id
+
+---
+
+## Quickstart
+
+```bash
+conda env create -f environment.yml
+conda activate woodpecker
+make dev
+make list-fixes
+```
+
+Optional DuckDB support:
+
+```bash
+pip install -e ".[full]"
+```
+
+---
+
+## Usage
+
+```text
+discover fixes → check datasets → apply selected fixes
+```
 
 ### Direct fix selection
 
-    woodpecker check . --select CMIP6D_0001
-    woodpecker fix . --select CMIP6D_0001
+```bash
+woodpecker list-fixes
+woodpecker check . --select cmip6_decadal.time_metadata
+woodpecker fix . --select cmip6_decadal.time_metadata --dry-run
+woodpecker fix . --select cmip6_decadal.time_metadata
+```
 
-### Force-apply
+### Using a FixPlanStore
 
-- `--force-apply` skips `matches()` prefiltering before `apply()` to run faster
-- requires explicit fix selection (`--select` or plan codes)
+```bash
+# default JSON backend
+woodpecker check --plan plans.json
+woodpecker fix --plan plans.json --dry-run
+
+# explicit backend
+woodpecker check --store duckdb --plan plans.duckdb
+
+# select a specific plan by id
+woodpecker fix --plan plans.json --plan-id atlas.encoding_cleanup_suite
+```
 
 ### List stored plans
 
-    woodpecker list-plans --store json --plan plans.json
-    woodpecker list-plans --store duckdb --plan plans.duckdb --format json
+```bash
+woodpecker list-plans --store json --plan plans.json
+woodpecker list-plans --store duckdb --plan plans.duckdb --format json
+```
 
-## Plugin Fixes (Entry Points)
+### Force-apply
 
-Woodpecker can discover external fixes via Python entry points.  
-Entry point group: `woodpecker.plugins`.
+`--force-apply` skips `matches()` prefiltering before `apply()`.
 
-Architecture note:
-- Core `woodpecker` keeps common, cross-dataset fixes.
-- Dataset-specific fixes are expected to live in plugins.
+Useful when fix selection is already explicit via `--select` or a plan.
 
-Each plugin entry point can target either:
+---
 
-- a module import path, or
-- a callable loader function
+## Plugins
 
-### Load current local plugins
+Core Woodpecker provides fixes that apply across datasets.
 
-In this repository, the current plugin packages are:
+Dataset-specific fixes live in plugins discovered via the
+`woodpecker.plugins` entry point group.
 
-- `plugins/woodpecker-atlas-plugin`
-- `plugins/woodpecker-cmip6-plugin`
-- `plugins/woodpecker-cmip6-decadal-plugin`
-- `plugins/woodpecker-cmip7-plugin`
+### Bundled plugins
 
-Install them manually (editable mode):
+The repository ships local plugins under `plugins/`:
 
-    pip install -e plugins/woodpecker-atlas-plugin \
-      -e plugins/woodpecker-cmip6-plugin \
-      -e plugins/woodpecker-cmip6-decadal-plugin \
-      -e plugins/woodpecker-cmip7-plugin
+| Plugin package                    | Namespace prefix |
+| --------------------------------- | ---------------- |
+| `woodpecker-atlas-plugin`         | `atlas`          |
+| `woodpecker-cmip6-plugin`         | `cmip6`          |
+| `woodpecker-cmip6-decadal-plugin` | `cmip6_decadal`  |
+| `woodpecker-cmip7-plugin`         | `cmip7`          |
 
-Or use Make targets:
+Install them:
 
-    make install-plugins
+```bash
+make install-plugins
+make dev
+```
 
-`make dev` and `make dev-uv` install these plugin packages by default.
+### Writing a plugin
 
-Minimal example:
+`pyproject.toml`
 
-`pyproject.toml`:
+```toml
+[project]
+name = "woodpecker-example-plugin"
+version = "0.1.0"
+dependencies = ["woodpecker>=0.2.0"]
 
-    [project]
-    name = "woodpecker-example-plugin"
-    version = "0.2.0"
-    dependencies = ["woodpecker>=0.2.0"]
+[project.entry-points."woodpecker.plugins"]
+example = "woodpecker_example_plugin"
+```
 
-    [project.entry-points."woodpecker.plugins"]
-    example = "woodpecker_example_plugin"
+`woodpecker_example_plugin/__init__.py`
 
-`woodpecker_example_plugin/__init__.py`:
+```python
+from woodpecker.fixes.registry import Fix, register_fix
 
-    from woodpecker.fixes.registry import Fix, register_fix
+@register_fix
+class ExternalDemoFix(Fix):
+    namespace_prefix = "example"
+    local_id = "demo"
+    name = "External demo fix"
+    description = "A minimal plugin-provided fix."
+    categories = ["metadata"]
+    priority = 50
+    dataset = None
 
-    @register_fix
-    class EXTERNAL_0001(Fix):
-        code = "EXTERNAL_0001"
-        name = "External demo fix"
-        description = "A minimal plugin-provided fix."
-        categories = ["metadata"]
-        priority = 50
-        dataset = None
+    def check(self, dataset):
+        return []
 
-        def matches(self, dataset):
-            return True
+    def apply(self, dataset, dry_run=True):
+        return False
+```
 
-        def check(self, dataset):
-            return []
+Derived canonical id:
 
-        def apply(self, dataset, dry_run=True):
-            return False
+```text
+example.demo
+```
+
+---
 
 ## Examples
 
-Example plan documents live in `examples/fix-plans`.
+Example plan documents live in `examples/fix-plans/`.
 
-    woodpecker check --plan examples/fix-plans/atlas.json
-    woodpecker fix --plan examples/fix-plans/atlas.json --dry-run
-    woodpecker list-plans --store json --plan examples/fix-plans/atlas.json
+```bash
+woodpecker check --plan examples/fix-plans/atlas.json
+woodpecker fix --plan examples/fix-plans/atlas.json --dry-run
+woodpecker list-plans --plan examples/fix-plans/atlas.json
+```
+
+---
 
 ## Provenance
 
 Woodpecker writes a PROV-JSON provenance file by default when running `fix`.
 
-    woodpecker fix . --select CMIP6D_0001
-    woodpecker fix . --select CMIP6D_0001 --provenance-path run_01.prov.json
-    woodpecker fix . --select CMIP6D_0001 --no-provenance
+```bash
+woodpecker fix . --select cmip6_decadal.time_metadata
+woodpecker fix . --select cmip6_decadal.time_metadata --provenance-path run_01.prov.json
+woodpecker fix . --select cmip6_decadal.time_metadata --no-provenance
+woodpecker fix . --select cmip6_decadal.time_metadata --embed-provenance-metadata --output-format netcdf
+```
 
-Embedded metadata:
+Provenance records can evolve further to include plugin/version metadata.
 
-    woodpecker fix . --select CMIP6D_0001 --embed-provenance-metadata --output-format netcdf
+---
 
 ## GitHub Pages
 
-This repository includes a workflow that builds and deploys the MkDocs site to GitHub Pages.
+Docs are built and deployed automatically on pushes touching:
+
+* `woodpecker/`
+* `docs/`
+* `scripts/`

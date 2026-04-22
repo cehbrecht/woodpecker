@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
-import re
-from dataclasses import asdict
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Optional, Type
+
+from woodpecker.identifiers import IdentifierResolver, IdentifierRules
 
 from .base import Fix, GroupFix
 
@@ -16,8 +16,73 @@ class FixRegistry:
       entry points or a DB/index without changing callers.
     """
 
-    _registry: Dict[str, Type[Any]] = {}
-    _code_pattern = re.compile(r"^[A-Z0-9_]{4,16}$")
+    _registry: dict[str, Type[Any]] = {}
+    _resolver: IdentifierResolver = IdentifierResolver()
+
+    @classmethod
+    def _infer_namespace_prefix_from_module(cls, fix_cls: Type[Any]) -> str:
+        """Infer a namespace prefix from the fix module path.
+
+        This is intentionally isolated so registry-level prefix ownership can
+        replace module inference later without touching caller flow.
+        """
+
+        module = getattr(fix_cls, "__module__", "")
+        if module.startswith("woodpecker.fixes.") or module == "woodpecker.fixes":
+            return "woodpecker"
+
+        package = module.split(".", 1)[0]
+        package = IdentifierRules.normalize(package)
+        if package.startswith("woodpecker_"):
+            package = package[len("woodpecker_") :]
+        if package.endswith("_plugin"):
+            package = package[: -len("_plugin")]
+        return package or "woodpecker"
+
+    @classmethod
+    def _derive_namespace_prefix(cls, fix_cls: Type[Any], explicit: str) -> str:
+        token = IdentifierRules.normalize(explicit)
+        if token:
+            return token
+        return cls._infer_namespace_prefix_from_module(fix_cls)
+
+    @classmethod
+    def _derive_fix_local_id(cls, fix_cls: Type[Any], explicit: str) -> str:
+        """Derive local_id with precedence:
+
+        1) explicit class/local `local_id`
+        2) optional `derived_local_id()`
+        3) class name transformed to snake_case
+        """
+
+        token = IdentifierRules.normalize(explicit)
+        if token:
+            return token
+
+        derived = getattr(fix_cls, "derived_local_id", None)
+        if callable(derived):
+            return IdentifierRules.normalize(str(derived()))
+
+        return IdentifierRules.derive_local_id_from_name(
+            str(getattr(fix_cls, "__name__", "") or "")
+        )
+
+    @classmethod
+    def _derive_identifiers(cls, fix_cls: Type[Any]):
+        prefix = cls._derive_namespace_prefix(
+            fix_cls, str(getattr(fix_cls, "namespace_prefix", "") or "")
+        )
+        local_id = cls._derive_fix_local_id(fix_cls, str(getattr(fix_cls, "local_id", "") or ""))
+
+        return IdentifierRules.build(
+            namespace_prefix=prefix,
+            local_id=local_id,
+            aliases=getattr(fix_cls, "aliases", None),
+        )
+
+    @classmethod
+    def resolve_identifier(cls, identifier: str) -> str:
+        return cls._resolver.resolve(identifier)
 
     @staticmethod
     def _instantiate_fix(fix_cls: Type[Any]) -> Any:
@@ -28,27 +93,14 @@ class FixRegistry:
                 f"Fix {fix_cls.__name__} could not be instantiated. "
                 "Ensure default metadata values are provided on the class."
             ) from exc
-        if isinstance(fix, Fix):
-            for attr in ("code", "name", "description", "categories", "priority", "dataset"):
-                if hasattr(fix_cls, attr):
-                    setattr(fix, attr, getattr(fix_cls, attr))
-            fix.categories = list(getattr(fix, "categories", []) or [])
         return fix
 
     @classmethod
     def _validate_fix_definition(cls, fix: Any, fix_cls: Type[Any]) -> None:
-        code = str(getattr(fix, "code", "") or "").strip()
         name = str(getattr(fix, "name", "") or "").strip()
         categories = getattr(fix, "categories", []) or []
         priority = getattr(fix, "priority", 10)
 
-        if not code:
-            raise ValueError(f"Fix {fix_cls.__name__} must define a non-empty 'code'")
-        if not cls._code_pattern.fullmatch(code):
-            raise ValueError(
-                f"Fix {fix_cls.__name__} has invalid code '{code}'. "
-                "Expected pattern: ^[A-Z0-9_]{4,16}$"
-            )
         if not name:
             raise ValueError(f"Fix {fix_cls.__name__} must define a non-empty 'name'")
         if not isinstance(priority, int):
@@ -61,23 +113,35 @@ class FixRegistry:
             )
 
     @classmethod
-    def registered_codes(cls) -> List[str]:
+    def registered_canonical_ids(cls) -> list[str]:
         return sorted(cls._registry.keys())
+
+    @classmethod
+    def registered_ids(cls) -> list[str]:
+        return cls.registered_canonical_ids()
 
     @classmethod
     def register(cls, fix_cls: Type[Any]):
         fix = cls._instantiate_fix(fix_cls)
         cls._validate_fix_definition(fix, fix_cls)
-        code = getattr(fix, "code", None)
 
-        if code in cls._registry:
-            raise ValueError(f"Duplicate fix code '{code}' (already registered)")
+        identifier_set = cls._derive_identifiers(fix_cls)
+        if identifier_set.canonical_id in cls._registry:
+            raise ValueError(
+                f"Duplicate fix canonical id '{identifier_set.canonical_id}' (already registered)"
+            )
 
-        cls._registry[code] = fix_cls
+        setattr(fix_cls, "namespace_prefix", identifier_set.namespace_prefix)
+        setattr(fix_cls, "local_id", identifier_set.local_id)
+        setattr(fix_cls, "canonical_id", identifier_set.canonical_id)
+        setattr(fix_cls, "aliases", list(identifier_set.aliases))
+
+        cls._registry[identifier_set.canonical_id] = fix_cls
+        cls._resolver.register(identifier_set, include_local_id=True)
         return fix_cls  # decorator-friendly
 
     @classmethod
-    def discover(cls, filters: Optional[Dict[str, Any]] = None) -> List[Fix]:
+    def discover(cls, filters: Optional[dict[str, Any]] = None) -> list[Fix]:
         """Return instantiated Fix objects, optionally filtered.
 
         Example:
@@ -131,11 +195,20 @@ class FixRegistry:
         fixes = cls.discover()
         data = []
         for f in fixes:
-            # Support future Pydantic v2 models transparently
-            if hasattr(f, "model_dump"):
-                data.append(f.model_dump())
-            else:
-                data.append(asdict(f))
+            data.append(
+                {
+                    "id": getattr(f, "canonical_id", ""),
+                    "local_id": getattr(f, "local_id", ""),
+                    "namespace": getattr(f, "namespace_prefix", ""),
+                    "aliases": list(getattr(f, "aliases", []) or []),
+                    "links": list(getattr(f, "links", []) or []),
+                    "name": getattr(f, "name", ""),
+                    "description": getattr(f, "description", ""),
+                    "categories": list(getattr(f, "categories", []) or []),
+                    "dataset": getattr(f, "dataset", None),
+                    "priority": getattr(f, "priority", 10),
+                }
+            )
 
         with open(path, "w", encoding="utf-8") as fp:
             json.dump(data, fp, indent=2)

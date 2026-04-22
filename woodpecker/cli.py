@@ -89,12 +89,12 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
         return
 
     if fmt == "md":
-        click.echo("| Code | Name | Description | Categories | Dataset | Priority |")
-        click.echo("|------|------|-------------|------------|---------|---------|")
+        click.echo("| ID | Name | Description | Categories | Dataset | Priority |")
+        click.echo("|----|------|-------------|------------|---------|---------|")
         for f in fixes:
             cats = ", ".join(getattr(f, "categories", []) or [])
             click.echo(
-                f"| {f.code} | {f.name} | {f.description} | {cats} | {f.dataset or ''} | {f.priority} |"
+                f"| {f.canonical_id} | {f.name} | {f.description} | {cats} | {f.dataset or ''} | {f.priority} |"
             )
         return
 
@@ -102,7 +102,7 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
     for f in fixes:
         cats = ", ".join(getattr(f, "categories", []) or [])
         click.echo(
-            f"{f.code}: {f.description} (cats: {cats}; dataset: {f.dataset or '-'}; priority: {f.priority})"
+            f"{f.canonical_id}: {f.description} (cats: {cats}; dataset: {f.dataset or '-'}; priority: {f.priority})"
         )
 
 
@@ -274,7 +274,9 @@ def load_plans(
 @click.option(
     "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
 )
-@click.option("--select", "codes", multiple=True, help="Run only selected fix codes (repeatable)")
+@click.option(
+    "--select", "codes", multiple=True, help="Run only selected fix identifiers (repeatable)"
+)
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def check(
     paths: tuple[Path, ...],
@@ -286,7 +288,7 @@ def check(
     codes: tuple[str, ...],
     fmt: str,
 ):
-    """Check NetCDF files and report findings grouped by fix code."""
+    """Check NetCDF files and report findings grouped by fix identifier."""
     try:
         context = resolve_run_context(
             paths=paths,
@@ -354,7 +356,9 @@ def io_status(fmt: str):
 @click.option(
     "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
 )
-@click.option("--select", "codes", multiple=True, help="Run only selected fix codes (repeatable)")
+@click.option(
+    "--select", "codes", multiple=True, help="Run only selected fix identifiers (repeatable)"
+)
 @click.option(
     "--dry-run",
     is_flag=True,
@@ -424,7 +428,7 @@ def fix(
         )
         if force_apply and not context.resolved_codes:
             raise click.ClickException(
-                "--force-apply requires explicit fix selection via --select or plan codes."
+                "--force-apply requires explicit fix selection via --select or plan identifiers."
             )
         run_fix_kwargs = build_run_fix_kwargs(
             context,
@@ -442,7 +446,8 @@ def fix(
         provenance_source = format_provenance_source(context, store_type, plan)
         prov = build_prov_document(
             inputs=context.inputs,
-            selected_codes=[getattr(fix, "code", "") for fix in context.fixes],
+            selected_codes=[getattr(fix, "canonical_id", "") for fix in context.fixes],
+            selected_fixes=context.fixes,
             stats=stats,
             mode="dry-run" if dry_run else "write",
             output_format=context.resolved_output_format,

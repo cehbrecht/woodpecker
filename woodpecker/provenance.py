@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import uuid
 from datetime import datetime, timezone
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -18,6 +19,7 @@ def utc_now_iso() -> str:
 def build_prov_document(
     inputs: Iterable[DataInput],
     selected_codes: list[str],
+    selected_fixes: Iterable[Any] | None,
     stats: dict[str, int],
     mode: str,
     output_format: str,
@@ -26,6 +28,24 @@ def build_prov_document(
 ) -> dict[str, Any]:
     run_id = run_id or f"woodpecker-run-{uuid.uuid4()}"
     generated_at = utc_now_iso()
+
+    try:
+        core_version = version("woodpecker")
+    except PackageNotFoundError:
+        core_version = "unknown"
+
+    plugin_versions: dict[str, str] = {}
+    for fix in list(selected_fixes or []):
+        module = getattr(type(fix), "__module__", "")
+        package = module.split(".", 1)[0] if module else ""
+        if not package or package.startswith("woodpecker"):
+            continue
+        if package in plugin_versions:
+            continue
+        try:
+            plugin_versions[package] = version(package)
+        except PackageNotFoundError:
+            plugin_versions[package] = "unknown"
 
     output_adapter = get_output_adapter(output_format)
 
@@ -40,6 +60,8 @@ def build_prov_document(
         "mode": mode,
         "output_format": output_format,
         "selected_codes": json.dumps(selected_codes, sort_keys=True),
+        "core_version": core_version,
+        "plugin_versions": json.dumps(plugin_versions, sort_keys=True),
         "stats": json.dumps(stats, sort_keys=True),
     }
     if plan:

@@ -4,7 +4,6 @@ import xarray as xr
 
 from woodpecker.fixes.registry import Fix, FixRegistry
 
-from .constants import CMIP6D_PREFIX
 from .helpers import is_cmip6_decadal_netcdf
 
 try:
@@ -66,8 +65,8 @@ def _apply_calendar_fix(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class CMIP6D_0002(Fix):
-    code = f"{CMIP6D_PREFIX}0002"
+class DecadalCalendarNormalizationFix(Fix):
+    local_id = "calendar_normalization"
     name = "Decadal calendar normalization"
     description = "Normalizes CMIP6-decadal time calendar from proleptic_gregorian to standard."
     categories = ["metadata", "calendar"]

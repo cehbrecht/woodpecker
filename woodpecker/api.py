@@ -54,8 +54,8 @@ def fix(
 
 
 def _plan_codes_and_options(plan: FixPlan) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
-    codes = tuple(ref.id for ref in plan.fixes)
-    options = {ref.id: dict(ref.options) for ref in plan.fixes}
+    codes = tuple(plan.resolve_fix_identifier(ref) for ref in plan.fixes)
+    options = {plan.resolve_fix_identifier(ref): dict(ref.options) for ref in plan.fixes}
     return codes, options
 
 
@@ -112,9 +112,7 @@ def check_plan(
     resolved_codes = codes or plan_codes
     resolved_fix_options = plan_fix_options
     resolved_ordered_codes = (
-        tuple(code.strip().upper() for code in codes if code.strip())
-        if codes
-        else tuple(plan_codes)
+        tuple(code.strip() for code in codes if code.strip()) if codes else tuple(plan_codes)
     )
     return check(
         normalized,
@@ -147,9 +145,7 @@ def fix_plan(
     resolved_codes = codes or plan_codes
     resolved_fix_options = plan_fix_options
     resolved_ordered_codes = (
-        tuple(code.strip().upper() for code in codes if code.strip())
-        if codes
-        else tuple(plan_codes)
+        tuple(code.strip() for code in codes if code.strip()) if codes else tuple(plan_codes)
     )
     resolved_output = output_format
     return fix(

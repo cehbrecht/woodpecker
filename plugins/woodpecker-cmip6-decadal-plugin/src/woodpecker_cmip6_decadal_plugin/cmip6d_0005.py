@@ -4,7 +4,6 @@ import xarray as xr
 
 from woodpecker.fixes.registry import Fix, FixRegistry
 
-from .constants import CMIP6D_PREFIX
 from .helpers import is_cmip6_decadal_netcdf
 
 EXPECTED_REALIZATION_COMMENT = (
@@ -28,8 +27,8 @@ def _apply_realization_comment_fix(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class CMIP6D_0005(Fix):
-    code = f"{CMIP6D_PREFIX}0005"
+class DecadalRealizationCommentNormalizationFix(Fix):
+    local_id = "realization_comment_normalization"
     name = "Decadal realization comment normalization"
     description = "Normalizes realization comment to the full CMIP6-decadal ripf guidance text."
     categories = ["metadata"]

@@ -1,7 +1,7 @@
 import numpy as np
 import xarray as xr
 
-from woodpecker.fixes.common import COMMON_0001, COMMON_0004
+from woodpecker.fixes.common import MergeEquivalentDimensionsFix, NormalizeTasUnitsToKelvinFix
 
 
 def test_common01_apply_write_converts_temperature_units_to_kelvin():
@@ -11,7 +11,7 @@ def test_common01_apply_write_converts_temperature_units_to_kelvin():
     )
     dataset["temp"].attrs["units"] = "degC"
 
-    changed = COMMON_0001().apply(dataset, dry_run=False)
+    changed = NormalizeTasUnitsToKelvinFix().apply(dataset, dry_run=False)
 
     assert changed is True
     assert dataset["temp"].attrs["units"] == "K"
@@ -28,7 +28,11 @@ def test_common04_apply_write_merges_equivalent_dims():
         },
     )
 
-    changed = COMMON_0004().configure({"dims": ["bnds", "nv"]}).apply(dataset, dry_run=False)
+    changed = (
+        MergeEquivalentDimensionsFix()
+        .configure({"dims": ["bnds", "nv"]})
+        .apply(dataset, dry_run=False)
+    )
 
     assert changed is True
     assert "bnds" in dataset["tcwv"].dims

@@ -4,7 +4,6 @@ import xarray as xr
 
 from woodpecker.fixes.registry import Fix, register_fix
 
-from .constants import CMIP7_PREFIX
 from .helpers import project_id_from_dataset
 
 
@@ -24,8 +23,8 @@ def _apply_project_id(dataset: xr.Dataset) -> bool:
 
 
 @register_fix
-class CMIP7_0001(Fix):
-    code = f"{CMIP7_PREFIX}0001"
+class EnsureProjectIdIsPresentFix(Fix):
+    local_id = "ensure_project_id_present"
     name = "Ensure project_id is present (plugin)"
     description = "Sets project_id from dataset identifier metadata when missing."
     categories = ["metadata"]

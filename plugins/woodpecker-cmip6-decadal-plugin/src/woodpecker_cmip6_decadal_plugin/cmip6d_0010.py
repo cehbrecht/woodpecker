@@ -4,7 +4,6 @@ import xarray as xr
 
 from woodpecker.fixes.registry import Fix, FixRegistry
 
-from .constants import CMIP6D_PREFIX
 from .helpers import is_cmip6_decadal_netcdf
 
 
@@ -22,8 +21,8 @@ def _apply_realization_long_name_fix(dataset: xr.Dataset) -> bool:
 
 
 @FixRegistry.register
-class CMIP6D_0010(Fix):
-    code = f"{CMIP6D_PREFIX}0010"
+class DecadalRealizationLongNameNormalizationFix(Fix):
+    local_id = "realization_long_name_normalization"
     name = "Decadal realization long_name normalization"
     description = (
         "Normalizes realization long_name metadata to 'realization' for CMIP6-decadal datasets."

@@ -34,12 +34,12 @@ class RunContext:
 
 
 def normalize_ordered_codes(codes: Sequence[str]) -> tuple[str, ...]:
-    """Normalize and deduplicate fix codes while preserving order."""
+    """Normalize and deduplicate fix identifiers while preserving order."""
 
     out: list[str] = []
     seen: set[str] = set()
     for raw in codes:
-        code = str(raw).strip().upper()
+        code = str(raw).strip()
         if not code or code in seen:
             continue
         out.append(code)
@@ -114,10 +114,10 @@ def select_matching_store_plans(
 def extract_plan_codes_and_options(
     plan: FixPlan,
 ) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
-    """Extract ordered fix codes and per-code options from a FixPlan."""
+    """Extract ordered fix identifiers and per-fix options from a FixPlan."""
 
-    codes = tuple(ref.id for ref in plan.fixes)
-    options = {ref.id: dict(ref.options) for ref in plan.fixes}
+    codes = tuple(plan.resolve_fix_identifier(ref) for ref in plan.fixes)
+    options = {plan.resolve_fix_identifier(ref): dict(ref.options) for ref in plan.fixes}
     return codes, options
 
 
@@ -135,7 +135,7 @@ def resolve_plan_source(
 ]:
     """Resolve plan selection through FixPlanStore with direct-mode fallback.
 
-    Returns source marker, selected plans, resolved codes, and resolved fix options.
+    Returns source marker, selected plans, resolved identifiers, and resolved fix options.
     """
 
     if plan_location is None:

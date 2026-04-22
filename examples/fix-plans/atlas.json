@@ -1,21 +1,19 @@
 {
-  "plans": [
-    {
-      "id": "atlas-basic",
-      "description": "Concrete ATLAS plan for atlas*.nc files",
-      "match": {
-        "path_patterns": [
-          "*atlas*.nc"
-        ]
-      },
-      "fixes": [
+    "plans": [
         {
-          "id": "ATLAS_0001"
-        },
-        {
-          "id": "ATLAS_0002"
+            "id": "atlas.atlas_basic",
+            "local_id": "atlas_basic",
+            "namespace": "atlas",
+            "description": "Concrete ATLAS plan for atlas*.nc files",
+            "links": [
+                {
+                    "rel": "docs",
+                    "href": "https://cehbrecht.github.io/woodpecker/fixes.html#atlas.encoding_cleanup",
+                    "title": "ATLAS fix documentation"
+                }
+            ],
+            "match": {"path_patterns": ["*atlas*.nc"]},
+            "fixes": [{"id": "atlas.encoding_cleanup"}, {"id": "atlas.project_id_normalization"}]
         }
-      ]
-    }
-  ]
+    ]
 }

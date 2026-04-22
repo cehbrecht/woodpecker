@@ -5,6 +5,7 @@ import json
 from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
 
+from woodpecker.fixes.base import Fix
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.identity import dataset_type_matches_declared, resolve_dataset_identity
 from woodpecker.inout import DataInput, get_output_adapter
@@ -13,14 +14,14 @@ from .models import FixPlan
 
 
 def _normalize_codes(codes: Sequence[str]) -> set[str]:
-    return {code.strip().upper() for code in codes if code.strip()}
+    return {str(code).strip() for code in codes if str(code).strip()}
 
 
 def _normalize_ordered_codes(codes: Sequence[str]) -> list[str]:
     out: list[str] = []
     seen: set[str] = set()
     for raw in codes:
-        code = raw.strip().upper()
+        code = str(raw).strip()
         if not code or code in seen:
             continue
         out.append(code)
@@ -29,11 +30,29 @@ def _normalize_ordered_codes(codes: Sequence[str]) -> list[str]:
 
 
 def _validate_selected_codes(selected_codes: set[str]) -> None:
-    available = {code.upper() for code in FixRegistry.registered_codes()}
-    unknown = sorted(code for code in selected_codes if code not in available)
+    unknown: list[str] = []
+    for code in sorted(selected_codes):
+        try:
+            FixRegistry.resolve_identifier(code)
+        except (KeyError, ValueError):
+            unknown.append(code)
     if unknown:
         unknown_text = ", ".join(unknown)
-        raise ValueError(f"Unknown fix code(s): {unknown_text}")
+        raise ValueError(f"Unknown fix identifier(s): {unknown_text}")
+
+
+def _resolve_identifiers(identifiers: Sequence[str], *, strict: bool = False) -> list[str]:
+    resolved: list[str] = []
+    for item in identifiers:
+        token = str(item).strip()
+        if not token:
+            continue
+        try:
+            resolved.append(FixRegistry.resolve_identifier(token))
+        except (KeyError, ValueError):
+            if strict:
+                raise
+    return resolved
 
 
 def _normalize_fix_options(
@@ -42,11 +61,15 @@ def _normalize_fix_options(
     if not fix_options:
         return {}
     normalized: dict[str, dict[str, Any]] = {}
-    for code, options in fix_options.items():
-        key = str(code).strip().upper()
+    for identifier, options in fix_options.items():
+        key = str(identifier).strip()
         if not key:
             continue
-        normalized[key] = dict(options or {})
+        try:
+            resolved = FixRegistry.resolve_identifier(key)
+        except (KeyError, ValueError):
+            resolved = key
+        normalized[resolved] = dict(options or {})
     return normalized
 
 
@@ -73,28 +96,33 @@ def select_fixes(
     if strict_codes and configured_codes:
         _validate_selected_codes(configured_codes)
 
-    if ordered:
-        if strict_codes:
-            _validate_selected_codes(set(ordered))
-        by_code = {getattr(fix, "code", "").upper(): fix for fix in fixes}
-        missing = [code for code in ordered if code not in by_code]
+    if strict_codes and ordered:
+        _validate_selected_codes(set(ordered))
+    if strict_codes and selected_codes:
+        _validate_selected_codes(selected_codes)
+
+    resolved_selected_codes = set(_resolve_identifiers(tuple(selected_codes), strict=False))
+    resolved_ordered = _resolve_identifiers(tuple(ordered), strict=False)
+
+    if resolved_ordered:
+        by_id = {getattr(fix, "canonical_id", ""): fix for fix in fixes}
+        missing = [item for item in resolved_ordered if item not in by_id]
         if strict_codes and missing:
             raise ValueError(
-                "Selected fix code(s) not available with current dataset/category filters: "
+                "Selected fix identifier(s) not available with current dataset/category filters: "
                 + ", ".join(missing)
             )
-        selected = [by_code[code] for code in ordered if code in by_code]
-    elif not selected_codes:
+        selected = [by_id[item] for item in resolved_ordered if item in by_id]
+    elif not resolved_selected_codes:
         selected = fixes
     else:
-        if strict_codes:
-            _validate_selected_codes(selected_codes)
-
-        selected = [fix for fix in fixes if getattr(fix, "code", "").upper() in selected_codes]
+        selected = [
+            fix for fix in fixes if getattr(fix, "canonical_id", "") in resolved_selected_codes
+        ]
 
     if normalized_fix_options:
         for fix in selected:
-            options = normalized_fix_options.get(getattr(fix, "code", "").upper())
+            options = normalized_fix_options.get(getattr(fix, "canonical_id", ""))
             if options and hasattr(fix, "configure"):
                 fix.configure(options)
 
@@ -117,7 +145,7 @@ def run_check(inputs: Iterable[DataInput], fixes: Iterable[Any]) -> List[Dict[st
                 findings.append(
                     {
                         "path": data_input.reference,
-                        "code": fix.code,
+                        "code": getattr(fix, "canonical_id", ""),
                         "name": fix.name,
                         "message": message,
                     }
@@ -159,7 +187,7 @@ def run_fix(
             if fix.apply(dataset, dry_run=dry_run):
                 changed += 1
                 dataset_changed = True
-                applied_codes.append(getattr(fix, "code", ""))
+                applied_codes.append(getattr(fix, "canonical_id", ""))
         if dataset_changed and not dry_run:
             if embed_provenance_metadata:
                 dataset.attrs["woodpecker_provenance"] = json.dumps(
@@ -189,7 +217,7 @@ def run_fix(
 
 
 def resolve_fix(registry: Any, fix_id: str) -> Any:
-    key = str(fix_id).strip().upper()
+    key = FixRegistry.resolve_identifier(str(fix_id).strip())
     source: Any | None = None
     if isinstance(registry, Mapping):
         source = registry.get(key)
@@ -231,7 +259,8 @@ def apply_fix_plan(ds: Any, plan: FixPlan, registry: Any) -> Any:
     """
 
     for ref in plan.fixes:
-        fix = resolve_fix(registry, ref.id)
+        resolved_fix_id = plan.resolve_fix_identifier(ref)
+        fix = resolve_fix(registry, resolved_fix_id)
 
         if hasattr(fix, "configure"):
             fix = fix.configure(ref.options)
@@ -246,7 +275,10 @@ def apply_fix_plan(ds: Any, plan: FixPlan, registry: Any) -> Any:
         if not should_apply:
             continue
 
-        if hasattr(fix, "fix"):
+        fix_impl = getattr(type(fix), "fix", None)
+        has_custom_fix_impl = callable(fix_impl) and fix_impl is not Fix.fix
+
+        if has_custom_fix_impl:
             invoke_with_optional_options(fix.fix, ds, ref.options)
         elif hasattr(fix, "apply"):
             fix.apply(ds, dry_run=False)

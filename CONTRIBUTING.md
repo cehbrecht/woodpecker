@@ -49,23 +49,22 @@ make docs-serve  # generate docs artifacts + run mkdocs serve
 
 ```bash
 woodpecker io-status
-woodpecker check . --select CMIP6D_0001
-woodpecker fix . --select CMIP6D_0001
-woodpecker fix . --select CMIP6D_0001 --dry-run
-woodpecker fix . --select CMIP6D_0001 --force-apply
+woodpecker check . --select cmip6_decadal.time_metadata
+woodpecker fix . --select cmip6_decadal.time_metadata
+woodpecker fix . --select cmip6_decadal.time_metadata --dry-run
+woodpecker fix . --select cmip6_decadal.time_metadata --force-apply
 woodpecker fix --plan plan.json
 ```
 
 Notes:
 - In write mode, JSON output exits with status 1 if any persistence operation fails.
-- `--force-apply` bypasses `matches()` prefiltering and requires explicit fix selection (`--select` or plan-provided codes).
+- `--force-apply` bypasses `matches()` prefiltering and requires explicit fix selection (`--select` or plan-provided identifiers).
 
 ## Adding or Updating Fixes
 
 Fix author contract (minimal):
-- metadata: `code`, `name`, `description`, `categories`, `priority`, `dataset`
+- metadata: `local_id`, `name`, `description`, `categories`, `priority`, `dataset`
 - methods: `matches(dataset)`, `check(dataset) -> list[str]`, `apply(dataset, dry_run=True) -> bool`
-- reference template: `woodpecker/fixes/fix_template.py`
 
 Performance guidance:
 - keep `matches()` fast and deterministic (metadata-only checks where possible)
@@ -78,16 +77,18 @@ Use existing fixes as examples and keep behavior deterministic.
 Woodpecker uses one schema for both plan files and plan stores:
 
 - `FixPlanDocument`: top-level container with `plans: [...]`.
-- `FixPlan`: plan entry with `id`, `description`, optional `match`, and ordered `fixes`.
-- `FixRef`: each fix entry (`id`, optional `options`).
+- `FixPlan`: plan entry with `id`, optional `namespace`, `description`, optional `match`, ordered `fixes`, optional `links`.
+- `FixRef`: each step entry (`fix`, optional `options`, optional `links`).
 
 Common `FixPlan` fields:
 
 - `id`: optional plan identifier.
+- `namespace`: optional local-ID namespace prefix.
 - `description`: optional human-readable description.
 - `match.attrs`: key/value attribute matcher for dataset metadata.
 - `match.path_patterns`: optional fnmatch-style path patterns.
-- `fixes`: ordered list of fix refs. Each item can be a string code or object.
+- `fixes`: ordered list of fix refs. Each item can be a string or object with `fix` and `options`.
+- `links`: optional list of `{rel, href, title?}` references (errata/issues/docs).
 
 Minimal `FixPlanDocument` example:
 
@@ -96,24 +97,26 @@ Minimal `FixPlanDocument` example:
   "plans": [
     {
       "id": "atlas-basic",
+      "namespace": "atlas",
       "description": "ATLAS plan",
       "match": {
         "path_patterns": ["*atlas*.nc"]
       },
       "fixes": [
-        "ATLAS_0001",
-        {"id": "COMMON_0002"}
+        "0001",
+        {"fix": "woodpecker.ensure_latitude_is_increasing"}
       ]
     },
     {
       "id": "esa-cci-zarr",
+      "namespace": "cmip7",
       "description": "Default ESA CCI zarr plan",
       "match": {
         "path_patterns": ["*ESACCI-WATERVAPOUR-*.zarr"]
       },
       "fixes": [
-        "CMIP7_0003",
-        {"id": "COMMON_0002"}
+        "0003",
+        {"fix": "woodpecker.ensure_latitude_is_increasing"}
       ]
     }
   ]
@@ -142,13 +145,13 @@ import woodpecker
 
 ds = xr.Dataset(attrs={"source_name": "atlas_bad.nc"})
 
-findings = woodpecker.check(ds, codes=["ATLAS_0001"])
-stats = woodpecker.fix(ds, codes=["ATLAS_0001"], write=True)
+findings = woodpecker.check(ds, codes=["atlas.encoding_cleanup"])
+stats = woodpecker.fix(ds, codes=["atlas.encoding_cleanup"], write=True)
 
 # Fix plan helpers
 findings_plan = woodpecker.check_plan("plan.json", inputs=["./data"])
 stats_plan = woodpecker.fix_plan("plan.json", inputs=ds, write=True)
 
 # Path input works as well
-findings_from_paths = woodpecker.check(["./data"], codes=["ATLAS_0001"])
+findings_from_paths = woodpecker.check(["./data"], codes=["atlas.encoding_cleanup"])
 ```

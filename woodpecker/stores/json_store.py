@@ -7,6 +7,7 @@ from typing import Any
 from ..plans.matcher import plan_matches_dataset
 from ..plans.models import FixPlan
 from .base import FixPlanStore
+from .index import FixPlanIndex
 
 
 class JsonFixPlanStore(FixPlanStore):
@@ -41,9 +42,11 @@ class JsonFixPlanStore(FixPlanStore):
 
     def save_plan(self, plan: FixPlan) -> None:
         plans = self._read_raw()
+        target_canonical_id = FixPlanIndex.canonical_plan_id(plan)
         replaced = False
         for idx, existing in enumerate(plans):
-            if str(existing.get("id", "")).strip() == plan.id:
+            existing_plan = FixPlan.from_dict(existing)
+            if FixPlanIndex.canonical_plan_id(existing_plan) == target_canonical_id:
                 plans[idx] = plan.to_dict()
                 replaced = True
                 break

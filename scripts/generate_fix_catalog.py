@@ -18,25 +18,28 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
     for f in fixes:
         cats = ", ".join(getattr(f, "categories", []) or [])
         source = FixRegistry.source_label(f)
-        row = (f.code, f.name, f.description, cats, f.dataset or "", f.priority, source)
+        row = (f.canonical_id, f.name, f.description, cats, f.dataset or "", f.priority, source)
         if source == "core":
             grouped_rows["core"].append(row)
         else:
             grouped_rows.setdefault(source, []).append(row)
 
-        if hasattr(f, "model_dump"):
-            entry = f.model_dump()
-        else:
-            entry = {
-                "code": f.code,
-                "name": f.name,
-                "description": f.description,
-                "categories": getattr(f, "categories", []) or [],
-                "dataset": f.dataset,
-                "priority": f.priority,
-            }
-        if isinstance(f, GroupFix) and f.member_codes:
-            entry["member_codes"] = f.member_codes
+        entry = {
+            "id": f.canonical_id,
+            "local_id": getattr(f, "local_id", ""),
+            "namespace": getattr(f, "namespace_prefix", ""),
+            "aliases": list(getattr(f, "aliases", []) or []),
+            "name": f.name,
+            "description": f.description,
+            "categories": getattr(f, "categories", []) or [],
+            "dataset": f.dataset,
+            "priority": f.priority,
+        }
+        if isinstance(f, GroupFix) and getattr(f, "members", None):
+            entry["member_ids"] = [
+                getattr(member, "canonical_id", "") or getattr(member, "local_id", "")
+                for member in f.members
+            ]
         entry["source"] = source
         json_list.append(entry)
 
@@ -50,13 +53,13 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
             [
                 heading,
                 "",
-                "| Code | Name | Description | Categories | Dataset | Priority | Source |",
-                "|------|------|-------------|------------|---------|---------|--------|",
+                "| ID | Name | Description | Categories | Dataset | Priority | Source |",
+                "|----|------|-------------|------------|---------|---------|--------|",
             ]
         )
-        for code, name, description, cats, dataset, priority, source in rows:
+        for fix_id, name, description, cats, dataset, priority, source in rows:
             md_lines.append(
-                f"| {code} | {name} | {description} | {cats} | {dataset} | {priority} | {source} |"
+                f"| {fix_id} | {name} | {description} | {cats} | {dataset} | {priority} | {source} |"
             )
         md_lines.append("")
 
