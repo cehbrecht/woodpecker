@@ -31,13 +31,16 @@ DecadalLeadtimeCoordinateFix = cmip6d_plugin.DecadalLeadtimeCoordinateFix
 
 
 def test_cmip601_dummy_apply_write_sets_dummy_marker_attr():
-    dataset = xr.Dataset(attrs={"source_name": "cmip6_member.nc"})
+    dataset = xr.Dataset(
+        {"tas": xr.Variable("time", np.array([20.0, 21.0]), attrs={"units": "degC"})},
+        coords={"time": [0, 1]},
+    )
 
     fix = NormalizeTasUnitsToKelvinFix()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
-    assert dataset.attrs["woodpecker_fix_CMIP6_0001"] == "applied"
+    assert dataset["tas"].attrs["units"] == "K"
 
 
 def test_cmip6d01_apply_dry_run_reports_change_without_writing_dataset_attrs():
