@@ -231,7 +231,7 @@ def test_fix_plan_to_dict_persists_canonical_ids_from_local_fix_refs():
     plan = FixPlan.from_mapping(
         {
             "id": "atlas.atlas_basic",
-            "namespace": "atlas",
+            "namespace_prefix": "atlas",
             "fixes": [
                 {"id": "encoding_cleanup", "options": {"mode": "strict"}},
                 {"id": "atlas.project_id_normalization", "options": {}},
@@ -255,22 +255,6 @@ def test_fix_plan_to_dict_persists_canonical_ids_from_local_fix_refs():
     assert "local_id" not in payload
 
 
-def test_fix_plan_from_dict_keeps_backward_compat_for_legacy_namespace_and_local_id():
-    plan = FixPlan.from_dict(
-        {
-            "id": "legacy_plan",
-            "local_id": "legacy_plan",
-            "namespace": "atlas",
-            "fixes": [{"id": "encoding_cleanup"}],
-        }
-    )
-
-    assert plan.id == "atlas.legacy_plan"
-    assert plan.namespace_prefix == "atlas"
-    assert plan.local_id == "legacy_plan"
-    assert [item.id for item in plan.fixes] == ["atlas.encoding_cleanup"]
-
-
 def test_fix_plan_identity_uses_identifier_set_when_prefix_and_local_available():
     plan = FixPlan(id="atlas.atlas_basic", fixes=[FixRef(id="atlas.encoding_cleanup")])
 
@@ -285,7 +269,7 @@ def test_fix_plan_namespace_scopes_unqualified_fix_refs():
     plan = FixPlan.from_mapping(
         {
             "id": "atlas_plan",
-            "namespace": "atlas",
+            "namespace_prefix": "atlas",
             "fixes": [{"id": "encoding_cleanup"}],
         }
     )
