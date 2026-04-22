@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import json
-import re
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
-_IDENTIFIER_PART_PATTERN = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
+from woodpecker.identifiers import IdentifierRules
 
 
 @dataclass
@@ -15,19 +14,13 @@ class FixRef:
     links: list[dict[str, str]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
-        self.id = str(self.id).strip().lower()
+        self.id = IdentifierRules.normalize(self.id)
         if not self.id:
             raise ValueError("FixRef.id must be a non-empty string")
         if "." in self.id:
-            parts = self.id.split(".")
-            if len(parts) != 2 or not all(_IDENTIFIER_PART_PATTERN.fullmatch(part) for part in parts):
-                raise ValueError(
-                    "FixRef.id must be snake_case or canonical '<prefix>.<local_id>' form"
-                )
-        elif not _IDENTIFIER_PART_PATTERN.fullmatch(self.id):
-            raise ValueError(
-                "FixRef.id must be snake_case or canonical '<prefix>.<local_id>' form"
-            )
+            IdentifierRules.validate_canonical_id("FixRef.id", self.id)
+        else:
+            IdentifierRules.validate_local_id("FixRef.id", self.id)
         if not isinstance(self.options, dict):
             raise ValueError("FixRef.options must be a mapping/object")
         if not isinstance(self.links, list):
@@ -44,7 +37,7 @@ class FixRef:
 
     @id.setter
     def id(self, value: str) -> None:
-        self._id = str(value).strip().lower()
+        self._id = IdentifierRules.normalize(value)
 
     @property
     def fix(self) -> str:
@@ -116,9 +109,9 @@ class FixPlan:
     links: list[dict[str, str]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
-        self.id = str(self.id).strip().lower()
-        self.local_id = str(self.local_id).strip().lower() or self.id
-        self.namespace = str(self.namespace).strip().lower()
+        self.id = IdentifierRules.normalize(self.id)
+        self.local_id = IdentifierRules.normalize(self.local_id) or self.id
+        self.namespace = IdentifierRules.normalize(self.namespace)
         self.description = str(self.description)
         if not isinstance(self.links, list):
             raise ValueError("FixPlan.links must be a list")
@@ -138,7 +131,7 @@ class FixPlan:
         ]
 
     def resolve_fix_identifier(self, ref: FixRef) -> str:
-        token = str(ref.fix).strip().lower()
+        token = IdentifierRules.normalize(ref.fix)
         if not token:
             return token
         if "." in token:

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
-import re
 from typing import Any, Dict, List, Optional, Type
+
+from woodpecker.identifiers import IdentifierResolver, IdentifierRules
 
 from .base import Fix, GroupFix
 
@@ -16,13 +17,19 @@ class FixRegistry:
     """
 
     _registry: Dict[str, Type[Any]] = {}
-    _namespace_pattern = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
     _identifier_index: Dict[str, str] = {}
     _ambiguous_identifiers: set[str] = set()
 
     @staticmethod
     def _normalize_identifier(identifier: str) -> str:
-        return str(identifier).strip().lower()
+        return IdentifierRules.normalize(identifier)
+
+    @classmethod
+    def _identifier_resolver(cls) -> IdentifierResolver:
+        return IdentifierResolver(
+            index=cls._identifier_index,
+            ambiguous_identifiers=cls._ambiguous_identifiers,
+        )
 
     @classmethod
     def _infer_namespace_prefix_from_module(cls, fix_cls: Type[Any]) -> str:
@@ -51,12 +58,6 @@ class FixRegistry:
             return token
         return cls._infer_namespace_prefix_from_module(fix_cls)
 
-    @staticmethod
-    def _camel_to_snake(name: str) -> str:
-        first = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", name)
-        second = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", first)
-        return re.sub(r"__+", "_", second).strip("_").lower()
-
     @classmethod
     def _derive_fix_local_id(cls, fix_cls: Type[Any], explicit: str) -> str:
         """Derive local_id with precedence:
@@ -72,120 +73,28 @@ class FixRegistry:
 
         derived = getattr(fix_cls, "derived_local_id", None)
         if callable(derived):
-            return cls._normalize_identifier(str(derived()))
+            return IdentifierRules.normalize(str(derived()))
 
-        class_name = str(getattr(fix_cls, "__name__", "") or "")
-        if class_name.endswith("Fix"):
-            class_name = class_name[: -len("Fix")]
-        return cls._camel_to_snake(class_name)
-
-    @classmethod
-    def _validate_local_identifier(cls, label: str, value: str) -> None:
-        if not cls._namespace_pattern.fullmatch(value):
-            raise ValueError(
-                f"Invalid {label} '{value}'. Expected lowercase snake_case identifier."
-            )
+        return IdentifierRules.derive_local_id_from_name(
+            str(getattr(fix_cls, "__name__", "") or "")
+        )
 
     @classmethod
-    def _validate_qualified_identifier(cls, label: str, value: str) -> None:
-        parts = value.split(".")
-        if len(parts) != 2:
-            raise ValueError(
-                f"Invalid {label} '{value}'. Expected '<prefix>.<local_id>' with snake_case tokens."
-            )
-
-        prefix, local_id = parts
-        cls._validate_local_identifier(f"{label} prefix", prefix)
-        cls._validate_local_identifier(f"{label} local_id", local_id)
-
-    @classmethod
-    def _derive_aliases(
-        cls,
-        *,
-        prefix: str,
-        canonical_id: str,
-        declared_aliases: Any,
-    ) -> list[str]:
-        if declared_aliases is None:
-            return []
-        if isinstance(declared_aliases, str):
-            raw_aliases = [declared_aliases]
-        elif isinstance(declared_aliases, (list, tuple, set)):
-            raw_aliases = list(declared_aliases)
-        else:
-            raise ValueError("Invalid aliases declaration. Expected a string or list of strings.")
-
-        out_aliases: list[str] = []
-        seen: set[str] = set()
-        for item in raw_aliases:
-            alias = cls._normalize_identifier(str(item))
-            if not alias:
-                continue
-
-            if "." in alias:
-                cls._validate_qualified_identifier("alias", alias)
-                candidates = [alias]
-            else:
-                cls._validate_local_identifier("alias", alias)
-                candidates = [alias, f"{prefix}.{alias}"]
-
-            for candidate in candidates:
-                if candidate == canonical_id or candidate in seen:
-                    continue
-                seen.add(candidate)
-                out_aliases.append(candidate)
-
-        return out_aliases
-
-    @classmethod
-    def _derive_namespace_and_local_id(cls, fix_cls: Type[Any]) -> tuple[str, str, str, list[str]]:
+    def _derive_identifiers(cls, fix_cls: Type[Any]):
         prefix = cls._derive_namespace_prefix(
             fix_cls, str(getattr(fix_cls, "namespace_prefix", "") or "")
         )
         local_id = cls._derive_fix_local_id(fix_cls, str(getattr(fix_cls, "local_id", "") or ""))
 
-        prefix = cls._normalize_identifier(prefix)
-        local_id = cls._normalize_identifier(local_id)
-        cls._validate_local_identifier("namespace prefix", prefix)
-        cls._validate_local_identifier("fix local_id", local_id)
-
-        canonical_id = f"{prefix}.{local_id}"
-
-        out_aliases = cls._derive_aliases(
+        return IdentifierRules.build(
             prefix=prefix,
-            canonical_id=canonical_id,
-            declared_aliases=getattr(fix_cls, "aliases", None),
+            local_id=local_id,
+            aliases=getattr(fix_cls, "aliases", None),
         )
-
-        return prefix, local_id, canonical_id, out_aliases
-
-    @classmethod
-    def _register_identifier(cls, identifier: str, canonical_id: str) -> None:
-        token = cls._normalize_identifier(identifier)
-        if not token:
-            return
-        if token in cls._ambiguous_identifiers:
-            return
-        existing = cls._identifier_index.get(token)
-        if existing is None:
-            cls._identifier_index[token] = canonical_id
-            return
-        if existing == canonical_id:
-            return
-        cls._identifier_index.pop(token, None)
-        cls._ambiguous_identifiers.add(token)
 
     @classmethod
     def resolve_identifier(cls, identifier: str) -> str:
-        token = cls._normalize_identifier(identifier)
-        if token in cls._ambiguous_identifiers:
-            raise ValueError(
-                f"Ambiguous fix identifier '{identifier}'. Use canonical '<prefix>.<local_id>' form."
-            )
-        canonical_id = cls._identifier_index.get(token)
-        if canonical_id is None:
-            raise KeyError(identifier)
-        return canonical_id
+        return cls._identifier_resolver().resolve(identifier)
 
     @staticmethod
     def _instantiate_fix(fix_cls: Type[Any]) -> Any:
@@ -228,20 +137,19 @@ class FixRegistry:
         fix = cls._instantiate_fix(fix_cls)
         cls._validate_fix_definition(fix, fix_cls)
 
-        prefix, local_id, canonical_id, aliases = cls._derive_namespace_and_local_id(fix_cls)
-        if canonical_id in cls._registry:
-            raise ValueError(f"Duplicate fix canonical id '{canonical_id}' (already registered)")
+        identifier_set = cls._derive_identifiers(fix_cls)
+        if identifier_set.canonical_id in cls._registry:
+            raise ValueError(
+                f"Duplicate fix canonical id '{identifier_set.canonical_id}' (already registered)"
+            )
 
-        setattr(fix_cls, "namespace_prefix", prefix)
-        setattr(fix_cls, "local_id", local_id)
-        setattr(fix_cls, "canonical_id", canonical_id)
-        setattr(fix_cls, "aliases", aliases)
+        setattr(fix_cls, "namespace_prefix", identifier_set.prefix)
+        setattr(fix_cls, "local_id", identifier_set.local_id)
+        setattr(fix_cls, "canonical_id", identifier_set.canonical_id)
+        setattr(fix_cls, "aliases", list(identifier_set.aliases))
 
-        cls._registry[canonical_id] = fix_cls
-        cls._register_identifier(canonical_id, canonical_id)
-        cls._register_identifier(local_id, canonical_id)
-        for alias in aliases:
-            cls._register_identifier(alias, canonical_id)
+        cls._registry[identifier_set.canonical_id] = fix_cls
+        cls._identifier_resolver().register(identifier_set, include_local_id=True)
         return fix_cls  # decorator-friendly
 
     @classmethod
