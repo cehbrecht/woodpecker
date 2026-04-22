@@ -23,6 +23,18 @@ class Fix:
     categories: ClassVar[list[str]] = []
     priority: ClassVar[int] = 10
     dataset: ClassVar[Optional[str]] = None
+    metadata_fields: ClassVar[tuple[str, ...]] = (
+        "namespace_prefix",
+        "local_id",
+        "canonical_id",
+        "aliases",
+        "links",
+        "name",
+        "description",
+        "categories",
+        "priority",
+        "dataset",
+    )
 
     def __init__(self) -> None:
         self.config: dict[str, Any] = {}
@@ -51,6 +63,29 @@ class Fix:
 
     def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
         return False
+
+    @classmethod
+    def class_metadata(cls) -> dict[str, Any]:
+        """Return metadata from class-level declarations.
+
+        Mutable fields are copied to avoid accidental cross-instance mutation.
+        """
+
+        payload: dict[str, Any] = {}
+        for field in cls.metadata_fields:
+            value = getattr(cls, field, None)
+            if isinstance(value, list):
+                payload[field] = list(value)
+            elif isinstance(value, dict):
+                payload[field] = dict(value)
+            else:
+                payload[field] = value
+        return payload
+
+    def metadata(self) -> dict[str, Any]:
+        """Return instance-visible metadata backed by class defaults."""
+
+        return type(self).class_metadata()
 
 
 class GroupFix(Fix):
