@@ -193,7 +193,7 @@ def test_registry_local_id_derivation_falls_back_to_class_name_snake_case():
 
     try:
         register_fix(FallbackFromClassNameFix)
-        assert FallbackFromClassNameFix.canonical_id == "test.fallback_from_class_name_fix"
+        assert FallbackFromClassNameFix.canonical_id == "test.fallback_from_class_name"
     finally:
         FixRegistry._registry = registry_snapshot
         FixRegistry._identifier_index = identifier_snapshot

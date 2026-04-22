@@ -216,6 +216,31 @@ def test_load_fix_plan_document_plan_entries_normalize_fix_ids(tmp_path: Path):
     assert fixes[0].options["marker_attr"] == "my_marker"
 
 
+def test_fix_plan_to_dict_persists_canonical_ids_from_local_fix_refs():
+    plan = FixPlan.from_mapping(
+        {
+            "id": "atlas.atlas_basic",
+            "namespace": "atlas",
+            "fixes": [
+                {"id": "encoding_cleanup", "options": {"mode": "strict"}},
+                {"id": "atlas.project_id_normalization", "options": {}},
+            ],
+        }
+    )
+
+    payload = plan.to_dict()
+
+    assert [item.id for item in plan.fixes] == [
+        "atlas.encoding_cleanup",
+        "atlas.project_id_normalization",
+    ]
+    assert [item["fix"] for item in payload["fixes"]] == [
+        "atlas.encoding_cleanup",
+        "atlas.project_id_normalization",
+    ]
+    assert payload["fixes"][0]["options"] == {"mode": "strict"}
+
+
 def test_fix_plan_document_description_fields_are_parsed(tmp_path: Path):
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(

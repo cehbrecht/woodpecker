@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from typing import Any, Mapping
+
+_IDENTIFIER_PART_PATTERN = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*$")
 
 
 @dataclass
@@ -15,6 +18,16 @@ class FixRef:
         self.id = str(self.id).strip().lower()
         if not self.id:
             raise ValueError("FixRef.id must be a non-empty string")
+        if "." in self.id:
+            parts = self.id.split(".")
+            if len(parts) != 2 or not all(_IDENTIFIER_PART_PATTERN.fullmatch(part) for part in parts):
+                raise ValueError(
+                    "FixRef.id must be snake_case or canonical '<prefix>.<local_id>' form"
+                )
+        elif not _IDENTIFIER_PART_PATTERN.fullmatch(self.id):
+            raise ValueError(
+                "FixRef.id must be snake_case or canonical '<prefix>.<local_id>' form"
+            )
         if not isinstance(self.options, dict):
             raise ValueError("FixRef.options must be a mapping/object")
         if not isinstance(self.links, list):
@@ -118,6 +131,12 @@ class FixPlan:
         elif self.id and "." in self.id and not self.namespace:
             self.namespace, self.local_id = self.id.split(".", 1)
 
+        # Keep canonical IDs as primary plan identity for fixes.
+        self.fixes = [
+            FixRef(id=self.resolve_fix_identifier(ref), options=ref.options, links=ref.links)
+            for ref in self.fixes
+        ]
+
     def resolve_fix_identifier(self, ref: FixRef) -> str:
         token = str(ref.fix).strip().lower()
         if not token:
@@ -132,7 +151,7 @@ class FixPlan:
         fix_entries: list[dict[str, Any]] = []
         for fix in self.fixes:
             row: dict[str, Any] = {
-                "fix": self.resolve_fix_identifier(fix),
+                "fix": fix.id,
                 "options": dict(fix.options),
             }
             if fix.links:

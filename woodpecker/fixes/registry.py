@@ -74,7 +74,10 @@ class FixRegistry:
         if callable(derived):
             return cls._normalize_identifier(str(derived()))
 
-        return cls._camel_to_snake(fix_cls.__name__)
+        class_name = str(getattr(fix_cls, "__name__", "") or "")
+        if class_name.endswith("Fix"):
+            class_name = class_name[: -len("Fix")]
+        return cls._camel_to_snake(class_name)
 
     @classmethod
     def _validate_local_identifier(cls, label: str, value: str) -> None:
@@ -193,22 +196,6 @@ class FixRegistry:
                 f"Fix {fix_cls.__name__} could not be instantiated. "
                 "Ensure default metadata values are provided on the class."
             ) from exc
-        if isinstance(fix, Fix):
-            for attr in (
-                "namespace_prefix",
-                "local_id",
-                "canonical_id",
-                "aliases",
-                "links",
-                "name",
-                "description",
-                "categories",
-                "priority",
-                "dataset",
-            ):
-                if hasattr(fix_cls, attr):
-                    setattr(fix, attr, getattr(fix_cls, attr))
-            fix.categories = list(getattr(fix, "categories", []) or [])
         return fix
 
     @classmethod
