@@ -117,9 +117,7 @@ def select_fixes(
         selected = fixes
     else:
         selected = [
-            fix
-            for fix in fixes
-            if getattr(fix, "canonical_id", "") in resolved_selected_codes
+            fix for fix in fixes if getattr(fix, "canonical_id", "") in resolved_selected_codes
         ]
 
     if normalized_fix_options:
@@ -268,7 +266,7 @@ def apply_fix_plan(ds: Any, plan: FixPlan, registry: Any) -> Any:
             fix = fix.configure(ref.options)
 
         if not hasattr(fix, "check"):
-            raise TypeError(f"Fix '{ref.fix}' does not implement check()")
+            raise TypeError(f"Fix '{ref.id}' does not implement check()")
         should_apply = invoke_with_optional_options(fix.check, ds, ref.options)
         if not isinstance(should_apply, bool):
             # Backward-compatible behavior for legacy fixes with non-bool check output.
@@ -285,6 +283,6 @@ def apply_fix_plan(ds: Any, plan: FixPlan, registry: Any) -> Any:
         elif hasattr(fix, "apply"):
             fix.apply(ds, dry_run=False)
         else:
-            raise TypeError(f"Fix '{ref.fix}' does not implement fix() or apply()")
+            raise TypeError(f"Fix '{ref.id}' does not implement fix() or apply()")
 
     return ds

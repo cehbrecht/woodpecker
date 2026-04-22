@@ -1,64 +1,54 @@
 {
-  "plans": [
-    {
-      "id": "cmip7.esa_cci_water_vapour_zarr",
-      "local_id": "esa_cci_water_vapour_zarr",
-      "namespace": "cmip7",
-      "description": "CMIP7/ESA CCI zarr-style inputs",
-      "links": [
+    "plans": [
         {
-          "rel": "issue",
-          "href": "https://github.com/cehbrecht/woodpecker/issues",
-          "title": "Track ESA CCI fix discussions"
+            "id": "cmip7.esa_cci_water_vapour_zarr",
+            "local_id": "esa_cci_water_vapour_zarr",
+            "namespace": "cmip7",
+            "description": "CMIP7/ESA CCI zarr-style inputs",
+            "links": [
+                {
+                    "rel": "issue",
+                    "href": "https://github.com/cehbrecht/woodpecker/issues",
+                    "title": "Track ESA CCI fix discussions"
+                }
+            ],
+            "match": {"path_patterns": ["*ESACCI-WATERVAPOUR-*.zarr"]},
+            "fixes": [
+                {
+                    "id": "cmip7.configurable_reformat_bridge",
+                    "options": {
+                        "realm": "atmos",
+                        "branded_variable": "prw_tavg-u-hxy-u",
+                        "dim_map": {"bnds": "nv"},
+                        "variable_map": {"prw": "tcwv"},
+                        "keep_global_attrs": true
+                    }
+                },
+                {"id": "woodpecker.ensure_latitude_is_increasing"}
+            ]
+        },
+        {
+            "id": "cmip7.esa_cci_water_vapour_dotname",
+            "local_id": "esa_cci_water_vapour_dotname",
+            "namespace": "cmip7",
+            "description": "CMIP7/ESA CCI dot-name inputs",
+            "match": {"path_patterns": ["esacci.WATERVAPOUR.*"]},
+            "fixes": [
+                {
+                    "id": "woodpecker.merge_equivalent_dimensions",
+                    "options": {"dims": ["bnds", "nv"]}
+                },
+                {
+                    "id": "cmip7.configurable_reformat_bridge",
+                    "options": {
+                        "realm": "atmos",
+                        "branded_variable": "prw_tavg-u-hxy-u",
+                        "variable_map": {"prw": "tcwv"},
+                        "keep_global_attrs": true
+                    }
+                },
+                {"id": "woodpecker.ensure_latitude_is_increasing"}
+            ]
         }
-      ],
-      "match": {
-        "path_patterns": [
-          "*ESACCI-WATERVAPOUR-*.zarr"
-        ]
-      },
-      "fixes": [
-        {
-          "fix": "cmip7.configurable_reformat_bridge",
-          "options": {
-            "realm": "atmos",
-            "branded_variable": "prw_tavg-u-hxy-u",
-            "dim_map": {"bnds": "nv"},
-            "variable_map": {"prw": "tcwv"},
-            "keep_global_attrs": true
-          }
-        },
-        {"fix": "woodpecker.ensure_latitude_is_increasing"}
-      ]
-    },
-    {
-      "id": "cmip7.esa_cci_water_vapour_dotname",
-      "local_id": "esa_cci_water_vapour_dotname",
-      "namespace": "cmip7",
-      "description": "CMIP7/ESA CCI dot-name inputs",
-      "match": {
-        "path_patterns": [
-          "esacci.WATERVAPOUR.*"
-        ]
-      },
-      "fixes": [
-        {
-          "fix": "woodpecker.merge_equivalent_dimensions",
-          "options": {
-            "dims": ["bnds", "nv"]
-          }
-        },
-        {
-          "fix": "cmip7.configurable_reformat_bridge",
-          "options": {
-            "realm": "atmos",
-            "branded_variable": "prw_tavg-u-hxy-u",
-            "variable_map": {"prw": "tcwv"},
-            "keep_global_attrs": true
-          }
-        },
-        {"fix": "woodpecker.ensure_latitude_is_increasing"}
-      ]
-    }
-  ]
+    ]
 }

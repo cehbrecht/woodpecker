@@ -7,7 +7,7 @@ import xarray as xr
 from woodpecker.fixes.registry import Fix, FixRegistry, register_fix
 from woodpecker.plans.io import load_fix_plan, load_fix_plan_document
 from woodpecker.plans.matcher import plan_matches_dataset
-from woodpecker.plans.models import FixPlan, FixPlanDocument
+from woodpecker.plans.models import FixPlan, FixPlanDocument, FixRef
 from woodpecker.plans.runner import apply_fix_plan
 
 
@@ -199,7 +199,10 @@ def test_load_fix_plan_document_plan_entries_normalize_fix_ids(tmp_path: Path):
                     {
                         "id": "mixed-case",
                         "fixes": [
-                            {"id": "cmip6.dummy_placeholder", "options": {"marker_attr": "my_marker"}},
+                            {
+                                "id": "cmip6.dummy_placeholder",
+                                "options": {"marker_attr": "my_marker"},
+                            },
                             {"id": "atlas.encoding_cleanup", "options": {}},
                         ],
                     }
@@ -234,11 +237,34 @@ def test_fix_plan_to_dict_persists_canonical_ids_from_local_fix_refs():
         "atlas.encoding_cleanup",
         "atlas.project_id_normalization",
     ]
-    assert [item["fix"] for item in payload["fixes"]] == [
+    assert [item["id"] for item in payload["fixes"]] == [
         "atlas.encoding_cleanup",
         "atlas.project_id_normalization",
     ]
     assert payload["fixes"][0]["options"] == {"mode": "strict"}
+
+
+def test_fix_plan_identity_uses_identifier_set_when_prefix_and_local_available():
+    plan = FixPlan(id="atlas.atlas_basic", fixes=[FixRef(id="atlas.encoding_cleanup")])
+
+    assert plan.identifier_set is not None
+    assert plan.identifier_set.prefix == "atlas"
+    assert plan.identifier_set.local_id == "atlas_basic"
+    assert plan.identifier_set.canonical_id == "atlas.atlas_basic"
+    assert plan.namespace_prefix == "atlas"
+
+
+def test_fix_plan_namespace_scopes_unqualified_fix_refs():
+    plan = FixPlan.from_mapping(
+        {
+            "id": "atlas_plan",
+            "namespace": "atlas",
+            "fixes": [{"id": "encoding_cleanup"}],
+        }
+    )
+
+    assert plan.namespace_prefix == "atlas"
+    assert [item.id for item in plan.fixes] == ["atlas.encoding_cleanup"]
 
 
 def test_fix_plan_document_description_fields_are_parsed(tmp_path: Path):

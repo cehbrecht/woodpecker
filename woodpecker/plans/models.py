@@ -4,7 +4,49 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
-from woodpecker.identifiers import IdentifierRules
+from woodpecker.identifiers import IdentifierSet, IdentifierRules
+
+
+def _validate_links(field_name: str, value: object) -> list[dict[str, str]]:
+    if not isinstance(value, list):
+        raise ValueError(f"{field_name} must be a list")
+
+    validated: list[dict[str, str]] = []
+    for item in value:
+        if not isinstance(item, dict) or not item.get("rel") or not item.get("href"):
+            raise ValueError(f"{field_name} entries must contain rel and href")
+        validated.append(dict(item))
+    return validated
+
+
+def _resolve_plan_identifier_set(
+    *,
+    plan_id: object,
+    local_id: object,
+    namespace_prefix: object,
+) -> tuple[str, str, str, IdentifierSet | None]:
+    normalized_id = IdentifierRules.normalize(plan_id)
+    normalized_local_id = IdentifierRules.normalize(local_id)
+    normalized_prefix = IdentifierRules.normalize(namespace_prefix)
+
+    if normalized_id and "." in normalized_id:
+        IdentifierRules.validate_canonical_id("FixPlan.id", normalized_id)
+        parsed_prefix, parsed_local_id = normalized_id.split(".", 1)
+        if not normalized_prefix:
+            normalized_prefix = parsed_prefix
+        if not normalized_local_id:
+            normalized_local_id = parsed_local_id
+    elif normalized_id and not normalized_local_id:
+        normalized_local_id = normalized_id
+
+    identifier_set: IdentifierSet | None = None
+    if normalized_prefix and normalized_local_id:
+        identifier_set = IdentifierRules.build(normalized_prefix, normalized_local_id)
+        normalized_prefix = identifier_set.prefix
+        normalized_local_id = identifier_set.local_id
+        normalized_id = identifier_set.canonical_id
+
+    return normalized_id, normalized_local_id, normalized_prefix, identifier_set
 
 
 @dataclass
@@ -23,32 +65,10 @@ class FixRef:
             IdentifierRules.validate_local_id("FixRef.id", self.id)
         if not isinstance(self.options, dict):
             raise ValueError("FixRef.options must be a mapping/object")
-        if not isinstance(self.links, list):
-            raise ValueError("FixRef.links must be a list")
-        for item in self.links:
-            if not isinstance(item, dict) or not item.get("rel") or not item.get("href"):
-                raise ValueError("FixRef.links entries must contain rel and href")
-
-    @property
-    def id(self) -> str:
-        """Backward-compatible alias for legacy code paths."""
-
-        return self._id
-
-    @id.setter
-    def id(self, value: str) -> None:
-        self._id = IdentifierRules.normalize(value)
-
-    @property
-    def fix(self) -> str:
-        return self.id
-
-    @fix.setter
-    def fix(self, value: str) -> None:
-        self.id = value
+        self.links = _validate_links("FixRef.links", self.links)
 
     def to_dict(self) -> dict[str, Any]:
-        payload: dict[str, Any] = {"fix": self.id, "options": dict(self.options)}
+        payload: dict[str, Any] = {"id": self.id, "options": dict(self.options)}
         if self.links:
             payload["links"] = [dict(item) for item in self.links]
         return payload
@@ -56,7 +76,7 @@ class FixRef:
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> FixRef:
         return cls(
-            id=str(payload.get("fix", payload.get("id", ""))),
+            id=str(payload.get("id", "")),
             options=dict(payload.get("options", {}) or {}),
             links=[dict(item) for item in list(payload.get("links", []) or [])],
         )
@@ -90,7 +110,7 @@ def parse_fix_ref(item: Any) -> FixRef:
         return FixRef(id=item)
     if not isinstance(item, Mapping):
         raise ValueError("Each fix entry must be a string or object")
-    fix_id = item.get("fix", item.get("id", ""))
+    fix_id = item.get("id", "")
     return FixRef(
         id=str(fix_id),
         options=dict(item.get("options", {}) or {}),
@@ -102,38 +122,23 @@ def parse_fix_ref(item: Any) -> FixRef:
 class FixPlan:
     id: str = ""
     local_id: str = ""
-    namespace: str = ""
+    namespace_prefix: str = ""
     description: str = ""
     match: DatasetMatcher | None = None
     fixes: list[FixRef] = field(default_factory=list)
     links: list[dict[str, str]] = field(default_factory=list)
+    _identifier_set: IdentifierSet | None = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
-        self.id = IdentifierRules.normalize(self.id)
-        self.local_id = IdentifierRules.normalize(self.local_id)
-        self.namespace = IdentifierRules.normalize(self.namespace)
+        self.id, self.local_id, self.namespace_prefix, self._identifier_set = (
+            _resolve_plan_identifier_set(
+                plan_id=self.id,
+                local_id=self.local_id,
+                namespace_prefix=self.namespace_prefix,
+            )
+        )
         self.description = str(self.description)
-        if not isinstance(self.links, list):
-            raise ValueError("FixPlan.links must be a list")
-        for item in self.links:
-            if not isinstance(item, dict) or not item.get("rel") or not item.get("href"):
-                raise ValueError("FixPlan.links entries must contain rel and href")
-
-        if self.id and "." in self.id:
-            IdentifierRules.validate_canonical_id("FixPlan.id", self.id)
-            id_prefix, id_local = self.id.split(".", 1)
-            if not self.namespace:
-                self.namespace = id_prefix
-            if not self.local_id:
-                self.local_id = id_local
-        elif self.id and not self.local_id:
-            self.local_id = self.id
-
-        if self.namespace and self.local_id:
-            identifiers = IdentifierRules.build(self.namespace, self.local_id)
-            self.namespace = identifiers.prefix
-            self.local_id = identifiers.local_id
-            self.id = identifiers.canonical_id
+        self.links = _validate_links("FixPlan.links", self.links)
 
         # Keep canonical IDs as primary plan identity for fixes.
         self.fixes = [
@@ -141,21 +146,27 @@ class FixPlan:
             for ref in self.fixes
         ]
 
+    @property
+    def identifier_set(self) -> IdentifierSet | None:
+        """Resolved identifier model for plan identity when prefix + local id are known."""
+
+        return self._identifier_set
+
     def resolve_fix_identifier(self, ref: FixRef) -> str:
-        token = IdentifierRules.normalize(ref.fix)
+        token = IdentifierRules.normalize(ref.id)
         if not token:
             return token
         if "." in token:
             return token
-        if self.namespace:
-            return f"{self.namespace}.{token}"
+        if self.namespace_prefix:
+            return f"{self.namespace_prefix}.{token}"
         return token
 
     def to_dict(self) -> dict[str, Any]:
         fix_entries: list[dict[str, Any]] = []
         for fix in self.fixes:
             row: dict[str, Any] = {
-                "fix": fix.id,
+                "id": fix.id,
                 "options": dict(fix.options),
             }
             if fix.links:
@@ -169,8 +180,8 @@ class FixPlan:
             "match": self.match.to_dict() if self.match is not None else None,
             "fixes": fix_entries,
         }
-        if self.namespace:
-            payload["namespace"] = self.namespace
+        if self.namespace_prefix:
+            payload["namespace"] = self.namespace_prefix
         if self.links:
             payload["links"] = [dict(item) for item in self.links]
         return payload
@@ -181,20 +192,10 @@ class FixPlan:
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> FixPlan:
         raw_match = payload.get("match")
-        plan_id = IdentifierRules.normalize(payload.get("id", ""))
-        namespace = IdentifierRules.normalize(payload.get("namespace", payload.get("prefix", "")))
-        local_id = IdentifierRules.normalize(payload.get("local_id", ""))
-        if plan_id and "." in plan_id and not namespace:
-            namespace, local_id = plan_id.split(".", 1)
-        if not local_id:
-            if plan_id and "." in plan_id:
-                _, local_id = plan_id.split(".", 1)
-            else:
-                local_id = plan_id
         return cls(
-            id=plan_id,
-            local_id=local_id,
-            namespace=namespace,
+            id=str(payload.get("id", "")),
+            local_id=str(payload.get("local_id", "")),
+            namespace_prefix=str(payload.get("namespace", "")),
             description=str(payload.get("description", "")),
             match=DatasetMatcher.from_dict(raw_match) if isinstance(raw_match, Mapping) else None,
             fixes=[parse_fix_ref(item) for item in list(payload.get("fixes", []) or [])],
