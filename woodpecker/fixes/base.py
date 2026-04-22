@@ -93,15 +93,40 @@ class GroupFix(Fix):
 
     members: ClassVar[list[Type[Any]]] = []
 
+    @classmethod
+    def _validate_members(cls) -> None:
+        if not cls.members:
+            raise ValueError(f"GroupFix '{cls.__name__}' must define non-empty members")
+
     @staticmethod
     def _member_keys(member_cls: Type[Any]) -> list[str]:
         keys: list[str] = []
+        seen: set[str] = set()
+
+        def _add(token: str) -> None:
+            value = str(token or "").strip().lower()
+            if not value or value in seen:
+                return
+            seen.add(value)
+            keys.append(value)
+
         canonical_id = str(getattr(member_cls, "canonical_id", "") or "").strip().lower()
         local_id = str(getattr(member_cls, "local_id", "") or "").strip().lower()
-        if canonical_id:
-            keys.append(canonical_id)
-        if local_id:
-            keys.append(local_id)
+        namespace_prefix = str(getattr(member_cls, "namespace_prefix", "") or "").strip().lower()
+        aliases = list(getattr(member_cls, "aliases", []) or [])
+
+        _add(canonical_id)
+        _add(local_id)
+        for alias in aliases:
+            alias_token = str(alias or "").strip().lower()
+            if not alias_token:
+                continue
+            if "." in alias_token:
+                _add(alias_token)
+            else:
+                _add(alias_token)
+                if namespace_prefix:
+                    _add(f"{namespace_prefix}.{alias_token}")
         return keys
 
     def _member_config(self, member_cls: Type[Any]) -> dict[str, Any]:
@@ -116,13 +141,11 @@ class GroupFix(Fix):
         return {}
 
     def matches(self, dataset: xr.Dataset) -> bool:
-        if not self.members:
-            raise ValueError(
-                f"GroupFix '{self.__class__.__name__}' must define non-empty members"
-            )
+        self._validate_members()
         return any(cls().matches(dataset) for cls in self.members)
 
     def check(self, dataset: xr.Dataset, **options: Any) -> list[str]:
+        self._validate_members()
         issues: list[str] = []
         for cls in self.members:
             fix = cls().configure(self._member_config(cls))
@@ -133,6 +156,7 @@ class GroupFix(Fix):
         return issues
 
     def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
+        self._validate_members()
         applied = False
         for cls in sorted(self.members, key=lambda c: getattr(c, "priority", 10)):
             fix = cls().configure(self._member_config(cls))

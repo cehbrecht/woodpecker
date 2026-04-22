@@ -1,3 +1,4 @@
+import pytest
 import xarray as xr
 
 from woodpecker.fixes.base import Fix, GroupFix
@@ -20,7 +21,7 @@ class _MemberFix(Fix):
     namespace_prefix = "group"
     local_id = "member_fix"
     canonical_id = "group.member_fix"
-    aliases = []
+    aliases = ["member_alias"]
     links = []
     name = "Member fix"
     description = ""
@@ -48,6 +49,20 @@ class _ContainerGroupFix(GroupFix):
     priority = 10
     dataset = None
     members = [_MemberFix]
+
+
+class _EmptyGroupFix(GroupFix):
+    namespace_prefix = "group"
+    local_id = "empty"
+    canonical_id = "group.empty"
+    aliases = []
+    links = []
+    name = "Empty"
+    description = ""
+    categories = ["metadata"]
+    priority = 10
+    dataset = None
+    members = []
 
 
 def test_fix_metadata_is_class_level_and_config_is_instance_runtime_state():
@@ -95,3 +110,35 @@ def test_group_fix_member_config_accepts_canonical_or_local_member_keys():
 
     assert changed_canonical is True
     assert ds2.attrs["marker"] == "canonical"
+
+    ds3 = xr.Dataset(attrs={"source_name": "dummy.nc"})
+    group_alias_local = _ContainerGroupFix().configure(
+        {"members": {"member_alias": {"marker": "alias-local"}}}
+    )
+    changed_alias_local = group_alias_local.apply(ds3, dry_run=False)
+
+    assert changed_alias_local is True
+    assert ds3.attrs["marker"] == "alias-local"
+
+    ds4 = xr.Dataset(attrs={"source_name": "dummy.nc"})
+    group_alias_canonical = _ContainerGroupFix().configure(
+        {"members": {"group.member_alias": {"marker": "alias-canonical"}}}
+    )
+    changed_alias_canonical = group_alias_canonical.apply(ds4, dry_run=False)
+
+    assert changed_alias_canonical is True
+    assert ds4.attrs["marker"] == "alias-canonical"
+
+
+def test_group_fix_rejects_empty_members_in_matches_check_and_apply():
+    group = _EmptyGroupFix()
+    ds = xr.Dataset(attrs={"source_name": "dummy.nc"})
+
+    with pytest.raises(ValueError, match="must define non-empty members"):
+        group.matches(ds)
+
+    with pytest.raises(ValueError, match="must define non-empty members"):
+        group.check(ds)
+
+    with pytest.raises(ValueError, match="must define non-empty members"):
+        group.apply(ds, dry_run=True)
