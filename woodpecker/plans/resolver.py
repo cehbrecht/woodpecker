@@ -48,7 +48,7 @@ def normalize_ordered_codes(codes: Sequence[str]) -> tuple[str, ...]:
 
 
 def _plan_key(plan: FixPlan) -> str:
-    return plan.id or json.dumps(plan.to_dict(), sort_keys=True)
+    return plan.id or json.dumps(plan.model_dump(), sort_keys=True)
 
 
 def _finalize_matching_plans(

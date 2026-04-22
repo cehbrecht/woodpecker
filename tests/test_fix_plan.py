@@ -110,7 +110,7 @@ def test_load_fix_plan_from_yaml(tmp_path: Path):
 def test_apply_plan_calls_check_then_fix_and_passes_options():
     register_fix(_FixMethodFix)
     ds = xr.Dataset()
-    plan = FixPlan.from_mapping(
+    plan = FixPlan.model_validate(
         {"fixes": [{"id": "plan_test.fix_method", "options": {"alpha": 1}}]}
     )
 
@@ -125,7 +125,7 @@ def test_apply_plan_calls_check_then_fix_and_passes_options():
 def test_apply_plan_falls_back_to_apply_when_fix_method_missing():
     register_fix(_ApplyMethodFix)
     ds = xr.Dataset()
-    plan = FixPlan.from_mapping(
+    plan = FixPlan.model_validate(
         {"fixes": [{"id": "plan_test.apply_method", "options": {"beta": 2}}]}
     )
 
@@ -140,7 +140,7 @@ def test_apply_plan_falls_back_to_apply_when_fix_method_missing():
 def test_apply_plan_does_not_mask_type_error_from_fix_method():
     register_fix(_TypeErrorInsideMethodFix)
     ds = xr.Dataset()
-    plan = FixPlan.from_mapping(
+    plan = FixPlan.model_validate(
         {"fixes": [{"id": "plan_test.type_error_inside_method", "options": {"gamma": 3}}]}
     )
 
@@ -228,7 +228,7 @@ def test_load_fix_plan_document_plan_entries_normalize_fix_ids(tmp_path: Path):
 
 
 def test_fix_plan_to_dict_persists_canonical_ids_from_local_fix_refs():
-    plan = FixPlan.from_mapping(
+    plan = FixPlan.model_validate(
         {
             "id": "atlas.atlas_basic",
             "namespace_prefix": "atlas",
@@ -239,7 +239,7 @@ def test_fix_plan_to_dict_persists_canonical_ids_from_local_fix_refs():
         }
     )
 
-    payload = plan.to_dict()
+    payload = plan.model_dump()
 
     assert [item.id for item in plan.fixes] == [
         "atlas.encoding_cleanup",
@@ -266,7 +266,7 @@ def test_fix_plan_identity_uses_identifier_set_when_prefix_and_local_available()
 
 
 def test_fix_plan_namespace_scopes_unqualified_fix_refs():
-    plan = FixPlan.from_mapping(
+    plan = FixPlan.model_validate(
         {
             "id": "atlas_plan",
             "namespace_prefix": "atlas",
@@ -287,10 +287,10 @@ def test_fix_plan_runtime_metadata_provider_is_available_but_not_persisted():
         ),
     )
 
-    runtime_payload = plan.runtime_metadata_dict()
+    runtime_payload = plan.runtime_metadata_dump()
     assert runtime_payload == {"provider": {"name": "woodpecker-cmip7-plugin", "version": "0.4.2"}}
 
-    persisted = plan.to_dict()
+    persisted = plan.model_dump()
     assert "runtime_metadata" not in persisted
 
 
@@ -344,7 +344,7 @@ def test_fix_plan_document_to_dict_includes_schema_version():
         plans=[FixPlan(id="atlas.basic", fixes=[FixRef(id="atlas.encoding_cleanup")])]
     )
 
-    payload = document.to_dict()
+    payload = document.model_dump()
 
     assert payload["schema_version"] == 1
     assert payload["plans"][0]["id"] == "atlas.basic"

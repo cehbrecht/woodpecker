@@ -26,8 +26,8 @@ def _sample_plan() -> FixPlan:
 def test_fix_plan_serialization_roundtrip():
     plan = _sample_plan()
 
-    payload = plan.to_json()
-    restored = FixPlan.from_json(payload)
+    payload = plan.model_dump_json()
+    restored = FixPlan.model_validate_json(payload)
 
     assert restored == plan
     assert restored.fixes[0].id == "woodpecker.normalize_tas_units_to_kelvin"

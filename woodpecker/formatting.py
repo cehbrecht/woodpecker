@@ -54,7 +54,7 @@ def format_plans(plans: Sequence[FixPlan], fmt: str) -> str:
     """Format stored plans for CLI output."""
 
     if fmt == "json":
-        return json.dumps([plan.to_dict() for plan in plans], indent=2)
+        return json.dumps([plan.model_dump() for plan in plans], indent=2)
 
     if not plans:
         return "No plans found."

@@ -59,7 +59,7 @@ def load_fix_plan(path: str | Path) -> FixPlan:
     if not isinstance(payload, Mapping):
         raise ValueError("Fix plan file must contain an object or list")
 
-    return FixPlan.from_mapping(payload)
+    return FixPlan.model_validate(payload)
 
 
 def load_fix_plan_document(path: str | Path) -> FixPlanDocument:
@@ -70,6 +70,6 @@ def load_fix_plan_document(path: str | Path) -> FixPlanDocument:
     payload = _load_payload(file_path)
     if isinstance(payload, list):
         return FixPlanDocument(
-            plans=[FixPlan.from_mapping(item) for item in payload if isinstance(item, Mapping)]
+            plans=[FixPlan.model_validate(item) for item in payload if isinstance(item, Mapping)]
         )
-    return FixPlanDocument.from_mapping(payload)
+    return FixPlanDocument.model_validate_document_payload(payload)

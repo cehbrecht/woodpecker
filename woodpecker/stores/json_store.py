@@ -38,20 +38,20 @@ class JsonFixPlanStore(FixPlanStore):
         )
 
     def list_plans(self) -> list[FixPlan]:
-        return [FixPlan.from_dict(item) for item in self._read_raw()]
+        return [FixPlan.model_validate(item) for item in self._read_raw()]
 
     def save_plan(self, plan: FixPlan) -> None:
         plans = self._read_raw()
         target_canonical_id = FixPlanIndex.canonical_plan_id(plan)
         replaced = False
         for idx, existing in enumerate(plans):
-            existing_plan = FixPlan.from_dict(existing)
+            existing_plan = FixPlan.model_validate(existing)
             if FixPlanIndex.canonical_plan_id(existing_plan) == target_canonical_id:
-                plans[idx] = plan.to_dict()
+                plans[idx] = plan.model_dump()
                 replaced = True
                 break
         if not replaced:
-            plans.append(plan.to_dict())
+            plans.append(plan.model_dump())
         self._write_raw(plans)
 
     def lookup(self, dataset: Any, path: str | None = None) -> list[FixPlan]:
