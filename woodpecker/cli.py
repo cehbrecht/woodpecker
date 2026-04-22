@@ -428,7 +428,7 @@ def fix(
         )
         if force_apply and not context.resolved_codes:
             raise click.ClickException(
-                "--force-apply requires explicit fix selection via --select or plan codes."
+                "--force-apply requires explicit fix selection via --select or plan identifiers."
             )
         run_fix_kwargs = build_run_fix_kwargs(
             context,

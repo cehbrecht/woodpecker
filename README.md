@@ -94,7 +94,7 @@ Examples:
 ### Force-apply
 
 - `--force-apply` skips `matches()` prefiltering before `apply()` to run faster
-- requires explicit fix selection (`--select` or plan codes)
+- requires explicit fix selection (`--select` or plan identifiers)
 
 ### List stored plans
 
