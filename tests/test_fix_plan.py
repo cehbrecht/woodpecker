@@ -7,7 +7,13 @@ import xarray as xr
 from woodpecker.fixes.registry import Fix, FixRegistry, register_fix
 from woodpecker.plans.io import load_fix_plan, load_fix_plan_document
 from woodpecker.plans.matcher import plan_matches_dataset
-from woodpecker.plans.models import FixPlan, FixPlanDocument, FixRef
+from woodpecker.plans.models import (
+    FixPlan,
+    FixPlanDocument,
+    FixPlanRuntimeMetadata,
+    FixRef,
+    ProviderMetadata,
+)
 from woodpecker.plans.runner import apply_fix_plan
 
 
@@ -242,6 +248,25 @@ def test_fix_plan_to_dict_persists_canonical_ids_from_local_fix_refs():
         "atlas.project_id_normalization",
     ]
     assert payload["fixes"][0]["options"] == {"mode": "strict"}
+    assert payload["id"] == "atlas.atlas_basic"
+    assert "namespace" not in payload
+    assert "local_id" not in payload
+
+
+def test_fix_plan_from_dict_keeps_backward_compat_for_legacy_namespace_and_local_id():
+    plan = FixPlan.from_dict(
+        {
+            "id": "legacy_plan",
+            "local_id": "legacy_plan",
+            "namespace": "atlas",
+            "fixes": [{"id": "encoding_cleanup"}],
+        }
+    )
+
+    assert plan.id == "atlas.legacy_plan"
+    assert plan.namespace_prefix == "atlas"
+    assert plan.local_id == "legacy_plan"
+    assert [item.id for item in plan.fixes] == ["atlas.encoding_cleanup"]
 
 
 def test_fix_plan_identity_uses_identifier_set_when_prefix_and_local_available():
@@ -265,6 +290,24 @@ def test_fix_plan_namespace_scopes_unqualified_fix_refs():
 
     assert plan.namespace_prefix == "atlas"
     assert [item.id for item in plan.fixes] == ["atlas.encoding_cleanup"]
+
+
+def test_fix_plan_runtime_metadata_provider_is_available_but_not_persisted():
+    plan = FixPlan(
+        id="cmip7.esa_cci_water_vapour_zarr",
+        fixes=[FixRef(id="cmip7.configurable_reformat_bridge")],
+        runtime_metadata=FixPlanRuntimeMetadata(
+            provider=ProviderMetadata(name="woodpecker-cmip7-plugin", version="0.4.2")
+        ),
+    )
+
+    runtime_payload = plan.runtime_metadata_dict()
+    assert runtime_payload == {
+        "provider": {"name": "woodpecker-cmip7-plugin", "version": "0.4.2"}
+    }
+
+    persisted = plan.to_dict()
+    assert "runtime_metadata" not in persisted
 
 
 def test_fix_plan_document_description_fields_are_parsed(tmp_path: Path):

@@ -20,6 +20,7 @@ def build_prov_document(
     inputs: Iterable[DataInput],
     selected_codes: list[str],
     selected_fixes: Iterable[Any] | None,
+    selected_plans: Iterable[Any] | None,
     stats: dict[str, int],
     mode: str,
     output_format: str,
@@ -34,6 +35,19 @@ def build_prov_document(
     except PackageNotFoundError:
         core_version = "unknown"
 
+    providers: list[dict[str, str]] = []
+    seen_providers: set[str] = set()
+
+    for selected_plan in list(selected_plans or []):
+        runtime_metadata = getattr(selected_plan, "runtime_metadata", None)
+        provider = getattr(runtime_metadata, "provider", None)
+        provider_name = str(getattr(provider, "name", "") or "").strip()
+        if not provider_name or provider_name in seen_providers:
+            continue
+        provider_version = str(getattr(provider, "version", "") or "").strip() or "unknown"
+        providers.append({"name": provider_name, "version": provider_version})
+        seen_providers.add(provider_name)
+
     plugin_versions: dict[str, str] = {}
     for fix in list(selected_fixes or []):
         module = getattr(type(fix), "__module__", "")
@@ -46,6 +60,10 @@ def build_prov_document(
             plugin_versions[package] = version(package)
         except PackageNotFoundError:
             plugin_versions[package] = "unknown"
+
+        if package not in seen_providers:
+            providers.append({"name": package, "version": plugin_versions[package]})
+            seen_providers.add(package)
 
     output_adapter = get_output_adapter(output_format)
 
@@ -62,6 +80,7 @@ def build_prov_document(
         "selected_codes": json.dumps(selected_codes, sort_keys=True),
         "core_version": core_version,
         "plugin_versions": json.dumps(plugin_versions, sort_keys=True),
+        "providers": json.dumps(providers, sort_keys=True),
         "stats": json.dumps(stats, sort_keys=True),
     }
     if plan:

@@ -448,6 +448,7 @@ def fix(
             inputs=context.inputs,
             selected_codes=[getattr(fix, "canonical_id", "") for fix in context.fixes],
             selected_fixes=context.fixes,
+            selected_plans=context.selected_plans,
             stats=stats,
             mode="dry-run" if dry_run else "write",
             output_format=context.resolved_output_format,

@@ -77,6 +77,54 @@ class DatasetMatcher:
         )
 
 
+@dataclass(frozen=True)
+class ProviderMetadata:
+    """Optional runtime provider metadata for provenance and output annotations."""
+
+    name: str
+    version: str | None = None
+
+    def to_dict(self) -> dict[str, str]:
+        payload = {"name": self.name}
+        if self.version:
+            payload["version"] = self.version
+        return payload
+
+    @classmethod
+    def from_mapping(cls, payload: Mapping[str, Any]) -> ProviderMetadata:
+        return cls(
+            name=str(payload.get("name", "") or "").strip(),
+            version=(
+                str(payload.get("version", "") or "").strip() or None
+                if "version" in payload
+                else None
+            ),
+        )
+
+
+@dataclass(frozen=True)
+class FixPlanRuntimeMetadata:
+    """Optional runtime metadata that is intentionally not part of persisted plans."""
+
+    provider: ProviderMetadata | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        payload: dict[str, Any] = {}
+        if self.provider is not None and self.provider.name:
+            payload["provider"] = self.provider.to_dict()
+        return payload
+
+    @classmethod
+    def from_mapping(cls, payload: Mapping[str, Any]) -> FixPlanRuntimeMetadata:
+        provider_payload = payload.get("provider")
+        provider = (
+            ProviderMetadata.from_mapping(provider_payload)
+            if isinstance(provider_payload, Mapping)
+            else None
+        )
+        return cls(provider=provider)
+
+
 def parse_fix_ref(item: Any) -> FixRef:
     if isinstance(item, str):
         return FixRef(id=item)
@@ -106,6 +154,11 @@ class FixPlan:
     match: DatasetMatcher | None = None
     fixes: list[FixRef] = field(default_factory=list)
     links: list[dict[str, str]] = field(default_factory=list)
+    runtime_metadata: FixPlanRuntimeMetadata | None = field(
+        default=None,
+        repr=False,
+        compare=False,
+    )
     _identifier_set: IdentifierSet | None = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -157,16 +210,21 @@ class FixPlan:
 
         payload: dict[str, Any] = {
             "id": self.id,
-            "local_id": self.local_id,
             "description": self.description,
             "match": self.match.to_dict() if self.match is not None else None,
             "fixes": fix_entries,
         }
-        if self.namespace_prefix:
-            payload["namespace"] = self.namespace_prefix
         if self.links:
             payload["links"] = [dict(item) for item in self.links]
         return payload
+
+    def runtime_metadata_dict(self) -> dict[str, Any] | None:
+        """Return optional runtime metadata for provenance/output contexts."""
+
+        if self.runtime_metadata is None:
+            return None
+        payload = self.runtime_metadata.to_dict()
+        return payload or None
 
     def to_json(self) -> str:
         return json.dumps(self.to_dict(), ensure_ascii=False)
@@ -175,21 +233,31 @@ class FixPlan:
     def from_dict(cls, payload: Mapping[str, Any]) -> FixPlan:
         """Deserialize a ``FixPlan`` from a plain mapping.
 
-        The ``namespace`` JSON key maps to ``namespace_prefix`` internally.
+        The ``namespace`` and ``local_id`` keys are accepted for backward
+        compatibility but are not emitted by ``to_dict()``.
         Fix entries may be plain id strings or ``{id, options, links}`` objects.
         """
         raw_match = payload.get("match")
         raw_fixes = payload.get("fixes", []) or []
         if not isinstance(raw_fixes, list):
             raise ValueError("FixPlan 'fixes' must be a list")
+
+        runtime_payload = payload.get("runtime_metadata")
+        runtime_metadata = (
+            FixPlanRuntimeMetadata.from_mapping(runtime_payload)
+            if isinstance(runtime_payload, Mapping)
+            else None
+        )
+
         return cls(
             id=str(payload.get("id", "")),
             local_id=str(payload.get("local_id", "")),
-            namespace_prefix=str(payload.get("namespace", "")),
+            namespace_prefix=str(payload.get("namespace", payload.get("namespace_prefix", ""))),
             description=str(payload.get("description", "")),
             match=DatasetMatcher.from_dict(raw_match) if isinstance(raw_match, Mapping) else None,
             fixes=[parse_fix_ref(item) for item in raw_fixes],
             links=[dict(item) for item in list(payload.get("links", []) or [])],
+            runtime_metadata=runtime_metadata,
         )
 
     @classmethod
