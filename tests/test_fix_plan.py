@@ -172,6 +172,7 @@ def test_load_fix_plan_document_json(tmp_path: Path):
     document = load_fix_plan_document(plan_path)
 
     assert isinstance(document, FixPlanDocument)
+    assert document.schema_version == 1
     assert len(document.plans) == 1
     assert document.plans[0].id == "cmip6-basic"
     assert document.plans[0].fixes[0].id == "cmip6_0001"
@@ -191,6 +192,7 @@ def test_load_fix_plan_document_single_plan_shorthand(tmp_path: Path):
 
     document = load_fix_plan_document(plan_path)
 
+    assert document.schema_version == 1
     assert len(document.plans) == 1
     assert document.plans[0].id == "single"
     assert document.plans[0].fixes[0].id == "cmip6_0001"
@@ -302,9 +304,7 @@ def test_fix_plan_runtime_metadata_provider_is_available_but_not_persisted():
     )
 
     runtime_payload = plan.runtime_metadata_dict()
-    assert runtime_payload == {
-        "provider": {"name": "woodpecker-cmip7-plugin", "version": "0.4.2"}
-    }
+    assert runtime_payload == {"provider": {"name": "woodpecker-cmip7-plugin", "version": "0.4.2"}}
 
     persisted = plan.to_dict()
     assert "runtime_metadata" not in persisted
@@ -330,6 +330,40 @@ def test_fix_plan_document_description_fields_are_parsed(tmp_path: Path):
     document = load_fix_plan_document(plan_path)
 
     assert document.plans[0].description == "Dataset selector note"
+
+
+def test_fix_plan_document_uses_explicit_schema_version_when_present(tmp_path: Path):
+    plan_path = tmp_path / "plan.json"
+    plan_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "plans": [
+                    {
+                        "id": "atlas.basic",
+                        "fixes": [{"id": "atlas.encoding_cleanup"}],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    document = load_fix_plan_document(plan_path)
+
+    assert document.schema_version == 1
+    assert document.plans[0].id == "atlas.basic"
+
+
+def test_fix_plan_document_to_dict_includes_schema_version():
+    document = FixPlanDocument(
+        plans=[FixPlan(id="atlas.basic", fixes=[FixRef(id="atlas.encoding_cleanup")])]
+    )
+
+    payload = document.to_dict()
+
+    assert payload["schema_version"] == 1
+    assert payload["plans"][0]["id"] == "atlas.basic"
 
 
 def test_esa_cci_example_fix_plan_uses_plugin_cmip7_fix_codes_in_order():

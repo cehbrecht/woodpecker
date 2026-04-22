@@ -275,21 +275,39 @@ class FixPlan:
 
 @dataclass
 class FixPlanDocument:
+    schema_version: int = 1
     plans: list[FixPlan] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
-        return {"plans": [plan.to_dict() for plan in self.plans]}
+        return {
+            "schema_version": self.schema_version,
+            "plans": [plan.to_dict() for plan in self.plans],
+        }
+
+    @staticmethod
+    def _coerce_schema_version(value: object) -> int:
+        if value in (None, ""):
+            return 1
+        try:
+            schema_version = int(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("FixPlanDocument 'schema_version' must be an integer") from exc
+        if schema_version < 1:
+            raise ValueError("FixPlanDocument 'schema_version' must be >= 1")
+        return schema_version
 
     @classmethod
     def from_mapping(cls, payload: Mapping[str, Any]) -> FixPlanDocument:
+        schema_version = cls._coerce_schema_version(payload.get("schema_version", 1))
         raw_plans = payload.get("plans")
         if raw_plans is None:
             # Single-plan shorthand: treat top-level object as one FixPlan.
-            return cls(plans=[FixPlan.from_mapping(payload)])
+            return cls(schema_version=schema_version, plans=[FixPlan.from_mapping(payload)])
         if not isinstance(raw_plans, list):
             raise ValueError("FixPlanDocument 'plans' must be a list")
         return cls(
-            plans=[FixPlan.from_mapping(item) for item in raw_plans if isinstance(item, Mapping)]
+            schema_version=schema_version,
+            plans=[FixPlan.from_mapping(item) for item in raw_plans if isinstance(item, Mapping)],
         )
 
     @classmethod
@@ -297,7 +315,8 @@ class FixPlanDocument:
         data = json.loads(payload)
         if isinstance(data, list):
             return cls(
-                plans=[FixPlan.from_mapping(item) for item in data if isinstance(item, Mapping)]
+                schema_version=1,
+                plans=[FixPlan.from_mapping(item) for item in data if isinstance(item, Mapping)],
             )
         if not isinstance(data, Mapping):
             raise ValueError("FixPlanDocument JSON payload must decode to an object or list")

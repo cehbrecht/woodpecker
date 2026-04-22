@@ -1,4 +1,5 @@
 {
+    "schema_version": 1,
     "plans": [
         {
             "id": "atlas.atlas_basic",

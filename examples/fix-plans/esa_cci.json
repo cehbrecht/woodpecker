@@ -1,4 +1,5 @@
 {
+    "schema_version": 1,
     "plans": [
         {
             "id": "cmip7.esa_cci_water_vapour_zarr",

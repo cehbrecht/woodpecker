@@ -84,6 +84,9 @@ def test_json_store_save_list_lookup(tmp_path):
     store.save_plan(plan_1)
     store.save_plan(plan_2)
 
+    raw = store.path.read_text(encoding="utf-8")
+    assert '"schema_version": 1' in raw
+
     listed = store.list_plans()
     assert [item.id for item in listed] == ["plan-1", "plan-2"]
 
