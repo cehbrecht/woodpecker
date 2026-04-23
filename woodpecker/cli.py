@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import TypedDict
+from typing import Callable, TypeVar, TypedDict
 
 import click
 
@@ -16,6 +16,8 @@ from woodpecker.plans.resolver import RunContext, resolve_load_source_plans, res
 from woodpecker.provenance import build_prov_document, write_prov_document
 from woodpecker.stores.helpers import create_fix_plan_store
 
+T = TypeVar("T")
+
 
 class RunFixKwargs(TypedDict, total=False):
     """Keyword arguments accepted by run_fix in this CLI context."""
@@ -25,6 +27,17 @@ class RunFixKwargs(TypedDict, total=False):
     force_apply: bool
     embed_provenance_metadata: bool
     provenance_run_id: str
+
+
+def _with_click_errors(func: Callable[[], T]) -> T:
+    """Run a callable and normalize common argument/config errors for CLI output."""
+
+    try:
+        return func()
+    except click.ClickException:
+        raise
+    except (TypeError, ValueError) as exc:
+        raise click.ClickException(str(exc)) from exc
 
 
 def build_run_fix_kwargs(
@@ -111,19 +124,8 @@ def list_plans(store_type: str, plan_location: Path, fmt: str):
     and sourced from `--plan` location.
     """
 
-    try:
-        store = create_fix_plan_store(store_type, plan_location)
-    except click.ClickException:
-        raise
-    except (TypeError, ValueError) as exc:
-        raise click.ClickException(str(exc)) from exc
-
-    try:
-        plans = store.list_plans()
-    except click.ClickException:
-        raise
-    except (TypeError, ValueError) as exc:
-        raise click.ClickException(str(exc)) from exc
+    store = _with_click_errors(lambda: create_fix_plan_store(store_type, plan_location))
+    plans = _with_click_errors(store.list_plans)
 
     click.echo(format_plans(plans, fmt))
 
@@ -181,31 +183,21 @@ def load_plans(
     and sourced from `--plan` location.
     """
 
-    try:
-        target_store = create_fix_plan_store(store_type, plan_location)
-    except click.ClickException:
-        raise
-    except (TypeError, ValueError) as exc:
-        raise click.ClickException(str(exc)) from exc
+    target_store = _with_click_errors(lambda: create_fix_plan_store(store_type, plan_location))
 
-    try:
-        plans = resolve_load_source_plans(
+    plans = _with_click_errors(
+        lambda: resolve_load_source_plans(
             from_plan=from_plan,
             from_store_type=from_store,
             plan_id=plan_id,
         )
-    except click.ClickException:
-        raise
-    except (TypeError, ValueError) as exc:
-        raise click.ClickException(str(exc)) from exc
+    )
 
-    try:
+    def save_plans() -> None:
         for plan in plans:
             target_store.save_plan(plan)
-    except click.ClickException:
-        raise
-    except (TypeError, ValueError) as exc:
-        raise click.ClickException(str(exc)) from exc
+
+    _with_click_errors(save_plans)
 
     plan_ids = [plan.id or "<unnamed>" for plan in plans]
     if fmt == "json":
@@ -271,8 +263,8 @@ def check_cmd(
     fmt: str,
 ):
     """Check NetCDF files and report findings grouped by fix identifier."""
-    try:
-        context = resolve_run_context(
+    context = _with_click_errors(
+        lambda: resolve_run_context(
             paths=paths,
             store_type=store_type,
             plan_location=plan,
@@ -282,10 +274,7 @@ def check_cmd(
             identifiers=identifiers,
             output_format="auto",
         )
-    except click.ClickException:
-        raise
-    except (TypeError, ValueError) as exc:
-        raise click.ClickException(str(exc)) from exc
+    )
 
     findings = run_check(context.inputs, context.fixes)
     output = format_findings(findings, fmt)
@@ -400,7 +389,7 @@ def fix_cmd(
     fmt: str,
 ):
     """Apply selected fixes to NetCDF files."""
-    try:
+    def run_fix_command() -> tuple[RunContext, dict[str, int]]:
         context = resolve_run_context(
             paths=paths,
             store_type=store_type,
@@ -422,10 +411,9 @@ def fix_cmd(
             embed_provenance_metadata,
         )
         stats = run_fix(context.inputs, context.fixes, **run_fix_kwargs)
-    except click.ClickException:
-        raise
-    except (TypeError, ValueError) as exc:
-        raise click.ClickException(str(exc)) from exc
+        return context, stats
+
+    context, stats = _with_click_errors(run_fix_command)
 
     if provenance:
         provenance_source = format_provenance_source(context, store_type, plan)
