@@ -101,6 +101,31 @@ def test_json_store_save_list_lookup(tmp_path):
     assert [item.id for item in matched] == ["tests.plan_2"]
 
 
+def test_json_store_yaml_save_list_lookup(tmp_path):
+    store = JsonFixPlanStore(tmp_path / "fix-plans.yaml")
+    plan_1 = _sample_plan()
+    plan_2 = FixPlan(
+        id="tests.plan_2",
+        fixes=[FixRef(id="woodpecker.remove_coordinate_fill_value_encodings")],
+    )
+
+    store.save_plan(plan_1)
+    store.save_plan(plan_2)
+
+    raw = store.path.read_text(encoding="utf-8")
+    assert "schema_version: 1" in raw
+
+    listed = store.list_plans()
+    assert [item.id for item in listed] == ["tests.plan_1", "tests.plan_2"]
+
+    ds = xr.Dataset(attrs={"project_id": "CMIP6", "table_id": "Amon"})
+    matched = store.lookup(ds, path="/tmp/cmip6_case.nc")
+    assert [item.id for item in matched] == ["tests.plan_1", "tests.plan_2"]
+
+    matched = store.lookup(ds, path="/tmp/no-match.txt")
+    assert [item.id for item in matched] == ["tests.plan_2"]
+
+
 def test_json_store_save_replaces_existing_plan_id(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
 
