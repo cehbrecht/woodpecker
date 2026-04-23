@@ -1,7 +1,7 @@
 import xarray as xr
 
+from woodpecker.execution import run_fix, select_fixes
 from woodpecker.inout import DataInput
-from woodpecker.plans.runner import run_fix, select_fixes
 
 
 class DummyInput(DataInput):
@@ -87,13 +87,13 @@ def test_run_fix_skips_fixes_for_other_dataset_types():
     assert stats["changed"] == 0
 
 
-def test_select_fixes_respects_ordered_codes_sequence():
+def test_select_fixes_respects_ordered_identifiers_sequence():
     fixes = select_fixes(
-        ordered_codes=[
+        ordered_identifiers=[
             "woodpecker.normalize_tas_units_to_kelvin",
             "woodpecker.ensure_latitude_is_increasing",
         ],
-        strict_codes=True,
+        strict_identifiers=True,
     )
     ordered = [fix.canonical_id for fix in fixes]
 

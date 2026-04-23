@@ -2,19 +2,21 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import TypedDict
+from typing import Callable, TypedDict, TypeVar
 
 import click
 
 # Importing woodpecker.fixes registers built-in fixes.
 import woodpecker.fixes  # noqa: F401
+from woodpecker.execution import run_check, run_fix
 from woodpecker.fixes.registry import FixRegistry
-from woodpecker.formatting import format_findings, format_fix_stats, format_plans
+from woodpecker.formatting import format_findings, format_fix_stats, format_fixes, format_plans
 from woodpecker.inout import get_io_availability
 from woodpecker.plans.resolver import RunContext, resolve_load_source_plans, resolve_run_context
-from woodpecker.plans.runner import run_check, run_fix
 from woodpecker.provenance import build_prov_document, write_prov_document
 from woodpecker.stores.helpers import create_fix_plan_store
+
+T = TypeVar("T")
 
 
 class RunFixKwargs(TypedDict, total=False):
@@ -25,6 +27,17 @@ class RunFixKwargs(TypedDict, total=False):
     force_apply: bool
     embed_provenance_metadata: bool
     provenance_run_id: str
+
+
+def _with_click_errors(func: Callable[[], T]) -> T:
+    """Run a callable and normalize common argument/config errors for CLI output."""
+
+    try:
+        return func()
+    except click.ClickException:
+        raise
+    except (TypeError, ValueError) as exc:
+        raise click.ClickException(str(exc)) from exc
 
 
 def build_run_fix_kwargs(
@@ -74,7 +87,7 @@ def cli():
 @click.option("--category", "categories", multiple=True, help="Filter by category (repeatable)")
 @click.option("--format", "fmt", type=click.Choice(["text", "json", "md"]), default="text")
 def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
-    """List registered fixes (discoverable codes)."""
+    """List registered fixes (discoverable identifiers)."""
     filters = {}
     if dataset:
         filters["dataset"] = dataset
@@ -82,28 +95,7 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
         filters["categories"] = list(categories) if len(categories) > 1 else categories[0]
 
     fixes = FixRegistry.discover(filters=filters or None)
-
-    if fmt == "json":
-        payload = [(f.model_dump() if hasattr(f, "model_dump") else f.__dict__) for f in fixes]
-        click.echo(json.dumps(payload, indent=2))
-        return
-
-    if fmt == "md":
-        click.echo("| ID | Name | Description | Categories | Dataset | Priority |")
-        click.echo("|----|------|-------------|------------|---------|---------|")
-        for f in fixes:
-            cats = ", ".join(getattr(f, "categories", []) or [])
-            click.echo(
-                f"| {f.canonical_id} | {f.name} | {f.description} | {cats} | {f.dataset or ''} | {f.priority} |"
-            )
-        return
-
-    # text
-    for f in fixes:
-        cats = ", ".join(getattr(f, "categories", []) or [])
-        click.echo(
-            f"{f.canonical_id}: {f.description} (cats: {cats}; dataset: {f.dataset or '-'}; priority: {f.priority})"
-        )
+    click.echo(format_fixes(fixes, fmt))
 
 
 @cli.command("list-plans")
@@ -132,19 +124,8 @@ def list_plans(store_type: str, plan_location: Path, fmt: str):
     and sourced from `--plan` location.
     """
 
-    try:
-        store = create_fix_plan_store(store_type, plan_location)
-    except click.ClickException:
-        raise
-    except (TypeError, ValueError) as exc:
-        raise click.ClickException(str(exc)) from exc
-
-    try:
-        plans = store.list_plans()
-    except click.ClickException:
-        raise
-    except (TypeError, ValueError) as exc:
-        raise click.ClickException(str(exc)) from exc
+    store = _with_click_errors(lambda: create_fix_plan_store(store_type, plan_location))
+    plans = _with_click_errors(store.list_plans)
 
     click.echo(format_plans(plans, fmt))
 
@@ -202,31 +183,21 @@ def load_plans(
     and sourced from `--plan` location.
     """
 
-    try:
-        target_store = create_fix_plan_store(store_type, plan_location)
-    except click.ClickException:
-        raise
-    except (TypeError, ValueError) as exc:
-        raise click.ClickException(str(exc)) from exc
+    target_store = _with_click_errors(lambda: create_fix_plan_store(store_type, plan_location))
 
-    try:
-        plans = resolve_load_source_plans(
+    plans = _with_click_errors(
+        lambda: resolve_load_source_plans(
             from_plan=from_plan,
             from_store_type=from_store,
             plan_id=plan_id,
         )
-    except click.ClickException:
-        raise
-    except (TypeError, ValueError) as exc:
-        raise click.ClickException(str(exc)) from exc
+    )
 
-    try:
+    def save_plans() -> None:
         for plan in plans:
             target_store.save_plan(plan)
-    except click.ClickException:
-        raise
-    except (TypeError, ValueError) as exc:
-        raise click.ClickException(str(exc)) from exc
+
+    _with_click_errors(save_plans)
 
     plan_ids = [plan.id or "<unnamed>" for plan in plans]
     if fmt == "json":
@@ -275,35 +246,35 @@ def load_plans(
     "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
 )
 @click.option(
-    "--select", "codes", multiple=True, help="Run only selected fix identifiers (repeatable)"
+    "--select",
+    "identifiers",
+    multiple=True,
+    help="Run only selected fix identifiers (repeatable)",
 )
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
-def check(
+def check_cmd(
     paths: tuple[Path, ...],
     store_type: str,
     plan: Path | None,
     plan_id: str | None,
     dataset: str | None,
     categories: tuple[str, ...],
-    codes: tuple[str, ...],
+    identifiers: tuple[str, ...],
     fmt: str,
 ):
     """Check NetCDF files and report findings grouped by fix identifier."""
-    try:
-        context = resolve_run_context(
+    context = _with_click_errors(
+        lambda: resolve_run_context(
             paths=paths,
             store_type=store_type,
             plan_location=plan,
             plan_id=plan_id,
             dataset=dataset,
             categories=categories,
-            codes=codes,
+            identifiers=identifiers,
             output_format="auto",
         )
-    except click.ClickException:
-        raise
-    except (TypeError, ValueError) as exc:
-        raise click.ClickException(str(exc)) from exc
+    )
 
     findings = run_check(context.inputs, context.fixes)
     output = format_findings(findings, fmt)
@@ -357,7 +328,10 @@ def io_status(fmt: str):
     "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
 )
 @click.option(
-    "--select", "codes", multiple=True, help="Run only selected fix identifiers (repeatable)"
+    "--select",
+    "identifiers",
+    multiple=True,
+    help="Run only selected fix identifiers (repeatable)",
 )
 @click.option(
     "--dry-run",
@@ -398,14 +372,14 @@ def io_status(fmt: str):
     help="Embed per-dataset provenance metadata into output dataset attrs on write.",
 )
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
-def fix(
+def fix_cmd(
     paths: tuple[Path, ...],
     store_type: str,
     plan: Path | None,
     plan_id: str | None,
     dataset: str | None,
     categories: tuple[str, ...],
-    codes: tuple[str, ...],
+    identifiers: tuple[str, ...],
     dry_run: bool,
     force_apply: bool,
     output_format: str,
@@ -415,7 +389,8 @@ def fix(
     fmt: str,
 ):
     """Apply selected fixes to NetCDF files."""
-    try:
+
+    def run_fix_command() -> tuple[RunContext, dict[str, int]]:
         context = resolve_run_context(
             paths=paths,
             store_type=store_type,
@@ -423,10 +398,10 @@ def fix(
             plan_id=plan_id,
             dataset=dataset,
             categories=categories,
-            codes=codes,
+            identifiers=identifiers,
             output_format=output_format,
         )
-        if force_apply and not context.resolved_codes:
+        if force_apply and not context.resolved_identifiers:
             raise click.ClickException(
                 "--force-apply requires explicit fix selection via --select or plan identifiers."
             )
@@ -437,17 +412,17 @@ def fix(
             embed_provenance_metadata,
         )
         stats = run_fix(context.inputs, context.fixes, **run_fix_kwargs)
-    except click.ClickException:
-        raise
-    except (TypeError, ValueError) as exc:
-        raise click.ClickException(str(exc)) from exc
+        return context, stats
+
+    context, stats = _with_click_errors(run_fix_command)
 
     if provenance:
         provenance_source = format_provenance_source(context, store_type, plan)
         prov = build_prov_document(
             inputs=context.inputs,
-            selected_codes=[getattr(fix, "canonical_id", "") for fix in context.fixes],
+            selected_fix_ids=[getattr(fix, "canonical_id", "") for fix in context.fixes],
             selected_fixes=context.fixes,
+            selected_plans=context.selected_plans,
             stats=stats,
             mode="dry-run" if dry_run else "write",
             output_format=context.resolved_output_format,
@@ -468,8 +443,6 @@ def fix(
     )
     if fmt == "json" and not dry_run and stats.get("persist_failed", 0) > 0:
         raise SystemExit(1)
-    if not dry_run:
-        return
 
 
 if __name__ == "__main__":

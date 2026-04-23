@@ -57,17 +57,17 @@ class DuckDBFixPlanStore(FixPlanStore):
                 FixPlan(
                     id=str(plan_id),
                     description=str(description or ""),
-                    match=DatasetMatcher.from_dict(match_payload)
+                    match=DatasetMatcher.model_validate(match_payload)
                     if isinstance(match_payload, dict)
                     else None,
-                    fixes=[FixRef.from_dict(item) for item in fixes_payload],
+                    steps=[FixRef.model_validate(item) for item in fixes_payload],
                 )
             )
         return plans
 
     def save_plan(self, plan: FixPlan) -> None:
-        match_json = json.dumps(plan.match.to_dict()) if plan.match is not None else None
-        fixes_json = json.dumps([item.to_dict() for item in plan.fixes])
+        match_json = json.dumps(plan.match.model_dump()) if plan.match is not None else None
+        fixes_json = json.dumps([item.model_dump() for item in plan.steps])
         plan_id = FixPlanIndex.canonical_plan_id(plan)
 
         with self._connect() as con:
@@ -82,12 +82,16 @@ class DuckDBFixPlanStore(FixPlanStore):
     @staticmethod
     def _parse_matcher(match_json: str | None) -> DatasetMatcher | None:
         match_payload = json.loads(match_json) if match_json else None
-        return DatasetMatcher.from_dict(match_payload) if isinstance(match_payload, dict) else None
+        return (
+            DatasetMatcher.model_validate(match_payload)
+            if isinstance(match_payload, dict)
+            else None
+        )
 
     @staticmethod
     def _parse_fixes(fixes_json: str | None) -> list[FixRef]:
         fixes_payload = json.loads(fixes_json) if fixes_json else []
-        return [FixRef.from_dict(item) for item in fixes_payload]
+        return [FixRef.model_validate(item) for item in fixes_payload]
 
     def _candidate_query(self, dataset: Any) -> tuple[str, list[Any]]:
         """Build a coarse SQL prefilter; exact plan matching is done in Python."""
@@ -129,7 +133,7 @@ class DuckDBFixPlanStore(FixPlanStore):
                 id=str(plan_id),
                 description=str(description or ""),
                 match=matcher,
-                fixes=[],
+                steps=[],
             )
             if not plan_matches_dataset(candidate, dataset, path=path):
                 continue
@@ -139,7 +143,7 @@ class DuckDBFixPlanStore(FixPlanStore):
                     id=candidate.id,
                     description=candidate.description,
                     match=matcher,
-                    fixes=self._parse_fixes(fixes_json),
+                    steps=self._parse_fixes(fixes_json),
                 )
             )
 

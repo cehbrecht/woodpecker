@@ -5,9 +5,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Literal, Sequence
 
+from woodpecker.execution import select_fixes
 from woodpecker.inout import DataInput, normalize_inputs
 from woodpecker.plans.models import FixPlan
-from woodpecker.plans.runner import select_fixes
 from woodpecker.stores.base import FixPlanStore
 from woodpecker.stores.helpers import create_fix_plan_store
 
@@ -27,28 +27,28 @@ class RunContext:
     selected_plans: list[FixPlan]
     resolved_dataset: str | None
     resolved_categories: tuple[str, ...]
-    resolved_codes: tuple[str, ...]
+    resolved_identifiers: tuple[str, ...]
     resolved_fix_options: dict[str, dict[str, Any]]
     resolved_output_format: str
     source: Literal["direct", "store"]
 
 
-def normalize_ordered_codes(codes: Sequence[str]) -> tuple[str, ...]:
+def normalize_ordered_identifiers(identifiers: Sequence[str]) -> tuple[str, ...]:
     """Normalize and deduplicate fix identifiers while preserving order."""
 
     out: list[str] = []
     seen: set[str] = set()
-    for raw in codes:
-        code = str(raw).strip()
-        if not code or code in seen:
+    for raw in identifiers:
+        identifier = str(raw).strip()
+        if not identifier or identifier in seen:
             continue
-        out.append(code)
-        seen.add(code)
+        out.append(identifier)
+        seen.add(identifier)
     return tuple(out)
 
 
 def _plan_key(plan: FixPlan) -> str:
-    return plan.id or json.dumps(plan.to_dict(), sort_keys=True)
+    return plan.id or json.dumps(plan.model_dump(), sort_keys=True)
 
 
 def _finalize_matching_plans(
@@ -111,16 +111,6 @@ def select_matching_store_plans(
     )
 
 
-def extract_plan_codes_and_options(
-    plan: FixPlan,
-) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
-    """Extract ordered fix identifiers and per-fix options from a FixPlan."""
-
-    codes = tuple(plan.resolve_fix_identifier(ref) for ref in plan.fixes)
-    options = {plan.resolve_fix_identifier(ref): dict(ref.options) for ref in plan.fixes}
-    return codes, options
-
-
 def resolve_plan_source(
     *,
     inputs: Sequence[DataInput],
@@ -149,8 +139,8 @@ def resolve_plan_source(
         raise ValueError("No matching fix plans found in selected store for selected inputs.")
 
     selected = plans[0]
-    codes, fix_options = extract_plan_codes_and_options(selected)
-    return "store", [selected], codes, fix_options
+    identifiers, fix_options = selected.step_identifiers_and_options()
+    return "store", [selected], identifiers, fix_options
 
 
 def resolve_target_paths(paths: tuple[Path, ...]) -> list[Path]:
@@ -161,6 +151,21 @@ def resolve_target_paths(paths: tuple[Path, ...]) -> list[Path]:
     return [Path.cwd()]
 
 
+def resolve_selection_inputs(
+    *,
+    cli_identifiers: Sequence[str],
+    source_identifiers: tuple[str, ...],
+    source_fix_options: dict[str, dict[str, Any]],
+) -> tuple[tuple[str, ...], tuple[str, ...], dict[str, dict[str, Any]]]:
+    """Resolve identifier/option precedence between CLI and plan/store defaults."""
+
+    normalized_cli_identifiers = normalize_ordered_identifiers(cli_identifiers)
+    resolved_identifiers = normalized_cli_identifiers or source_identifiers
+    resolved_ordered_identifiers = resolved_identifiers
+    resolved_fix_options = {key: dict(value) for key, value in source_fix_options.items()}
+    return resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options
+
+
 def resolve_run_context(
     *,
     paths: tuple[Path, ...],
@@ -169,7 +174,7 @@ def resolve_run_context(
     plan_id: str | None,
     dataset: str | None,
     categories: tuple[str, ...],
-    codes: tuple[str, ...],
+    identifiers: tuple[str, ...],
     output_format: str,
 ) -> RunContext:
     """Resolve inputs and fix selection for check/fix commands.
@@ -177,35 +182,39 @@ def resolve_run_context(
     Precedence:
         - store lookup when `--plan` is provided
         - direct selection otherwise
+
     - explicit CLI filters (`--dataset`, `--category`, `--select`) override
-            store-derived defaults
+      store-derived defaults
     """
 
     target_paths = resolve_target_paths(paths)
     inputs = normalize_inputs(target_paths)
 
-    source, selected_plans, source_codes, source_fix_options = resolve_plan_source(
+    source, selected_plans, source_identifiers, source_fix_options = resolve_plan_source(
         inputs=inputs,
         store_type=store_type,
         plan_location=plan_location,
         plan_id=plan_id,
     )
 
-    cli_codes = normalize_ordered_codes(codes)
-    resolved_codes = cli_codes or source_codes
-    resolved_ordered_codes = resolved_codes
+    resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options = (
+        resolve_selection_inputs(
+            cli_identifiers=identifiers,
+            source_identifiers=source_identifiers,
+            source_fix_options=source_fix_options,
+        )
+    )
     resolved_dataset = dataset
     resolved_categories = categories
     resolved_output_format = output_format
-    resolved_fix_options = dict(source_fix_options)
 
     fixes = select_fixes(
         dataset=resolved_dataset,
         categories=resolved_categories,
-        codes=resolved_codes,
-        strict_codes=True,
+        identifiers=resolved_identifiers,
+        strict_identifiers=True,
         fix_options=resolved_fix_options,
-        ordered_codes=resolved_ordered_codes,
+        ordered_identifiers=resolved_ordered_identifiers,
     )
 
     return RunContext(
@@ -214,7 +223,7 @@ def resolve_run_context(
         selected_plans=selected_plans,
         resolved_dataset=resolved_dataset,
         resolved_categories=tuple(resolved_categories),
-        resolved_codes=tuple(resolved_codes),
+        resolved_identifiers=tuple(resolved_identifiers),
         resolved_fix_options=resolved_fix_options,
         resolved_output_format=resolved_output_format,
         source=source,

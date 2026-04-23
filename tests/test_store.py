@@ -10,13 +10,13 @@ from woodpecker.stores import DuckDBFixPlanStore, JsonFixPlanStore
 
 def _sample_plan() -> FixPlan:
     return FixPlan(
-        id="plan-1",
+        id="tests.plan_1",
         description="sample plan",
         match=DatasetMatcher(
             attrs={"project_id": "CMIP6", "table_id": "Amon"},
             path_patterns=["*cmip6*.nc"],
         ),
-        fixes=[
+        steps=[
             FixRef(id="woodpecker.normalize_tas_units_to_kelvin", options={"mode": "fast"}),
             FixRef(id="woodpecker.ensure_latitude_is_increasing"),
         ],
@@ -26,12 +26,12 @@ def _sample_plan() -> FixPlan:
 def test_fix_plan_serialization_roundtrip():
     plan = _sample_plan()
 
-    payload = plan.to_json()
-    restored = FixPlan.from_json(payload)
+    payload = plan.model_dump_json()
+    restored = FixPlan.model_validate_json(payload)
 
     assert restored == plan
-    assert restored.fixes[0].id == "woodpecker.normalize_tas_units_to_kelvin"
-    assert restored.fixes[0].options == {"mode": "fast"}
+    assert restored.steps[0].id == "woodpecker.normalize_tas_units_to_kelvin"
+    assert restored.steps[0].options == {"mode": "fast"}
 
 
 def test_plan_matcher_requires_both_attrs_and_path_when_both_defined():
@@ -43,7 +43,9 @@ def test_plan_matcher_requires_both_attrs_and_path_when_both_defined():
 
 
 def test_plan_matcher_general_applicability_without_matcher():
-    plan = FixPlan(id="plan-any", fixes=[FixRef(id="woodpecker.normalize_tas_units_to_kelvin")])
+    plan = FixPlan(
+        id="tests.plan_any", steps=[FixRef(id="woodpecker.normalize_tas_units_to_kelvin")]
+    )
     ds = xr.Dataset(attrs={"anything": "value"})
 
     assert plan_matches_dataset(plan, ds) is True
@@ -51,9 +53,9 @@ def test_plan_matcher_general_applicability_without_matcher():
 
 def test_plan_matcher_attrs_only():
     plan = FixPlan(
-        id="plan-attrs",
+        id="tests.plan_attrs",
         match=DatasetMatcher(attrs={"project_id": "CMIP7"}),
-        fixes=[FixRef(id="cmip7.ensure_project_id_present")],
+        steps=[FixRef(id="cmip7.ensure_project_id_present")],
     )
 
     assert plan_matches_dataset(plan, xr.Dataset(attrs={"project_id": "CMIP7"})) is True
@@ -62,9 +64,9 @@ def test_plan_matcher_attrs_only():
 
 def test_plan_matcher_path_only():
     plan = FixPlan(
-        id="plan-path",
+        id="tests.plan_path",
         match=DatasetMatcher(path_patterns=["*.zarr", "*decadal*.nc"]),
-        fixes=[FixRef(id="woodpecker.ensure_latitude_is_increasing")],
+        steps=[FixRef(id="woodpecker.ensure_latitude_is_increasing")],
     )
     ds = xr.Dataset()
 
@@ -78,21 +80,50 @@ def test_json_store_save_list_lookup(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
     plan_1 = _sample_plan()
     plan_2 = FixPlan(
-        id="plan-2", fixes=[FixRef(id="woodpecker.remove_coordinate_fill_value_encodings")]
+        id="tests.plan_2",
+        steps=[FixRef(id="woodpecker.remove_coordinate_fill_value_encodings")],
     )
 
     store.save_plan(plan_1)
     store.save_plan(plan_2)
 
+    raw = store.path.read_text(encoding="utf-8")
+    assert '"schema_version": 1' in raw
+
     listed = store.list_plans()
-    assert [item.id for item in listed] == ["plan-1", "plan-2"]
+    assert [item.id for item in listed] == ["tests.plan_1", "tests.plan_2"]
 
     ds = xr.Dataset(attrs={"project_id": "CMIP6", "table_id": "Amon"})
     matched = store.lookup(ds, path="/tmp/cmip6_case.nc")
-    assert [item.id for item in matched] == ["plan-1", "plan-2"]
+    assert [item.id for item in matched] == ["tests.plan_1", "tests.plan_2"]
 
     matched = store.lookup(ds, path="/tmp/no-match.txt")
-    assert [item.id for item in matched] == ["plan-2"]
+    assert [item.id for item in matched] == ["tests.plan_2"]
+
+
+def test_json_store_yaml_save_list_lookup(tmp_path):
+    store = JsonFixPlanStore(tmp_path / "fix-plans.yaml")
+    plan_1 = _sample_plan()
+    plan_2 = FixPlan(
+        id="tests.plan_2",
+        steps=[FixRef(id="woodpecker.remove_coordinate_fill_value_encodings")],
+    )
+
+    store.save_plan(plan_1)
+    store.save_plan(plan_2)
+
+    raw = store.path.read_text(encoding="utf-8")
+    assert "schema_version: 1" in raw
+
+    listed = store.list_plans()
+    assert [item.id for item in listed] == ["tests.plan_1", "tests.plan_2"]
+
+    ds = xr.Dataset(attrs={"project_id": "CMIP6", "table_id": "Amon"})
+    matched = store.lookup(ds, path="/tmp/cmip6_case.nc")
+    assert [item.id for item in matched] == ["tests.plan_1", "tests.plan_2"]
+
+    matched = store.lookup(ds, path="/tmp/no-match.txt")
+    assert [item.id for item in matched] == ["tests.plan_2"]
 
 
 def test_json_store_save_replaces_existing_plan_id(tmp_path):
@@ -100,23 +131,23 @@ def test_json_store_save_replaces_existing_plan_id(tmp_path):
 
     store.save_plan(
         FixPlan(
-            id="plan-1",
+            id="tests.plan_1",
             description="old",
-            fixes=[FixRef(id="woodpecker.normalize_tas_units_to_kelvin")],
+            steps=[FixRef(id="woodpecker.normalize_tas_units_to_kelvin")],
         )
     )
     store.save_plan(
         FixPlan(
-            id="plan-1",
+            id="tests.plan_1",
             description="new",
-            fixes=[FixRef(id="woodpecker.ensure_latitude_is_increasing")],
+            steps=[FixRef(id="woodpecker.ensure_latitude_is_increasing")],
         )
     )
 
     listed = store.list_plans()
     assert len(listed) == 1
     assert listed[0].description == "new"
-    assert listed[0].fixes[0].id == "woodpecker.ensure_latitude_is_increasing"
+    assert listed[0].steps[0].id == "woodpecker.ensure_latitude_is_increasing"
 
 
 def test_json_store_save_upserts_by_canonical_plan_id(tmp_path):
@@ -124,17 +155,16 @@ def test_json_store_save_upserts_by_canonical_plan_id(tmp_path):
 
     store.save_plan(
         FixPlan(
-            id="cleanup_plan",
-            namespace_prefix="atlas",
+            id="atlas.cleanup_plan",
             description="old",
-            fixes=[FixRef(id="atlas.encoding_cleanup")],
+            steps=[FixRef(id="atlas.encoding_cleanup")],
         )
     )
     store.save_plan(
         FixPlan(
             id="atlas.cleanup_plan",
             description="new",
-            fixes=[FixRef(id="atlas.project_id_normalization")],
+            steps=[FixRef(id="atlas.project_id_normalization")],
         )
     )
 
@@ -146,7 +176,7 @@ def test_json_store_save_upserts_by_canonical_plan_id(tmp_path):
 
 def test_json_store_get_plan_resolves_canonical_and_local_ids(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
-    plan = FixPlan(id="atlas.cleanup_plan", fixes=[FixRef(id="atlas.encoding_cleanup")])
+    plan = FixPlan(id="atlas.cleanup_plan", steps=[FixRef(id="atlas.encoding_cleanup")])
     store.save_plan(plan)
 
     by_canonical = store.get_plan("atlas.cleanup_plan")
@@ -159,10 +189,10 @@ def test_json_store_get_plan_resolves_canonical_and_local_ids(tmp_path):
 def test_json_store_get_plan_rejects_ambiguous_shorthand(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
     store.save_plan(
-        FixPlan(id="alpha.shared", fixes=[FixRef(id="woodpecker.ensure_latitude_is_increasing")])
+        FixPlan(id="alpha.shared", steps=[FixRef(id="woodpecker.ensure_latitude_is_increasing")])
     )
     store.save_plan(
-        FixPlan(id="beta.shared", fixes=[FixRef(id="woodpecker.normalize_tas_units_to_kelvin")])
+        FixPlan(id="beta.shared", steps=[FixRef(id="woodpecker.normalize_tas_units_to_kelvin")])
     )
 
     with pytest.raises(ValueError, match="Ambiguous identifier"):
@@ -172,7 +202,7 @@ def test_json_store_get_plan_rejects_ambiguous_shorthand(tmp_path):
 def test_json_store_get_plan_detects_duplicate_canonical_ids(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
     store.path.write_text(
-        '{"plans": [{"id": "atlas.cleanup_plan", "fixes": [{"id": "atlas.encoding_cleanup"}]}, {"id": "atlas.cleanup_plan", "fixes": [{"id": "atlas.project_id_normalization"}]}]}',
+        '{"plans": [{"id": "atlas.cleanup_plan", "steps": [{"id": "atlas.encoding_cleanup"}]}, {"id": "atlas.cleanup_plan", "steps": [{"id": "atlas.project_id_normalization"}]}]}',
         encoding="utf-8",
     )
 
@@ -186,28 +216,29 @@ def test_duckdb_store_save_list_lookup(tmp_path):
     store = DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
     plan_1 = _sample_plan()
     plan_2 = FixPlan(
-        id="plan-2", fixes=[FixRef(id="woodpecker.remove_coordinate_fill_value_encodings")]
+        id="tests.plan_2",
+        steps=[FixRef(id="woodpecker.remove_coordinate_fill_value_encodings")],
     )
 
     store.save_plan(plan_1)
     store.save_plan(plan_2)
 
     listed = store.list_plans()
-    assert [item.id for item in listed] == ["plan-1", "plan-2"]
+    assert [item.id for item in listed] == ["tests.plan_1", "tests.plan_2"]
 
     ds = xr.Dataset(attrs={"project_id": "CMIP6", "table_id": "Amon"})
     matched = store.lookup(ds, path="/tmp/cmip6_case.nc")
-    assert [item.id for item in matched] == ["plan-1", "plan-2"]
+    assert [item.id for item in matched] == ["tests.plan_1", "tests.plan_2"]
 
     matched = store.lookup(ds, path="/tmp/no-match.txt")
-    assert [item.id for item in matched] == ["plan-2"]
+    assert [item.id for item in matched] == ["tests.plan_2"]
 
 
 def test_duckdb_store_get_plan_resolves_canonical_and_local_ids(tmp_path):
     pytest.importorskip("duckdb")
 
     store = DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
-    store.save_plan(FixPlan(id="atlas.cleanup_plan", fixes=[FixRef(id="atlas.encoding_cleanup")]))
+    store.save_plan(FixPlan(id="atlas.cleanup_plan", steps=[FixRef(id="atlas.encoding_cleanup")]))
 
     by_canonical = store.get_plan("atlas.cleanup_plan")
     by_local = store.get_plan("cleanup_plan")
@@ -238,25 +269,28 @@ def test_duckdb_lookup_skips_decoding_nonmatching_fixes_payload(tmp_path):
     store = DuckDBFixPlanStore(db_path)
     store.save_plan(
         FixPlan(
-            id="atlas",
+            id="atlas.lookup_atlas",
             match=DatasetMatcher(path_patterns=["*atlas*.nc"]),
-            fixes=[FixRef(id="atlas.encoding_cleanup")],
+            steps=[FixRef(id="atlas.encoding_cleanup")],
         )
     )
     store.save_plan(
         FixPlan(
-            id="cmip6",
+            id="cmip6.lookup_cmip6",
             match=DatasetMatcher(path_patterns=["*cmip6*.nc"]),
-            fixes=[FixRef(id="cmip6.dummy_placeholder")],
+            steps=[FixRef(id="cmip6.dummy_placeholder")],
         )
     )
 
     # Corrupt a non-matching row to verify lookup does not decode its fixes payload.
     with duckdb.connect(str(db_path)) as con:
-        con.execute("UPDATE fix_plans SET fixes_json = ? WHERE id = ?", ["not-json", "cmip6"])
+        con.execute(
+            "UPDATE fix_plans SET fixes_json = ? WHERE id = ?",
+            ["not-json", "cmip6.lookup_cmip6"],
+        )
 
     matched = store.lookup(xr.Dataset(), path="/tmp/atlas_case.nc")
-    assert [item.id for item in matched] == ["atlas"]
+    assert [item.id for item in matched] == ["atlas.lookup_atlas"]
 
 
 def test_duckdb_store_raises_clear_error_when_dependency_missing(tmp_path, monkeypatch):

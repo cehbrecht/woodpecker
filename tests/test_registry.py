@@ -210,6 +210,23 @@ def test_registry_resolves_canonical_and_local_aliases_for_known_fixes():
     )
 
 
+def test_registry_instantiate_returns_fix_for_canonical_id():
+    fix = FixRegistry.instantiate("woodpecker.normalize_tas_units_to_kelvin")
+    assert getattr(fix, "canonical_id", "") == "woodpecker.normalize_tas_units_to_kelvin"
+
+
+def test_registry_instantiate_returns_fresh_instance_each_time():
+    first = FixRegistry.instantiate("woodpecker.normalize_tas_units_to_kelvin")
+    second = FixRegistry.instantiate("woodpecker.normalize_tas_units_to_kelvin")
+
+    assert first is not second
+
+
+def test_registry_instantiate_unknown_canonical_id_raises_clear_error():
+    with pytest.raises(KeyError, match="Unknown fix canonical_id"):
+        FixRegistry.instantiate("woodpecker.unknown_fix")
+
+
 def test_registry_rejects_ambiguous_local_identifier():
     snapshot = _snapshot_registry_state()
 

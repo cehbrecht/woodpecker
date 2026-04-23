@@ -1,9 +1,8 @@
 {
+    "schema_version": 1,
     "plans": [
         {
             "id": "atlas.atlas_basic",
-            "local_id": "atlas_basic",
-            "namespace": "atlas",
             "description": "Concrete ATLAS plan for atlas*.nc files",
             "links": [
                 {
@@ -13,7 +12,7 @@
                 }
             ],
             "match": {"path_patterns": ["*atlas*.nc"]},
-            "fixes": [{"id": "atlas.encoding_cleanup"}, {"id": "atlas.project_id_normalization"}]
+            "steps": [{"id": "atlas.encoding_cleanup"}, {"id": "atlas.project_id_normalization"}]
         }
     ]
 }

@@ -84,6 +84,26 @@ class FixRegistry:
     def resolve_identifier(cls, identifier: str) -> str:
         return cls._resolver.resolve(identifier)
 
+    @classmethod
+    def get_fix(cls, canonical_id: str) -> Type[Any]:
+        """Return the registered fix class for a canonical fix id.
+
+        The input must be a canonical id in the form
+        "<namespace_prefix>.<local_id>".
+        """
+
+        key = str(canonical_id).strip()
+        fix_cls = cls._registry.get(key)
+        if fix_cls is None:
+            raise KeyError(f"Unknown fix canonical_id: {key}")
+        return fix_cls
+
+    @classmethod
+    def instantiate(cls, canonical_id: str) -> Any:
+        """Instantiate and return a fresh fix instance from a canonical id."""
+
+        return cls._instantiate_fix(cls.get_fix(canonical_id))
+
     @staticmethod
     def _instantiate_fix(fix_cls: Type[Any]) -> Any:
         try:
