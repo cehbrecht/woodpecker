@@ -84,6 +84,18 @@ class FixRegistry:
     def resolve_identifier(cls, identifier: str) -> str:
         return cls._resolver.resolve(identifier)
 
+    @classmethod
+    def get_fix(cls, identifier: str) -> Type[Any]:
+        canonical_id = cls.resolve_identifier(identifier)
+        fix_cls = cls._registry.get(canonical_id)
+        if fix_cls is None:
+            raise KeyError(f"Unknown fix identifier: {canonical_id}")
+        return fix_cls
+
+    @classmethod
+    def instantiate(cls, identifier: str) -> Any:
+        return cls._instantiate_fix(cls.get_fix(identifier))
+
     @staticmethod
     def _instantiate_fix(fix_cls: Type[Any]) -> Any:
         try:

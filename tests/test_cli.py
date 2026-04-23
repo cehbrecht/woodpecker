@@ -70,7 +70,7 @@ def test_check_returns_nonzero_when_findings_exist(
         return [
             {
                 "path": "cmip6_bad.nc",
-                "code": "woodpecker.normalize_tas_units_to_kelvin",
+                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Common check",
                 "message": "synthetic finding",
             }
@@ -98,7 +98,7 @@ def test_check_json_output_structure(
         return [
             {
                 "path": "cmip6_bad.nc",
-                "code": "woodpecker.normalize_tas_units_to_kelvin",
+                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Common check",
                 "message": "synthetic finding",
             }
@@ -115,8 +115,8 @@ def test_check_json_output_structure(
     payload = json.loads(result.output)
     assert isinstance(payload, list)
     assert payload
-    assert {"path", "code", "name", "message"}.issubset(payload[0].keys())
-    assert payload[0]["code"] == "woodpecker.normalize_tas_units_to_kelvin"
+    assert {"path", "fix_id", "name", "message"}.issubset(payload[0].keys())
+    assert payload[0]["fix_id"] == "woodpecker.normalize_tas_units_to_kelvin"
 
 
 def test_fix_write_cmip6d01_reports_no_change_for_empty_fallback_dataset(
@@ -259,7 +259,7 @@ def test_check_uses_plan_defaults(
         return [
             {
                 "path": "cmip6_bad.nc",
-                "code": "woodpecker.normalize_tas_units_to_kelvin",
+                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Common check",
                 "message": "configured by plan",
             }
@@ -348,7 +348,7 @@ def test_check_plan_applies_fix_options_to_message(
         return [
             {
                 "path": "c3s-cmip6.member.nc",
-                "code": "woodpecker.normalize_tas_units_to_kelvin",
+                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Common check",
                 "message": message,
             }
@@ -455,7 +455,7 @@ def test_check_uses_json_plan_store_lookup(
         return [
             {
                 "path": "cmip6_bad.nc",
-                "code": "woodpecker.normalize_tas_units_to_kelvin",
+                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Common check",
                 "message": "from json store",
             }
@@ -533,7 +533,7 @@ def test_check_plan_store_plan_id_selects_specific_plan_without_path_filters(
         return [
             {
                 "path": "cmip6_bad.nc",
-                "code": "woodpecker.normalize_tas_units_to_kelvin",
+                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Common check",
                 "message": "selected plan",
             }
@@ -628,7 +628,7 @@ def test_check_plan_store_plan_id_selects_specific_plan(
         return [
             {
                 "path": "cmip6_bad.nc",
-                "code": "woodpecker.normalize_tas_units_to_kelvin",
+                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Common check",
                 "message": "selected plan",
             }

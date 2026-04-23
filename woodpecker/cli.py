@@ -74,7 +74,7 @@ def cli():
 @click.option("--category", "categories", multiple=True, help="Filter by category (repeatable)")
 @click.option("--format", "fmt", type=click.Choice(["text", "json", "md"]), default="text")
 def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
-    """List registered fixes (discoverable codes)."""
+    """List registered fixes (discoverable identifiers)."""
     filters = {}
     if dataset:
         filters["dataset"] = dataset
@@ -275,7 +275,10 @@ def load_plans(
     "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
 )
 @click.option(
-    "--select", "codes", multiple=True, help="Run only selected fix identifiers (repeatable)"
+    "--select",
+    "identifiers",
+    multiple=True,
+    help="Run only selected fix identifiers (repeatable)",
 )
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def check(
@@ -285,7 +288,7 @@ def check(
     plan_id: str | None,
     dataset: str | None,
     categories: tuple[str, ...],
-    codes: tuple[str, ...],
+    identifiers: tuple[str, ...],
     fmt: str,
 ):
     """Check NetCDF files and report findings grouped by fix identifier."""
@@ -297,7 +300,7 @@ def check(
             plan_id=plan_id,
             dataset=dataset,
             categories=categories,
-            codes=codes,
+            identifiers=identifiers,
             output_format="auto",
         )
     except click.ClickException:
@@ -357,7 +360,10 @@ def io_status(fmt: str):
     "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
 )
 @click.option(
-    "--select", "codes", multiple=True, help="Run only selected fix identifiers (repeatable)"
+    "--select",
+    "identifiers",
+    multiple=True,
+    help="Run only selected fix identifiers (repeatable)",
 )
 @click.option(
     "--dry-run",
@@ -405,7 +411,7 @@ def fix(
     plan_id: str | None,
     dataset: str | None,
     categories: tuple[str, ...],
-    codes: tuple[str, ...],
+    identifiers: tuple[str, ...],
     dry_run: bool,
     force_apply: bool,
     output_format: str,
@@ -423,10 +429,10 @@ def fix(
             plan_id=plan_id,
             dataset=dataset,
             categories=categories,
-            codes=codes,
+            identifiers=identifiers,
             output_format=output_format,
         )
-        if force_apply and not context.resolved_codes:
+        if force_apply and not context.resolved_identifiers:
             raise click.ClickException(
                 "--force-apply requires explicit fix selection via --select or plan identifiers."
             )
@@ -446,7 +452,7 @@ def fix(
         provenance_source = format_provenance_source(context, store_type, plan)
         prov = build_prov_document(
             inputs=context.inputs,
-            selected_codes=[getattr(fix, "canonical_id", "") for fix in context.fixes],
+            selected_fix_ids=[getattr(fix, "canonical_id", "") for fix in context.fixes],
             selected_fixes=context.fixes,
             selected_plans=context.selected_plans,
             stats=stats,

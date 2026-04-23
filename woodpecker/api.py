@@ -15,18 +15,18 @@ def check(
     inputs: Any,
     dataset: str | None = None,
     categories: Sequence[str] = (),
-    codes: Sequence[str] = (),
+    identifiers: Sequence[str] = (),
     fix_options: dict[str, dict[str, Any]] | None = None,
-    ordered_codes: Sequence[str] = (),
+    ordered_identifiers: Sequence[str] = (),
 ) -> list[dict[str, str]]:
     normalized = normalize_inputs(inputs)
     fixes = select_fixes(
         dataset=dataset,
         categories=categories,
-        codes=codes,
-        strict_codes=True,
+        identifiers=identifiers,
+        strict_identifiers=True,
         fix_options=fix_options,
-        ordered_codes=ordered_codes,
+        ordered_identifiers=ordered_identifiers,
     )
     return run_check(normalized, fixes)
 
@@ -35,28 +35,28 @@ def fix(
     inputs: Any,
     dataset: str | None = None,
     categories: Sequence[str] = (),
-    codes: Sequence[str] = (),
+    identifiers: Sequence[str] = (),
     write: bool = False,
     output_format: str = "auto",
     fix_options: dict[str, dict[str, Any]] | None = None,
-    ordered_codes: Sequence[str] = (),
+    ordered_identifiers: Sequence[str] = (),
 ) -> dict[str, int]:
     normalized = normalize_inputs(inputs)
     fixes = select_fixes(
         dataset=dataset,
         categories=categories,
-        codes=codes,
-        strict_codes=True,
+        identifiers=identifiers,
+        strict_identifiers=True,
         fix_options=fix_options,
-        ordered_codes=ordered_codes,
+        ordered_identifiers=ordered_identifiers,
     )
     return run_fix(normalized, fixes, dry_run=not write, output_format=output_format)
 
 
-def _plan_codes_and_options(plan: FixPlan) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
-    codes = tuple(plan.resolve_fix_identifier(ref) for ref in plan.fixes)
+def _plan_identifiers_and_options(plan: FixPlan) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
+    identifiers = tuple(plan.resolve_fix_identifier(ref) for ref in plan.fixes)
     options = {plan.resolve_fix_identifier(ref): dict(ref.options) for ref in plan.fixes}
-    return codes, options
+    return identifiers, options
 
 
 def _select_plan_from_document(
@@ -103,29 +103,31 @@ def check_plan(
     inputs: Any | None = None,
     dataset: str | None = None,
     categories: Sequence[str] = (),
-    codes: Sequence[str] = (),
+    identifiers: Sequence[str] = (),
     plan_id: str | None = None,
 ) -> list[dict[str, str]]:
     plans = _load_plans(plan_path)
     resolved_inputs = inputs if inputs is not None else [Path.cwd()]
     normalized = normalize_inputs(resolved_inputs)
     selected = _select_plan_from_document(plans=plans, inputs=normalized, plan_id=plan_id)
-    plan_codes, plan_fix_options = _plan_codes_and_options(selected)
+    plan_identifiers, plan_fix_options = _plan_identifiers_and_options(selected)
 
     resolved_dataset = dataset
     resolved_categories = categories
-    resolved_codes = codes or plan_codes
+    resolved_identifiers = identifiers or plan_identifiers
     resolved_fix_options = plan_fix_options
-    resolved_ordered_codes = (
-        tuple(code.strip() for code in codes if code.strip()) if codes else tuple(plan_codes)
+    resolved_ordered_identifiers = (
+        tuple(identifier.strip() for identifier in identifiers if identifier.strip())
+        if identifiers
+        else tuple(plan_identifiers)
     )
     return check(
         normalized,
         dataset=resolved_dataset,
         categories=resolved_categories,
-        codes=resolved_codes,
+        identifiers=resolved_identifiers,
         fix_options=resolved_fix_options,
-        ordered_codes=resolved_ordered_codes,
+        ordered_identifiers=resolved_ordered_identifiers,
     )
 
 
@@ -134,7 +136,7 @@ def fix_plan(
     inputs: Any | None = None,
     dataset: str | None = None,
     categories: Sequence[str] = (),
-    codes: Sequence[str] = (),
+    identifiers: Sequence[str] = (),
     write: bool = False,
     output_format: str = "auto",
     plan_id: str | None = None,
@@ -143,23 +145,25 @@ def fix_plan(
     resolved_inputs = inputs if inputs is not None else [Path.cwd()]
     normalized = normalize_inputs(resolved_inputs)
     selected = _select_plan_from_document(plans=plans, inputs=normalized, plan_id=plan_id)
-    plan_codes, plan_fix_options = _plan_codes_and_options(selected)
+    plan_identifiers, plan_fix_options = _plan_identifiers_and_options(selected)
 
     resolved_dataset = dataset
     resolved_categories = categories
-    resolved_codes = codes or plan_codes
+    resolved_identifiers = identifiers or plan_identifiers
     resolved_fix_options = plan_fix_options
-    resolved_ordered_codes = (
-        tuple(code.strip() for code in codes if code.strip()) if codes else tuple(plan_codes)
+    resolved_ordered_identifiers = (
+        tuple(identifier.strip() for identifier in identifiers if identifier.strip())
+        if identifiers
+        else tuple(plan_identifiers)
     )
     resolved_output = output_format
     return fix(
         normalized,
         dataset=resolved_dataset,
         categories=resolved_categories,
-        codes=resolved_codes,
+        identifiers=resolved_identifiers,
         write=write,
         output_format=resolved_output,
         fix_options=resolved_fix_options,
-        ordered_codes=resolved_ordered_codes,
+        ordered_identifiers=resolved_ordered_identifiers,
     )

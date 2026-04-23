@@ -12,7 +12,10 @@ def format_findings(findings: list[dict[str, str]], fmt: str) -> str:
 
     if fmt == "json":
         return json.dumps(findings, indent=2)
-    return "\n".join(f"{item['path']}: {item['code']} {item['message']}" for item in findings)
+    return "\n".join(
+        f"{item['path']}: {item['fix_id']} {item['message']}"
+        for item in findings
+    )
 
 
 def format_fix_stats(

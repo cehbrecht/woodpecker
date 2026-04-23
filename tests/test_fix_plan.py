@@ -30,13 +30,15 @@ class _FixMethodFix(Fix):
         self.config = dict(config or {})
         return self
 
-    def check(self, dataset):
-        dataset.attrs.setdefault("trace", []).append(("check", dict(getattr(self, "config", {}))))
-        return []
+    def matches(self, dataset):
+        dataset.attrs.setdefault("trace", []).append(("matches", dict(getattr(self, "config", {}))))
+        return True
 
-    def fix(self, dataset):
-        dataset.attrs.setdefault("trace", []).append(("fix", dict(getattr(self, "config", {}))))
-        return dataset
+    def apply(self, dataset, dry_run=True):
+        dataset.attrs.setdefault("trace", []).append(
+            ("apply", dict(getattr(self, "config", {})), dry_run)
+        )
+        return True
 
 
 class _ApplyMethodFix(Fix):
@@ -52,9 +54,9 @@ class _ApplyMethodFix(Fix):
         self.config = dict(config or {})
         return self
 
-    def check(self, dataset):
-        dataset.attrs.setdefault("trace", []).append(("check", dict(getattr(self, "config", {}))))
-        return []
+    def matches(self, dataset):
+        dataset.attrs.setdefault("trace", []).append(("matches", dict(getattr(self, "config", {}))))
+        return True
 
     def apply(self, dataset, dry_run=True):
         dataset.attrs.setdefault("trace", []).append(
@@ -72,11 +74,14 @@ class _TypeErrorInsideMethodFix(Fix):
     priority = 10
     dataset = None
 
-    def check(self, dataset, options=None):
-        raise TypeError("internal check bug")
+    def check(self, dataset):
+        raise TypeError("check should not be called")
 
-    def fix(self, dataset, options=None):
-        return dataset
+    def matches(self, dataset):
+        return True
+
+    def apply(self, dataset, dry_run=True):
+        return True
 
 
 def test_load_fix_plan_from_json(tmp_path: Path):
@@ -109,7 +114,7 @@ def test_load_fix_plan_from_yaml(tmp_path: Path):
     assert plan.fixes[0].options == {"level": "strict"}
 
 
-def test_apply_plan_calls_check_then_fix_and_passes_options():
+def test_apply_plan_calls_matches_then_apply_and_passes_options():
     register_fix(_FixMethodFix)
     ds = xr.Dataset()
     plan = FixPlan.model_validate(
@@ -124,10 +129,10 @@ def test_apply_plan_calls_check_then_fix_and_passes_options():
     finally:
         FixRegistry._registry.pop("plan_test.fix_method", None)
 
-    assert ds.attrs["trace"] == [("check", {"alpha": 1}), ("fix", {"alpha": 1})]
+    assert ds.attrs["trace"] == [("matches", {"alpha": 1}), ("apply", {"alpha": 1}, False)]
 
 
-def test_apply_plan_falls_back_to_apply_when_fix_method_missing():
+def test_apply_plan_uses_apply_for_execution():
     register_fix(_ApplyMethodFix)
     ds = xr.Dataset()
     plan = FixPlan.model_validate(
@@ -142,10 +147,10 @@ def test_apply_plan_falls_back_to_apply_when_fix_method_missing():
     finally:
         FixRegistry._registry.pop("plan_test.apply_method", None)
 
-    assert ds.attrs["trace"] == [("check", {"beta": 2}), ("apply", {"beta": 2}, False)]
+    assert ds.attrs["trace"] == [("matches", {"beta": 2}), ("apply", {"beta": 2}, False)]
 
 
-def test_apply_plan_does_not_mask_type_error_from_fix_method():
+def test_apply_plan_does_not_call_check():
     register_fix(_TypeErrorInsideMethodFix)
     ds = xr.Dataset()
     plan = FixPlan.model_validate(
@@ -156,8 +161,7 @@ def test_apply_plan_does_not_mask_type_error_from_fix_method():
     )
 
     try:
-        with pytest.raises(TypeError, match="internal check bug"):
-            apply_fix_plan(ds, plan, FixRegistry)
+        apply_fix_plan(ds, plan, FixRegistry)
     finally:
         FixRegistry._registry.pop("plan_test.type_error_inside_method", None)
 

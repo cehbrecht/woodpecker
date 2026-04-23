@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import inspect
 import json
 from datetime import datetime, timezone
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
+from typing import Any, Dict, Iterable, List, Optional, Sequence
 
-from woodpecker.fixes.base import Fix
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.identity import dataset_type_matches_declared, resolve_dataset_identity
 from woodpecker.inout import DataInput, get_output_adapter
@@ -13,29 +11,29 @@ from woodpecker.inout import DataInput, get_output_adapter
 from .models import FixPlan
 
 
-def _normalize_codes(codes: Sequence[str]) -> set[str]:
-    return {str(code).strip() for code in codes if str(code).strip()}
+def _normalize_identifiers(identifiers: Sequence[str]) -> set[str]:
+    return {str(identifier).strip() for identifier in identifiers if str(identifier).strip()}
 
 
-def _normalize_ordered_codes(codes: Sequence[str]) -> list[str]:
+def _normalize_ordered_identifiers(identifiers: Sequence[str]) -> list[str]:
     out: list[str] = []
     seen: set[str] = set()
-    for raw in codes:
-        code = str(raw).strip()
-        if not code or code in seen:
+    for raw in identifiers:
+        identifier = str(raw).strip()
+        if not identifier or identifier in seen:
             continue
-        out.append(code)
-        seen.add(code)
+        out.append(identifier)
+        seen.add(identifier)
     return out
 
 
-def _validate_selected_codes(selected_codes: set[str]) -> None:
+def _validate_selected_identifiers(selected_identifiers: set[str]) -> None:
     unknown: list[str] = []
-    for code in sorted(selected_codes):
+    for identifier in sorted(selected_identifiers):
         try:
-            FixRegistry.resolve_identifier(code)
+            FixRegistry.resolve_identifier(identifier)
         except (KeyError, ValueError):
-            unknown.append(code)
+            unknown.append(identifier)
     if unknown:
         unknown_text = ", ".join(unknown)
         raise ValueError(f"Unknown fix identifier(s): {unknown_text}")
@@ -76,10 +74,10 @@ def _normalize_fix_options(
 def select_fixes(
     dataset: Optional[str] = None,
     categories: Sequence[str] = (),
-    codes: Sequence[str] = (),
-    strict_codes: bool = False,
+    identifiers: Sequence[str] = (),
+    strict_identifiers: bool = False,
     fix_options: dict[str, dict[str, Any]] | None = None,
-    ordered_codes: Sequence[str] = (),
+    ordered_identifiers: Sequence[str] = (),
 ) -> List[Any]:
     filters: Dict[str, Any] = {}
     if dataset:
@@ -88,36 +86,42 @@ def select_fixes(
         filters["categories"] = list(categories) if len(categories) > 1 else categories[0]
 
     fixes = FixRegistry.discover(filters=filters or None)
-    selected_codes = _normalize_codes(codes)
-    ordered = _normalize_ordered_codes(ordered_codes)
+    selected_identifiers = _normalize_identifiers(identifiers)
+    normalized_ordered_identifiers = _normalize_ordered_identifiers(ordered_identifiers)
     normalized_fix_options = _normalize_fix_options(fix_options)
-    configured_codes = set(normalized_fix_options.keys())
+    configured_identifiers = set(normalized_fix_options.keys())
 
-    if strict_codes and configured_codes:
-        _validate_selected_codes(configured_codes)
+    if strict_identifiers and configured_identifiers:
+        _validate_selected_identifiers(configured_identifiers)
 
-    if strict_codes and ordered:
-        _validate_selected_codes(set(ordered))
-    if strict_codes and selected_codes:
-        _validate_selected_codes(selected_codes)
+    if strict_identifiers and normalized_ordered_identifiers:
+        _validate_selected_identifiers(set(normalized_ordered_identifiers))
+    if strict_identifiers and selected_identifiers:
+        _validate_selected_identifiers(selected_identifiers)
 
-    resolved_selected_codes = set(_resolve_identifiers(tuple(selected_codes), strict=False))
-    resolved_ordered = _resolve_identifiers(tuple(ordered), strict=False)
+    resolved_selected_identifiers = set(
+        _resolve_identifiers(tuple(selected_identifiers), strict=False)
+    )
+    resolved_ordered_identifiers = _resolve_identifiers(
+        tuple(normalized_ordered_identifiers), strict=False
+    )
 
-    if resolved_ordered:
+    if resolved_ordered_identifiers:
         by_id = {getattr(fix, "canonical_id", ""): fix for fix in fixes}
-        missing = [item for item in resolved_ordered if item not in by_id]
-        if strict_codes and missing:
+        missing = [item for item in resolved_ordered_identifiers if item not in by_id]
+        if strict_identifiers and missing:
             raise ValueError(
                 "Selected fix identifier(s) not available with current dataset/category filters: "
                 + ", ".join(missing)
             )
-        selected = [by_id[item] for item in resolved_ordered if item in by_id]
-    elif not resolved_selected_codes:
+        selected = [by_id[item] for item in resolved_ordered_identifiers if item in by_id]
+    elif not resolved_selected_identifiers:
         selected = fixes
     else:
         selected = [
-            fix for fix in fixes if getattr(fix, "canonical_id", "") in resolved_selected_codes
+            fix
+            for fix in fixes
+            if getattr(fix, "canonical_id", "") in resolved_selected_identifiers
         ]
 
     if normalized_fix_options:
@@ -145,7 +149,7 @@ def run_check(inputs: Iterable[DataInput], fixes: Iterable[Any]) -> List[Dict[st
                 findings.append(
                     {
                         "path": data_input.reference,
-                        "code": getattr(fix, "canonical_id", ""),
+                        "fix_id": getattr(fix, "canonical_id", ""),
                         "name": fix.name,
                         "message": message,
                     }
@@ -175,7 +179,7 @@ def run_fix(
         dataset = data_input.load()
         identity = resolve_dataset_identity(dataset)
         dataset_changed = False
-        applied_codes: list[str] = []
+        applied_fix_ids: list[str] = []
         for fix in fixes:
             if not dataset_type_matches_declared(
                 getattr(fix, "dataset", None), identity.dataset_type
@@ -187,7 +191,7 @@ def run_fix(
             if fix.apply(dataset, dry_run=dry_run):
                 changed += 1
                 dataset_changed = True
-                applied_codes.append(getattr(fix, "canonical_id", ""))
+                applied_fix_ids.append(getattr(fix, "canonical_id", ""))
         if dataset_changed and not dry_run:
             if embed_provenance_metadata:
                 dataset.attrs["woodpecker_provenance"] = json.dumps(
@@ -195,7 +199,7 @@ def run_fix(
                         "run_id": provenance_run_id or "",
                         "generated_at": datetime.now(timezone.utc).isoformat(),
                         "source": data_input.reference,
-                        "applied_codes": applied_codes,
+                        "applied_fix_ids": applied_fix_ids,
                     },
                     sort_keys=True,
                 )
@@ -216,73 +220,51 @@ def run_fix(
     }
 
 
-def resolve_fix(registry: Any, fix_id: str) -> Any:
+def _instantiate_fix(registry: Any, fix_id: str) -> Any:
+    if hasattr(registry, "instantiate") and callable(registry.instantiate):
+        return registry.instantiate(fix_id)
+
     key = FixRegistry.resolve_identifier(str(fix_id).strip())
-    source: Any | None = None
-    if isinstance(registry, Mapping):
+    if isinstance(registry, dict):
         source = registry.get(key)
-    elif hasattr(registry, "_registry"):
-        source = getattr(registry, "_registry", {}).get(key)
     elif hasattr(registry, "get"):
         source = registry.get(key)
+    else:
+        source = None
 
     if source is None:
         raise KeyError(f"Unknown fix id: {key}")
 
     if isinstance(source, type):
         return source()
-    if callable(source) and not hasattr(source, "check"):
+    if callable(source) and not hasattr(source, "apply"):
         return source()
     return source
 
 
-def invoke_with_optional_options(method: Any, ds: Any, options: Mapping[str, Any]) -> Any:
-    try:
-        signature = inspect.signature(method)
-    except (TypeError, ValueError):
-        return method(ds, options=options)
-
-    parameters = signature.parameters.values()
-    supports_options = any(
-        param.kind is inspect.Parameter.VAR_KEYWORD or param.name == "options"
-        for param in parameters
-    )
-    if supports_options:
-        return method(ds, options=options)
-    return method(ds)
-
-
 def apply_fix_plan(ds: Any, plan: FixPlan, registry: Any) -> Any:
-    """Resolve plan fix ids and apply fixes in order.
+    """Resolve plan fix identifiers and apply fixes in order."""
 
-    For each fix: call check(), then call fix()/apply() when check result indicates apply.
-    """
+    identity = resolve_dataset_identity(ds)
 
     for ref in plan.fixes:
         resolved_fix_id = plan.resolve_fix_identifier(ref)
-        fix = resolve_fix(registry, resolved_fix_id)
+        fix = _instantiate_fix(registry, resolved_fix_id)
 
         if hasattr(fix, "configure"):
-            fix = fix.configure(ref.options)
+            configured_fix = fix.configure(ref.options)
+            if configured_fix is not None:
+                fix = configured_fix
 
-        if not hasattr(fix, "check"):
-            raise TypeError(f"Fix '{ref.id}' does not implement check()")
-        should_apply = invoke_with_optional_options(fix.check, ds, ref.options)
-        if not isinstance(should_apply, bool):
-            # Backward-compatible behavior for legacy fixes with non-bool check output.
-            should_apply = True
-
-        if not should_apply:
+        if not dataset_type_matches_declared(getattr(fix, "dataset", None), identity.dataset_type):
             continue
 
-        fix_impl = getattr(type(fix), "fix", None)
-        has_custom_fix_impl = callable(fix_impl) and fix_impl is not Fix.fix
+        if not fix.matches(ds):
+            continue
 
-        if has_custom_fix_impl:
-            invoke_with_optional_options(fix.fix, ds, ref.options)
-        elif hasattr(fix, "apply"):
-            fix.apply(ds, dry_run=False)
-        else:
-            raise TypeError(f"Fix '{ref.id}' does not implement fix() or apply()")
+        if not hasattr(fix, "apply"):
+            raise TypeError(f"Fix '{ref.id}' does not implement apply()")
+
+        fix.apply(ds, dry_run=False)
 
     return ds

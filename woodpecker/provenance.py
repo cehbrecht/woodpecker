@@ -18,7 +18,7 @@ def utc_now_iso() -> str:
 
 def build_prov_document(
     inputs: Iterable[DataInput],
-    selected_codes: list[str],
+    selected_fix_ids: list[str],
     selected_fixes: Iterable[Any] | None,
     selected_plans: Iterable[Any] | None,
     stats: dict[str, int],
@@ -77,7 +77,7 @@ def build_prov_document(
         "generatedAtTime": generated_at,
         "mode": mode,
         "output_format": output_format,
-        "selected_codes": json.dumps(selected_codes, sort_keys=True),
+        "selected_fix_ids": json.dumps(selected_fix_ids, sort_keys=True),
         "core_version": core_version,
         "plugin_versions": json.dumps(plugin_versions, sort_keys=True),
         "providers": json.dumps(providers, sort_keys=True),
