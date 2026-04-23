@@ -51,6 +51,31 @@ def fix(
     return run_fix(normalized, fixes, dry_run=not write, output_format=output_format)
 
 
+def _resolve_plan_api_selection(
+    *,
+    plan_path: str | Path,
+    inputs: Any | None,
+    identifiers: Sequence[str],
+    plan_id: str | None,
+) -> tuple[list[Any], tuple[str, ...], tuple[str, ...], dict[str, dict[str, Any]]]:
+    resolved_inputs = inputs if inputs is not None else [Path.cwd()]
+    normalized = normalize_inputs(resolved_inputs)
+    _, _, source_identifiers, source_fix_options = resolve_plan_source(
+        inputs=normalized,
+        store_type="json",
+        plan_location=Path(plan_path),
+        plan_id=plan_id,
+    )
+    resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options = (
+        resolve_selection_inputs(
+            cli_identifiers=identifiers,
+            source_identifiers=source_identifiers,
+            source_fix_options=source_fix_options,
+        )
+    )
+    return normalized, resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options
+
+
 def check_plan(
     plan_path: str | Path,
     inputs: Any | None = None,
@@ -59,30 +84,19 @@ def check_plan(
     identifiers: Sequence[str] = (),
     plan_id: str | None = None,
 ) -> list[dict[str, str]]:
-    resolved_inputs = inputs if inputs is not None else [Path.cwd()]
-    normalized = normalize_inputs(resolved_inputs)
-    _, _, plan_identifiers, plan_fix_options = resolve_plan_source(
-        inputs=normalized,
-        store_type="json",
-        plan_location=Path(plan_path),
-        plan_id=plan_id,
-    )
-
-    resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options = (
-        resolve_selection_inputs(
-            cli_identifiers=identifiers,
-            source_identifiers=plan_identifiers,
-            source_fix_options=plan_fix_options,
+    normalized, resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options = (
+        _resolve_plan_api_selection(
+            plan_path=plan_path,
+            inputs=inputs,
+            identifiers=identifiers,
+            plan_id=plan_id,
         )
     )
 
-    resolved_dataset = dataset
-    resolved_categories = categories
-
     return check(
         normalized,
-        dataset=resolved_dataset,
-        categories=resolved_categories,
+        dataset=dataset,
+        categories=categories,
         identifiers=resolved_identifiers,
         fix_options=resolved_fix_options,
         ordered_identifiers=resolved_ordered_identifiers,
@@ -99,35 +113,22 @@ def fix_plan(
     output_format: str = "auto",
     plan_id: str | None = None,
 ) -> dict[str, int]:
-    resolved_inputs = inputs if inputs is not None else [Path.cwd()]
-    normalized = normalize_inputs(resolved_inputs)
-    _, _, plan_identifiers, plan_fix_options = resolve_plan_source(
-        inputs=normalized,
-        store_type="json",
-        plan_location=Path(plan_path),
-        plan_id=plan_id,
-    )
-
-    resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options = (
-        resolve_selection_inputs(
-            cli_identifiers=identifiers,
-            source_identifiers=plan_identifiers,
-            source_fix_options=plan_fix_options,
+    normalized, resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options = (
+        _resolve_plan_api_selection(
+            plan_path=plan_path,
+            inputs=inputs,
+            identifiers=identifiers,
+            plan_id=plan_id,
         )
     )
 
-    resolved_dataset = dataset
-    resolved_categories = categories
-
-    resolved_output = output_format
-
     return fix(
         normalized,
-        dataset=resolved_dataset,
-        categories=resolved_categories,
+        dataset=dataset,
+        categories=categories,
         identifiers=resolved_identifiers,
         write=write,
-        output_format=resolved_output,
+        output_format=output_format,
         fix_options=resolved_fix_options,
         ordered_identifiers=resolved_ordered_identifiers,
     )
