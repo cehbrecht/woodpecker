@@ -327,7 +327,7 @@ def test_check_plan_applies_fix_options_to_message(
             {
                 "plans": [
                     {
-                        "id": "cmip6-msg",
+                        "id": "cmip6.msg",
                         "fixes": [
                             {
                                 "id": "woodpecker.normalize_tas_units_to_kelvin",
@@ -441,7 +441,7 @@ def test_check_uses_json_plan_store_lookup(
         json.dumps(
             [
                 {
-                    "id": "cmip6-default",
+                    "id": "cmip6.default",
                     "match": {"path_patterns": ["*cmip6_bad.nc"]},
                     "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                 }
@@ -481,12 +481,12 @@ def test_check_plan_store_requires_plan_id_when_multiple_match_without_path_filt
         json.dumps(
             [
                 {
-                    "id": "first",
+                    "id": "test.first",
                     "match": {"path_patterns": ["*cmip6_bad.nc"]},
                     "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                 },
                 {
-                    "id": "second",
+                    "id": "test.second",
                     "match": {"path_patterns": ["*cmip6_bad.nc"]},
                     "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
                 },
@@ -514,12 +514,12 @@ def test_check_plan_store_plan_id_selects_specific_plan_without_path_filters(
         json.dumps(
             [
                 {
-                    "id": "first",
+                    "id": "test.first",
                     "match": {"path_patterns": ["*cmip6_bad.nc"]},
                     "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
                 },
                 {
-                    "id": "second",
+                    "id": "test.second",
                     "match": {"path_patterns": ["*cmip6_bad.nc"]},
                     "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                 },
@@ -549,7 +549,7 @@ def test_check_plan_store_plan_id_selects_specific_plan_without_path_filters(
             "--plan",
             "plans.json",
             "--plan-id",
-            "second",
+            "test.second",
         ],
     )
 
@@ -562,7 +562,7 @@ def test_check_plan_id_without_plan_errors(
 ):
     runner, _ = isolated_cli_workspace
 
-    result = runner.invoke(cli, ["check", ".", "--plan-id", "alpha"])
+    result = runner.invoke(cli, ["check", ".", "--plan-id", "test.alpha"])
 
     assert result.exit_code != 0
     assert "--plan-id requires --plan" in result.output
@@ -578,8 +578,14 @@ def test_check_plan_store_requires_plan_id_when_multiple_match(
         json.dumps(
             {
                 "plans": [
-                    {"id": "first", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]},
-                    {"id": "second", "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}]},
+                    {
+                        "id": "test.first",
+                        "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                    },
+                    {
+                        "id": "test.second",
+                        "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
+                    },
                 ]
             }
         ),
@@ -603,8 +609,14 @@ def test_check_plan_store_plan_id_selects_specific_plan(
         json.dumps(
             {
                 "plans": [
-                    {"id": "first", "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}]},
-                    {"id": "second", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]},
+                    {
+                        "id": "test.first",
+                        "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
+                    },
+                    {
+                        "id": "test.second",
+                        "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                    },
                 ]
             }
         ),
@@ -624,7 +636,7 @@ def test_check_plan_store_plan_id_selects_specific_plan(
 
     monkeypatch.setattr("woodpecker.cli.run_check", _fake_run_check)
 
-    result = runner.invoke(cli, ["check", "--plan", "plan.json", "--plan-id", "second"])
+    result = runner.invoke(cli, ["check", "--plan", "plan.json", "--plan-id", "test.second"])
 
     assert result.exit_code == 1
     assert "woodpecker.normalize_tas_units_to_kelvin" in result.output
@@ -638,11 +650,11 @@ def test_list_plans_text_output(
         json.dumps(
             [
                 {
-                    "id": "alpha",
+                    "id": "test.alpha",
                     "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                 },
                 {
-                    "id": "beta",
+                    "id": "test.beta",
                     "fixes": [
                         {"id": "woodpecker.ensure_latitude_is_increasing"},
                         {"id": "woodpecker.remove_coordinate_fill_value_encodings"},
@@ -659,8 +671,8 @@ def test_list_plans_text_output(
     )
 
     assert result.exit_code == 0
-    assert "alpha: 1 fixes" in result.output
-    assert "beta: 2 fixes" in result.output
+    assert "test.alpha: 1 fixes" in result.output
+    assert "test.beta: 2 fixes" in result.output
 
 
 def test_list_plans_json_output(
@@ -671,7 +683,7 @@ def test_list_plans_json_output(
         json.dumps(
             [
                 {
-                    "id": "alpha",
+                    "id": "test.alpha",
                     "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                 }
             ]
@@ -693,7 +705,7 @@ def test_list_plans_json_output(
     assert result.exit_code == 0
     payload = json.loads(result.output)
     assert isinstance(payload, list)
-    assert payload[0]["id"] == "alpha"
+    assert payload[0]["id"] == "test.alpha"
 
 
 def test_list_plans_requires_store_options(
@@ -716,8 +728,14 @@ def test_load_plans_from_plan_document_into_json_store(
         json.dumps(
             {
                 "plans": [
-                    {"id": "alpha", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]},
-                    {"id": "beta", "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}]},
+                    {
+                        "id": "test.alpha",
+                        "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                    },
+                    {
+                        "id": "test.beta",
+                        "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
+                    },
                 ]
             }
         ),
@@ -737,7 +755,7 @@ def test_load_plans_from_plan_document_into_json_store(
 
     assert result.exit_code == 0
     payload = json.loads(Path("target.json").read_text(encoding="utf-8"))
-    assert [item["id"] for item in payload["plans"]] == ["alpha", "beta"]
+    assert [item["id"] for item in payload["plans"]] == ["test.alpha", "test.beta"]
 
 
 def test_load_plans_from_store_with_plan_id_filter(
@@ -748,8 +766,8 @@ def test_load_plans_from_store_with_plan_id_filter(
     Path("source.json").write_text(
         json.dumps(
             [
-                {"id": "alpha", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]},
-                {"id": "beta", "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}]},
+                {"id": "test.alpha", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]},
+                {"id": "test.beta", "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}]},
             ]
         ),
         encoding="utf-8",
@@ -766,7 +784,7 @@ def test_load_plans_from_store_with_plan_id_filter(
             "--from-store",
             "json",
             "--plan-id",
-            "beta",
+            "test.beta",
             "--format",
             "json",
         ],
@@ -775,9 +793,9 @@ def test_load_plans_from_store_with_plan_id_filter(
     assert result.exit_code == 0
     output = json.loads(result.output)
     assert output["loaded"] == 1
-    assert output["plan_ids"] == ["beta"]
+    assert output["plan_ids"] == ["test.beta"]
     payload = json.loads(Path("target.json").read_text(encoding="utf-8"))
-    assert [item["id"] for item in payload["plans"]] == ["beta"]
+    assert [item["id"] for item in payload["plans"]] == ["test.beta"]
 
 
 def test_load_plans_requires_source_plan_location(
