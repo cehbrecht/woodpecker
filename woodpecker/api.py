@@ -5,10 +5,10 @@ from typing import Any, Sequence
 
 import woodpecker.fixes  # noqa: F401
 from woodpecker.inout import normalize_inputs
-from woodpecker.plans.io import load_fix_plan_document
 from woodpecker.plans.matcher import plan_matches_dataset
 from woodpecker.plans.models import FixPlan
 from woodpecker.plans.runner import run_check, run_fix, select_fixes
+from woodpecker.stores.json_store import JsonFixPlanStore
 
 
 def check(
@@ -93,6 +93,11 @@ def _select_plan_from_document(
     return selected[0]
 
 
+def _load_plans(plan_path: str | Path) -> list[FixPlan]:
+    store = JsonFixPlanStore(Path(plan_path))
+    return store.list_plans()
+
+
 def check_plan(
     plan_path: str | Path,
     inputs: Any | None = None,
@@ -101,10 +106,10 @@ def check_plan(
     codes: Sequence[str] = (),
     plan_id: str | None = None,
 ) -> list[dict[str, str]]:
-    document = load_fix_plan_document(Path(plan_path))
+    plans = _load_plans(plan_path)
     resolved_inputs = inputs if inputs is not None else [Path.cwd()]
     normalized = normalize_inputs(resolved_inputs)
-    selected = _select_plan_from_document(plans=document.plans, inputs=normalized, plan_id=plan_id)
+    selected = _select_plan_from_document(plans=plans, inputs=normalized, plan_id=plan_id)
     plan_codes, plan_fix_options = _plan_codes_and_options(selected)
 
     resolved_dataset = dataset
@@ -134,10 +139,10 @@ def fix_plan(
     output_format: str = "auto",
     plan_id: str | None = None,
 ) -> dict[str, int]:
-    document = load_fix_plan_document(Path(plan_path))
+    plans = _load_plans(plan_path)
     resolved_inputs = inputs if inputs is not None else [Path.cwd()]
     normalized = normalize_inputs(resolved_inputs)
-    selected = _select_plan_from_document(plans=document.plans, inputs=normalized, plan_id=plan_id)
+    selected = _select_plan_from_document(plans=plans, inputs=normalized, plan_id=plan_id)
     plan_codes, plan_fix_options = _plan_codes_and_options(selected)
 
     resolved_dataset = dataset

@@ -34,11 +34,24 @@ class JsonFixPlanStore(FixPlanStore):
             return []
 
         payload = self._loads(self.path.read_text(encoding="utf-8"))
+        return self._coerce_plan_payload(payload)
 
-        if isinstance(payload, dict):
-            plans = payload.get("plans", [])
-        else:
+    def _coerce_plan_payload(self, payload: Any) -> list[dict[str, Any]]:
+        if payload is None:
+            return []
+
+        if isinstance(payload, list):
             plans = payload
+        elif isinstance(payload, dict):
+            if "plans" in payload:
+                plans = payload.get("plans", [])
+            else:
+                # Single-plan shorthand payload.
+                plans = [payload]
+        else:
+            raise ValueError(
+                f"{self._format_label} fix-plan store file must contain a list or {{'plans': [...]}} payload"
+            )
 
         if not isinstance(plans, list):
             raise ValueError(
