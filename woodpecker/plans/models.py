@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import cached_property
 import json
 from typing import Any, Mapping
 
@@ -8,7 +9,6 @@ from pydantic import (
     ConfigDict,
     Field,
     field_validator,
-    model_serializer,
     model_validator,
 )
 
@@ -48,7 +48,7 @@ def _coerce_schema_version(value: object) -> int:
 
 
 class Link(BaseModel):
-    """Typed link metadata attached to plans and fix references."""
+    """Link metadata."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -58,7 +58,7 @@ class Link(BaseModel):
 
 
 class FixRef(BaseModel):
-    """Reference to a fix within a plan, carrying an identifier and optional options."""
+    """Fix reference with optional options and links."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -88,18 +88,11 @@ class FixRef(BaseModel):
     def _coerce_links(cls, v: object) -> list[Any]:
         return _list_or_empty(v, label="FixRef.links")
 
-    @model_serializer(mode="plain")
-    def _serialize(self) -> dict[str, Any]:
-        payload: dict[str, Any] = {"id": self.id, "options": dict(self.options)}
-        if self.links:
-            payload["links"] = [link.model_dump(exclude_none=True) for link in self.links]
-        return payload
-
 
 class DatasetMatcher(BaseModel):
-    """Criteria for matching datasets by attributes or path patterns."""
+    """Dataset match criteria."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", frozen=True)
 
     attrs: dict[str, Any] = Field(default_factory=dict)
     path_patterns: list[str] = Field(default_factory=list)
@@ -116,7 +109,7 @@ class DatasetMatcher(BaseModel):
 
 
 class ProviderMetadata(BaseModel):
-    """Optional runtime provider metadata for provenance and output annotations."""
+    """Runtime provider metadata."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -138,7 +131,7 @@ class ProviderMetadata(BaseModel):
 
 
 class FixPlanRuntimeMetadata(BaseModel):
-    """Optional runtime metadata that is intentionally not part of persisted plans."""
+    """Runtime-only plan metadata."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -154,7 +147,7 @@ def parse_fix_ref(item: Any) -> FixRef:
 
 
 class FixPlan(BaseModel):
-    """A fix plan: a scoped set of fix references with dataset matching rules."""
+    """Fix plan with scoped fix references."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -162,12 +155,12 @@ class FixPlan(BaseModel):
     description: str = ""
     match: DatasetMatcher | None = None
     fixes: list[FixRef] = Field(default_factory=list)
-    links: list[Link] = Field(default_factory=list)
+    links: list[Link] = Field(default_factory=list, exclude=True)
     runtime_metadata: FixPlanRuntimeMetadata | None = Field(default=None, repr=False, exclude=True)
 
     @field_validator("description", mode="before")
     @classmethod
-    def _coerce_str_field(cls, v: object) -> str:
+    def _coerce_description(cls, v: object) -> str:
         return _string_or_empty(v)
 
     @field_validator("id", mode="before")
@@ -192,7 +185,7 @@ class FixPlan(BaseModel):
 
     @model_validator(mode="after")
     def _scope_fix_refs(self) -> FixPlan:
-        """Scope unqualified fix refs to the plan namespace prefix."""
+        """Scope local fix refs to this plan namespace."""
         self.fixes = [
             FixRef(id=self.resolve_fix_identifier(ref), options=ref.options, links=ref.links)
             for ref in self.fixes
@@ -207,11 +200,9 @@ class FixPlan(BaseModel):
     def local_id(self) -> str:
         return self.id.split(".", 1)[1]
 
-    @property
-    def identifier_set(self) -> IdentifierSet | None:
-        """Resolved identifier model for plan identity."""
-        if "." not in self.id:
-            return None
+    @cached_property
+    def identifier_set(self) -> IdentifierSet:
+        """Cached identifier set for plan identity."""
         return IdentifierRules.build(self.namespace_prefix, self.local_id)
 
     def resolve_fix_identifier(self, ref: FixRef) -> str:
@@ -220,18 +211,7 @@ class FixPlan(BaseModel):
             return token
         if "." in token:
             return token
-        if self.namespace_prefix:
-            return f"{self.namespace_prefix}.{token}"
-        return token
-
-    @model_serializer(mode="plain")
-    def _serialize(self) -> dict[str, Any]:
-        return {
-            "id": self.id,
-            "description": self.description,
-            "match": self.match.model_dump() if self.match is not None else None,
-            "fixes": [fix.model_dump() for fix in self.fixes],
-        }
+        return f"{self.namespace_prefix}.{token}"
 
     def runtime_metadata_dump(self) -> dict[str, Any] | None:
         """Return optional runtime metadata for provenance/output contexts."""
@@ -245,7 +225,7 @@ class FixPlan(BaseModel):
 
 
 class FixPlanDocument(BaseModel):
-    """A versioned collection of fix plans."""
+    """Versioned collection of fix plans."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -258,7 +238,7 @@ class FixPlanDocument(BaseModel):
         return _coerce_schema_version(v)
 
     @classmethod
-    def model_validate_document_payload(cls, payload: Mapping[str, Any]) -> FixPlanDocument:
+    def from_payload(cls, payload: Mapping[str, Any]) -> FixPlanDocument:
         schema_version = _coerce_schema_version(payload.get("schema_version", 1))
         raw_plans = payload.get("plans")
         if raw_plans is None:
@@ -271,7 +251,7 @@ class FixPlanDocument(BaseModel):
         )
 
     @classmethod
-    def model_validate_document_json(cls, payload: str) -> FixPlanDocument:
+    def from_json(cls, payload: str) -> FixPlanDocument:
         data = json.loads(payload)
         if isinstance(data, list):
             return cls(
@@ -280,4 +260,4 @@ class FixPlanDocument(BaseModel):
             )
         if not isinstance(data, Mapping):
             raise ValueError("FixPlanDocument JSON payload must decode to an object or list")
-        return cls.model_validate_document_payload(data)
+        return cls.from_payload(data)

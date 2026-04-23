@@ -72,4 +72,4 @@ def load_fix_plan_document(path: str | Path) -> FixPlanDocument:
         return FixPlanDocument(
             plans=[FixPlan.model_validate(item) for item in payload if isinstance(item, Mapping)]
         )
-    return FixPlanDocument.model_validate_document_payload(payload)
+    return FixPlanDocument.from_payload(payload)
