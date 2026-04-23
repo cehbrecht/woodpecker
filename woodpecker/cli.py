@@ -10,7 +10,7 @@ import click
 import woodpecker.fixes  # noqa: F401
 from woodpecker.execution import run_check, run_fix
 from woodpecker.fixes.registry import FixRegistry
-from woodpecker.formatting import format_findings, format_fix_stats, format_plans
+from woodpecker.formatting import format_findings, format_fix_stats, format_fixes, format_plans
 from woodpecker.inout import get_io_availability
 from woodpecker.plans.resolver import RunContext, resolve_load_source_plans, resolve_run_context
 from woodpecker.provenance import build_prov_document, write_prov_document
@@ -82,28 +82,7 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
         filters["categories"] = list(categories) if len(categories) > 1 else categories[0]
 
     fixes = FixRegistry.discover(filters=filters or None)
-
-    if fmt == "json":
-        payload = [(f.model_dump() if hasattr(f, "model_dump") else f.__dict__) for f in fixes]
-        click.echo(json.dumps(payload, indent=2))
-        return
-
-    if fmt == "md":
-        click.echo("| ID | Name | Description | Categories | Dataset | Priority |")
-        click.echo("|----|------|-------------|------------|---------|---------|")
-        for f in fixes:
-            cats = ", ".join(getattr(f, "categories", []) or [])
-            click.echo(
-                f"| {f.canonical_id} | {f.name} | {f.description} | {cats} | {f.dataset or ''} | {f.priority} |"
-            )
-        return
-
-    # text
-    for f in fixes:
-        cats = ", ".join(getattr(f, "categories", []) or [])
-        click.echo(
-            f"{f.canonical_id}: {f.description} (cats: {cats}; dataset: {f.dataset or '-'}; priority: {f.priority})"
-        )
+    click.echo(format_fixes(fixes, fmt))
 
 
 @cli.command("list-plans")
@@ -281,7 +260,7 @@ def load_plans(
     help="Run only selected fix identifiers (repeatable)",
 )
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
-def check(
+def check_cmd(
     paths: tuple[Path, ...],
     store_type: str,
     plan: Path | None,
@@ -404,7 +383,7 @@ def io_status(fmt: str):
     help="Embed per-dataset provenance metadata into output dataset attrs on write.",
 )
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
-def fix(
+def fix_cmd(
     paths: tuple[Path, ...],
     store_type: str,
     plan: Path | None,
@@ -475,8 +454,6 @@ def fix(
     )
     if fmt == "json" and not dry_run and stats.get("persist_failed", 0) > 0:
         raise SystemExit(1)
-    if not dry_run:
-        return
 
 
 if __name__ == "__main__":
