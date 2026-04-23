@@ -81,7 +81,7 @@ declare a namespace so unqualified fix ids resolve automatically.
   "match": {
     "path_patterns": ["*atlas*.nc"]
   },
-  "fixes": [
+  "steps": [
     {
       "id": "encoding_cleanup",
       "options": {
@@ -217,7 +217,7 @@ example = "woodpecker_example_plugin"
 `woodpecker_example_plugin/__init__.py`
 
 ```python
-from woodpecker.fixes.registry import Fix, register_fix
+from woodpecker.steps.registry import Fix, register_fix
 
 @register_fix
 class ExternalDemoFix(Fix):

@@ -12,7 +12,7 @@
                 }
             ],
             "match": {"path_patterns": ["*ESACCI-WATERVAPOUR-*.zarr"]},
-            "fixes": [
+            "steps": [
                 {
                     "id": "cmip7.configurable_reformat_bridge",
                     "options": {
@@ -30,7 +30,7 @@
             "id": "cmip7.esa_cci_water_vapour_dotname",
             "description": "CMIP7/ESA CCI dot-name inputs",
             "match": {"path_patterns": ["esacci.WATERVAPOUR.*"]},
-            "fixes": [
+            "steps": [
                 {
                     "id": "woodpecker.merge_equivalent_dimensions",
                     "options": {"dims": ["bnds", "nv"]}

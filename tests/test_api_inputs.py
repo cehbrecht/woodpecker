@@ -132,7 +132,7 @@ def test_api_check_plan_uses_codes_from_plan(tmp_path: Path, make_dummy_netcdf, 
     source = make_dummy_netcdf("cmip6_bad.nc")
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
-        '{"plans": [{"id": "core.basic", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]}]}',
+        '{"plans": [{"id": "core.basic", "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]}]}',
         encoding="utf-8",
     )
 
@@ -163,7 +163,7 @@ def test_api_fix_plan_uses_explicit_output_format_argument(tmp_path: Path, monke
     )
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
-        '{"plans": [{"id": "core.basic", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]}]}',
+        '{"plans": [{"id": "core.basic", "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]}]}',
         encoding="utf-8",
     )
 
@@ -198,7 +198,7 @@ def test_api_fix_plan_applies_fix_options_to_dataset_attrs(tmp_path: Path):
     )
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
-        '{"plans": [{"id": "core.options", "fixes": [{"id": "woodpecker.merge_equivalent_dimensions", "options": {"dims": ["x", "y"]}}]}]}',
+        '{"plans": [{"id": "core.options", "steps": [{"id": "woodpecker.merge_equivalent_dimensions", "options": {"dims": ["x", "y"]}}]}]}',
         encoding="utf-8",
     )
 

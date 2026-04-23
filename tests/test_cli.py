@@ -246,7 +246,7 @@ def test_check_uses_plan_defaults(
                 "plans": [
                     {
                         "id": "core.basic",
-                        "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                        "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                     }
                 ]
             }
@@ -285,7 +285,7 @@ def test_fix_uses_auto_output_format_when_not_set(
                 "plans": [
                     {
                         "id": "core.basic",
-                        "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                        "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                     }
                 ]
             }
@@ -328,7 +328,7 @@ def test_check_plan_applies_fix_options_to_message(
                 "plans": [
                     {
                         "id": "cmip6.msg",
-                        "fixes": [
+                        "steps": [
                             {
                                 "id": "woodpecker.normalize_tas_units_to_kelvin",
                                 "options": {"message": "configured check message"},
@@ -443,7 +443,7 @@ def test_check_uses_json_plan_store_lookup(
                 {
                     "id": "cmip6.default",
                     "match": {"path_patterns": ["*cmip6_bad.nc"]},
-                    "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                    "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                 }
             ]
         ),
@@ -483,12 +483,12 @@ def test_check_plan_store_requires_plan_id_when_multiple_match_without_path_filt
                 {
                     "id": "test.first",
                     "match": {"path_patterns": ["*cmip6_bad.nc"]},
-                    "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                    "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                 },
                 {
                     "id": "test.second",
                     "match": {"path_patterns": ["*cmip6_bad.nc"]},
-                    "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
+                    "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
                 },
             ]
         ),
@@ -516,12 +516,12 @@ def test_check_plan_store_plan_id_selects_specific_plan_without_path_filters(
                 {
                     "id": "test.first",
                     "match": {"path_patterns": ["*cmip6_bad.nc"]},
-                    "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
+                    "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
                 },
                 {
                     "id": "test.second",
                     "match": {"path_patterns": ["*cmip6_bad.nc"]},
-                    "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                    "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                 },
             ]
         ),
@@ -580,11 +580,11 @@ def test_check_plan_store_requires_plan_id_when_multiple_match(
                 "plans": [
                     {
                         "id": "test.first",
-                        "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                        "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                     },
                     {
                         "id": "test.second",
-                        "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
+                        "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
                     },
                 ]
             }
@@ -611,11 +611,11 @@ def test_check_plan_store_plan_id_selects_specific_plan(
                 "plans": [
                     {
                         "id": "test.first",
-                        "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
+                        "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
                     },
                     {
                         "id": "test.second",
-                        "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                        "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                     },
                 ]
             }
@@ -651,11 +651,11 @@ def test_list_plans_text_output(
             [
                 {
                     "id": "test.alpha",
-                    "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                    "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                 },
                 {
                     "id": "test.beta",
-                    "fixes": [
+                    "steps": [
                         {"id": "woodpecker.ensure_latitude_is_increasing"},
                         {"id": "woodpecker.remove_coordinate_fill_value_encodings"},
                     ],
@@ -684,7 +684,7 @@ def test_list_plans_json_output(
             [
                 {
                     "id": "test.alpha",
-                    "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                    "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                 }
             ]
         ),
@@ -730,11 +730,11 @@ def test_load_plans_from_plan_document_into_json_store(
                 "plans": [
                     {
                         "id": "test.alpha",
-                        "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                        "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
                     },
                     {
                         "id": "test.beta",
-                        "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
+                        "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
                     },
                 ]
             }
@@ -766,8 +766,8 @@ def test_load_plans_from_store_with_plan_id_filter(
     Path("source.json").write_text(
         json.dumps(
             [
-                {"id": "test.alpha", "fixes": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]},
-                {"id": "test.beta", "fixes": [{"id": "woodpecker.ensure_latitude_is_increasing"}]},
+                {"id": "test.alpha", "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]},
+                {"id": "test.beta", "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}]},
             ]
         ),
         encoding="utf-8",

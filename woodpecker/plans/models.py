@@ -154,7 +154,7 @@ class FixPlan(BaseModel):
     id: str
     description: str = ""
     match: DatasetMatcher | None = None
-    fixes: list[FixRef] = Field(default_factory=list)
+    steps: list[FixRef] = Field(default_factory=list)
     links: list[Link] = Field(default_factory=list)
     runtime_metadata: FixPlanRuntimeMetadata | None = Field(default=None, repr=False, exclude=True)
 
@@ -172,10 +172,10 @@ class FixPlan(BaseModel):
         IdentifierRules.validate_canonical_id("FixPlan.id", normalized)
         return normalized
 
-    @field_validator("fixes", mode="before")
+    @field_validator("steps", mode="before")
     @classmethod
     def _parse_fix_refs(cls, v: object) -> list[Any]:
-        items = _list_or_empty(v, label="FixPlan 'fixes'")
+        items = _list_or_empty(v, label="FixPlan 'steps'")
         return [parse_fix_ref(item) if not isinstance(item, FixRef) else item for item in items]
 
     @field_validator("links", mode="before")
@@ -186,9 +186,9 @@ class FixPlan(BaseModel):
     @model_validator(mode="after")
     def _scope_fix_refs(self) -> FixPlan:
         """Scope local fix refs to this plan namespace."""
-        self.fixes = [
+        self.steps = [
             FixRef(id=self.resolve_fix_identifier(ref), options=ref.options, links=ref.links)
-            for ref in self.fixes
+            for ref in self.steps
         ]
         return self
 
@@ -212,6 +212,13 @@ class FixPlan(BaseModel):
         if "." in token:
             return token
         return f"{self.namespace_prefix}.{token}"
+
+    def step_identifiers_and_options(self) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
+        """Return ordered canonical step identifiers and per-step options."""
+
+        identifiers = tuple(self.resolve_fix_identifier(ref) for ref in self.steps)
+        options = {self.resolve_fix_identifier(ref): dict(ref.options) for ref in self.steps}
+        return identifiers, options
 
     def runtime_metadata_dump(self) -> dict[str, Any] | None:
         """Return optional runtime metadata for provenance/output contexts."""

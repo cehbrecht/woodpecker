@@ -111,16 +111,6 @@ def select_matching_store_plans(
     )
 
 
-def extract_plan_identifiers_and_options(
-    plan: FixPlan,
-) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
-    """Extract ordered fix identifiers and per-fix options from a FixPlan."""
-
-    identifiers = tuple(plan.resolve_fix_identifier(ref) for ref in plan.fixes)
-    options = {plan.resolve_fix_identifier(ref): dict(ref.options) for ref in plan.fixes}
-    return identifiers, options
-
-
 def resolve_plan_source(
     *,
     inputs: Sequence[DataInput],
@@ -149,7 +139,7 @@ def resolve_plan_source(
         raise ValueError("No matching fix plans found in selected store for selected inputs.")
 
     selected = plans[0]
-    identifiers, fix_options = extract_plan_identifiers_and_options(selected)
+    identifiers, fix_options = selected.step_identifiers_and_options()
     return "store", [selected], identifiers, fix_options
 
 
@@ -197,7 +187,7 @@ def resolve_run_context(
     resolved_dataset = dataset
     resolved_categories = categories
     resolved_output_format = output_format
-    resolved_fix_options = dict(source_fix_options)
+    resolved_fix_options = {key: dict(value) for key, value in source_fix_options.items()}
 
     fixes = select_fixes(
         dataset=resolved_dataset,

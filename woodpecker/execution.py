@@ -258,7 +258,7 @@ def apply_fix_plan(ds: Any, plan: "FixPlan", registry: Any) -> Any:
 
     identity = resolve_dataset_identity(ds)
 
-    for ref in plan.fixes:
+    for ref in plan.steps:
         resolved_fix_id = plan.resolve_fix_identifier(ref)
         fix = _instantiate_fix(registry, resolved_fix_id)
 

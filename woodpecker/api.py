@@ -54,9 +54,7 @@ def fix(
 
 
 def _plan_identifiers_and_options(plan: FixPlan) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
-    identifiers = tuple(plan.resolve_fix_identifier(ref) for ref in plan.fixes)
-    options = {plan.resolve_fix_identifier(ref): dict(ref.options) for ref in plan.fixes}
-    return identifiers, options
+    return plan.step_identifiers_and_options()
 
 
 def _select_plan_from_document(

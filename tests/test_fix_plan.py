@@ -87,7 +87,7 @@ class _TypeErrorInsideMethodFix(Fix):
 def test_load_fix_plan_from_json(tmp_path: Path):
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
-        '{"id": "plan_test.default_plan", "fixes": [{"id": "plan_test.fix_method", "options": {"mode": "fast"}}, "plan_test.apply_method"]}',
+        '{"id": "plan_test.default_plan", "steps": [{"id": "plan_test.fix_method", "options": {"mode": "fast"}}, "plan_test.apply_method"]}',
         encoding="utf-8",
     )
 
@@ -95,23 +95,23 @@ def test_load_fix_plan_from_json(tmp_path: Path):
     plan = plans[0]
 
     assert isinstance(plan, FixPlan)
-    assert [f.id for f in plan.fixes] == ["plan_test.fix_method", "plan_test.apply_method"]
-    assert plan.fixes[0].options == {"mode": "fast"}
-    assert plan.fixes[1].options == {}
+    assert [f.id for f in plan.steps] == ["plan_test.fix_method", "plan_test.apply_method"]
+    assert plan.steps[0].options == {"mode": "fast"}
+    assert plan.steps[1].options == {}
 
 
 def test_load_fix_plan_from_yaml(tmp_path: Path):
     plan_path = tmp_path / "plan.yaml"
     plan_path.write_text(
-        "id: plan_test.default_plan\nfixes:\n  - id: plan_test.fix_method\n    options:\n      level: strict\n",
+        "id: plan_test.default_plan\nsteps:\n  - id: plan_test.fix_method\n    options:\n      level: strict\n",
         encoding="utf-8",
     )
 
     plans = JsonFixPlanStore(plan_path).list_plans()
     plan = plans[0]
 
-    assert [f.id for f in plan.fixes] == ["plan_test.fix_method"]
-    assert plan.fixes[0].options == {"level": "strict"}
+    assert [f.id for f in plan.steps] == ["plan_test.fix_method"]
+    assert plan.steps[0].options == {"level": "strict"}
 
 
 def test_apply_plan_calls_matches_then_apply_and_passes_options():
@@ -120,7 +120,7 @@ def test_apply_plan_calls_matches_then_apply_and_passes_options():
     plan = FixPlan.model_validate(
         {
             "id": "plan_test.execution_order",
-            "fixes": [{"id": "plan_test.fix_method", "options": {"alpha": 1}}],
+            "steps": [{"id": "plan_test.fix_method", "options": {"alpha": 1}}],
         }
     )
 
@@ -138,7 +138,7 @@ def test_apply_plan_uses_apply_for_execution():
     plan = FixPlan.model_validate(
         {
             "id": "plan_test.apply_fallback",
-            "fixes": [{"id": "plan_test.apply_method", "options": {"beta": 2}}],
+            "steps": [{"id": "plan_test.apply_method", "options": {"beta": 2}}],
         }
     )
 
@@ -156,7 +156,7 @@ def test_apply_plan_does_not_call_check():
     plan = FixPlan.model_validate(
         {
             "id": "plan_test.type_error_passthrough",
-            "fixes": [{"id": "plan_test.type_error_inside_method", "options": {"gamma": 3}}],
+            "steps": [{"id": "plan_test.type_error_inside_method", "options": {"gamma": 3}}],
         }
     )
 
@@ -176,7 +176,7 @@ def test_load_fix_plan_document_json(tmp_path: Path):
                         "id": "cmip6.basic",
                         "description": "simple plan",
                         "match": {"path_patterns": ["*cmip6*.nc"]},
-                        "fixes": [{"id": "CMIP6_0001", "options": {"message": "ok"}}],
+                        "steps": [{"id": "CMIP6_0001", "options": {"message": "ok"}}],
                     }
                 ]
             }
@@ -190,7 +190,7 @@ def test_load_fix_plan_document_json(tmp_path: Path):
     assert document.schema_version == 1
     assert len(document.plans) == 1
     assert document.plans[0].id == "cmip6.basic"
-    assert document.plans[0].fixes[0].id == "cmip6.cmip6_0001"
+    assert document.plans[0].steps[0].id == "cmip6.cmip6_0001"
 
 
 def test_load_fix_plan_document_single_plan_shorthand(tmp_path: Path):
@@ -199,7 +199,7 @@ def test_load_fix_plan_document_single_plan_shorthand(tmp_path: Path):
         json.dumps(
             {
                 "id": "atlas.single",
-                "fixes": [{"id": "CMIP6_0001"}],
+                "steps": [{"id": "CMIP6_0001"}],
             }
         ),
         encoding="utf-8",
@@ -210,7 +210,7 @@ def test_load_fix_plan_document_single_plan_shorthand(tmp_path: Path):
     assert document.schema_version == 1
     assert len(document.plans) == 1
     assert document.plans[0].id == "atlas.single"
-    assert document.plans[0].fixes[0].id == "atlas.cmip6_0001"
+    assert document.plans[0].steps[0].id == "atlas.cmip6_0001"
 
 
 def test_load_fix_plan_document_plan_entries_normalize_fix_ids(tmp_path: Path):
@@ -221,7 +221,7 @@ def test_load_fix_plan_document_plan_entries_normalize_fix_ids(tmp_path: Path):
                 "plans": [
                     {
                         "id": "atlas.mixed_case",
-                        "fixes": [
+                        "steps": [
                             {
                                 "id": "cmip6.dummy_placeholder",
                                 "options": {"marker_attr": "my_marker"},
@@ -237,7 +237,7 @@ def test_load_fix_plan_document_plan_entries_normalize_fix_ids(tmp_path: Path):
 
     document = FixPlanDocument(plans=JsonFixPlanStore(plan_path).list_plans())
 
-    fixes = document.plans[0].fixes
+    fixes = document.plans[0].steps
     assert [item.id for item in fixes] == ["cmip6.dummy_placeholder", "atlas.encoding_cleanup"]
     assert fixes[0].options["marker_attr"] == "my_marker"
 
@@ -246,7 +246,7 @@ def test_fix_plan_to_dict_persists_canonical_ids_from_local_fix_refs():
     plan = FixPlan.model_validate(
         {
             "id": "atlas.atlas_basic",
-            "fixes": [
+            "steps": [
                 {"id": "encoding_cleanup", "options": {"mode": "strict"}},
                 {"id": "atlas.project_id_normalization", "options": {}},
             ],
@@ -255,22 +255,22 @@ def test_fix_plan_to_dict_persists_canonical_ids_from_local_fix_refs():
 
     payload = plan.model_dump()
 
-    assert [item.id for item in plan.fixes] == [
+    assert [item.id for item in plan.steps] == [
         "atlas.encoding_cleanup",
         "atlas.project_id_normalization",
     ]
-    assert [item["id"] for item in payload["fixes"]] == [
+    assert [item["id"] for item in payload["steps"]] == [
         "atlas.encoding_cleanup",
         "atlas.project_id_normalization",
     ]
-    assert payload["fixes"][0]["options"] == {"mode": "strict"}
+    assert payload["steps"][0]["options"] == {"mode": "strict"}
     assert payload["id"] == "atlas.atlas_basic"
     assert "namespace" not in payload
     assert "local_id" not in payload
 
 
 def test_fix_plan_identity_uses_identifier_set_when_prefix_and_local_available():
-    plan = FixPlan(id="atlas.atlas_basic", fixes=[FixRef(id="atlas.encoding_cleanup")])
+    plan = FixPlan(id="atlas.atlas_basic", steps=[FixRef(id="atlas.encoding_cleanup")])
 
     assert plan.identifier_set is not None
     assert plan.identifier_set.namespace_prefix == "atlas"
@@ -283,18 +283,18 @@ def test_fix_plan_namespace_scopes_unqualified_fix_refs():
     plan = FixPlan.model_validate(
         {
             "id": "atlas.atlas_plan",
-            "fixes": [{"id": "encoding_cleanup"}],
+            "steps": [{"id": "encoding_cleanup"}],
         }
     )
 
     assert plan.namespace_prefix == "atlas"
-    assert [item.id for item in plan.fixes] == ["atlas.encoding_cleanup"]
+    assert [item.id for item in plan.steps] == ["atlas.encoding_cleanup"]
 
 
 def test_fix_plan_runtime_metadata_provider_is_available_but_not_persisted():
     plan = FixPlan(
         id="cmip7.esa_cci_water_vapour_zarr",
-        fixes=[FixRef(id="cmip7.configurable_reformat_bridge")],
+        steps=[FixRef(id="cmip7.configurable_reformat_bridge")],
         runtime_metadata=FixPlanRuntimeMetadata(
             provider=ProviderMetadata(name="woodpecker-cmip7-plugin", version="0.4.2")
         ),
@@ -316,7 +316,7 @@ def test_fix_plan_document_description_fields_are_parsed(tmp_path: Path):
                     {
                         "id": "atlas.with_description",
                         "description": "Dataset selector note",
-                        "fixes": [{"id": "CMIP6_0001", "options": {"message": "selector message"}}],
+                        "steps": [{"id": "CMIP6_0001", "options": {"message": "selector message"}}],
                     }
                 ]
             }
@@ -338,7 +338,7 @@ def test_fix_plan_document_uses_explicit_schema_version_when_present(tmp_path: P
                 "plans": [
                     {
                         "id": "atlas.basic",
-                        "fixes": [{"id": "atlas.encoding_cleanup"}],
+                        "steps": [{"id": "atlas.encoding_cleanup"}],
                     }
                 ],
             }
@@ -354,7 +354,7 @@ def test_fix_plan_document_uses_explicit_schema_version_when_present(tmp_path: P
 
 def test_fix_plan_document_to_dict_includes_schema_version():
     document = FixPlanDocument(
-        plans=[FixPlan(id="atlas.basic", fixes=[FixRef(id="atlas.encoding_cleanup")])]
+        plans=[FixPlan(id="atlas.basic", steps=[FixRef(id="atlas.encoding_cleanup")])]
     )
 
     payload = document.model_dump()
@@ -375,7 +375,7 @@ def test_esa_cci_example_fix_plan_uses_plugin_cmip7_fix_codes_in_order():
 
     assert matched
     plan = matched[0]
-    assert [plan.resolve_fix_identifier(item) for item in plan.fixes] == [
+    assert [plan.resolve_fix_identifier(item) for item in plan.steps] == [
         "cmip7.configurable_reformat_bridge",
         "woodpecker.ensure_latitude_is_increasing",
     ]

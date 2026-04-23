@@ -60,14 +60,14 @@ class DuckDBFixPlanStore(FixPlanStore):
                     match=DatasetMatcher.model_validate(match_payload)
                     if isinstance(match_payload, dict)
                     else None,
-                    fixes=[FixRef.model_validate(item) for item in fixes_payload],
+                    steps=[FixRef.model_validate(item) for item in fixes_payload],
                 )
             )
         return plans
 
     def save_plan(self, plan: FixPlan) -> None:
         match_json = json.dumps(plan.match.model_dump()) if plan.match is not None else None
-        fixes_json = json.dumps([item.model_dump() for item in plan.fixes])
+        fixes_json = json.dumps([item.model_dump() for item in plan.steps])
         plan_id = FixPlanIndex.canonical_plan_id(plan)
 
         with self._connect() as con:
@@ -133,7 +133,7 @@ class DuckDBFixPlanStore(FixPlanStore):
                 id=str(plan_id),
                 description=str(description or ""),
                 match=matcher,
-                fixes=[],
+                steps=[],
             )
             if not plan_matches_dataset(candidate, dataset, path=path):
                 continue
@@ -143,7 +143,7 @@ class DuckDBFixPlanStore(FixPlanStore):
                     id=candidate.id,
                     description=candidate.description,
                     match=matcher,
-                    fixes=self._parse_fixes(fixes_json),
+                    steps=self._parse_fixes(fixes_json),
                 )
             )
 
