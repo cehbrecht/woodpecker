@@ -155,7 +155,7 @@ class FixPlan(BaseModel):
     description: str = ""
     match: DatasetMatcher | None = None
     fixes: list[FixRef] = Field(default_factory=list)
-    links: list[Link] = Field(default_factory=list, exclude=True)
+    links: list[Link] = Field(default_factory=list)
     runtime_metadata: FixPlanRuntimeMetadata | None = Field(default=None, repr=False, exclude=True)
 
     @field_validator("description", mode="before")
