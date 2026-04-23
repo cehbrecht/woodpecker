@@ -165,8 +165,9 @@ def resolve_run_context(
     """Resolve inputs and fix selection for check/fix commands.
 
     Precedence:
-                - store lookup when `--plan` is provided
-                - direct selection otherwise
+        - store lookup when `--plan` is provided
+        - direct selection otherwise
+
     - explicit CLI filters (`--dataset`, `--category`, `--select`) override
       store-derived defaults
     """
