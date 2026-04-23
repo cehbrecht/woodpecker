@@ -389,6 +389,7 @@ def fix_cmd(
     fmt: str,
 ):
     """Apply selected fixes to NetCDF files."""
+
     def run_fix_command() -> tuple[RunContext, dict[str, int]]:
         context = resolve_run_context(
             paths=paths,
