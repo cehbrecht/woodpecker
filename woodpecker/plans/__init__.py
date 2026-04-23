@@ -3,9 +3,9 @@
 from pathlib import Path
 
 from ..execution import apply_fix_plan, run_check, run_fix, select_fixes
+from ..stores.json_store import JsonFixPlanStore
 from .matcher import plan_matches_dataset
 from .models import DatasetMatcher, FixPlan, FixPlanDocument, FixRef, Link, parse_fix_ref
-from ..stores.json_store import JsonFixPlanStore
 
 SUPPORTED_EXTENSIONS = {".json", ".yaml", ".yml"}
 

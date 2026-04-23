@@ -1,7 +1,6 @@
 import json
 from pathlib import Path
 
-import pytest
 import xarray as xr
 
 from woodpecker.execution import apply_fix_plan

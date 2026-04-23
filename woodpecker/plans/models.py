@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from functools import cached_property
 import json
+from functools import cached_property
 from typing import Any, Mapping
 
 from pydantic import (

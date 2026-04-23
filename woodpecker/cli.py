@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Callable, TypeVar, TypedDict
+from typing import Callable, TypedDict, TypeVar
 
 import click
 
