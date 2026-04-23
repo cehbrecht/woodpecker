@@ -181,17 +181,21 @@ def run_fix(
         dataset_changed = False
         applied_fix_ids: list[str] = []
         for fix in fixes:
-            if not dataset_type_matches_declared(
-                getattr(fix, "dataset", None), identity.dataset_type
-            ):
-                continue
-            if not force_apply and not fix.matches(dataset):
-                continue
-            attempted += 1
-            if fix.apply(dataset, dry_run=dry_run):
+            canonical_id = getattr(fix, "canonical_id", "")
+            attempted_fix, changed_fix = _apply_configured_fix(
+                dataset,
+                fix,
+                dataset_type=identity.dataset_type,
+                dry_run=dry_run,
+                force_apply=force_apply,
+                fix_id=canonical_id,
+            )
+            if attempted_fix:
+                attempted += 1
+            if changed_fix:
                 changed += 1
                 dataset_changed = True
-                applied_fix_ids.append(getattr(fix, "canonical_id", ""))
+                applied_fix_ids.append(canonical_id)
         if dataset_changed and not dry_run:
             if embed_provenance_metadata:
                 dataset.attrs["woodpecker_provenance"] = json.dumps(
@@ -220,26 +224,32 @@ def run_fix(
     }
 
 
+def _apply_configured_fix(
+    dataset: Any,
+    fix: Any,
+    *,
+    dataset_type: str | None,
+    dry_run: bool,
+    force_apply: bool,
+    fix_id: str,
+) -> tuple[bool, bool]:
+    if not dataset_type_matches_declared(getattr(fix, "dataset", None), dataset_type):
+        return False, False
+
+    if not force_apply and not fix.matches(dataset):
+        return False, False
+
+    if not hasattr(fix, "apply"):
+        raise TypeError(f"Fix '{fix_id}' does not implement apply()")
+
+    return True, bool(fix.apply(dataset, dry_run=dry_run))
+
+
 def _instantiate_fix(registry: Any, fix_id: str) -> Any:
-    if hasattr(registry, "instantiate") and callable(registry.instantiate):
-        return registry.instantiate(fix_id)
-
-    key = FixRegistry.resolve_identifier(str(fix_id).strip())
-    if isinstance(registry, dict):
-        source = registry.get(key)
-    elif hasattr(registry, "get"):
-        source = registry.get(key)
-    else:
-        source = None
-
-    if source is None:
-        raise KeyError(f"Unknown fix id: {key}")
-
-    if isinstance(source, type):
-        return source()
-    if callable(source) and not hasattr(source, "apply"):
-        return source()
-    return source
+    instantiate = getattr(registry, "instantiate", None)
+    if not callable(instantiate):
+        raise TypeError("Registry must provide instantiate(canonical_id)")
+    return instantiate(fix_id)
 
 
 def apply_fix_plan(ds: Any, plan: FixPlan, registry: Any) -> Any:
@@ -256,15 +266,13 @@ def apply_fix_plan(ds: Any, plan: FixPlan, registry: Any) -> Any:
             if configured_fix is not None:
                 fix = configured_fix
 
-        if not dataset_type_matches_declared(getattr(fix, "dataset", None), identity.dataset_type):
-            continue
-
-        if not fix.matches(ds):
-            continue
-
-        if not hasattr(fix, "apply"):
-            raise TypeError(f"Fix '{ref.id}' does not implement apply()")
-
-        fix.apply(ds, dry_run=False)
+        _apply_configured_fix(
+            ds,
+            fix,
+            dataset_type=identity.dataset_type,
+            dry_run=False,
+            force_apply=False,
+            fix_id=resolved_fix_id,
+        )
 
     return ds
