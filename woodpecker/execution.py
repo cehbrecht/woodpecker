@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
-from typing import Any, Dict, Iterable, List, Optional, Sequence
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Sequence
 
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.identity import dataset_type_matches_declared, resolve_dataset_identity
 from woodpecker.inout import DataInput, get_output_adapter
 
-from .models import FixPlan
+if TYPE_CHECKING:
+    from woodpecker.plans.models import FixPlan
 
 
 def _normalize_identifiers(identifiers: Sequence[str]) -> set[str]:
@@ -252,7 +253,7 @@ def _instantiate_fix(registry: Any, fix_id: str) -> Any:
     return instantiate(fix_id)
 
 
-def apply_fix_plan(ds: Any, plan: FixPlan, registry: Any) -> Any:
+def apply_fix_plan(ds: Any, plan: "FixPlan", registry: Any) -> Any:
     """Resolve plan fix identifiers and apply fixes in order."""
 
     identity = resolve_dataset_identity(ds)

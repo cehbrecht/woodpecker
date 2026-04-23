@@ -4,10 +4,10 @@ from pathlib import Path
 from typing import Any, Sequence
 
 import woodpecker.fixes  # noqa: F401
+from woodpecker.execution import run_check, run_fix, select_fixes
 from woodpecker.inout import normalize_inputs
 from woodpecker.plans.matcher import plan_matches_dataset
 from woodpecker.plans.models import FixPlan
-from woodpecker.plans.runner import run_check, run_fix, select_fixes
 from woodpecker.stores.json_store import JsonFixPlanStore
 
 

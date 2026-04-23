@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 import xarray as xr
 
+from woodpecker.execution import apply_fix_plan
 from woodpecker.fixes.registry import Fix, FixRegistry, register_fix
 from woodpecker.plans.matcher import plan_matches_dataset
 from woodpecker.plans.models import (
@@ -13,7 +14,6 @@ from woodpecker.plans.models import (
     FixRef,
     ProviderMetadata,
 )
-from woodpecker.plans.runner import apply_fix_plan
 from woodpecker.stores.json_store import JsonFixPlanStore
 
 
