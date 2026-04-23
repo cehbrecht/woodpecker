@@ -7,13 +7,12 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    PrivateAttr,
     field_validator,
     model_serializer,
     model_validator,
 )
 
-from woodpecker.identifiers import IdentifierRules, IdentifierSet, coerce_scoped_identifier
+from woodpecker.identifiers import IdentifierRules, IdentifierSet
 
 
 def _string_or_empty(value: object) -> str:
@@ -155,30 +154,30 @@ def parse_fix_ref(item: Any) -> FixRef:
 
 
 class FixPlan(BaseModel):
-    """A fix plan: an optionally scoped set of fix references with dataset matching rules.
-
-    The ``id`` field accepts either a canonical ``<namespace>.<local_id>`` form or a
-    bare local id.  When a ``namespace_prefix`` is provided alongside a bare id, the
-    canonical id is assembled and an ``IdentifierSet`` is attached.
-    """
+    """A fix plan: a scoped set of fix references with dataset matching rules."""
 
     model_config = ConfigDict(extra="forbid")
 
-    id: str = ""
-    local_id: str = ""
-    namespace_prefix: str = ""
+    id: str
     description: str = ""
     match: DatasetMatcher | None = None
     fixes: list[FixRef] = Field(default_factory=list)
     links: list[Link] = Field(default_factory=list)
     runtime_metadata: FixPlanRuntimeMetadata | None = Field(default=None, repr=False, exclude=True)
 
-    _identifier_set: IdentifierSet | None = PrivateAttr(default=None)
-
-    @field_validator("id", "local_id", "namespace_prefix", "description", mode="before")
+    @field_validator("description", mode="before")
     @classmethod
-    def _coerce_str_fields(cls, v: object) -> str:
+    def _coerce_str_field(cls, v: object) -> str:
         return _string_or_empty(v)
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def _normalize_and_validate_id(cls, v: object) -> str:
+        normalized = IdentifierRules.normalize(v)
+        if not normalized:
+            raise ValueError("FixPlan.id must be a non-empty canonical identifier")
+        IdentifierRules.validate_canonical_id("FixPlan.id", normalized)
+        return normalized
 
     @field_validator("fixes", mode="before")
     @classmethod
@@ -192,20 +191,8 @@ class FixPlan(BaseModel):
         return _list_or_empty(v, label="FixPlan.links")
 
     @model_validator(mode="after")
-    def _resolve_and_scope(self) -> FixPlan:
-        """Resolve identifiers and scope unqualified fix refs to the plan namespace."""
-        resolved = coerce_scoped_identifier(
-            canonical_id=self.id,
-            local_id=self.local_id,
-            namespace_prefix=self.namespace_prefix,
-            canonical_label="FixPlan.id",
-        )
-        self.id = resolved.canonical_id
-        self.local_id = resolved.local_id
-        self.namespace_prefix = resolved.namespace_prefix
-        self._identifier_set = resolved.identifier_set
-
-        # Re-scope fix refs using the resolved namespace prefix.
+    def _scope_fix_refs(self) -> FixPlan:
+        """Scope unqualified fix refs to the plan namespace prefix."""
         self.fixes = [
             FixRef(id=self.resolve_fix_identifier(ref), options=ref.options, links=ref.links)
             for ref in self.fixes
@@ -213,9 +200,19 @@ class FixPlan(BaseModel):
         return self
 
     @property
+    def namespace_prefix(self) -> str:
+        return self.id.split(".", 1)[0]
+
+    @property
+    def local_id(self) -> str:
+        return self.id.split(".", 1)[1]
+
+    @property
     def identifier_set(self) -> IdentifierSet | None:
-        """Resolved identifier model for plan identity when prefix + local id are known."""
-        return self._identifier_set
+        """Resolved identifier model for plan identity."""
+        if "." not in self.id:
+            return None
+        return IdentifierRules.build(self.namespace_prefix, self.local_id)
 
     def resolve_fix_identifier(self, ref: FixRef) -> str:
         token = IdentifierRules.normalize(ref.id)
@@ -229,15 +226,12 @@ class FixPlan(BaseModel):
 
     @model_serializer(mode="plain")
     def _serialize(self) -> dict[str, Any]:
-        payload: dict[str, Any] = {
+        return {
             "id": self.id,
             "description": self.description,
             "match": self.match.model_dump() if self.match is not None else None,
             "fixes": [fix.model_dump() for fix in self.fixes],
         }
-        if self.links:
-            payload["links"] = [link.model_dump(exclude_none=True) for link in self.links]
-        return payload
 
     def runtime_metadata_dump(self) -> dict[str, Any] | None:
         """Return optional runtime metadata for provenance/output contexts."""

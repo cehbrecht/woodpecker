@@ -82,7 +82,7 @@ class _TypeErrorInsideMethodFix(Fix):
 def test_load_fix_plan_from_json(tmp_path: Path):
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
-        '{"fixes": [{"id": "plan_test.fix_method", "options": {"mode": "fast"}}, "plan_test.apply_method"]}',
+        '{"id": "plan_test.default_plan", "fixes": [{"id": "plan_test.fix_method", "options": {"mode": "fast"}}, "plan_test.apply_method"]}',
         encoding="utf-8",
     )
 
@@ -97,7 +97,7 @@ def test_load_fix_plan_from_json(tmp_path: Path):
 def test_load_fix_plan_from_yaml(tmp_path: Path):
     plan_path = tmp_path / "plan.yaml"
     plan_path.write_text(
-        "fixes:\n  - id: plan_test.fix_method\n    options:\n      level: strict\n",
+        "id: plan_test.default_plan\nfixes:\n  - id: plan_test.fix_method\n    options:\n      level: strict\n",
         encoding="utf-8",
     )
 
@@ -111,7 +111,7 @@ def test_apply_plan_calls_check_then_fix_and_passes_options():
     register_fix(_FixMethodFix)
     ds = xr.Dataset()
     plan = FixPlan.model_validate(
-        {"fixes": [{"id": "plan_test.fix_method", "options": {"alpha": 1}}]}
+        {"id": "plan_test.execution_order", "fixes": [{"id": "plan_test.fix_method", "options": {"alpha": 1}}]}
     )
 
     try:
@@ -126,7 +126,7 @@ def test_apply_plan_falls_back_to_apply_when_fix_method_missing():
     register_fix(_ApplyMethodFix)
     ds = xr.Dataset()
     plan = FixPlan.model_validate(
-        {"fixes": [{"id": "plan_test.apply_method", "options": {"beta": 2}}]}
+        {"id": "plan_test.apply_fallback", "fixes": [{"id": "plan_test.apply_method", "options": {"beta": 2}}]}
     )
 
     try:
@@ -141,7 +141,10 @@ def test_apply_plan_does_not_mask_type_error_from_fix_method():
     register_fix(_TypeErrorInsideMethodFix)
     ds = xr.Dataset()
     plan = FixPlan.model_validate(
-        {"fixes": [{"id": "plan_test.type_error_inside_method", "options": {"gamma": 3}}]}
+        {
+            "id": "plan_test.type_error_passthrough",
+            "fixes": [{"id": "plan_test.type_error_inside_method", "options": {"gamma": 3}}],
+        }
     )
 
     try:
@@ -158,7 +161,7 @@ def test_load_fix_plan_document_json(tmp_path: Path):
             {
                 "plans": [
                     {
-                        "id": "cmip6-basic",
+                        "id": "cmip6.basic",
                         "description": "simple plan",
                         "match": {"path_patterns": ["*cmip6*.nc"]},
                         "fixes": [{"id": "CMIP6_0001", "options": {"message": "ok"}}],
@@ -174,8 +177,8 @@ def test_load_fix_plan_document_json(tmp_path: Path):
     assert isinstance(document, FixPlanDocument)
     assert document.schema_version == 1
     assert len(document.plans) == 1
-    assert document.plans[0].id == "cmip6-basic"
-    assert document.plans[0].fixes[0].id == "cmip6_0001"
+    assert document.plans[0].id == "cmip6.basic"
+    assert document.plans[0].fixes[0].id == "cmip6.cmip6_0001"
 
 
 def test_load_fix_plan_document_single_plan_shorthand(tmp_path: Path):
@@ -183,7 +186,7 @@ def test_load_fix_plan_document_single_plan_shorthand(tmp_path: Path):
     plan_path.write_text(
         json.dumps(
             {
-                "id": "single",
+                    "id": "atlas.single",
                 "fixes": [{"id": "CMIP6_0001"}],
             }
         ),
@@ -194,8 +197,8 @@ def test_load_fix_plan_document_single_plan_shorthand(tmp_path: Path):
 
     assert document.schema_version == 1
     assert len(document.plans) == 1
-    assert document.plans[0].id == "single"
-    assert document.plans[0].fixes[0].id == "cmip6_0001"
+    assert document.plans[0].id == "atlas.single"
+    assert document.plans[0].fixes[0].id == "atlas.cmip6_0001"
 
 
 def test_load_fix_plan_document_plan_entries_normalize_fix_ids(tmp_path: Path):
@@ -205,7 +208,7 @@ def test_load_fix_plan_document_plan_entries_normalize_fix_ids(tmp_path: Path):
             {
                 "plans": [
                     {
-                        "id": "mixed-case",
+                        "id": "atlas.mixed_case",
                         "fixes": [
                             {
                                 "id": "cmip6.dummy_placeholder",
@@ -231,7 +234,6 @@ def test_fix_plan_to_dict_persists_canonical_ids_from_local_fix_refs():
     plan = FixPlan.model_validate(
         {
             "id": "atlas.atlas_basic",
-            "namespace_prefix": "atlas",
             "fixes": [
                 {"id": "encoding_cleanup", "options": {"mode": "strict"}},
                 {"id": "atlas.project_id_normalization", "options": {}},
@@ -268,8 +270,7 @@ def test_fix_plan_identity_uses_identifier_set_when_prefix_and_local_available()
 def test_fix_plan_namespace_scopes_unqualified_fix_refs():
     plan = FixPlan.model_validate(
         {
-            "id": "atlas_plan",
-            "namespace_prefix": "atlas",
+            "id": "atlas.atlas_plan",
             "fixes": [{"id": "encoding_cleanup"}],
         }
     )
@@ -301,7 +302,7 @@ def test_fix_plan_document_description_fields_are_parsed(tmp_path: Path):
             {
                 "plans": [
                     {
-                        "id": "with-description",
+                        "id": "atlas.with_description",
                         "description": "Dataset selector note",
                         "fixes": [{"id": "CMIP6_0001", "options": {"message": "selector message"}}],
                     }
