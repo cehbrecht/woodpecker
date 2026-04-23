@@ -151,6 +151,21 @@ def resolve_target_paths(paths: tuple[Path, ...]) -> list[Path]:
     return [Path.cwd()]
 
 
+def resolve_selection_inputs(
+    *,
+    cli_identifiers: Sequence[str],
+    source_identifiers: tuple[str, ...],
+    source_fix_options: dict[str, dict[str, Any]],
+) -> tuple[tuple[str, ...], tuple[str, ...], dict[str, dict[str, Any]]]:
+    """Resolve identifier/option precedence between CLI and plan/store defaults."""
+
+    normalized_cli_identifiers = normalize_ordered_identifiers(cli_identifiers)
+    resolved_identifiers = normalized_cli_identifiers or source_identifiers
+    resolved_ordered_identifiers = resolved_identifiers
+    resolved_fix_options = {key: dict(value) for key, value in source_fix_options.items()}
+    return resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options
+
+
 def resolve_run_context(
     *,
     paths: tuple[Path, ...],
@@ -182,13 +197,16 @@ def resolve_run_context(
         plan_id=plan_id,
     )
 
-    cli_identifiers = normalize_ordered_identifiers(identifiers)
-    resolved_identifiers = cli_identifiers or source_identifiers
-    resolved_ordered_identifiers = resolved_identifiers
+    resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options = (
+        resolve_selection_inputs(
+            cli_identifiers=identifiers,
+            source_identifiers=source_identifiers,
+            source_fix_options=source_fix_options,
+        )
+    )
     resolved_dataset = dataset
     resolved_categories = categories
     resolved_output_format = output_format
-    resolved_fix_options = {key: dict(value) for key, value in source_fix_options.items()}
 
     fixes = select_fixes(
         dataset=resolved_dataset,
