@@ -10,13 +10,15 @@ import xarray as xr
 
 @dataclass
 class DataInput(ABC):
+    """Abstract input wrapper that can load and optionally persist a dataset."""
+
     source_path: Path | None = None
     name: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
     @abstractmethod
     def load(self) -> xr.Dataset:
-        pass
+        ...
 
     def save(
         self,
@@ -62,7 +64,9 @@ class DataInput(ABC):
 
 
 class OutputAdapter(ABC):
-    format_name: str
+    """Abstract output strategy used to persist transformed datasets."""
+
+    format_name: str = ""
 
     @property
     def is_available(self) -> bool:
@@ -70,8 +74,8 @@ class OutputAdapter(ABC):
 
     @abstractmethod
     def target_path(self, data_input: DataInput) -> Path:
-        pass
+        ...
 
     @abstractmethod
     def save(self, dataset: xr.Dataset, data_input: DataInput, dry_run: bool = True) -> bool:
-        pass
+        ...
