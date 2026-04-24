@@ -5,11 +5,12 @@ from pathlib import Path
 
 import xarray as xr
 
-from .base import DataInput, OutputAdapter, _netcdf_backend_available, warn_once
+from .base import DataInput, OutputAdapter
+from .runtime import _netcdf_backend_available, warn_once
 
 
 @dataclass
-class PathInput(DataInput):
+class NetCDFInput(DataInput):
     source_path: Path
 
     def __post_init__(self) -> None:

@@ -5,7 +5,8 @@ from pathlib import Path
 
 import xarray as xr
 
-from .base import DataInput, collect_netcdf_files
+from .base import DataInput
+from .detect import collect_netcdf_files
 
 
 @dataclass
@@ -21,9 +22,9 @@ class FolderInput(DataInput):
         raise NotImplementedError("FolderInput does not load a single dataset; call expand().")
 
     def expand(self) -> list[DataInput]:
-        from .nc import PathInput
+        from .nc import NetCDFInput
 
         return [
-            PathInput(source_path=file_path, name=file_path.name)
+            NetCDFInput(source_path=file_path, name=file_path.name)
             for file_path in collect_netcdf_files([self.source_path])
         ]

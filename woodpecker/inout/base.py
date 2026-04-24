@@ -1,55 +1,11 @@
 from __future__ import annotations
 
-import importlib.util
-import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from os import PathLike
 from pathlib import Path
-from typing import Any, List, Sequence
+from typing import Any
 
 import xarray as xr
-
-_WARNED_MESSAGES: set[str] = set()
-
-
-def _is_xarray_object(value: Any) -> bool:
-    return isinstance(value, (xr.Dataset, xr.DataArray))
-
-
-def _is_pathlike(value: Any) -> bool:
-    return isinstance(value, (str, PathLike, Path))
-
-
-def _module_available(module_name: str) -> bool:
-    return importlib.util.find_spec(module_name) is not None
-
-
-def _netcdf_backend_available() -> bool:
-    return any(_module_available(name) for name in ("netCDF4", "h5netcdf", "scipy"))
-
-
-def _zarr_backend_available() -> bool:
-    return all(_module_available(name) for name in ("zarr", "numcodecs"))
-
-
-def get_io_availability() -> dict[str, bool]:
-    netcdf_available = _netcdf_backend_available()
-    zarr_available = _zarr_backend_available()
-    return {
-        "xarray_input": True,
-        "netcdf_input": netcdf_available,
-        "zarr_input": zarr_available,
-        "netcdf_output": netcdf_available,
-        "zarr_output": zarr_available,
-    }
-
-
-def warn_once(message: str) -> None:
-    if message in _WARNED_MESSAGES:
-        return
-    _WARNED_MESSAGES.add(message)
-    warnings.warn(message, stacklevel=2)
 
 
 @dataclass
@@ -119,14 +75,3 @@ class OutputAdapter(ABC):
     @abstractmethod
     def save(self, dataset: xr.Dataset, data_input: DataInput, dry_run: bool = True) -> bool:
         pass
-
-
-def collect_netcdf_files(paths: Sequence[Path]) -> List[Path]:
-    files: List[Path] = []
-    for path in paths:
-        if path.is_file() and path.suffix.lower() == ".nc":
-            files.append(path)
-            continue
-        if path.is_dir():
-            files.extend(sorted(path.rglob("*.nc")))
-    return files

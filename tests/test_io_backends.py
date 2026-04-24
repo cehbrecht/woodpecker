@@ -3,8 +3,8 @@ from pathlib import Path
 import pytest
 import xarray as xr
 
-from woodpecker.inout import PathInput, ZarrInput, ZarrOutputAdapter
-from woodpecker.inout.base import _netcdf_backend_available, _zarr_backend_available
+from woodpecker.inout import NetCDFInput, ZarrInput, ZarrOutputAdapter
+from woodpecker.inout.runtime import _netcdf_backend_available, _zarr_backend_available
 
 pytestmark = [
     pytest.mark.io_backend,
@@ -21,7 +21,7 @@ def test_netcdf_path_input_roundtrip(tmp_path: Path):
     ds.to_netcdf(source)
     ds.close()
 
-    data_input = PathInput(source_path=source, name=source.name)
+    data_input = NetCDFInput(source_path=source, name=source.name)
     loaded = data_input.load()
 
     assert "value" in loaded
@@ -40,7 +40,7 @@ def test_zarr_output_adapter_roundtrip(tmp_path: Path):
     source.touch()
 
     ds = xr.Dataset({"value": ("time", [1.0, 2.0])}, coords={"time": [0, 1]})
-    data_input = PathInput(source_path=source, name=source.name)
+    data_input = NetCDFInput(source_path=source, name=source.name)
     adapter = ZarrOutputAdapter()
 
     ok = adapter.save(ds, data_input, dry_run=False)

@@ -5,7 +5,8 @@ from pathlib import Path
 
 import xarray as xr
 
-from .base import DataInput, OutputAdapter, _zarr_backend_available, warn_once
+from .base import DataInput, OutputAdapter
+from .runtime import _zarr_backend_available, warn_once
 
 
 @dataclass
