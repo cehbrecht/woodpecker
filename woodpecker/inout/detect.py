@@ -3,7 +3,7 @@ from __future__ import annotations
 from os import PathLike
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Iterable
+from typing import Any
 
 import xarray as xr
 
@@ -15,7 +15,6 @@ from . import xr as _xr_backend
 # Ordered list of registered backends.  To add a new format, import its
 # module here and append it.  No other file needs changing.
 _BACKENDS: list[ModuleType] = [_nc_backend, _zarr_backend, _xr_backend]
-_NETCDF_SUFFIXES = {".nc", ".nc4", ".cdf"}
 
 
 # ---------------------------------------------------------------------------
@@ -30,23 +29,11 @@ def is_pathlike(value: Any) -> bool:
     return isinstance(value, (str, PathLike, Path))
 
 
-def collect_netcdf_files(paths: Iterable[Path]) -> list[Path]:
-    files: list[Path] = []
-    for path in paths:
-        if path.is_file() and path.suffix.lower() in _NETCDF_SUFFIXES:
-            files.append(path)
-            continue
-        if path.is_dir():
-            for suffix in sorted(_NETCDF_SUFFIXES):
-                files.extend(sorted(path.rglob(f"*{suffix}")))
-    return files
-
-
 # ---------------------------------------------------------------------------
 # Backend dispatch
 # ---------------------------------------------------------------------------
 
-def resolve_input(source: Any) -> DataInput | None:
+def detect_input(source: Any) -> DataInput | None:
     """Return a DataInput from the first backend that can open *source*, or None."""
     fallback_backend: ModuleType | None = None
     for backend in _BACKENDS:
@@ -59,6 +46,10 @@ def resolve_input(source: Any) -> DataInput | None:
     if fallback_backend is not None:
         return fallback_backend.create_input(source)
     return None
+
+
+def resolve_input(source: Any) -> DataInput | None:
+    return detect_input(source)
 
 
 def resolve_output_adapter(format_name: str) -> OutputAdapter | None:

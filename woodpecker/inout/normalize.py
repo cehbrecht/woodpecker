@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Any, Iterable, List
 
 from .base import DataInput
-from .detect import is_pathlike, is_xarray_object, resolve_input, resolve_output_adapter
-from .folder import FolderInput
+from .detect import detect_input, is_pathlike, is_xarray_object, resolve_output_adapter
+from .directory import DirectoryInput
 from .runtime import warn_once
 
 # Canonical format-name aliases resolved before registry lookup.
@@ -30,15 +30,15 @@ def _as_data_input(value: Any) -> list[DataInput]:
 
     if is_pathlike(value):
         path = Path(value)
-        # Plain directories (not .zarr stores) expand to individual NetCDF inputs.
+        # Plain directories (not .zarr stores) expand to backend-detected inputs.
         if path.is_dir() and path.suffix.lower() != ".zarr":
-            return FolderInput(source_path=path, name=path.name).expand()
-        data_input = resolve_input(path)
+            return DirectoryInput(source_path=path, name=path.name).expand()
+        data_input = detect_input(path)
         if data_input is None:
             raise ValueError(f"Unsupported path input: {path}")
         return [data_input]
 
-    data_input = resolve_input(value)
+    data_input = detect_input(value)
     if data_input is None:
         raise TypeError(f"Unsupported input type: {type(value)!r}")
     return [data_input]
