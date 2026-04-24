@@ -5,7 +5,7 @@ import xarray as xr
 
 from woodpecker.api import check, check_plan, fix, fix_plan
 from woodpecker.inout import (
-    PathInput,
+    NetCDFInput,
     ZarrInput,
     ZarrOutputAdapter,
     get_io_availability,
@@ -68,7 +68,7 @@ def test_output_adapter_target_paths_for_path_inputs():
     netcdf_adapter = get_output_adapter("netcdf")
     zarr_adapter = get_output_adapter("zarr")
 
-    path_input = PathInput(source_path=Path("example.nc"), name="example.nc")
+    path_input = NetCDFInput(source_path=Path("example.nc"), name="example.nc")
     zarr_input = ZarrInput(source_path=Path("example.zarr"), name="example.zarr")
 
     assert netcdf_adapter is not None
@@ -109,11 +109,11 @@ def test_io_availability_report_has_expected_keys():
 
 
 def test_zarr_output_adapter_warns_and_fails_when_backend_unavailable(monkeypatch):
-    monkeypatch.setattr("woodpecker.inout.zarr._zarr_backend_available", lambda: False)
-    monkeypatch.setattr("woodpecker.inout.base._WARNED_MESSAGES", set())
+    monkeypatch.setattr("woodpecker.inout.backends.zarr.zarr_backend_available", lambda: False)
+    monkeypatch.setattr("woodpecker.inout.runtime._WARNED_MESSAGES", set())
     adapter = ZarrOutputAdapter()
     ds = xr.Dataset(attrs={"source_name": "case.nc"})
-    data_input = PathInput(source_path=Path("case.nc"), name="case.nc")
+    data_input = NetCDFInput(source_path=Path("case.nc"), name="case.nc")
 
     with pytest.warns(UserWarning, match="Zarr output backend unavailable"):
         ok = adapter.save(ds, data_input, dry_run=False)

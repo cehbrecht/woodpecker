@@ -3,8 +3,9 @@ from pathlib import Path
 import pytest
 import xarray as xr
 
-from woodpecker.inout import PathInput, ZarrInput, ZarrOutputAdapter
-from woodpecker.inout.base import _netcdf_backend_available, _zarr_backend_available
+from woodpecker.inout import NetCDFInput, ZarrInput, ZarrOutputAdapter
+from woodpecker.inout.backends.nc import netcdf_backend_available
+from woodpecker.inout.backends.zarr import zarr_backend_available
 
 pytestmark = [
     pytest.mark.io_backend,
@@ -13,7 +14,7 @@ pytestmark = [
 ]
 
 
-@pytest.mark.skipif(not _netcdf_backend_available(), reason="No NetCDF backend installed")
+@pytest.mark.skipif(not netcdf_backend_available(), reason="No NetCDF backend installed")
 def test_netcdf_path_input_roundtrip(tmp_path: Path):
     source = tmp_path / "sample.nc"
     ds = xr.Dataset({"value": ("time", [1.0, 2.0])}, coords={"time": [0, 1]})
@@ -21,7 +22,7 @@ def test_netcdf_path_input_roundtrip(tmp_path: Path):
     ds.to_netcdf(source)
     ds.close()
 
-    data_input = PathInput(source_path=source, name=source.name)
+    data_input = NetCDFInput(source_path=source, name=source.name)
     loaded = data_input.load()
 
     assert "value" in loaded
@@ -34,13 +35,13 @@ def test_netcdf_path_input_roundtrip(tmp_path: Path):
     loaded.close()
 
 
-@pytest.mark.skipif(not _zarr_backend_available(), reason="No Zarr backend installed")
+@pytest.mark.skipif(not zarr_backend_available(), reason="No Zarr backend installed")
 def test_zarr_output_adapter_roundtrip(tmp_path: Path):
     source = tmp_path / "sample.nc"
     source.touch()
 
     ds = xr.Dataset({"value": ("time", [1.0, 2.0])}, coords={"time": [0, 1]})
-    data_input = PathInput(source_path=source, name=source.name)
+    data_input = NetCDFInput(source_path=source, name=source.name)
     adapter = ZarrOutputAdapter()
 
     ok = adapter.save(ds, data_input, dry_run=False)

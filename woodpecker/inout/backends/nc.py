@@ -1,15 +1,40 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from os import PathLike
 from pathlib import Path
+from typing import Any
 
 import xarray as xr
 
-from .base import DataInput, OutputAdapter, _netcdf_backend_available, warn_once
+from ..base import DataInput, OutputAdapter
+from ..runtime import module_available, warn_once
+
+_NETCDF_SUFFIXES = {".nc", ".nc4", ".cdf"}
+
+
+def netcdf_backend_available() -> bool:
+    return any(module_available(name) for name in ("netCDF4", "h5netcdf", "scipy"))
+
+
+def _fallback_dataset(source_name: str) -> xr.Dataset:
+    dataset = xr.Dataset()
+    dataset.attrs.setdefault("source_name", source_name)
+    dataset.attrs["_woodpecker_load_failed"] = True
+    return dataset
+
+
+def _write_netcdf(dataset: xr.Dataset, target: Path, reference: str) -> bool:
+    try:
+        dataset.to_netcdf(target)
+        return True
+    except Exception as exc:
+        warn_once(f"Failed to write NetCDF output '{reference}': {exc}.")
+        return False
 
 
 @dataclass
-class PathInput(DataInput):
+class NetCDFInput(DataInput):
     source_path: Path
 
     def __post_init__(self) -> None:
@@ -19,16 +44,14 @@ class PathInput(DataInput):
 
     @property
     def is_available(self) -> bool:
-        return _netcdf_backend_available()
+        return netcdf_backend_available()
 
     def load(self) -> xr.Dataset:
         if not self.is_available:
             warn_once(
                 f"NetCDF input backend unavailable for '{self.reference}'. Falling back to empty dataset."
             )
-            dataset = xr.Dataset()
-            dataset.attrs.setdefault("source_name", self.source_name)
-            return dataset
+            return _fallback_dataset(self.source_name)
         try:
             opened = xr.open_dataset(self.source_path)
             dataset = opened.load()
@@ -39,8 +62,11 @@ class PathInput(DataInput):
             warn_once(
                 f"Failed to read NetCDF input '{self.reference}': {exc}. Falling back to empty dataset."
             )
-            dataset = xr.Dataset()
-        dataset.attrs.setdefault("source_name", self.source_name)
+            dataset = _fallback_dataset(self.source_name)
+        else:
+            if isinstance(dataset, xr.DataArray):
+                dataset = dataset.to_dataset(name=dataset.name or "value")
+            dataset.attrs.setdefault("source_name", self.source_name)
         return dataset
 
     def save(
@@ -56,12 +82,7 @@ class PathInput(DataInput):
         if not self.is_available:
             warn_once(f"NetCDF output backend unavailable for '{self.reference}'. Skipping write.")
             return False
-        try:
-            dataset.to_netcdf(self.source_path)
-            return True
-        except Exception as exc:
-            warn_once(f"Failed to write NetCDF output '{self.reference}': {exc}.")
-            return False
+        return _write_netcdf(dataset, self.source_path, self.reference)
 
 
 class NetCDFOutputAdapter(OutputAdapter):
@@ -69,7 +90,7 @@ class NetCDFOutputAdapter(OutputAdapter):
 
     @property
     def is_available(self) -> bool:
-        return _netcdf_backend_available()
+        return netcdf_backend_available()
 
     def target_path(self, data_input: DataInput) -> Path:
         if data_input.source_path is None:
@@ -85,9 +106,31 @@ class NetCDFOutputAdapter(OutputAdapter):
             )
             return False
         target = self.target_path(data_input)
-        try:
-            dataset.to_netcdf(target)
-            return True
-        except Exception as exc:
-            warn_once(f"Failed to write NetCDF output '{target}': {exc}.")
-            return False
+        return _write_netcdf(dataset, target, str(target))
+
+
+# ---------------------------------------------------------------------------
+# Backend plugin interface
+# ---------------------------------------------------------------------------
+
+BACKEND_NAME = "netcdf"
+
+
+def is_available() -> bool:
+    return netcdf_backend_available()
+
+
+def can_open(source: Any) -> bool:
+    if isinstance(source, (str, PathLike, Path)):
+        path = Path(source)
+        return path.suffix.lower() in _NETCDF_SUFFIXES
+    return False
+
+
+def create_input(source: Any) -> NetCDFInput:
+    path = Path(source)
+    return NetCDFInput(source_path=path, name=path.name)
+
+
+def create_output_adapter() -> NetCDFOutputAdapter:
+    return NetCDFOutputAdapter()
