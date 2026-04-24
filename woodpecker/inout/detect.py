@@ -21,6 +21,7 @@ _BACKENDS: list[ModuleType] = [_nc_backend, _zarr_backend, _xr_backend]
 # Path/type utilities used by normalize and directory modules
 # ---------------------------------------------------------------------------
 
+
 def is_xarray_object(value: Any) -> bool:
     return isinstance(value, (xr.Dataset, xr.DataArray))
 
@@ -32,6 +33,7 @@ def is_pathlike(value: Any) -> bool:
 # ---------------------------------------------------------------------------
 # Backend dispatch
 # ---------------------------------------------------------------------------
+
 
 def detect_input(source: Any) -> DataInput | None:
     """Return a DataInput from the first backend that can open *source*, or None."""

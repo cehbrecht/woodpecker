@@ -17,8 +17,7 @@ class DataInput(ABC):
     metadata: dict[str, Any] = field(default_factory=dict)
 
     @abstractmethod
-    def load(self) -> xr.Dataset:
-        ...
+    def load(self) -> xr.Dataset: ...
 
     def save(
         self,
@@ -60,9 +59,7 @@ class OutputAdapter(ABC):
         return True
 
     @abstractmethod
-    def target_path(self, data_input: DataInput) -> Path:
-        ...
+    def target_path(self, data_input: DataInput) -> Path: ...
 
     @abstractmethod
-    def save(self, dataset: xr.Dataset, data_input: DataInput, dry_run: bool = True) -> bool:
-        ...
+    def save(self, dataset: xr.Dataset, data_input: DataInput, dry_run: bool = True) -> bool: ...
