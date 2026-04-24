@@ -10,6 +10,8 @@ import xarray as xr
 from .base import DataInput, OutputAdapter
 from .runtime import module_available, warn_once
 
+_NETCDF_SUFFIXES = {".nc", ".nc4", ".cdf"}
+
 
 def netcdf_backend_available() -> bool:
     return any(module_available(name) for name in ("netCDF4", "h5netcdf", "scipy"))
@@ -62,6 +64,8 @@ class NetCDFInput(DataInput):
             )
             dataset = _fallback_dataset(self.source_name)
         else:
+            if isinstance(dataset, xr.DataArray):
+                dataset = dataset.to_dataset(name=dataset.name or "value")
             dataset.attrs.setdefault("source_name", self.source_name)
         return dataset
 
@@ -119,7 +123,7 @@ def is_available() -> bool:
 def can_open(source: Any) -> bool:
     if isinstance(source, (str, PathLike, Path)):
         path = Path(source)
-        return path.is_file() and path.suffix.lower() == ".nc"
+        return path.suffix.lower() in _NETCDF_SUFFIXES
     return False
 
 
