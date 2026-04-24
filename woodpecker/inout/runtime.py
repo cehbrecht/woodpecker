@@ -33,7 +33,7 @@ def _module_available(module_name: str) -> bool:
     return importlib.util.find_spec(module_name) is not None
 
 
-def _netcdf_backend_available() -> bool:
+def netcdf_backend_available() -> bool:
     return any(_module_available(name) for name in ("netCDF4", "h5netcdf", "scipy"))
 
 
@@ -42,7 +42,7 @@ def _zarr_backend_available() -> bool:
 
 
 def get_io_availability() -> dict[str, bool]:
-    netcdf_available = _netcdf_backend_available()
+    netcdf_available = netcdf_backend_available()
     zarr_available = _zarr_backend_available()
     return {
         "xarray_input": True,

@@ -4,7 +4,7 @@ import pytest
 import xarray as xr
 
 from woodpecker.inout import NetCDFInput, ZarrInput, ZarrOutputAdapter
-from woodpecker.inout.runtime import _netcdf_backend_available, _zarr_backend_available
+from woodpecker.inout.runtime import _zarr_backend_available, netcdf_backend_available
 
 pytestmark = [
     pytest.mark.io_backend,
@@ -13,7 +13,7 @@ pytestmark = [
 ]
 
 
-@pytest.mark.skipif(not _netcdf_backend_available(), reason="No NetCDF backend installed")
+@pytest.mark.skipif(not netcdf_backend_available(), reason="No NetCDF backend installed")
 def test_netcdf_path_input_roundtrip(tmp_path: Path):
     source = tmp_path / "sample.nc"
     ds = xr.Dataset({"value": ("time", [1.0, 2.0])}, coords={"time": [0, 1]})
