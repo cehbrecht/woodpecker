@@ -22,9 +22,9 @@ class FolderInput(DataInput):
         raise NotImplementedError("FolderInput does not load a single dataset; call expand().")
 
     def expand(self) -> list[DataInput]:
-        from .nc import NetCDFInput
+        from . import nc as _nc_backend
 
         return [
-            NetCDFInput(source_path=file_path, name=file_path.name)
+            _nc_backend.create_input(file_path)
             for file_path in collect_netcdf_files([self.source_path])
         ]

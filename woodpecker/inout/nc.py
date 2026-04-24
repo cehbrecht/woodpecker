@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from os import PathLike
 from pathlib import Path
+from typing import Any
 
 import xarray as xr
 
@@ -97,3 +99,30 @@ class NetCDFOutputAdapter(OutputAdapter):
             return False
         target = self.target_path(data_input)
         return _write_netcdf(dataset, target, str(target))
+
+
+# ---------------------------------------------------------------------------
+# Backend plugin interface
+# ---------------------------------------------------------------------------
+
+BACKEND_NAME = "netcdf"
+
+
+def is_available() -> bool:
+    return netcdf_backend_available()
+
+
+def can_open(source: Any) -> bool:
+    if isinstance(source, (str, PathLike, Path)):
+        path = Path(source)
+        return path.is_file() and path.suffix.lower() == ".nc"
+    return False
+
+
+def create_input(source: Any) -> NetCDFInput:
+    path = Path(source)
+    return NetCDFInput(source_path=path, name=path.name)
+
+
+def create_output_adapter() -> NetCDFOutputAdapter:
+    return NetCDFOutputAdapter()

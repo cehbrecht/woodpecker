@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from os import PathLike
 from pathlib import Path
+from typing import Any
 
 import xarray as xr
 
@@ -92,3 +94,30 @@ class ZarrOutputAdapter(OutputAdapter):
         except Exception as exc:
             warn_once(f"Failed to write Zarr output '{target}': {exc}.")
             return False
+
+
+# ---------------------------------------------------------------------------
+# Backend plugin interface
+# ---------------------------------------------------------------------------
+
+BACKEND_NAME = "zarr"
+
+
+def is_available() -> bool:
+    return _zarr_backend_available()
+
+
+def can_open(source: Any) -> bool:
+    if isinstance(source, (str, PathLike, Path)):
+        path = Path(source)
+        return path.suffix.lower() == ".zarr"
+    return False
+
+
+def create_input(source: Any) -> ZarrInput:
+    path = Path(source)
+    return ZarrInput(source_path=path, name=path.name)
+
+
+def create_output_adapter() -> ZarrOutputAdapter:
+    return ZarrOutputAdapter()

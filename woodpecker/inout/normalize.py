@@ -4,29 +4,24 @@ from pathlib import Path
 from typing import Any, Iterable, List
 
 from .base import DataInput
-from .detect import detect_path_kind, is_pathlike, is_xarray_object
+from .detect import is_pathlike, is_xarray_object, resolve_input, resolve_output_adapter
 from .folder import FolderInput
-from .nc import NetCDFInput, NetCDFOutputAdapter
-from .runtime import _zarr_backend_available, warn_once
-from .xr import XarrayInput
-from .zarr import ZarrInput, ZarrOutputAdapter
+from .runtime import warn_once
+
+# Canonical format-name aliases resolved before registry lookup.
+_FORMAT_ALIASES: dict[str, str] = {"nc": "netcdf"}
 
 
 def get_output_adapter(output_format: str | None = None):
     if output_format in (None, "", "auto"):
         return None
-    normalized = output_format.lower()
-    if normalized in ("netcdf", "nc"):
-        adapter = NetCDFOutputAdapter()
-        if not adapter.is_available:
-            warn_once("NetCDF output format requested but no NetCDF backend is available.")
-        return adapter
-    if normalized == "zarr":
-        adapter = ZarrOutputAdapter()
-        if not adapter.is_available:
-            warn_once("Zarr output format requested but zarr backend is not available.")
-        return adapter
-    raise ValueError(f"Unsupported output format: {output_format}")
+    canonical = _FORMAT_ALIASES.get(output_format.lower(), output_format.lower())
+    adapter = resolve_output_adapter(canonical)
+    if adapter is None:
+        raise ValueError(f"Unsupported output format: {output_format}")
+    if not adapter.is_available:
+        warn_once(f"{output_format!r} output format requested but backend is not available.")
+    return adapter
 
 
 def _as_data_input(value: Any) -> list[DataInput]:
@@ -35,24 +30,18 @@ def _as_data_input(value: Any) -> list[DataInput]:
 
     if is_pathlike(value):
         path = Path(value)
-        path_kind = detect_path_kind(path)
-        if path_kind == "netcdf-directory":
+        # Plain directories (not .zarr stores) expand to individual NetCDF inputs.
+        if path.is_dir() and path.suffix.lower() != ".zarr":
             return FolderInput(source_path=path, name=path.name).expand()
-        if path_kind == "zarr":
-            if not _zarr_backend_available():
-                warn_once(
-                    f"Zarr input '{path}' requested but zarr backend is not available."
-                    " Processing will continue with safe fallback behavior."
-                )
-            return [ZarrInput(source_path=path, name=path.name)]
-        if path_kind == "netcdf":
-            return [NetCDFInput(source_path=path, name=path.name)]
-        raise ValueError(f"Unsupported path input: {path}")
+        data_input = resolve_input(path)
+        if data_input is None:
+            raise ValueError(f"Unsupported path input: {path}")
+        return [data_input]
 
-    if is_xarray_object(value):
-        return [XarrayInput(payload=value)]
-
-    raise TypeError(f"Unsupported input type: {type(value)!r}")
+    data_input = resolve_input(value)
+    if data_input is None:
+        raise TypeError(f"Unsupported input type: {type(value)!r}")
+    return [data_input]
 
 
 def normalize_inputs(inputs: Any) -> List[DataInput]:

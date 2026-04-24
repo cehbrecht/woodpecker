@@ -1,5 +1,5 @@
 from .base import DataInput, OutputAdapter
-from .detect import collect_netcdf_files, detect_input_kind, detect_path_kind
+from .detect import collect_netcdf_files, resolve_input, resolve_output_adapter
 from .folder import FolderInput
 from .nc import NetCDFInput, NetCDFOutputAdapter
 from .normalize import get_output_adapter, normalize_inputs
@@ -10,8 +10,6 @@ from .zarr import ZarrInput, ZarrOutputAdapter
 __all__ = [
     "collect_netcdf_files",
     "DataInput",
-    "detect_input_kind",
-    "detect_path_kind",
     "FolderInput",
     "get_io_availability",
     "get_output_adapter",
@@ -19,6 +17,8 @@ __all__ = [
     "NetCDFOutputAdapter",
     "normalize_inputs",
     "OutputAdapter",
+    "resolve_input",
+    "resolve_output_adapter",
     "XarrayInput",
     "ZarrInput",
     "ZarrOutputAdapter",
