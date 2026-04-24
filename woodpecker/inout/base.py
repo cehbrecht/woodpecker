@@ -41,19 +41,6 @@ class DataInput(ABC):
             return self.source_path.name
         if self.name:
             return self.name
-
-        payload = getattr(self, "payload", None)
-        attrs = getattr(payload, "attrs", None)
-        if isinstance(attrs, dict):
-            for key in ("source_name", "name", "id"):
-                value = attrs.get(key)
-                if isinstance(value, str) and value:
-                    return value
-
-        payload_name = getattr(payload, "name", None)
-        if isinstance(payload_name, str) and payload_name:
-            return payload_name
-
         return "<in-memory>"
 
     @property
