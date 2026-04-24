@@ -8,7 +8,11 @@ from typing import Any
 import xarray as xr
 
 from .base import DataInput, OutputAdapter
-from .runtime import _zarr_backend_available, warn_once
+from .runtime import _module_available, warn_once
+
+
+def _zarr_backend_available() -> bool:
+    return all(_module_available(name) for name in ("zarr", "numcodecs"))
 
 
 @dataclass

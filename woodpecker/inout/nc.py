@@ -8,7 +8,11 @@ from typing import Any
 import xarray as xr
 
 from .base import DataInput, OutputAdapter
-from .runtime import netcdf_backend_available, warn_once
+from .runtime import _module_available, warn_once
+
+
+def netcdf_backend_available() -> bool:
+    return any(_module_available(name) for name in ("netCDF4", "h5netcdf", "scipy"))
 
 
 def _fallback_dataset(source_name: str) -> xr.Dataset:

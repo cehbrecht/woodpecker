@@ -33,15 +33,10 @@ def _module_available(module_name: str) -> bool:
     return importlib.util.find_spec(module_name) is not None
 
 
-def netcdf_backend_available() -> bool:
-    return any(_module_available(name) for name in ("netCDF4", "h5netcdf", "scipy"))
-
-
-def _zarr_backend_available() -> bool:
-    return all(_module_available(name) for name in ("zarr", "numcodecs"))
-
-
 def get_io_availability() -> dict[str, bool]:
+    from .nc import netcdf_backend_available
+    from .zarr import _zarr_backend_available
+
     netcdf_available = netcdf_backend_available()
     zarr_available = _zarr_backend_available()
     return {

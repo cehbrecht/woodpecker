@@ -1,9 +1,9 @@
 from .base import DataInput, OutputAdapter
 from .detect import collect_netcdf_files, resolve_input, resolve_output_adapter
 from .folder import FolderInput
-from .nc import NetCDFInput, NetCDFOutputAdapter
+from .nc import NetCDFInput, NetCDFOutputAdapter, netcdf_backend_available
 from .normalize import get_output_adapter, normalize_inputs
-from .runtime import _zarr_backend_available, get_io_availability, netcdf_backend_available
+from .runtime import get_io_availability
 from .xr import XarrayInput
 from .zarr import ZarrInput, ZarrOutputAdapter
 
@@ -15,6 +15,7 @@ __all__ = [
     "get_output_adapter",
     "NetCDFInput",
     "NetCDFOutputAdapter",
+    "netcdf_backend_available",
     "normalize_inputs",
     "OutputAdapter",
     "resolve_input",
@@ -22,6 +23,4 @@ __all__ = [
     "XarrayInput",
     "ZarrInput",
     "ZarrOutputAdapter",
-    "netcdf_backend_available",
-    "_zarr_backend_available",
 ]
