@@ -29,7 +29,7 @@ def warn_or_raise(message: str, exc_type: type[Exception] = RuntimeError) -> Non
     warn_once(message)
 
 
-def _module_available(module_name: str) -> bool:
+def module_available(module_name: str) -> bool:
     return importlib.util.find_spec(module_name) is not None
 
 
