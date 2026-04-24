@@ -7,10 +7,10 @@ from typing import Any
 
 import xarray as xr
 
-from .base import DataInput, OutputAdapter
 from .backends import nc as _nc_backend
 from .backends import xr as _xr_backend
 from .backends import zarr as _zarr_backend
+from .base import DataInput, OutputAdapter
 
 # Ordered list of registered backends.  To add a new format, import its
 # module here and append it.  No other file needs changing.

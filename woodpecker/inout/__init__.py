@@ -1,6 +1,6 @@
-from .base import DataInput
 from .backends.nc import NetCDFInput
 from .backends.zarr import ZarrInput, ZarrOutputAdapter
+from .base import DataInput
 from .normalize import get_output_adapter, normalize_inputs
 from .runtime import get_io_availability
 
