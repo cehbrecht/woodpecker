@@ -5,7 +5,7 @@ from typing import Any
 
 import xarray as xr
 
-from .base import DataInput
+from .base import DataInput, OutputAdapter
 
 
 @dataclass
@@ -31,8 +31,11 @@ class XarrayInput(DataInput):
         if self.payload is None:
             raise ValueError("XarrayInput payload is required")
         if isinstance(self.payload, xr.DataArray):
-            return self.payload.to_dataset(name=self.payload.name or "value")
-        return self.payload
+            dataset = self.payload.to_dataset(name=self.payload.name or "value")
+        else:
+            dataset = self.payload
+        dataset.attrs.setdefault("source_name", self.source_name)
+        return dataset
 
 
 # ---------------------------------------------------------------------------
@@ -54,5 +57,5 @@ def create_input(source: Any) -> XarrayInput:
     return XarrayInput(payload=source)
 
 
-def create_output_adapter() -> None:
+def create_output_adapter() -> OutputAdapter | None:
     return None
