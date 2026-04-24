@@ -4,8 +4,8 @@ import pytest
 import xarray as xr
 
 from woodpecker.inout import NetCDFInput, ZarrInput, ZarrOutputAdapter
-from woodpecker.inout.nc import netcdf_backend_available
-from woodpecker.inout.zarr import zarr_backend_available
+from woodpecker.inout.backends.nc import netcdf_backend_available
+from woodpecker.inout.backends.zarr import zarr_backend_available
 
 pytestmark = [
     pytest.mark.io_backend,

@@ -5,7 +5,7 @@ from typing import Any
 
 import xarray as xr
 
-from .base import DataInput, OutputAdapter
+from ..base import DataInput, OutputAdapter
 
 
 @dataclass

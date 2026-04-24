@@ -34,8 +34,8 @@ def module_available(module_name: str) -> bool:
 
 
 def get_io_availability() -> dict[str, bool]:
-    from .nc import netcdf_backend_available
-    from .zarr import zarr_backend_available
+    from .backends.nc import netcdf_backend_available
+    from .backends.zarr import zarr_backend_available
 
     netcdf_available = netcdf_backend_available()
     zarr_available = zarr_backend_available()

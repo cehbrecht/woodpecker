@@ -8,9 +8,9 @@ from typing import Any
 import xarray as xr
 
 from .base import DataInput, OutputAdapter
-from . import nc as _nc_backend
-from . import zarr as _zarr_backend
-from . import xr as _xr_backend
+from .backends import nc as _nc_backend
+from .backends import xr as _xr_backend
+from .backends import zarr as _zarr_backend
 
 # Ordered list of registered backends.  To add a new format, import its
 # module here and append it.  No other file needs changing.
@@ -18,7 +18,7 @@ _BACKENDS: list[ModuleType] = [_nc_backend, _zarr_backend, _xr_backend]
 
 
 # ---------------------------------------------------------------------------
-# Path/type utilities used by normalize and folder modules
+# Path/type utilities used by normalize and directory modules
 # ---------------------------------------------------------------------------
 
 def is_xarray_object(value: Any) -> bool:
@@ -46,10 +46,6 @@ def detect_input(source: Any) -> DataInput | None:
     if fallback_backend is not None:
         return fallback_backend.create_input(source)
     return None
-
-
-def resolve_input(source: Any) -> DataInput | None:
-    return detect_input(source)
 
 
 def resolve_output_adapter(format_name: str) -> OutputAdapter | None:
