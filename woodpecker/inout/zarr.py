@@ -11,8 +11,24 @@ from .base import DataInput, OutputAdapter
 from .runtime import module_available, warn_once
 
 
-def _zarr_backend_available() -> bool:
+def zarr_backend_available() -> bool:
     return all(module_available(name) for name in ("zarr", "numcodecs"))
+
+
+def _fallback_dataset(source_name: str) -> xr.Dataset:
+    dataset = xr.Dataset()
+    dataset.attrs.setdefault("source_name", source_name)
+    dataset.attrs["_woodpecker_load_failed"] = True
+    return dataset
+
+
+def _write_zarr(dataset: xr.Dataset, target: Path, reference: str) -> bool:
+    try:
+        dataset.to_zarr(target, mode="w")
+        return True
+    except Exception as exc:
+        warn_once(f"Failed to write Zarr output '{reference}': {exc}.")
+        return False
 
 
 @dataclass
@@ -26,16 +42,14 @@ class ZarrInput(DataInput):
 
     @property
     def is_available(self) -> bool:
-        return _zarr_backend_available()
+        return zarr_backend_available()
 
     def load(self) -> xr.Dataset:
         if not self.is_available:
             warn_once(
                 f"Zarr input backend unavailable for '{self.reference}'. Falling back to empty dataset."
             )
-            dataset = xr.Dataset()
-            dataset.attrs.setdefault("source_name", self.source_name)
-            return dataset
+            return _fallback_dataset(self.source_name)
         try:
             opened = xr.open_zarr(self.source_path)
             dataset = opened.load()
@@ -46,8 +60,11 @@ class ZarrInput(DataInput):
             warn_once(
                 f"Failed to read Zarr input '{self.reference}': {exc}. Falling back to empty dataset."
             )
-            dataset = xr.Dataset()
-        dataset.attrs.setdefault("source_name", self.source_name)
+            dataset = _fallback_dataset(self.source_name)
+        else:
+            if isinstance(dataset, xr.DataArray):
+                dataset = dataset.to_dataset(name=dataset.name or "value")
+            dataset.attrs.setdefault("source_name", self.source_name)
         return dataset
 
     def save(
@@ -63,12 +80,7 @@ class ZarrInput(DataInput):
         if not self.is_available:
             warn_once(f"Zarr output backend unavailable for '{self.reference}'. Skipping write.")
             return False
-        try:
-            dataset.to_zarr(self.source_path, mode="w")
-            return True
-        except Exception as exc:
-            warn_once(f"Failed to write Zarr output '{self.reference}': {exc}.")
-            return False
+        return _write_zarr(dataset, self.source_path, self.reference)
 
 
 class ZarrOutputAdapter(OutputAdapter):
@@ -76,7 +88,7 @@ class ZarrOutputAdapter(OutputAdapter):
 
     @property
     def is_available(self) -> bool:
-        return _zarr_backend_available()
+        return zarr_backend_available()
 
     def target_path(self, data_input: DataInput) -> Path:
         if data_input.source_path is None:
@@ -92,12 +104,7 @@ class ZarrOutputAdapter(OutputAdapter):
             )
             return False
         target = self.target_path(data_input)
-        try:
-            dataset.to_zarr(target, mode="w")
-            return True
-        except Exception as exc:
-            warn_once(f"Failed to write Zarr output '{target}': {exc}.")
-            return False
+        return _write_zarr(dataset, target, str(target))
 
 
 # ---------------------------------------------------------------------------
@@ -108,7 +115,7 @@ BACKEND_NAME = "zarr"
 
 
 def is_available() -> bool:
-    return _zarr_backend_available()
+    return zarr_backend_available()
 
 
 def can_open(source: Any) -> bool:

@@ -5,7 +5,7 @@ import xarray as xr
 
 from woodpecker.inout import NetCDFInput, ZarrInput, ZarrOutputAdapter
 from woodpecker.inout.nc import netcdf_backend_available
-from woodpecker.inout.zarr import _zarr_backend_available
+from woodpecker.inout.zarr import zarr_backend_available
 
 pytestmark = [
     pytest.mark.io_backend,
@@ -35,7 +35,7 @@ def test_netcdf_path_input_roundtrip(tmp_path: Path):
     loaded.close()
 
 
-@pytest.mark.skipif(not _zarr_backend_available(), reason="No Zarr backend installed")
+@pytest.mark.skipif(not zarr_backend_available(), reason="No Zarr backend installed")
 def test_zarr_output_adapter_roundtrip(tmp_path: Path):
     source = tmp_path / "sample.nc"
     source.touch()

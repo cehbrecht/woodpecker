@@ -35,10 +35,10 @@ def module_available(module_name: str) -> bool:
 
 def get_io_availability() -> dict[str, bool]:
     from .nc import netcdf_backend_available
-    from .zarr import _zarr_backend_available
+    from .zarr import zarr_backend_available
 
     netcdf_available = netcdf_backend_available()
-    zarr_available = _zarr_backend_available()
+    zarr_available = zarr_backend_available()
     return {
         "xarray_input": True,
         "netcdf_input": netcdf_available,
