@@ -24,14 +24,18 @@ def get_output_adapter(output_format: str | None = None):
     return adapter
 
 
-def _as_data_input(value: Any) -> list[DataInput]:
+def _is_directory_container(path: Path) -> bool:
+    # Keep .zarr directories routed to backend detection as stores.
+    return path.is_dir() and path.suffix.lower() != ".zarr"
+
+
+def _normalize_one(value: Any) -> list[DataInput]:
     if isinstance(value, DataInput):
         return value.expand()
 
     if is_pathlike(value):
         path = Path(value)
-        # Plain directories (not .zarr stores) expand to backend-detected inputs.
-        if path.is_dir() and path.suffix.lower() != ".zarr":
+        if _is_directory_container(path):
             return DirectoryInput(source_path=path, name=path.name).expand()
         data_input = detect_input(path)
         if data_input is None:
@@ -46,12 +50,12 @@ def _as_data_input(value: Any) -> list[DataInput]:
 
 def normalize_inputs(inputs: Any) -> List[DataInput]:
     if is_pathlike(inputs) or is_xarray_object(inputs) or isinstance(inputs, DataInput):
-        return _as_data_input(inputs)
+        return _normalize_one(inputs)
 
     if isinstance(inputs, Iterable):
         normalized: List[DataInput] = []
         for item in inputs:
-            normalized.extend(_as_data_input(item))
+            normalized.extend(_normalize_one(item))
         return normalized
 
-    return _as_data_input(inputs)
+    return _normalize_one(inputs)
