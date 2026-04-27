@@ -15,6 +15,8 @@ def test_default_identity_resolver_derives_project_id_from_dataset_id():
 
     assert identity.dataset_id == "c3s-cmip6.foo.bar"
     assert identity.project_id == "c3s-cmip6"
+    assert identity.dataset_type == "cmip6"
+    assert identity.confidence is not None
 
 
 def test_dataset_type_resolver_can_override_defaults():
@@ -50,6 +52,7 @@ def test_identity_uses_detected_cmip6_decadal_dataset_type():
     assert identity.dataset_type == "cmip6-decadal"
     assert identity.dataset_id == "c3s-cmip6-decadal.member.tas.nc"
     assert identity.project_id == "c3s-cmip6-decadal"
+    assert identity.evidence
 
 
 def test_identity_uses_detected_cmip6_dataset_type():
@@ -60,6 +63,7 @@ def test_identity_uses_detected_cmip6_dataset_type():
     assert identity.dataset_type == "cmip6"
     assert identity.dataset_id == "c3s-cmip6.member.tas.nc"
     assert identity.project_id == "c3s-cmip6"
+    assert identity.metadata.get("resolver")
 
 
 def test_dataset_type_resolver_can_register_with_decorator():
@@ -85,3 +89,14 @@ def test_dataset_type_resolver_can_register_with_decorator():
     assert identity.dataset_type == "decorator-type"
     assert identity.dataset_id == "decorator.ds"
     assert identity.project_id == "decorator"
+
+
+def test_fallback_identity_keeps_dataset_type_none_for_unknown_datasets():
+    ds = xr.Dataset(attrs={"dataset_id": "custom.foo", "project_id": "custom"})
+
+    identity = resolve_dataset_identity(ds)
+
+    assert identity.dataset_type is None
+    assert identity.dataset_id == "custom.foo"
+    assert identity.project_id == "custom"
+    assert identity.confidence == 0.0

@@ -5,7 +5,7 @@ from typing import TypeVar
 import xarray as xr
 
 from .base import DatasetIdentity, DatasetIdentityResolver
-from .common import DefaultDatasetIdentityResolver
+from .resolvers.fallback import DefaultDatasetIdentityResolver
 
 _RESOLVERS: dict[str, DatasetIdentityResolver] = {}
 _DEFAULT_RESOLVER = DefaultDatasetIdentityResolver()
@@ -38,11 +38,42 @@ def register_dataset_identity(dataset_type: str, *, override: bool = False) -> c
 
 
 def _identify_dataset_type(dataset: xr.Dataset) -> str | None:
-    resolvers = sorted(_RESOLVERS.values(), key=lambda r: getattr(r, "priority", 100))
-    for resolver in resolvers:
-        if resolver.matches(dataset):
-            return resolver.dataset_type.strip().lower()
+    identity = _resolve_with_registry(dataset)
+    if identity is not None:
+        return identity.dataset_type
     return None
+
+
+def _resolver_score(resolver: DatasetIdentityResolver, identity: DatasetIdentity) -> tuple[float, int]:
+    confidence = identity.confidence if identity.confidence is not None else 1.0
+    priority = int(getattr(resolver, "priority", 100))
+    return confidence, -priority
+
+
+def _resolve_with_registry(dataset: xr.Dataset) -> DatasetIdentity | None:
+    resolvers = sorted(_RESOLVERS.values(), key=lambda r: int(getattr(r, "priority", 100)))
+    candidates: list[tuple[DatasetIdentityResolver, DatasetIdentity]] = []
+
+    for resolver in resolvers:
+        identity = resolver.evaluate(dataset)
+        if identity is None:
+            continue
+        normalized_dataset_type = resolver.dataset_type.strip().lower() or identity.dataset_type
+        candidate = DatasetIdentity(
+            dataset_type=normalized_dataset_type.strip().lower() if normalized_dataset_type else None,
+            dataset_id=identity.dataset_id,
+            project_id=identity.project_id,
+            confidence=identity.confidence,
+            evidence=list(identity.evidence),
+            metadata=dict(identity.metadata),
+        )
+        candidates.append((resolver, candidate))
+
+    if not candidates:
+        return None
+
+    _, best_identity = max(candidates, key=lambda item: _resolver_score(item[0], item[1]))
+    return best_identity
 
 
 def dataset_type_matches_declared(
@@ -54,21 +85,7 @@ def dataset_type_matches_declared(
 
 
 def resolve_dataset_identity(dataset: xr.Dataset) -> DatasetIdentity:
-    effective_dataset_type = _identify_dataset_type(dataset)
-
-    if effective_dataset_type:
-        resolver = _RESOLVERS.get(effective_dataset_type)
-        if resolver is not None:
-            identity = resolver.resolve(dataset)
-            return DatasetIdentity(
-                dataset_id=identity.dataset_id,
-                project_id=identity.project_id,
-                dataset_type=effective_dataset_type,
-            )
-
-    identity = _DEFAULT_RESOLVER.resolve(dataset)
-    return DatasetIdentity(
-        dataset_id=identity.dataset_id,
-        project_id=identity.project_id,
-        dataset_type=effective_dataset_type,
-    )
+    identity = _resolve_with_registry(dataset)
+    if identity is not None:
+        return identity
+    return _DEFAULT_RESOLVER.resolve(dataset)
