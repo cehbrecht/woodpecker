@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Iterable, Literal, Sequence
 
 from woodpecker.execution import select_fixes
-from woodpecker.inout import DataInput, normalize_inputs
+from woodpecker.io import DataInput, normalize_inputs
 from woodpecker.plans.models import FixPlan
 from woodpecker.stores.base import FixPlanStore
 from woodpecker.stores.helpers import create_fix_plan_store

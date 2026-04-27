@@ -9,7 +9,7 @@ from typing import Any, Iterable
 
 from prov.model import ProvDocument
 
-from woodpecker.inout import DataInput, get_output_adapter
+from woodpecker.io import DataInput, get_output_adapter
 
 
 def utc_now_iso() -> str:

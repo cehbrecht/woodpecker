@@ -3,9 +3,9 @@ from pathlib import Path
 import pytest
 import xarray as xr
 
-from woodpecker.inout import NetCDFInput, ZarrInput, ZarrOutputAdapter
-from woodpecker.inout.backends.nc import netcdf_backend_available
-from woodpecker.inout.backends.zarr import zarr_backend_available
+from woodpecker.io import NetCDFInput, ZarrInput, ZarrOutputAdapter
+from woodpecker.io.backends.nc import netcdf_backend_available
+from woodpecker.io.backends.zarr import zarr_backend_available
 
 pytestmark = [
     pytest.mark.io_backend,

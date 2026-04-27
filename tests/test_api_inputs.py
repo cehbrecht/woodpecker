@@ -4,7 +4,7 @@ import pytest
 import xarray as xr
 
 from woodpecker.api import check, check_plan, fix, fix_plan
-from woodpecker.inout import (
+from woodpecker.io import (
     NetCDFInput,
     ZarrInput,
     ZarrOutputAdapter,
@@ -109,8 +109,8 @@ def test_io_availability_report_has_expected_keys():
 
 
 def test_zarr_output_adapter_warns_and_fails_when_backend_unavailable(monkeypatch):
-    monkeypatch.setattr("woodpecker.inout.backends.zarr.zarr_backend_available", lambda: False)
-    monkeypatch.setattr("woodpecker.inout.runtime._WARNED_MESSAGES", set())
+    monkeypatch.setattr("woodpecker.io.backends.zarr.zarr_backend_available", lambda: False)
+    monkeypatch.setattr("woodpecker.io.runtime._WARNED_MESSAGES", set())
     adapter = ZarrOutputAdapter()
     ds = xr.Dataset(attrs={"source_name": "case.nc"})
     data_input = NetCDFInput(source_path=Path("case.nc"), name="case.nc")
