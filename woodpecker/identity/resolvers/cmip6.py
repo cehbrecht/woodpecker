@@ -9,90 +9,96 @@ from ..utils import first_str_attr, normalized_token, project_id_from_dataset_id
 
 
 class CMIP6DatasetIdentityResolver(DatasetIdentityResolver):
-    """Metadata-first identity resolver for non-decadal CMIP6 datasets."""
+    """Metadata-first identity resolver for non-decadal CMIP6 datasets.
+
+    Detection priority (high → low):
+      1. mip_era / activity_id / experiment_id / sub_experiment_id attrs
+      2. project_id / dataset_id containing "cmip6"
+      3. source_name containing "cmip6" (weak fallback)
+    """
 
     dataset_type = "cmip6"
     priority = 40
 
-    def _cmip6_context_signals(self, dataset: xr.Dataset) -> list[str]:
-        attrs = dataset.attrs
-        signals: list[str] = []
+    # -- attr extraction -------------------------------------------------------
 
-        mip_era = normalized_token(first_str_attr(attrs, ("mip_era",)))
-        project_id = normalized_token(first_str_attr(attrs, ("project_id",)))
-        dataset_id = normalized_token(first_str_attr(attrs, ("dataset_id", "ds_id")))
-        source_name = normalized_token(first_str_attr(attrs, ("source_name",)))
+    def _extract_attrs(self, dataset: xr.Dataset) -> dict[str, str]:
+        """Normalize all relevant attrs once per evaluate() call."""
+        raw = dataset.attrs
+        return {
+            "mip_era":           normalized_token(first_str_attr(raw, ("mip_era",))),
+            "project_id":        normalized_token(first_str_attr(raw, ("project_id",))),
+            "dataset_id":        normalized_token(first_str_attr(raw, ("dataset_id", "ds_id"))),
+            "source_name":       normalized_token(first_str_attr(raw, ("source_name",))),
+            "activity_id":       normalized_token(first_str_attr(raw, ("activity_id",))),
+            "experiment_id":     normalized_token(first_str_attr(raw, ("experiment_id",))),
+            "sub_experiment_id": normalized_token(first_str_attr(raw, ("sub_experiment_id",))),
+        }
 
-        if mip_era == "cmip6":
-            signals.append("attr:mip_era=cmip6")
-        if "cmip6" in project_id:
-            signals.append("attr:project_id contains cmip6")
-        if "cmip6" in dataset_id:
-            signals.append("attr:dataset_id contains cmip6")
-        if "cmip6" in source_name:
-            signals.append("attr:source_name contains cmip6")
-        return signals
-
-    def _decadal_signals(self, dataset: xr.Dataset) -> list[str]:
-        attrs = dataset.attrs
-        decadal: list[str] = []
-
-        activity_id = normalized_token(first_str_attr(attrs, ("activity_id",)))
-        experiment_id = normalized_token(first_str_attr(attrs, ("experiment_id",)))
-        sub_experiment_id = normalized_token(first_str_attr(attrs, ("sub_experiment_id",)))
-        project_id = normalized_token(first_str_attr(attrs, ("project_id",)))
-        dataset_id = normalized_token(first_str_attr(attrs, ("dataset_id", "ds_id")))
-        source_name = normalized_token(first_str_attr(attrs, ("source_name",)))
-
-        if activity_id == "dcpp":
-            decadal.append("attr:activity_id=dcpp")
-        if experiment_id.startswith("dcpp"):
-            decadal.append("attr:experiment_id startswith dcpp")
-        if re.match(r"^s\d{4}$", sub_experiment_id):
-            decadal.append("attr:sub_experiment_id startswith s")
-        if "decadal" in project_id:
-            decadal.append("attr:project_id contains decadal")
-        if "decadal" in dataset_id:
-            decadal.append("attr:dataset_id contains decadal")
-        if "decadal" in source_name:
-            decadal.append("attr:source_name contains decadal")
-        return decadal
-
-    def _source_name_signals(self, dataset: xr.Dataset) -> list[str]:
-        source_name = normalized_token(first_str_attr(dataset.attrs, ("source_name",)))
-        if "cmip6" in source_name and "decadal" not in source_name:
-            return ["attr:source_name contains cmip6 (weak)"]
-        return []
-
-    def _dataset_id(self, dataset: xr.Dataset) -> str:
+    def _resolve_dataset_id(self, dataset: xr.Dataset) -> str:
         return first_str_attr(
             dataset.attrs,
             ("dataset_id", "ds_id", "id", "source_id", "source_name"),
         )
 
-    def _project_id(self, dataset: xr.Dataset, dataset_id: str) -> str:
-        explicit_project_id = first_str_attr(dataset.attrs, ("project_id",))
-        if explicit_project_id:
-            return explicit_project_id
-        return project_id_from_dataset_id(dataset_id)
+    def _resolve_project_id(self, dataset: xr.Dataset, dataset_id: str) -> str:
+        explicit = first_str_attr(dataset.attrs, ("project_id",))
+        return explicit or project_id_from_dataset_id(dataset_id)
+
+    # -- signal helpers (accept pre-extracted attrs dict) ----------------------
+
+    def _cmip6_context_signals(self, attrs: dict[str, str]) -> list[str]:
+        signals: list[str] = []
+        if attrs["mip_era"] == "cmip6":
+            signals.append("attr:mip_era=cmip6")
+        if "cmip6" in attrs["project_id"]:
+            signals.append("attr:project_id contains cmip6")
+        if "cmip6" in attrs["dataset_id"]:
+            signals.append("attr:dataset_id contains cmip6")
+        if "cmip6" in attrs["source_name"]:
+            signals.append("attr:source_name contains cmip6")
+        return signals
+
+    def _decadal_signals(self, attrs: dict[str, str]) -> list[str]:
+        signals: list[str] = []
+        if attrs["activity_id"] == "dcpp":
+            signals.append("attr:activity_id=dcpp")
+        if attrs["experiment_id"].startswith("dcpp"):
+            signals.append("attr:experiment_id startswith dcpp")
+        if re.match(r"^s\d{4}$", attrs["sub_experiment_id"]):
+            signals.append("attr:sub_experiment_id matches s\\d{4}")
+        if "decadal" in attrs["project_id"]:
+            signals.append("attr:project_id contains decadal")
+        if "decadal" in attrs["dataset_id"]:
+            signals.append("attr:dataset_id contains decadal")
+        if "decadal" in attrs["source_name"]:
+            signals.append("attr:source_name contains decadal")
+        return signals
+
+    def _source_name_signals(self, attrs: dict[str, str]) -> list[str]:
+        sn = attrs["source_name"]
+        if "cmip6" in sn and "decadal" not in sn:
+            return ["attr:source_name contains cmip6 (weak)"]
+        return []
+
+    # -- evaluate --------------------------------------------------------------
 
     def evaluate(self, dataset: xr.Dataset) -> DatasetIdentity | None:
-        if self._decadal_signals(dataset):
+        attrs = self._extract_attrs(dataset)
+
+        if self._decadal_signals(attrs):
             return None
 
-        metadata_signals = self._cmip6_context_signals(dataset)
-        source_name_signals = self._source_name_signals(dataset)
-        evidence = tuple(metadata_signals + source_name_signals)
+        context = self._cmip6_context_signals(attrs)
+        source = self._source_name_signals(attrs)
+        evidence = tuple(context + source)
 
         if not evidence:
             return None
 
-        confidence = 0.6 if metadata_signals else 0.35
-        if any(signal == "attr:mip_era=cmip6" for signal in metadata_signals):
-            confidence = 0.95
-
-        dataset_id = self._dataset_id(dataset)
-        project_id = self._project_id(dataset, dataset_id)
+        confidence = 0.95 if "attr:mip_era=cmip6" in evidence else (0.6 if context else 0.35)
+        dataset_id = self._resolve_dataset_id(dataset)
+        project_id = self._resolve_project_id(dataset, dataset_id)
 
         return DatasetIdentity(
             dataset_type=self.dataset_type,
@@ -100,8 +106,5 @@ class CMIP6DatasetIdentityResolver(DatasetIdentityResolver):
             project_id=project_id,
             confidence=confidence,
             evidence=evidence,
-            metadata={
-                "resolver": type(self).__name__,
-                "detection_mode": "metadata-first",
-            },
+            metadata={"resolver": type(self).__name__, "detection_mode": "metadata-first"},
         )

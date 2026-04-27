@@ -1,7 +1,3 @@
-"""Built-in dataset identity resolver plugins."""
+"""Dataset identity resolver plugins for Woodpecker."""
 
-from .fallback import FallbackDatasetIdentityResolver
-
-__all__ = [
-	"FallbackDatasetIdentityResolver",
-]
+__all__: list[str] = []
