@@ -24,10 +24,11 @@ class CMIP6DecadalDatasetIdentityResolver(CMIP6DatasetIdentityResolver):
     def _source_name_signals(self, attrs: dict[str, str]) -> list[str]:
         sn = attrs["source_name"]
         if "cmip6" in sn and "decadal" in sn:
-            return ["attr:source_name contains cmip6-decadal (weak)"]
+            return ["attr:source_name contains cmip6 + decadal (weak)"]
         return []
 
     def evaluate(self, dataset: xr.Dataset) -> DatasetIdentity | None:
+        """Classify the dataset as CMIP6 decadal using context + decadal signals."""
         attrs = self._extract_attrs(dataset)
         context = self._cmip6_context_signals(attrs)
         decadal = self._decadal_signals(attrs)
@@ -37,7 +38,13 @@ class CMIP6DecadalDatasetIdentityResolver(CMIP6DatasetIdentityResolver):
             return None
 
         evidence = tuple(context + decadal + source)
-        confidence = (0.98 if "attr:activity_id=dcpp" in evidence else 0.7) if decadal else 0.4
+        if decadal:
+            if "attr:activity_id=dcpp" in evidence:
+                confidence = 0.98
+            else:
+                confidence = 0.7
+        else:
+            confidence = 0.4
         dataset_id = self._resolve_dataset_id(dataset)
         project_id = self._resolve_project_id(dataset, dataset_id)
 
