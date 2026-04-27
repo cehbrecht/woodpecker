@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypeVar
+from typing import Callable, TypeVar
 
 import xarray as xr
 
@@ -9,6 +9,8 @@ from .base import DatasetIdentity, DatasetIdentityResolver, DefaultDatasetIdenti
 _RESOLVERS: dict[str, DatasetIdentityResolver] = {}
 _DEFAULT_RESOLVER = DefaultDatasetIdentityResolver()
 _ResolverClass = TypeVar("_ResolverClass", bound=type[DatasetIdentityResolver])
+_DEFAULT_PRIORITY = 100
+_DEFAULT_CONFIDENCE = 1.0
 
 
 def _register_dataset_identity_resolver(
@@ -23,7 +25,9 @@ def _register_dataset_identity_resolver(
     _RESOLVERS[key] = resolver
 
 
-def register_dataset_identity(dataset_type: str, *, override: bool = False) -> callable:
+def register_dataset_identity(
+    dataset_type: str, *, override: bool = False
+) -> Callable[[_ResolverClass], _ResolverClass]:
     """Decorator to register a dataset identity resolver class.
 
     The resolver class must be instantiable without required constructor args.
@@ -36,30 +40,34 @@ def register_dataset_identity(dataset_type: str, *, override: bool = False) -> c
     return _decorator
 
 
-def _identify_dataset_type(dataset: xr.Dataset) -> str | None:
-    identity = _resolve_with_registry(dataset)
-    if identity is not None:
-        return identity.dataset_type
-    return None
+def _normalize_dataset_type(dataset_type: str | None) -> str | None:
+    if not dataset_type:
+        return None
+    normalized = dataset_type.strip().lower()
+    return normalized or None
 
 
 def _resolver_score(resolver: DatasetIdentityResolver, identity: DatasetIdentity) -> tuple[float, int]:
-    confidence = identity.confidence if identity.confidence is not None else 1.0
-    priority = int(getattr(resolver, "priority", 100))
+    confidence = identity.confidence if identity.confidence is not None else _DEFAULT_CONFIDENCE
+    priority = int(getattr(resolver, "priority", _DEFAULT_PRIORITY))
     return confidence, -priority
 
 
 def _resolve_with_registry(dataset: xr.Dataset) -> DatasetIdentity | None:
-    resolvers = sorted(_RESOLVERS.values(), key=lambda r: int(getattr(r, "priority", 100)))
+    resolvers = sorted(
+        _RESOLVERS.values(), key=lambda r: int(getattr(r, "priority", _DEFAULT_PRIORITY))
+    )
     candidates: list[tuple[DatasetIdentityResolver, DatasetIdentity]] = []
 
     for resolver in resolvers:
         identity = resolver.evaluate(dataset)
         if identity is None:
             continue
-        normalized_dataset_type = resolver.dataset_type.strip().lower() or identity.dataset_type
+        normalized_dataset_type = _normalize_dataset_type(resolver.dataset_type) or _normalize_dataset_type(
+            identity.dataset_type
+        )
         candidate = DatasetIdentity(
-            dataset_type=normalized_dataset_type.strip().lower() if normalized_dataset_type else None,
+            dataset_type=normalized_dataset_type,
             dataset_id=identity.dataset_id,
             project_id=identity.project_id,
             confidence=identity.confidence,
