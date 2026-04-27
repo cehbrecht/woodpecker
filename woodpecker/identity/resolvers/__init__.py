@@ -1,3 +1,7 @@
 """Built-in dataset identity resolver plugins."""
 
-__all__: list[str] = []
+from .fallback import FallbackDatasetIdentityResolver
+
+__all__ = [
+	"FallbackDatasetIdentityResolver",
+]

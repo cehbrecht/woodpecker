@@ -27,12 +27,10 @@ def test_dataset_type_resolver_can_override_defaults():
         dataset_type = "unit-test-type"
         priority = 5
 
-        def matches(self, dataset: xr.Dataset) -> bool:
+        def evaluate(self, dataset: xr.Dataset) -> DatasetIdentity | None:
             source = str(dataset.attrs.get("source_name", "")).lower()
-            return source.endswith(".nc") and "unit-test-type" in source
-
-        def resolve(self, dataset: xr.Dataset) -> DatasetIdentity:
-            _ = dataset
+            if not (source.endswith(".nc") and "unit-test-type" in source):
+                return None
             return DatasetIdentity(
                 dataset_id="custom.ds", project_id="custom", dataset_type="custom"
             )
@@ -74,12 +72,10 @@ def test_dataset_type_resolver_can_register_with_decorator():
         dataset_type = "decorator-type"
         priority = 4
 
-        def matches(self, dataset: xr.Dataset) -> bool:
+        def evaluate(self, dataset: xr.Dataset) -> DatasetIdentity | None:
             source = str(dataset.attrs.get("source_name", "")).lower()
-            return source.endswith(".nc") and "decorator-type" in source
-
-        def resolve(self, dataset: xr.Dataset) -> DatasetIdentity:
-            _ = dataset
+            if not (source.endswith(".nc") and "decorator-type" in source):
+                return None
             return DatasetIdentity(
                 dataset_id="decorator.ds", project_id="decorator", dataset_type="decorator-type"
             )
@@ -100,3 +96,4 @@ def test_fallback_identity_keeps_dataset_type_none_for_unknown_datasets():
     assert identity.dataset_id == "custom.foo"
     assert identity.project_id == "custom"
     assert identity.confidence == 0.0
+    assert isinstance(identity.evidence, tuple)

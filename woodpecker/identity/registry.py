@@ -4,10 +4,11 @@ from typing import Callable, TypeVar
 
 import xarray as xr
 
-from .base import DatasetIdentity, DatasetIdentityResolver, DefaultDatasetIdentityResolver
+from .base import DatasetIdentity, DatasetIdentityResolver
+from .resolvers.fallback import FallbackDatasetIdentityResolver
 
 _RESOLVERS: dict[str, DatasetIdentityResolver] = {}
-_DEFAULT_RESOLVER = DefaultDatasetIdentityResolver()
+_FALLBACK_RESOLVER = FallbackDatasetIdentityResolver()
 _ResolverClass = TypeVar("_ResolverClass", bound=type[DatasetIdentityResolver])
 _DEFAULT_PRIORITY = 100
 _DEFAULT_CONFIDENCE = 1.0
@@ -25,6 +26,17 @@ def _register_dataset_identity_resolver(
     _RESOLVERS[key] = resolver
 
 
+def register_dataset_identity_resolver(
+    dataset_type: str,
+    resolver_cls: type[DatasetIdentityResolver],
+    *,
+    override: bool = False,
+) -> None:
+    """Register a resolver class for a dataset type."""
+
+    _register_dataset_identity_resolver(dataset_type, resolver_cls(), override=override)
+
+
 def register_dataset_identity(
     dataset_type: str, *, override: bool = False
 ) -> Callable[[_ResolverClass], _ResolverClass]:
@@ -34,7 +46,7 @@ def register_dataset_identity(
     """
 
     def _decorator(resolver_cls: _ResolverClass) -> _ResolverClass:
-        _register_dataset_identity_resolver(dataset_type, resolver_cls(), override=override)
+        register_dataset_identity_resolver(dataset_type, resolver_cls, override=override)
         return resolver_cls
 
     return _decorator
@@ -71,7 +83,7 @@ def _resolve_with_registry(dataset: xr.Dataset) -> DatasetIdentity | None:
             dataset_id=identity.dataset_id,
             project_id=identity.project_id,
             confidence=identity.confidence,
-            evidence=list(identity.evidence),
+            evidence=tuple(identity.evidence),
             metadata=dict(identity.metadata),
         )
         candidates.append((resolver, candidate))
@@ -95,4 +107,7 @@ def resolve_dataset_identity(dataset: xr.Dataset) -> DatasetIdentity:
     identity = _resolve_with_registry(dataset)
     if identity is not None:
         return identity
-    return _DEFAULT_RESOLVER.resolve(dataset)
+    fallback_identity = _FALLBACK_RESOLVER.evaluate(dataset)
+    if fallback_identity is None:
+        raise RuntimeError("fallback resolver did not return an identity")
+    return fallback_identity

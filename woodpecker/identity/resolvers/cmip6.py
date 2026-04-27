@@ -4,13 +4,11 @@ import re
 
 import xarray as xr
 
-from ..base import DatasetIdentity, DefaultDatasetIdentityResolver
-from ..common import first_str_attr, normalized_token
-from ..registry import register_dataset_identity
+from ..base import DatasetIdentity, DatasetIdentityResolver
+from ..utils import first_str_attr, normalized_token, project_id_from_dataset_id
 
 
-@register_dataset_identity("cmip6", override=True)
-class CMIP6DatasetIdentityResolver(DefaultDatasetIdentityResolver):
+class CMIP6DatasetIdentityResolver(DatasetIdentityResolver):
     """Metadata-first identity resolver for non-decadal CMIP6 datasets."""
 
     dataset_type = "cmip6"
@@ -63,32 +61,46 @@ class CMIP6DatasetIdentityResolver(DefaultDatasetIdentityResolver):
     def _source_name_signals(self, dataset: xr.Dataset) -> list[str]:
         source_name = normalized_token(first_str_attr(dataset.attrs, ("source_name",)))
         if "cmip6" in source_name and "decadal" not in source_name:
-            return ["attr:source_name contains cmip6"]
+            return ["attr:source_name contains cmip6 (weak)"]
         return []
 
-    def matches(self, dataset: xr.Dataset) -> bool:
-        if self._decadal_signals(dataset):
-            return False
-        return bool(self._cmip6_context_signals(dataset) or self._source_name_signals(dataset))
+    def _dataset_id(self, dataset: xr.Dataset) -> str:
+        return first_str_attr(
+            dataset.attrs,
+            ("dataset_id", "ds_id", "id", "source_id", "source_name"),
+        )
 
-    def resolve(self, dataset: xr.Dataset) -> DatasetIdentity:
+    def _project_id(self, dataset: xr.Dataset, dataset_id: str) -> str:
+        explicit_project_id = first_str_attr(dataset.attrs, ("project_id",))
+        if explicit_project_id:
+            return explicit_project_id
+        return project_id_from_dataset_id(dataset_id)
+
+    def evaluate(self, dataset: xr.Dataset) -> DatasetIdentity | None:
+        if self._decadal_signals(dataset):
+            return None
+
         metadata_signals = self._cmip6_context_signals(dataset)
         source_name_signals = self._source_name_signals(dataset)
-        evidence = metadata_signals + source_name_signals
+        evidence = tuple(metadata_signals + source_name_signals)
+
+        if not evidence:
+            return None
 
         confidence = 0.6 if metadata_signals else 0.35
         if any(signal == "attr:mip_era=cmip6" for signal in metadata_signals):
             confidence = 0.95
 
-        base = super().resolve(dataset)
+        dataset_id = self._dataset_id(dataset)
+        project_id = self._project_id(dataset, dataset_id)
+
         return DatasetIdentity(
             dataset_type=self.dataset_type,
-            dataset_id=base.dataset_id,
-            project_id=base.project_id,
+            dataset_id=dataset_id,
+            project_id=project_id,
             confidence=confidence,
             evidence=evidence,
             metadata={
-                **base.metadata,
                 "resolver": type(self).__name__,
                 "detection_mode": "metadata-first",
             },
