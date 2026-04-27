@@ -1,7 +1,5 @@
 # Register built-in dataset-family detectors/resolvers.
-from . import (
-    atlas,  # noqa: F401, E402
-)
+from .resolvers import atlas as _atlas  # noqa: F401, E402
 from .resolvers import cmip6 as _cmip6  # noqa: F401, E402
 from .resolvers import cmip6_decadal as _cmip6_decadal  # noqa: F401, E402
 from .base import DatasetIdentity, DatasetIdentityResolver
