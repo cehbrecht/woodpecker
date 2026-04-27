@@ -7,6 +7,8 @@ import xarray as xr
 from ..base import DatasetIdentity, DatasetIdentityResolver
 from ..utils import first_str_attr, normalized_token, project_id_from_dataset_id
 
+_SUB_EXPERIMENT_RE = re.compile(r"^s\d{4}$")
+
 
 class CMIP6DatasetIdentityResolver(DatasetIdentityResolver):
     """Metadata-first identity resolver for non-decadal CMIP6 datasets.
@@ -26,12 +28,12 @@ class CMIP6DatasetIdentityResolver(DatasetIdentityResolver):
         """Normalize all relevant attrs once per evaluate() call."""
         raw = dataset.attrs
         return {
-            "mip_era":           normalized_token(first_str_attr(raw, ("mip_era",))),
-            "project_id":        normalized_token(first_str_attr(raw, ("project_id",))),
-            "dataset_id":        normalized_token(first_str_attr(raw, ("dataset_id", "ds_id"))),
-            "source_name":       normalized_token(first_str_attr(raw, ("source_name",))),
-            "activity_id":       normalized_token(first_str_attr(raw, ("activity_id",))),
-            "experiment_id":     normalized_token(first_str_attr(raw, ("experiment_id",))),
+            "mip_era": normalized_token(first_str_attr(raw, ("mip_era",))),
+            "project_id": normalized_token(first_str_attr(raw, ("project_id",))),
+            "dataset_id": normalized_token(first_str_attr(raw, ("dataset_id", "ds_id"))),
+            "source_name": normalized_token(first_str_attr(raw, ("source_name",))),
+            "activity_id": normalized_token(first_str_attr(raw, ("activity_id",))),
+            "experiment_id": normalized_token(first_str_attr(raw, ("experiment_id",))),
             "sub_experiment_id": normalized_token(first_str_attr(raw, ("sub_experiment_id",))),
         }
 
@@ -65,7 +67,7 @@ class CMIP6DatasetIdentityResolver(DatasetIdentityResolver):
             signals.append("attr:activity_id=dcpp")
         if attrs["experiment_id"].startswith("dcpp"):
             signals.append("attr:experiment_id startswith dcpp")
-        if re.match(r"^s\d{4}$", attrs["sub_experiment_id"]):
+        if _SUB_EXPERIMENT_RE.match(attrs["sub_experiment_id"]):
             signals.append("attr:sub_experiment_id matches s\\d{4}")
         if "decadal" in attrs["project_id"]:
             signals.append("attr:project_id contains decadal")
@@ -84,6 +86,14 @@ class CMIP6DatasetIdentityResolver(DatasetIdentityResolver):
     # -- evaluate --------------------------------------------------------------
 
     def evaluate(self, dataset: xr.Dataset) -> DatasetIdentity | None:
+        """Classify the dataset as CMIP6 (non-decadal).
+
+        Confidence tiers:
+          0.95  — mip_era=CMIP6 is present
+          0.60  — other CMIP6 context attrs match but mip_era is absent
+          0.35  — only source_name weak signal
+        Returns None if any decadal signals are detected.
+        """
         attrs = self._extract_attrs(dataset)
 
         if self._decadal_signals(attrs):
