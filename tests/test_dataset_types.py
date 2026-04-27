@@ -64,3 +64,17 @@ def test_identify_dataset_type_prefers_decadal_metadata_over_source_name():
     detected = resolve_dataset_identity(ds).dataset_type
 
     assert detected == "cmip6-decadal"
+
+
+def test_identify_dataset_type_does_not_classify_plain_cmip6_metadata_as_decadal():
+    ds = xr.Dataset(
+        attrs={
+            "mip_era": "CMIP6",
+            "project_id": "c3s-cmip6",
+            "dataset_id": "c3s-cmip6.foo.bar",
+        }
+    )
+
+    detected = resolve_dataset_identity(ds).dataset_type
+
+    assert detected == "cmip6"

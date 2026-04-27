@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 import xarray as xr
 
 from ..base import DatasetIdentity
@@ -15,15 +17,14 @@ class CMIP6DatasetIdentityResolver(DefaultDatasetIdentityResolver):
     dataset_type = "cmip6"
     priority = 40
 
-    def _metadata_signals(self, dataset: xr.Dataset) -> list[str]:
+    def _cmip6_context_signals(self, dataset: xr.Dataset) -> list[str]:
         attrs = dataset.attrs
         signals: list[str] = []
 
         mip_era = normalized_token(first_str_attr(attrs, ("mip_era",)))
         project_id = normalized_token(first_str_attr(attrs, ("project_id",)))
         dataset_id = normalized_token(first_str_attr(attrs, ("dataset_id", "ds_id")))
-        source_id = normalized_token(first_str_attr(attrs, ("source_id",)))
-        activity_id = normalized_token(first_str_attr(attrs, ("activity_id",)))
+        source_name = normalized_token(first_str_attr(attrs, ("source_name",)))
 
         if mip_era == "cmip6":
             signals.append("attr:mip_era=cmip6")
@@ -31,10 +32,8 @@ class CMIP6DatasetIdentityResolver(DefaultDatasetIdentityResolver):
             signals.append("attr:project_id contains cmip6")
         if "cmip6" in dataset_id:
             signals.append("attr:dataset_id contains cmip6")
-        if source_id:
-            signals.append("attr:source_id present")
-        if activity_id:
-            signals.append("attr:activity_id present")
+        if "cmip6" in source_name:
+            signals.append("attr:source_name contains cmip6")
         return signals
 
     def _decadal_signals(self, dataset: xr.Dataset) -> list[str]:
@@ -52,7 +51,7 @@ class CMIP6DatasetIdentityResolver(DefaultDatasetIdentityResolver):
             decadal.append("attr:activity_id=dcpp")
         if experiment_id.startswith("dcpp"):
             decadal.append("attr:experiment_id startswith dcpp")
-        if sub_experiment_id.startswith("s"):
+        if re.match(r"^s\d{4}$", sub_experiment_id):
             decadal.append("attr:sub_experiment_id startswith s")
         if "decadal" in project_id:
             decadal.append("attr:project_id contains decadal")
@@ -71,10 +70,10 @@ class CMIP6DatasetIdentityResolver(DefaultDatasetIdentityResolver):
     def matches(self, dataset: xr.Dataset) -> bool:
         if self._decadal_signals(dataset):
             return False
-        return bool(self._metadata_signals(dataset) or self._source_name_signals(dataset))
+        return bool(self._cmip6_context_signals(dataset) or self._source_name_signals(dataset))
 
     def resolve(self, dataset: xr.Dataset) -> DatasetIdentity:
-        metadata_signals = self._metadata_signals(dataset)
+        metadata_signals = self._cmip6_context_signals(dataset)
         source_name_signals = self._source_name_signals(dataset)
         evidence = metadata_signals + source_name_signals
 
