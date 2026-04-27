@@ -1,48 +1,90 @@
 from __future__ import annotations
 
-from typing import TypeVar
+from dataclasses import replace
+from typing import Callable, TypeVar
 
 import xarray as xr
 
-from .base import DatasetIdentity, DatasetIdentityResolver
-from .common import DefaultDatasetIdentityResolver
+from .base import DatasetIdentity, DatasetIdentityResolver, DefaultDatasetIdentityResolver
 
 _RESOLVERS: dict[str, DatasetIdentityResolver] = {}
-_DEFAULT_RESOLVER = DefaultDatasetIdentityResolver()
+_FALLBACK = DefaultDatasetIdentityResolver()
 _ResolverClass = TypeVar("_ResolverClass", bound=type[DatasetIdentityResolver])
+_DEFAULT_PRIORITY = 100
+_DEFAULT_CONFIDENCE = 1.0
 
 
-def _register_dataset_identity_resolver(
+def _register(
     dataset_type: str, resolver: DatasetIdentityResolver, *, override: bool = False
 ) -> None:
+    """Insert *resolver* into the registry under the normalised *dataset_type* key."""
     key = dataset_type.strip().lower()
     if not key:
         raise ValueError("dataset_type must be a non-empty string")
     if key in _RESOLVERS and not override:
-        raise ValueError(f"dataset identity resolver already registered for '{key}'")
+        raise ValueError(f"resolver already registered for '{key}'")
     resolver.dataset_type = key
     _RESOLVERS[key] = resolver
 
 
-def register_dataset_identity(dataset_type: str, *, override: bool = False) -> callable:
+def register_dataset_identity(
+    dataset_type: str, *, override: bool = False
+) -> Callable[[_ResolverClass], _ResolverClass]:
     """Decorator to register a dataset identity resolver class.
 
-    The resolver class must be instantiable without required constructor args.
+    Usage::
+
+        @register_dataset_identity("my-family")
+        class MyResolver(DatasetIdentityResolver):
+            ...
     """
 
-    def _decorator(resolver_cls: _ResolverClass) -> _ResolverClass:
-        _register_dataset_identity_resolver(dataset_type, resolver_cls(), override=override)
-        return resolver_cls
+    def _decorator(cls: _ResolverClass) -> _ResolverClass:
+        _register(dataset_type, cls(), override=override)
+        return cls
 
     return _decorator
 
 
-def _identify_dataset_type(dataset: xr.Dataset) -> str | None:
-    resolvers = sorted(_RESOLVERS.values(), key=lambda r: getattr(r, "priority", 100))
+def _score(resolver: DatasetIdentityResolver, identity: DatasetIdentity) -> tuple[float, int]:
+    """Return a (confidence, -priority) tuple for ranking candidate identities."""
+    confidence = identity.confidence if identity.confidence is not None else _DEFAULT_CONFIDENCE
+    return confidence, -int(getattr(resolver, "priority", _DEFAULT_PRIORITY))
+
+
+def _normalize_type(dataset_type: str | None) -> str | None:
+    """Return a lowercased, stripped dataset type string, or None if blank."""
+    normalized = (dataset_type or "").strip().lower()
+    return normalized or None
+
+
+def _best_match(dataset: xr.Dataset) -> DatasetIdentity | None:
+    """Evaluate all registered resolvers and return the highest-scoring match."""
+    resolvers = sorted(
+        _RESOLVERS.values(),
+        key=lambda r: int(getattr(r, "priority", _DEFAULT_PRIORITY)),
+    )
+    candidates: list[tuple[DatasetIdentityResolver, DatasetIdentity]] = []
+
     for resolver in resolvers:
-        if resolver.matches(dataset):
-            return resolver.dataset_type.strip().lower()
-    return None
+        identity = resolver.evaluate(dataset)
+        if identity is None:
+            continue
+        normalized_type = _normalize_type(resolver.dataset_type) or _normalize_type(
+            identity.dataset_type
+        )
+        candidates.append(
+            (
+                resolver,
+                replace(identity, dataset_type=normalized_type, metadata=dict(identity.metadata)),
+            )
+        )
+
+    if not candidates:
+        return None
+
+    _, best = max(candidates, key=lambda item: _score(*item))
+    return best
 
 
 def dataset_type_matches_declared(
@@ -54,21 +96,15 @@ def dataset_type_matches_declared(
 
 
 def resolve_dataset_identity(dataset: xr.Dataset) -> DatasetIdentity:
-    effective_dataset_type = _identify_dataset_type(dataset)
+    """Classify a dataset and return its normalized DatasetIdentity.
 
-    if effective_dataset_type:
-        resolver = _RESOLVERS.get(effective_dataset_type)
-        if resolver is not None:
-            identity = resolver.resolve(dataset)
-            return DatasetIdentity(
-                dataset_id=identity.dataset_id,
-                project_id=identity.project_id,
-                dataset_type=effective_dataset_type,
-            )
-
-    identity = _DEFAULT_RESOLVER.resolve(dataset)
-    return DatasetIdentity(
-        dataset_id=identity.dataset_id,
-        project_id=identity.project_id,
-        dataset_type=effective_dataset_type,
-    )
+    Tries all registered resolvers in priority order, chooses the best
+    match by (confidence, -priority), and falls back to the generic
+    DefaultDatasetIdentityResolver if no resolver matches.
+    """
+    result = _best_match(dataset)
+    if result is not None:
+        return result
+    fallback = _FALLBACK.evaluate(dataset)
+    assert fallback is not None  # DefaultDatasetIdentityResolver always matches
+    return fallback
