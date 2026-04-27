@@ -70,11 +70,15 @@ def _best_match(dataset: xr.Dataset) -> DatasetIdentity | None:
         identity = resolver.evaluate(dataset)
         if identity is None:
             continue
-        normalized_type = _normalize_type(resolver.dataset_type) or _normalize_type(identity.dataset_type)
-        candidates.append((
-            resolver,
-            replace(identity, dataset_type=normalized_type, metadata=dict(identity.metadata)),
-        ))
+        normalized_type = _normalize_type(resolver.dataset_type) or _normalize_type(
+            identity.dataset_type
+        )
+        candidates.append(
+            (
+                resolver,
+                replace(identity, dataset_type=normalized_type, metadata=dict(identity.metadata)),
+            )
+        )
 
     if not candidates:
         return None

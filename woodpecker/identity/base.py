@@ -41,7 +41,9 @@ class DefaultDatasetIdentityResolver(DatasetIdentityResolver):
 
     def evaluate(self, dataset: xr.Dataset) -> DatasetIdentity:
         attrs = dataset.attrs
-        dataset_id = first_str_attr(attrs, ("dataset_id", "ds_id", "id", "source_id", "source_name"))
+        dataset_id = first_str_attr(
+            attrs, ("dataset_id", "ds_id", "id", "source_id", "source_name")
+        )
         explicit_project_id = first_str_attr(attrs, ("project_id",))
         project_id = explicit_project_id or project_id_from_dataset_id(dataset_id)
         return DatasetIdentity(
