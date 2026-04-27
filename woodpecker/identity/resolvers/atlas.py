@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import xarray as xr
 
-from ..base import DatasetIdentity
+from ..base import DatasetIdentity, DefaultDatasetIdentityResolver
 from ..common import first_str_attr, normalized_token
 from ..registry import register_dataset_identity
-from .fallback import DefaultDatasetIdentityResolver
 
 
 @register_dataset_identity("atlas", override=True)

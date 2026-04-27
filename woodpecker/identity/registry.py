@@ -4,8 +4,7 @@ from typing import TypeVar
 
 import xarray as xr
 
-from .base import DatasetIdentity, DatasetIdentityResolver
-from .resolvers.fallback import DefaultDatasetIdentityResolver
+from .base import DatasetIdentity, DatasetIdentityResolver, DefaultDatasetIdentityResolver
 
 _RESOLVERS: dict[str, DatasetIdentityResolver] = {}
 _DEFAULT_RESOLVER = DefaultDatasetIdentityResolver()
