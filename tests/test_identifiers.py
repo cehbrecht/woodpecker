@@ -1,6 +1,6 @@
 import pytest
 
-from woodpecker.identifiers import (
+from woodpecker.fixes.identifiers import (
     IdentifierResolver,
     IdentifierRules,
     IdentifierSet,

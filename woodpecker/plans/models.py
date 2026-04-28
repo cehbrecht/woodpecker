@@ -12,7 +12,7 @@ from pydantic import (
     model_validator,
 )
 
-from woodpecker.identifiers import IdentifierRules, IdentifierSet
+from woodpecker.fixes.identifiers import IdentifierRules, IdentifierSet
 
 
 def _string_or_empty(value: object) -> str:
