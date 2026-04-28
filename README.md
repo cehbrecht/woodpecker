@@ -71,13 +71,12 @@ canonical_id = "cmip6_decadal.time_metadata"
 A declarative list of fix references (`id` + optional `options`) applied in order
 to a matching dataset.
 
-Plans can match datasets using metadata and file path patterns. Plans may also
-declare a namespace so unqualified fix ids resolve automatically.
+Plans can match datasets using metadata and file path patterns. A plan's id
+prefix scopes unqualified step ids automatically.
 
 ```json
 {
   "id": "atlas.encoding_cleanup_suite",
-  "namespace": "atlas",
   "match": {
     "path_patterns": ["*atlas*.nc"]
   },
