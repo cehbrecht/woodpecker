@@ -466,6 +466,9 @@ def apply_fix_plan(ds: Any, plan: "FixPlan", registry: Any) -> Any:
         _apply_configured_fix(
             ds,
             fix,
+            from woodpecker.provenance import build_prov_document, write_prov_document
+            from woodpecker.stores.helpers import create_fix_plan_store
+            from woodpecker.plans.resolver import resolve_load_source_plans
             dataset_type=identity.dataset_type,
             dry_run=False,
             force_apply=False,

@@ -8,7 +8,7 @@ import click
 
 # Importing woodpecker.fixes registers built-in fixes.
 import woodpecker.fixes  # noqa: F401
-from woodpecker.commands import execute_check_context, execute_fix_context
+from woodpecker.commands import execute_check_context, execute_fix_context, write_fix_provenance, execute_load_plans
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.io import get_io_availability
 from woodpecker.plans.resolver import RunContext, resolve_load_source_plans, resolve_run_context
@@ -146,47 +146,21 @@ def load_plans(
     plan_id: str | None,
     fmt: str,
 ):
-    """Load plans into a target store from a source store location.
-
-    All plan access goes through a FixPlanStore backend selected by `--store`
-    and sourced from `--plan` location.
-    """
-
-    target_store = _with_click_errors(lambda: create_fix_plan_store(store_type, plan_location))
-
-    plans = _with_click_errors(
-        lambda: resolve_load_source_plans(
-            from_plan=from_plan,
-            from_store_type=from_store,
-            plan_id=plan_id,
-        )
-    )
-
-    def save_plans() -> None:
-        for plan in plans:
-            target_store.save_plan(plan)
-
-    _with_click_errors(save_plans)
-
-    plan_ids = [plan.id or "<unnamed>" for plan in plans]
+    """Load plans into a target store from a source store location."""
+    result = _with_click_errors(lambda: execute_load_plans(
+        store_type=store_type,
+        plan_location=plan_location,
+        from_plan=from_plan,
+        from_store=from_store,
+        plan_id=plan_id,
+    ))
     if fmt == "json":
+        click.echo(json.dumps(result, indent=2))
+    else:
         click.echo(
-            json.dumps(
-                {
-                    "loaded": len(plans),
-                    "target_store": store_type,
-                    "target_path": str(plan_location),
-                    "plan_ids": plan_ids,
-                },
-                indent=2,
-            )
+            f"Loaded {result['loaded']} plan(s) into {result['target_store']} store at {result['target_path']}: "
+            + ", ".join(result['plan_ids'])
         )
-        return
-
-    click.echo(
-        f"Loaded {len(plans)} plan(s) into {store_type} store at {plan_location}: "
-        + ", ".join(plan_ids)
-    )
 
 
 @cli.command("check")
@@ -385,18 +359,14 @@ def fix_cmd(
     context, stats = _with_click_errors(run_fix_command)
 
     if provenance:
-        provenance_source = format_provenance_source(context, store_type, plan)
-        prov = build_prov_document(
-            inputs=context.inputs,
-            selected_fix_ids=[getattr(fix, "canonical_id", "") for fix in context.fixes],
-            selected_fixes=context.fixes,
-            selected_plans=context.selected_plans,
-            stats=stats,
-            mode="dry-run" if dry_run else "write",
-            output_format=context.resolved_output_format,
-            plan=provenance_source,
-        )
-        write_prov_document(prov, provenance_path)
+        _with_click_errors(lambda: write_fix_provenance(
+            context,
+            stats,
+            dry_run=dry_run,
+            store_type=store_type,
+            plan_location=plan,
+            provenance_path=provenance_path,
+        ))
 
     click.echo(
         format_fix_stats(
