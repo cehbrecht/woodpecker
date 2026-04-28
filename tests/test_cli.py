@@ -76,7 +76,7 @@ def test_check_returns_nonzero_when_findings_exist(
             }
         ]
 
-    monkeypatch.setattr("woodpecker.cli.run_check", _fake_run_check)
+    monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
 
     result = runner.invoke(
         cli, ["check", ".", "--select", "woodpecker.normalize_tas_units_to_kelvin"]
@@ -104,7 +104,7 @@ def test_check_json_output_structure(
             }
         ]
 
-    monkeypatch.setattr("woodpecker.cli.run_check", _fake_run_check)
+    monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
 
     result = runner.invoke(
         cli,
@@ -159,7 +159,7 @@ def test_fix_json_output_contains_write_report(
             "persist_failed": 0,
         }
 
-    monkeypatch.setattr("woodpecker.cli.run_fix", _fake_run_fix)
+    monkeypatch.setattr("woodpecker.cli.execute_fix_context", _fake_run_fix)
 
     result = runner.invoke(
         cli,
@@ -203,7 +203,7 @@ def test_fix_json_write_exits_nonzero_on_persist_failure(
             "persist_failed": 1,
         }
 
-    monkeypatch.setattr("woodpecker.cli.run_fix", _fake_run_fix)
+    monkeypatch.setattr("woodpecker.cli.execute_fix_context", _fake_run_fix)
 
     result = runner.invoke(
         cli,
@@ -265,7 +265,7 @@ def test_check_uses_plan_defaults(
             }
         ]
 
-    monkeypatch.setattr("woodpecker.cli.run_check", _fake_run_check)
+    monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
 
     result = runner.invoke(cli, ["check", "--plan", "plan.json"])
 
@@ -293,9 +293,9 @@ def test_fix_uses_auto_output_format_when_not_set(
         encoding="utf-8",
     )
 
-    def _fake_run_fix(inputs, fixes, dry_run, output_format):
-        _ = (inputs, fixes, dry_run)
-        assert output_format == "auto"
+    def _fake_run_fix(context, **kwargs):
+        _ = kwargs
+        assert context.resolved_output_format == "auto"
         return {
             "attempted": 1,
             "changed": 1,
@@ -304,7 +304,7 @@ def test_fix_uses_auto_output_format_when_not_set(
             "persist_failed": 0,
         }
 
-    monkeypatch.setattr("woodpecker.cli.run_fix", _fake_run_fix)
+    monkeypatch.setattr("woodpecker.cli.execute_fix_context", _fake_run_fix)
 
     result = runner.invoke(
         cli,
@@ -341,8 +341,9 @@ def test_check_plan_applies_fix_options_to_message(
         encoding="utf-8",
     )
 
-    def _fake_run_check(_inputs, fixes):
+    def _fake_run_check(context):
         message = "default"
+        fixes = context.fixes
         if fixes and hasattr(fixes[0], "config"):
             message = fixes[0].config.get("message", message)
         return [
@@ -354,7 +355,7 @@ def test_check_plan_applies_fix_options_to_message(
             }
         ]
 
-    monkeypatch.setattr("woodpecker.cli.run_check", _fake_run_check)
+    monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
 
     result = runner.invoke(cli, ["check", "--plan", "plan.json"])
 
@@ -399,7 +400,7 @@ def test_fix_force_apply_is_forwarded_to_runner(
             "persist_failed": 0,
         }
 
-    monkeypatch.setattr("woodpecker.cli.run_fix", _fake_run_fix)
+    monkeypatch.setattr("woodpecker.cli.execute_fix_context", _fake_run_fix)
 
     result = runner.invoke(
         cli,
@@ -461,7 +462,7 @@ def test_check_uses_json_plan_store_lookup(
             }
         ]
 
-    monkeypatch.setattr("woodpecker.cli.run_check", _fake_run_check)
+    monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
 
     result = runner.invoke(
         cli,
@@ -539,7 +540,7 @@ def test_check_plan_store_plan_id_selects_specific_plan_without_path_filters(
             }
         ]
 
-    monkeypatch.setattr("woodpecker.cli.run_check", _fake_run_check)
+    monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
 
     result = runner.invoke(
         cli,
@@ -634,7 +635,7 @@ def test_check_plan_store_plan_id_selects_specific_plan(
             }
         ]
 
-    monkeypatch.setattr("woodpecker.cli.run_check", _fake_run_check)
+    monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
 
     result = runner.invoke(cli, ["check", "--plan", "plan.json", "--plan-id", "test.second"])
 

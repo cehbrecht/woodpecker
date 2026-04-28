@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Sequence
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Sequence, TypedDict
 
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.identity import dataset_type_matches_declared, resolve_dataset_identity
@@ -11,6 +11,17 @@ from woodpecker.io import DataInput, get_output_adapter, normalize_inputs
 
 if TYPE_CHECKING:
     from woodpecker.plans.models import FixPlan
+    from woodpecker.plans.resolver import RunContext
+
+
+class RunFixKwargs(TypedDict, total=False):
+    """Keyword arguments accepted by run_fix for command-level orchestration."""
+
+    dry_run: bool
+    output_format: str
+    force_apply: bool
+    embed_provenance_metadata: bool
+    provenance_run_id: str
 
 
 def _resolve_plan_api_selection(
@@ -143,6 +154,58 @@ def execute_fix_plan(
         fix_options=resolved_fix_options,
         ordered_identifiers=resolved_ordered_identifiers,
     )
+
+
+def execute_check_context(context: "RunContext") -> list[dict[str, str]]:
+    """Run check execution from a pre-resolved run context."""
+
+    return run_check(context.inputs, context.fixes)
+
+
+def build_run_fix_kwargs(
+    *,
+    output_format: str,
+    dry_run: bool,
+    force_apply: bool,
+    embed_provenance_metadata: bool,
+    provenance_run_id: str | None,
+) -> RunFixKwargs:
+    """Build run_fix kwargs from command-level execution flags."""
+
+    run_fix_kwargs: RunFixKwargs = {
+        "dry_run": dry_run,
+        "output_format": output_format,
+    }
+    if force_apply:
+        run_fix_kwargs["force_apply"] = True
+    if embed_provenance_metadata and not dry_run:
+        run_fix_kwargs["embed_provenance_metadata"] = True
+        run_fix_kwargs["provenance_run_id"] = provenance_run_id or ""
+    return run_fix_kwargs
+
+
+def execute_fix_context(
+    context: "RunContext",
+    *,
+    dry_run: bool,
+    force_apply: bool,
+    embed_provenance_metadata: bool,
+    provenance_run_id: str | None,
+) -> dict[str, int]:
+    """Run fix execution from a pre-resolved run context."""
+
+    if force_apply and not context.resolved_identifiers:
+        raise ValueError(
+            "--force-apply requires explicit fix selection via --select or plan identifiers."
+        )
+    run_fix_kwargs = build_run_fix_kwargs(
+        output_format=context.resolved_output_format,
+        dry_run=dry_run,
+        force_apply=force_apply,
+        embed_provenance_metadata=embed_provenance_metadata,
+        provenance_run_id=provenance_run_id,
+    )
+    return run_fix(context.inputs, context.fixes, **run_fix_kwargs)
 
 
 def _normalize_identifiers(identifiers: Sequence[str]) -> set[str]:
