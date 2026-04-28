@@ -3,7 +3,7 @@ from pathlib import Path
 
 import xarray as xr
 
-from woodpecker.execution import apply_fix_plan
+from woodpecker.commands import apply_fix_plan
 from woodpecker.fixes.registry import Fix, FixRegistry, register_fix
 from woodpecker.plans.matcher import plan_matches_dataset
 from woodpecker.plans.models import (

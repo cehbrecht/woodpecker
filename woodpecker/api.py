@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 import woodpecker.fixes  # noqa: F401
-from woodpecker.execution import run_check, run_fix, select_fixes
+from woodpecker.commands import run_check, run_fix, select_fixes
 from woodpecker.io import normalize_inputs
 from woodpecker.plans.resolver import resolve_plan_source, resolve_selection_inputs
 
