@@ -10,12 +10,141 @@ from woodpecker.cli import cli
 pytestmark = pytest.mark.filterwarnings("ignore:.*Failed to read NetCDF input.*")
 
 
+def test_check_uses_plan_defaults(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    monkeypatch,
+):
+    runner, make_placeholder_netcdf_path = isolated_cli_workspace
+    make_placeholder_netcdf_path("cmip6_bad.nc")
+    Path("plan.json").write_text(
+        json.dumps(
+            {
+                "plans": [
+                    {
+                        "id": "core.basic",
+                        "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    def _fake_run_check(*args, **kwargs):
+        _ = (args, kwargs)
+        return [
+            {
+                "path": "cmip6_bad.nc",
+                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
+                "name": "Common check",
+                "message": "configured by plan",
+            }
+        ]
+
+    monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
+
+    result = runner.invoke(cli, ["check", "--plan", "plan.json"])
+
+    assert result.exit_code == 1
+    assert "woodpecker.normalize_tas_units_to_kelvin" in result.output
+
+
+def test_fix_uses_auto_output_format_when_not_set(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    monkeypatch,
+):
+    runner, make_placeholder_netcdf_path = isolated_cli_workspace
+    make_placeholder_netcdf_path("cmip6_case.nc")
+    Path("plan.json").write_text(
+        json.dumps(
+            {
+                "plans": [
+                    {
+                        "id": "core.basic",
+                        "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    def _fake_run_fix(context, **kwargs):
+        _ = kwargs
+        assert context.resolved_output_format == "auto"
+        return {
+            "attempted": 1,
+            "changed": 1,
+            "persist_attempted": 1,
+            "persisted": 1,
+            "persist_failed": 0,
+        }
+
+    monkeypatch.setattr("woodpecker.cli.execute_fix_context", _fake_run_fix)
+
+    result = runner.invoke(
+        cli,
+        ["fix", "--plan", "plan.json", "--format", "json"],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert payload["output_format"] == "auto"
+
+
+def test_check_plan_applies_fix_options_to_message(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    monkeypatch,
+):
+    runner, make_placeholder_netcdf_path = isolated_cli_workspace
+    make_placeholder_netcdf_path("c3s-cmip6.member.nc")
+    Path("plan.json").write_text(
+        json.dumps(
+            {
+                "plans": [
+                    {
+                        "id": "cmip6.msg",
+                        "steps": [
+                            {
+                                "id": "woodpecker.normalize_tas_units_to_kelvin",
+                                "options": {"message": "configured check message"},
+                            }
+                        ],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    def _fake_run_check(context):
+        message = "default"
+        fixes = context.fixes
+        if fixes and hasattr(fixes[0], "config"):
+            message = fixes[0].config.get("message", message)
+        return [
+            {
+                "path": "c3s-cmip6.member.nc",
+                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
+                "name": "Common check",
+                "message": message,
+            }
+        ]
+
+    monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
+
+    result = runner.invoke(cli, ["check", "--plan", "plan.json"])
+
+    assert result.exit_code == 1
+    assert "configured check message" in result.output
+
+
 def test_check_uses_json_plan_store_lookup(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
     monkeypatch,
 ):
-    runner, make_dummy_netcdf = isolated_cli_workspace
-    make_dummy_netcdf("cmip6_bad.nc")
+    runner, make_placeholder_netcdf_path = isolated_cli_workspace
+    make_placeholder_netcdf_path("cmip6_bad.nc")
     Path("plans.json").write_text(
         json.dumps(
             [
@@ -54,8 +183,8 @@ def test_check_uses_json_plan_store_lookup(
 def test_check_plan_store_requires_plan_id_when_multiple_match_without_path_filters(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
 ):
-    runner, make_dummy_netcdf = isolated_cli_workspace
-    make_dummy_netcdf("cmip6_bad.nc")
+    runner, make_placeholder_netcdf_path = isolated_cli_workspace
+    make_placeholder_netcdf_path("cmip6_bad.nc")
     Path("plans.json").write_text(
         json.dumps(
             [
@@ -87,8 +216,8 @@ def test_check_plan_store_plan_id_selects_specific_plan_without_path_filters(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
     monkeypatch,
 ):
-    runner, make_dummy_netcdf = isolated_cli_workspace
-    make_dummy_netcdf("cmip6_bad.nc")
+    runner, make_placeholder_netcdf_path = isolated_cli_workspace
+    make_placeholder_netcdf_path("cmip6_bad.nc")
     Path("plans.json").write_text(
         json.dumps(
             [
@@ -150,8 +279,8 @@ def test_check_plan_id_without_plan_errors(
 def test_check_plan_store_requires_plan_id_when_multiple_match(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
 ):
-    runner, make_dummy_netcdf = isolated_cli_workspace
-    make_dummy_netcdf("cmip6_bad.nc")
+    runner, make_placeholder_netcdf_path = isolated_cli_workspace
+    make_placeholder_netcdf_path("cmip6_bad.nc")
 
     Path("plan.json").write_text(
         json.dumps(
@@ -181,8 +310,8 @@ def test_check_plan_store_plan_id_selects_specific_plan(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
     monkeypatch,
 ):
-    runner, make_dummy_netcdf = isolated_cli_workspace
-    make_dummy_netcdf("cmip6_bad.nc")
+    runner, make_placeholder_netcdf_path = isolated_cli_workspace
+    make_placeholder_netcdf_path("cmip6_bad.nc")
 
     Path("plan.json").write_text(
         json.dumps(
