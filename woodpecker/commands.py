@@ -9,7 +9,6 @@ from woodpecker.fixes.registry import FixRegistry
 from woodpecker.identity import dataset_type_matches_declared, resolve_dataset_identity
 from woodpecker.io import DataInput, get_output_adapter, normalize_inputs
 
-
 if TYPE_CHECKING:
     from woodpecker.plans.models import FixPlan
     from woodpecker.plans.resolver import RunContext
@@ -484,8 +483,8 @@ def execute_load_plans(
     plan_id: str | None = None,
 ) -> dict:
     """Load plans into a target store from a source store location."""
-    from woodpecker.stores.helpers import create_fix_plan_store
     from woodpecker.plans.resolver import resolve_load_source_plans
+    from woodpecker.stores.helpers import create_fix_plan_store
 
     target_store = create_fix_plan_store(store_type, plan_location)
     plans = resolve_load_source_plans(
@@ -520,8 +519,8 @@ def write_fix_provenance(
     provenance_path,
 ):
     """Write a provenance document for a fix run."""
-    from woodpecker.provenance import build_prov_document, write_prov_document
     from woodpecker.cli import format_provenance_source
+    from woodpecker.provenance import build_prov_document, write_prov_document
     provenance_source = format_provenance_source(context, store_type, plan_location)
     prov = build_prov_document(
         inputs=context.inputs,

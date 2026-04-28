@@ -3,7 +3,6 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Callable
 
-import click
 from click.testing import CliRunner
 
 from woodpecker.cli import cli, format_provenance_source
