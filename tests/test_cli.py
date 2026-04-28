@@ -3,9 +3,13 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Callable
 
+import pytest
 from click.testing import CliRunner
 
-from woodpecker.cli import cli, format_provenance_source
+from woodpecker.cli import cli
+from woodpecker.provenance import format_provenance_source
+
+pytestmark = pytest.mark.filterwarnings("ignore:.*Failed to read NetCDF input.*")
 
 
 def test_list_fixes_contains_known_codes():

@@ -12,6 +12,21 @@ from prov.model import ProvDocument
 from woodpecker.io import DataInput, get_output_adapter
 
 
+def format_provenance_source(
+    context: Any,
+    store_type: str,
+    plan_location: Path | None,
+) -> str | None:
+    """Return a concise provenance source description for selected store input."""
+
+    if context.source == "store":
+        plan_ids = [selected.id for selected in context.selected_plans if selected.id]
+        selected_text = ", ".join(plan_ids) if plan_ids else "<unnamed>"
+        return f"store type={store_type} location={plan_location} plans={selected_text}"
+
+    return None
+
+
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 

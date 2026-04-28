@@ -11,6 +11,7 @@ pytestmark = [
     pytest.mark.io_backend,
     pytest.mark.filterwarnings("ignore:.*NetCDF input backend unavailable.*"),
     pytest.mark.filterwarnings("ignore:.*Zarr input backend unavailable.*"),
+    pytest.mark.filterwarnings("ignore:.*numpy.ndarray size changed.*"),
 ]
 
 

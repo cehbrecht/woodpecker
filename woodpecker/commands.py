@@ -241,8 +241,11 @@ def write_fix_provenance(
     provenance_path,
 ):
     """Write a provenance document for a fix run."""
-    from woodpecker.cli import format_provenance_source
-    from woodpecker.provenance import build_prov_document, write_prov_document
+    from woodpecker.provenance import (
+        build_prov_document,
+        format_provenance_source,
+        write_prov_document,
+    )
 
     provenance_source = format_provenance_source(context, store_type, plan_location)
     prov = build_prov_document(

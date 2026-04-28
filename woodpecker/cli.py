@@ -34,21 +34,6 @@ def _with_click_errors(func: Callable[[], T]) -> T:
         raise click.ClickException(str(exc)) from exc
 
 
-def format_provenance_source(
-    context: RunContext,
-    store_type: str,
-    plan_location: Path | None,
-) -> str | None:
-    """Return a concise provenance source description for selected store input."""
-
-    if context.source == "store":
-        plan_ids = [selected.id for selected in context.selected_plans if selected.id]
-        selected_text = ", ".join(plan_ids) if plan_ids else "<unnamed>"
-        return f"store type={store_type} location={plan_location} plans={selected_text}"
-
-    return None
-
-
 @click.group()
 def cli():
     """Woodpecker CLI."""
