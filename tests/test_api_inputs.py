@@ -45,7 +45,7 @@ def test_fix_supports_xarray_dataset_input_write_mode():
 def test_check_supports_path_input(make_dummy_netcdf, monkeypatch):
     source = make_dummy_netcdf("cmip6_bad.nc")
 
-    def _fake_run_check(*args, **kwargs):
+    def _fake_execute_check(*args, **kwargs):
         _ = (args, kwargs)
         return [
             {
@@ -56,7 +56,7 @@ def test_check_supports_path_input(make_dummy_netcdf, monkeypatch):
             }
         ]
 
-    monkeypatch.setattr("woodpecker.api.run_check", _fake_run_check)
+    monkeypatch.setattr("woodpecker.api.execute_check", _fake_execute_check)
 
     findings = check([source], identifiers=["woodpecker.normalize_tas_units_to_kelvin"])
 
@@ -136,7 +136,7 @@ def test_api_check_plan_uses_codes_from_plan(tmp_path: Path, make_dummy_netcdf, 
         encoding="utf-8",
     )
 
-    def _fake_run_check(*args, **kwargs):
+    def _fake_execute_check_plan(*args, **kwargs):
         _ = (args, kwargs)
         return [
             {
@@ -147,7 +147,7 @@ def test_api_check_plan_uses_codes_from_plan(tmp_path: Path, make_dummy_netcdf, 
             }
         ]
 
-    monkeypatch.setattr("woodpecker.api.run_check", _fake_run_check)
+    monkeypatch.setattr("woodpecker.api.execute_check_plan", _fake_execute_check_plan)
 
     findings = check_plan(plan_path, inputs=[source])
 
@@ -169,9 +169,9 @@ def test_api_fix_plan_uses_explicit_output_format_argument(tmp_path: Path, monke
 
     observed: dict[str, str] = {}
 
-    def _fake_run_fix(inputs, fixes, dry_run, output_format):
-        _ = (inputs, fixes, dry_run)
-        observed["output_format"] = output_format
+    def _fake_execute_fix_plan(plan_path, **kwargs):
+        _ = plan_path
+        observed["output_format"] = kwargs["output_format"]
         return {
             "attempted": 1,
             "changed": 1,
@@ -180,7 +180,7 @@ def test_api_fix_plan_uses_explicit_output_format_argument(tmp_path: Path, monke
             "persist_failed": 0,
         }
 
-    monkeypatch.setattr("woodpecker.api.run_fix", _fake_run_fix)
+    monkeypatch.setattr("woodpecker.api.execute_fix_plan", _fake_execute_fix_plan)
 
     fix_plan(plan_path, inputs=ds, write=True, output_format="netcdf")
 
