@@ -128,7 +128,9 @@ def test_api_check_raises_on_unknown_fix_code(make_placeholder_netcdf_path):
         check([source], identifiers=["DOESNOTEXIST"])
 
 
-def test_api_check_plan_uses_codes_from_plan(tmp_path: Path, make_placeholder_netcdf_path, monkeypatch):
+def test_api_check_plan_uses_codes_from_plan(
+    tmp_path: Path, make_placeholder_netcdf_path, monkeypatch
+):
     source = make_placeholder_netcdf_path("cmip6_bad.nc")
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
