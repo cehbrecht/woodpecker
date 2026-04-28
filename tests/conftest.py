@@ -12,11 +12,11 @@ from click.testing import CliRunner
 # fast and deterministic while still exercising filename-based matching/check/fix
 # logic. Use:
 # - path fixtures (e.g. `cmip6_member_file`) for simple unit tests
-# - `make_dummy_netcdf` for custom filenames
+# - `make_placeholder_netcdf_path` for custom filenames
 # - `isolated_cli_workspace` for CLI tests that need a clean cwd
 
 
-DUMMY_NETCDF_CONTENT = "dummy-netcdf-placeholder\n"
+PLACEHOLDER_NETCDF_CONTENT = "placeholder-netcdf-path\n"
 
 
 @pytest.fixture
@@ -25,23 +25,23 @@ def cli_runner() -> CliRunner:
 
 
 @pytest.fixture
-def make_dummy_netcdf(tmp_path: Path) -> Callable[[str], Path]:
+def make_placeholder_netcdf_path(tmp_path: Path) -> Callable[[str], Path]:
     def _make(filename: str) -> Path:
         path = tmp_path / filename
-        path.write_text(DUMMY_NETCDF_CONTENT, encoding="utf-8")
+        path.write_text(PLACEHOLDER_NETCDF_CONTENT, encoding="utf-8")
         return path
 
     return _make
 
 
 @pytest.fixture
-def cmip6_member_file(make_dummy_netcdf: Callable[[str], Path]) -> Path:
-    return make_dummy_netcdf("cmip6_member.nc")
+def cmip6_member_file(make_placeholder_netcdf_path: Callable[[str], Path]) -> Path:
+    return make_placeholder_netcdf_path("cmip6_member.nc")
 
 
 @pytest.fixture
-def atlas_spaced_file(make_dummy_netcdf: Callable[[str], Path]) -> Path:
-    return make_dummy_netcdf("atlas sample.nc")
+def atlas_spaced_file(make_placeholder_netcdf_path: Callable[[str], Path]) -> Path:
+    return make_placeholder_netcdf_path("atlas sample.nc")
 
 
 @pytest.fixture
@@ -52,7 +52,7 @@ def isolated_cli_workspace(
 
         def _make(filename: str) -> Path:
             path = Path(filename)
-            path.write_text(DUMMY_NETCDF_CONTENT, encoding="utf-8")
+            path.write_text(PLACEHOLDER_NETCDF_CONTENT, encoding="utf-8")
             return path
 
         yield cli_runner, _make

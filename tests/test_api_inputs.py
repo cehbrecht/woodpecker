@@ -42,8 +42,8 @@ def test_fix_supports_xarray_dataset_input_write_mode():
     assert ds["tas"].attrs["units"] == "K"
 
 
-def test_check_supports_path_input(make_dummy_netcdf, monkeypatch):
-    source = make_dummy_netcdf("cmip6_bad.nc")
+def test_check_supports_path_input(make_placeholder_netcdf_path, monkeypatch):
+    source = make_placeholder_netcdf_path("cmip6_bad.nc")
 
     def _fake_execute_check(*args, **kwargs):
         _ = (args, kwargs)
@@ -121,15 +121,17 @@ def test_zarr_output_adapter_warns_and_fails_when_backend_unavailable(monkeypatc
     assert ok is False
 
 
-def test_api_check_raises_on_unknown_fix_code(make_dummy_netcdf):
-    source = make_dummy_netcdf("cmip6_bad.nc")
+def test_api_check_raises_on_unknown_fix_code(make_placeholder_netcdf_path):
+    source = make_placeholder_netcdf_path("cmip6_bad.nc")
 
     with pytest.raises(ValueError, match=r"Unknown fix identifier\(s\): DOESNOTEXIST"):
         check([source], identifiers=["DOESNOTEXIST"])
 
 
-def test_api_check_plan_uses_codes_from_plan(tmp_path: Path, make_dummy_netcdf, monkeypatch):
-    source = make_dummy_netcdf("cmip6_bad.nc")
+def test_api_check_plan_uses_codes_from_plan(
+    tmp_path: Path, make_placeholder_netcdf_path, monkeypatch
+):
+    source = make_placeholder_netcdf_path("cmip6_bad.nc")
     plan_path = tmp_path / "plan.json"
     plan_path.write_text(
         '{"plans": [{"id": "core.basic", "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]}]}',

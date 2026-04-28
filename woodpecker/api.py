@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Sequence
 
+# Importing woodpecker.fixes registers built-in fixes before API selection runs.
 import woodpecker.fixes  # noqa: F401
 from woodpecker.commands import execute_check, execute_check_plan, execute_fix, execute_fix_plan
 

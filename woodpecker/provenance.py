@@ -12,6 +12,21 @@ from prov.model import ProvDocument
 from woodpecker.io import DataInput, get_output_adapter
 
 
+def format_provenance_source(
+    context: Any,
+    store_type: str,
+    plan_location: Path | None,
+) -> str | None:
+    """Return a concise provenance source description for selected store input."""
+
+    if context.source == "store":
+        plan_ids = [selected.id for selected in context.selected_plans if selected.id]
+        selected_text = ", ".join(plan_ids) if plan_ids else "<unnamed>"
+        return f"store type={store_type} location={plan_location} plans={selected_text}"
+
+    return None
+
+
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -122,3 +137,27 @@ def build_prov_document(
 def write_prov_document(document: dict[str, Any], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(document, indent=2), encoding="utf-8")
+
+
+def write_fix_provenance(
+    context: Any,
+    stats: dict[str, int],
+    dry_run: bool,
+    store_type: str,
+    plan_location: Path | None,
+    provenance_path: Path,
+) -> None:
+    """Write a provenance document for a check/fix run context."""
+
+    provenance_source = format_provenance_source(context, store_type, plan_location)
+    document = build_prov_document(
+        inputs=context.inputs,
+        selected_fix_ids=[getattr(fix, "canonical_id", "") for fix in context.fixes],
+        selected_fixes=context.fixes,
+        selected_plans=context.selected_plans,
+        stats=stats,
+        mode="dry-run" if dry_run else "write",
+        output_format=context.resolved_output_format,
+        plan=provenance_source,
+    )
+    write_prov_document(document, provenance_path)

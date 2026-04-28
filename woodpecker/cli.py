@@ -12,11 +12,11 @@ from woodpecker.commands import (
     execute_check_context,
     execute_fix_context,
     execute_load_plans,
-    write_fix_provenance,
 )
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.io import get_io_availability
 from woodpecker.plans.resolver import RunContext, resolve_run_context
+from woodpecker.provenance import write_fix_provenance
 from woodpecker.stores.helpers import create_fix_plan_store
 from woodpecker.ui.formatting import format_findings, format_fix_stats, format_fixes, format_plans
 
@@ -32,21 +32,6 @@ def _with_click_errors(func: Callable[[], T]) -> T:
         raise
     except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
-
-
-def format_provenance_source(
-    context: RunContext,
-    store_type: str,
-    plan_location: Path | None,
-) -> str | None:
-    """Return a concise provenance source description for selected store input."""
-
-    if context.source == "store":
-        plan_ids = [selected.id for selected in context.selected_plans if selected.id]
-        selected_text = ", ".join(plan_ids) if plan_ids else "<unnamed>"
-        return f"store type={store_type} location={plan_location} plans={selected_text}"
-
-    return None
 
 
 @click.group()

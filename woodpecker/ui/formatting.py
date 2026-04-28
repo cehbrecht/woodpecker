@@ -106,5 +106,7 @@ def format_plans(plans: Sequence[FixPlan], fmt: str) -> str:
     lines: list[str] = []
     for plan in plans:
         plan_id = plan.id or "<unnamed>"
-        lines.append(f"{plan_id}: {len(plan.steps)} fixes")
+        step_count = len(plan.steps)
+        label = "step" if step_count == 1 else "steps"
+        lines.append(f"{plan_id}: {step_count} {label}")
     return "\n".join(lines)

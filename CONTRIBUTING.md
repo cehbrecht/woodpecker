@@ -77,17 +77,16 @@ Use existing fixes as examples and keep behavior deterministic.
 Woodpecker uses one schema for both plan files and plan stores:
 
 - `FixPlanDocument`: top-level container with `plans: [...]`.
-- `FixPlan`: plan entry with `id`, optional `namespace`, `description`, optional `match`, ordered `fixes`, optional `links`.
-- `FixRef`: each step entry (`fix`, optional `options`, optional `links`).
+- `FixPlan`: plan entry with canonical `id`, `description`, optional `match`, ordered `steps`, optional `links`.
+- `FixRef`: each step entry (`id`, optional `options`, optional `links`).
 
 Common `FixPlan` fields:
 
-- `id`: optional plan identifier.
-- `namespace`: optional local-ID namespace prefix.
+- `id`: canonical plan identifier, for example `atlas.basic`.
 - `description`: optional human-readable description.
 - `match.attrs`: key/value attribute matcher for dataset metadata.
 - `match.path_patterns`: optional fnmatch-style path patterns.
-- `fixes`: ordered list of fix refs. Each item can be a string or object with `fix` and `options`.
+- `steps`: ordered list of fix refs. Each item can be a string id or object with `id` and `options`.
 - `links`: optional list of `{rel, href, title?}` references (errata/issues/docs).
 
 Minimal `FixPlanDocument` example:
@@ -96,27 +95,25 @@ Minimal `FixPlanDocument` example:
 {
   "plans": [
     {
-      "id": "atlas-basic",
-      "namespace": "atlas",
+      "id": "atlas.basic",
       "description": "ATLAS plan",
       "match": {
         "path_patterns": ["*atlas*.nc"]
       },
-      "fixes": [
-        "0001",
-        {"fix": "woodpecker.ensure_latitude_is_increasing"}
+      "steps": [
+        "encoding_cleanup",
+        {"id": "woodpecker.ensure_latitude_is_increasing"}
       ]
     },
     {
-      "id": "esa-cci-zarr",
-      "namespace": "cmip7",
+      "id": "cmip7.esa_cci_zarr",
       "description": "Default ESA CCI zarr plan",
       "match": {
         "path_patterns": ["*ESACCI-WATERVAPOUR-*.zarr"]
       },
-      "fixes": [
-        "0003",
-        {"fix": "woodpecker.ensure_latitude_is_increasing"}
+      "steps": [
+        "configurable_reformat_bridge",
+        {"id": "woodpecker.ensure_latitude_is_increasing"}
       ]
     }
   ]
@@ -124,7 +121,7 @@ Minimal `FixPlanDocument` example:
 ```
 
 Single-plan shorthand is also supported by the loader: a top-level object
-with `fixes` is treated as a one-plan document.
+with `steps` is treated as a one-plan document.
 
 CLI override rule:
 
@@ -145,13 +142,13 @@ import woodpecker
 
 ds = xr.Dataset(attrs={"source_name": "atlas_bad.nc"})
 
-findings = woodpecker.check(ds, codes=["atlas.encoding_cleanup"])
-stats = woodpecker.fix(ds, codes=["atlas.encoding_cleanup"], write=True)
+findings = woodpecker.check(ds, identifiers=["atlas.encoding_cleanup"])
+stats = woodpecker.fix(ds, identifiers=["atlas.encoding_cleanup"], write=True)
 
 # Fix plan helpers
 findings_plan = woodpecker.check_plan("plan.json", inputs=["./data"])
 stats_plan = woodpecker.fix_plan("plan.json", inputs=ds, write=True)
 
 # Path input works as well
-findings_from_paths = woodpecker.check(["./data"], codes=["atlas.encoding_cleanup"])
+findings_from_paths = woodpecker.check(["./data"], identifiers=["atlas.encoding_cleanup"])
 ```

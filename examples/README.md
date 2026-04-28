@@ -114,8 +114,8 @@ woodpecker load-plans \
 ## Data Model
 
 - Plan documents use `{"plans": [...]}`.
-- Each plan uses the same `FixPlan` schema: `id`, `namespace`, `description`, `match`, `fixes`, optional `links`.
-- Each fix step is `fix + options` (and optional `links`), not a globally identified object.
+- Each plan uses the same `FixPlan` schema: `id`, `description`, `match`, `steps`, optional `links`.
+- Each step is an `id` plus optional `options` and `links`.
 - Example plans use canonical fix IDs directly in `<prefix>.<local_id>` form.
 - JSON and DuckDB backends both load and return the same `FixPlan` objects.
 - CLI options such as `--select`, `--dataset`, and `--category` override plan-derived defaults.

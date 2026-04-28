@@ -38,7 +38,7 @@ class DuckDBFixPlanStore(FixPlanStore):
                     id TEXT PRIMARY KEY,
                     description TEXT,
                     match_json TEXT,
-                    fixes_json TEXT
+                    steps_json TEXT
                 )
                 """
             )
@@ -46,13 +46,13 @@ class DuckDBFixPlanStore(FixPlanStore):
     def list_plans(self) -> list[FixPlan]:
         with self._connect() as con:
             rows = con.execute(
-                "SELECT id, description, match_json, fixes_json FROM fix_plans ORDER BY id"
+                "SELECT id, description, match_json, steps_json FROM fix_plans ORDER BY id"
             ).fetchall()
 
         plans: list[FixPlan] = []
-        for plan_id, description, match_json, fixes_json in rows:
+        for plan_id, description, match_json, steps_json in rows:
             match_payload = json.loads(match_json) if match_json else None
-            fixes_payload = json.loads(fixes_json) if fixes_json else []
+            steps_payload = json.loads(steps_json) if steps_json else []
             plans.append(
                 FixPlan(
                     id=str(plan_id),
@@ -60,23 +60,23 @@ class DuckDBFixPlanStore(FixPlanStore):
                     match=DatasetMatcher.model_validate(match_payload)
                     if isinstance(match_payload, dict)
                     else None,
-                    steps=[FixRef.model_validate(item) for item in fixes_payload],
+                    steps=[FixRef.model_validate(item) for item in steps_payload],
                 )
             )
         return plans
 
     def save_plan(self, plan: FixPlan) -> None:
         match_json = json.dumps(plan.match.model_dump()) if plan.match is not None else None
-        fixes_json = json.dumps([item.model_dump() for item in plan.steps])
+        steps_json = json.dumps([item.model_dump() for item in plan.steps])
         plan_id = FixPlanIndex.canonical_plan_id(plan)
 
         with self._connect() as con:
             con.execute(
                 """
-                INSERT OR REPLACE INTO fix_plans (id, description, match_json, fixes_json)
+                INSERT OR REPLACE INTO fix_plans (id, description, match_json, steps_json)
                 VALUES (?, ?, ?, ?)
                 """,
-                [plan_id, plan.description, match_json, fixes_json],
+                [plan_id, plan.description, match_json, steps_json],
             )
 
     @staticmethod
@@ -89,14 +89,14 @@ class DuckDBFixPlanStore(FixPlanStore):
         )
 
     @staticmethod
-    def _parse_fixes(fixes_json: str | None) -> list[FixRef]:
-        fixes_payload = json.loads(fixes_json) if fixes_json else []
-        return [FixRef.model_validate(item) for item in fixes_payload]
+    def _parse_steps(steps_json: str | None) -> list[FixRef]:
+        steps_payload = json.loads(steps_json) if steps_json else []
+        return [FixRef.model_validate(item) for item in steps_payload]
 
     def _candidate_query(self, dataset: Any) -> tuple[str, list[Any]]:
         """Build a coarse SQL prefilter; exact plan matching is done in Python."""
 
-        sql = "SELECT id, description, match_json, fixes_json FROM fix_plans"
+        sql = "SELECT id, description, match_json, steps_json FROM fix_plans"
         dataset_attrs = getattr(dataset, "attrs", None)
         if not isinstance(dataset_attrs, dict):
             dataset_attrs = dict(dataset_attrs or {})
@@ -127,7 +127,7 @@ class DuckDBFixPlanStore(FixPlanStore):
             rows = con.execute(sql, params).fetchall()
 
         matched: list[FixPlan] = []
-        for plan_id, description, match_json, fixes_json in rows:
+        for plan_id, description, match_json, steps_json in rows:
             matcher = self._parse_matcher(match_json)
             candidate = FixPlan(
                 id=str(plan_id),
@@ -143,7 +143,7 @@ class DuckDBFixPlanStore(FixPlanStore):
                     id=candidate.id,
                     description=candidate.description,
                     match=matcher,
-                    steps=self._parse_fixes(fixes_json),
+                    steps=self._parse_steps(steps_json),
                 )
             )
 
