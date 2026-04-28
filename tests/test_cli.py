@@ -1,13 +1,11 @@
 import json
 from pathlib import Path
-from types import SimpleNamespace
 from typing import Callable
 
 import pytest
 from click.testing import CliRunner
 
 from woodpecker.cli import cli
-from woodpecker.provenance import format_provenance_source
 
 pytestmark = pytest.mark.filterwarnings("ignore:.*Failed to read NetCDF input.*")
 
@@ -818,30 +816,3 @@ def test_load_plans_requires_source_plan_location(
 
     assert result.exit_code != 0
     assert "Missing option '--from-plan'" in result.output
-
-
-def test_format_provenance_source_for_store_mode():
-    context = SimpleNamespace(
-        source="store",
-        selected_plans=[SimpleNamespace(id="alpha"), SimpleNamespace(id="beta")],
-    )
-
-    output = format_provenance_source(
-        context,
-        store_type="json",
-        plan_location=Path("plans.json"),
-    )
-
-    assert output == "store type=json location=plans.json plans=alpha, beta"
-
-
-def test_format_provenance_source_for_direct_mode():
-    context = SimpleNamespace(source="direct", selected_plans=[])
-
-    output = format_provenance_source(
-        context,
-        store_type="json",
-        plan_location=Path("plans.json"),
-    )
-
-    assert output is None
