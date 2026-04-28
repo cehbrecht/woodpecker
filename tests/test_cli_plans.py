@@ -10,6 +10,25 @@ from woodpecker.cli import cli
 pytestmark = pytest.mark.filterwarnings("ignore:.*Failed to read NetCDF input.*")
 
 
+def _finding(message: str, *, path: str = "cmip6_bad.nc") -> dict[str, str]:
+    return {
+        "path": path,
+        "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
+        "name": "Common check",
+        "message": message,
+    }
+
+
+def _successful_fix_stats() -> dict[str, int]:
+    return {
+        "attempted": 1,
+        "changed": 1,
+        "persist_attempted": 1,
+        "persisted": 1,
+        "persist_failed": 0,
+    }
+
+
 def test_check_uses_plan_defaults(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
     monkeypatch,
@@ -32,14 +51,7 @@ def test_check_uses_plan_defaults(
 
     def _fake_run_check(*args, **kwargs):
         _ = (args, kwargs)
-        return [
-            {
-                "path": "cmip6_bad.nc",
-                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
-                "name": "Common check",
-                "message": "configured by plan",
-            }
-        ]
+        return [_finding("configured by plan")]
 
     monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
 
@@ -72,13 +84,7 @@ def test_fix_uses_auto_output_format_when_not_set(
     def _fake_run_fix(context, **kwargs):
         _ = kwargs
         assert context.resolved_output_format == "auto"
-        return {
-            "attempted": 1,
-            "changed": 1,
-            "persist_attempted": 1,
-            "persisted": 1,
-            "persist_failed": 0,
-        }
+        return _successful_fix_stats()
 
     monkeypatch.setattr("woodpecker.cli.execute_fix_context", _fake_run_fix)
 
@@ -122,14 +128,7 @@ def test_check_plan_applies_fix_options_to_message(
         fixes = context.fixes
         if fixes and hasattr(fixes[0], "config"):
             message = fixes[0].config.get("message", message)
-        return [
-            {
-                "path": "c3s-cmip6.member.nc",
-                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
-                "name": "Common check",
-                "message": message,
-            }
-        ]
+        return [_finding(message, path="c3s-cmip6.member.nc")]
 
     monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
 
@@ -160,14 +159,7 @@ def test_check_uses_json_plan_store_lookup(
 
     def _fake_run_check(*args, **kwargs):
         _ = (args, kwargs)
-        return [
-            {
-                "path": "cmip6_bad.nc",
-                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
-                "name": "Common check",
-                "message": "from json store",
-            }
-        ]
+        return [_finding("from json store")]
 
     monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
 
@@ -238,14 +230,7 @@ def test_check_plan_store_plan_id_selects_specific_plan_without_path_filters(
 
     def _fake_run_check(*args, **kwargs):
         _ = (args, kwargs)
-        return [
-            {
-                "path": "cmip6_bad.nc",
-                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
-                "name": "Common check",
-                "message": "selected plan",
-            }
-        ]
+        return [_finding("selected plan")]
 
     monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
 
@@ -333,14 +318,7 @@ def test_check_plan_store_plan_id_selects_specific_plan(
 
     def _fake_run_check(*args, **kwargs):
         _ = (args, kwargs)
-        return [
-            {
-                "path": "cmip6_bad.nc",
-                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
-                "name": "Common check",
-                "message": "selected plan",
-            }
-        ]
+        return [_finding("selected plan")]
 
     monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
 
@@ -379,8 +357,8 @@ def test_list_plans_text_output(
     )
 
     assert result.exit_code == 0
-    assert "test.alpha: 1 fixes" in result.output
-    assert "test.beta: 2 fixes" in result.output
+    assert "test.alpha: 1 step" in result.output
+    assert "test.beta: 2 steps" in result.output
 
 
 def test_list_plans_json_output(

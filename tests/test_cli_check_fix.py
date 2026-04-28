@@ -10,6 +10,25 @@ from woodpecker.cli import cli
 pytestmark = pytest.mark.filterwarnings("ignore:.*Failed to read NetCDF input.*")
 
 
+def _finding(message: str = "synthetic finding") -> dict[str, str]:
+    return {
+        "path": "cmip6_bad.nc",
+        "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
+        "name": "Common check",
+        "message": message,
+    }
+
+
+def _fix_stats(*, persisted: int = 1, persist_failed: int = 0) -> dict[str, int]:
+    return {
+        "attempted": 1,
+        "changed": 1,
+        "persist_attempted": 1,
+        "persisted": persisted,
+        "persist_failed": persist_failed,
+    }
+
+
 def test_check_returns_zero_when_no_findings(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
 ):
@@ -32,14 +51,7 @@ def test_check_returns_nonzero_when_findings_exist(
 
     def _fake_run_check(*args, **kwargs):
         _ = (args, kwargs)
-        return [
-            {
-                "path": "cmip6_bad.nc",
-                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
-                "name": "Common check",
-                "message": "synthetic finding",
-            }
-        ]
+        return [_finding()]
 
     monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
 
@@ -60,14 +72,7 @@ def test_check_json_output_structure(
 
     def _fake_run_check(*args, **kwargs):
         _ = (args, kwargs)
-        return [
-            {
-                "path": "cmip6_bad.nc",
-                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
-                "name": "Common check",
-                "message": "synthetic finding",
-            }
-        ]
+        return [_finding()]
 
     monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
 
@@ -116,13 +121,7 @@ def test_fix_json_output_contains_write_report(
     make_placeholder_netcdf_path("cmip6_case.nc")
 
     def _fake_run_fix(*args, **kwargs):
-        return {
-            "attempted": 1,
-            "changed": 1,
-            "persist_attempted": 1,
-            "persisted": 1,
-            "persist_failed": 0,
-        }
+        return _fix_stats()
 
     monkeypatch.setattr("woodpecker.cli.execute_fix_context", _fake_run_fix)
 
@@ -160,13 +159,7 @@ def test_fix_json_write_exits_nonzero_on_persist_failure(
     make_placeholder_netcdf_path("cmip6_case.nc")
 
     def _fake_run_fix(*args, **kwargs):
-        return {
-            "attempted": 1,
-            "changed": 1,
-            "persist_attempted": 1,
-            "persisted": 0,
-            "persist_failed": 1,
-        }
+        return _fix_stats(persisted=0, persist_failed=1)
 
     monkeypatch.setattr("woodpecker.cli.execute_fix_context", _fake_run_fix)
 
@@ -228,13 +221,7 @@ def test_fix_force_apply_is_forwarded_to_runner(
 
     def _fake_run_fix(*args, **kwargs):
         captured.update(kwargs)
-        return {
-            "attempted": 1,
-            "changed": 1,
-            "persist_attempted": 1,
-            "persisted": 1,
-            "persist_failed": 0,
-        }
+        return _fix_stats()
 
     monkeypatch.setattr("woodpecker.cli.execute_fix_context", _fake_run_fix)
 
