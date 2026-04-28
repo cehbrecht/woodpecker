@@ -137,3 +137,27 @@ def build_prov_document(
 def write_prov_document(document: dict[str, Any], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(document, indent=2), encoding="utf-8")
+
+
+def write_fix_provenance(
+    context: Any,
+    stats: dict[str, int],
+    dry_run: bool,
+    store_type: str,
+    plan_location: Path | None,
+    provenance_path: Path,
+) -> None:
+    """Write a provenance document for a check/fix run context."""
+
+    provenance_source = format_provenance_source(context, store_type, plan_location)
+    document = build_prov_document(
+        inputs=context.inputs,
+        selected_fix_ids=[getattr(fix, "canonical_id", "") for fix in context.fixes],
+        selected_fixes=context.fixes,
+        selected_plans=context.selected_plans,
+        stats=stats,
+        mode="dry-run" if dry_run else "write",
+        output_format=context.resolved_output_format,
+        plan=provenance_source,
+    )
+    write_prov_document(document, provenance_path)
