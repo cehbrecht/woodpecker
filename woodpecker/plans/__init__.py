@@ -2,7 +2,8 @@
 
 from pathlib import Path
 
-from ..commands import apply_fix_plan, run_check, run_fix, select_fixes
+from ..runner import apply_fix_plan, run_check, run_fix
+from ..selection import select_fixes
 from ..stores.json_store import JsonFixPlanStore
 from .matcher import plan_matches_dataset
 from .models import DatasetMatcher, FixPlan, FixPlanDocument, FixRef, Link, parse_fix_ref

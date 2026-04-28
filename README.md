@@ -217,7 +217,7 @@ example = "woodpecker_example_plugin"
 `woodpecker_example_plugin/__init__.py`
 
 ```python
-from woodpecker.steps.registry import Fix, register_fix
+from woodpecker.fixes.registry import Fix, register_fix
 
 @register_fix
 class ExternalDemoFix(Fix):

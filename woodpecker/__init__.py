@@ -5,10 +5,10 @@ from .plans import (
     FixPlan,
     FixPlanDocument,
     FixRef,
-    apply_fix_plan,
     load_fix_plan,
     load_fix_plan_document,
 )
+from .runner import apply_fix_plan
 
 __all__ = [
     "fixes",

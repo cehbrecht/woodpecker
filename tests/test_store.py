@@ -255,7 +255,7 @@ def test_duckdb_candidate_query_builds_attr_prefilter(tmp_path):
 
     sql, params = store._candidate_query(ds)
 
-    assert sql.startswith("SELECT id, description, match_json, fixes_json FROM fix_plans")
+    assert sql.startswith("SELECT id, description, match_json, steps_json FROM fix_plans")
     assert "$.attrs.project_id" in sql
     assert "$.attrs.table_id" in sql
     assert "ORDER BY id" in sql
@@ -282,10 +282,10 @@ def test_duckdb_lookup_skips_decoding_nonmatching_fixes_payload(tmp_path):
         )
     )
 
-    # Corrupt a non-matching row to verify lookup does not decode its fixes payload.
+    # Corrupt a non-matching row to verify lookup does not decode its steps payload.
     with duckdb.connect(str(db_path)) as con:
         con.execute(
-            "UPDATE fix_plans SET fixes_json = ? WHERE id = ?",
+            "UPDATE fix_plans SET steps_json = ? WHERE id = ?",
             ["not-json", "cmip6.lookup_cmip6"],
         )
 
