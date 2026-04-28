@@ -151,19 +151,21 @@ def load_plans(
     fmt: str,
 ):
     """Load plans into a target store from a source store location."""
-    result = _with_click_errors(lambda: execute_load_plans(
-        store_type=store_type,
-        plan_location=plan_location,
-        from_plan=from_plan,
-        from_store=from_store,
-        plan_id=plan_id,
-    ))
+    result = _with_click_errors(
+        lambda: execute_load_plans(
+            store_type=store_type,
+            plan_location=plan_location,
+            from_plan=from_plan,
+            from_store=from_store,
+            plan_id=plan_id,
+        )
+    )
     if fmt == "json":
         click.echo(json.dumps(result, indent=2))
     else:
         click.echo(
             f"Loaded {result['loaded']} plan(s) into {result['target_store']} store at {result['target_path']}: "
-            + ", ".join(result['plan_ids'])
+            + ", ".join(result["plan_ids"])
         )
 
 
@@ -363,14 +365,16 @@ def fix_cmd(
     context, stats = _with_click_errors(run_fix_command)
 
     if provenance:
-        _with_click_errors(lambda: write_fix_provenance(
-            context,
-            stats,
-            dry_run=dry_run,
-            store_type=store_type,
-            plan_location=plan,
-            provenance_path=provenance_path,
-        ))
+        _with_click_errors(
+            lambda: write_fix_provenance(
+                context,
+                stats,
+                dry_run=dry_run,
+                store_type=store_type,
+                plan_location=plan,
+                provenance_path=provenance_path,
+            )
+        )
 
     click.echo(
         format_fix_stats(

@@ -816,8 +816,6 @@ def test_load_plans_requires_source_plan_location(
     assert "Missing option '--from-plan'" in result.output
 
 
-
-
 def test_format_provenance_source_for_store_mode():
     context = SimpleNamespace(
         source="store",
