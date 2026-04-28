@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from ..identifiers import IdentifierResolver
+from woodpecker.fixes.identifiers import IdentifierResolver
+
 from ..plans.models import FixPlan
 
 

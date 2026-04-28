@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any, Optional, Type
 
-from woodpecker.identifiers import IdentifierResolver, IdentifierRules
+from woodpecker.fixes.identifiers import IdentifierResolver, IdentifierRules
 
 from .base import Fix, GroupFix
 

@@ -1,7 +1,7 @@
 import pytest
 
+from woodpecker.fixes.identifiers import IdentifierResolver
 from woodpecker.fixes.registry import Fix, FixRegistry, GroupFix, register_fix
-from woodpecker.identifiers import IdentifierResolver
 
 
 def _snapshot_registry_state():

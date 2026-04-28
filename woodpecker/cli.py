@@ -2,31 +2,25 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Callable, TypedDict, TypeVar
+from typing import Callable, TypeVar
 
 import click
 
 # Importing woodpecker.fixes registers built-in fixes.
 import woodpecker.fixes  # noqa: F401
-from woodpecker.execution import run_check, run_fix
+from woodpecker.commands import (
+    execute_check_context,
+    execute_fix_context,
+    execute_load_plans,
+    write_fix_provenance,
+)
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.io import get_io_availability
-from woodpecker.plans.resolver import RunContext, resolve_load_source_plans, resolve_run_context
-from woodpecker.provenance import build_prov_document, write_prov_document
+from woodpecker.plans.resolver import RunContext, resolve_run_context
 from woodpecker.stores.helpers import create_fix_plan_store
 from woodpecker.ui.formatting import format_findings, format_fix_stats, format_fixes, format_plans
 
 T = TypeVar("T")
-
-
-class RunFixKwargs(TypedDict, total=False):
-    """Keyword arguments accepted by run_fix in this CLI context."""
-
-    dry_run: bool
-    output_format: str
-    force_apply: bool
-    embed_provenance_metadata: bool
-    provenance_run_id: str
 
 
 def _with_click_errors(func: Callable[[], T]) -> T:
@@ -38,27 +32,6 @@ def _with_click_errors(func: Callable[[], T]) -> T:
         raise
     except (TypeError, ValueError) as exc:
         raise click.ClickException(str(exc)) from exc
-
-
-def build_run_fix_kwargs(
-    context: RunContext,
-    dry_run: bool,
-    force_apply: bool,
-    embed_provenance_metadata: bool,
-) -> RunFixKwargs:
-    """Build run_fix kwargs from command flags and resolved run context."""
-
-    run_fix_kwargs: RunFixKwargs = {
-        "dry_run": dry_run,
-        "output_format": context.resolved_output_format,
-    }
-    if force_apply:
-        run_fix_kwargs["force_apply"] = True
-    if embed_provenance_metadata and not dry_run:
-        run_id = f"woodpecker-{Path.cwd().name}"
-        run_fix_kwargs["embed_provenance_metadata"] = True
-        run_fix_kwargs["provenance_run_id"] = run_id
-    return run_fix_kwargs
 
 
 def format_provenance_source(
@@ -177,47 +150,23 @@ def load_plans(
     plan_id: str | None,
     fmt: str,
 ):
-    """Load plans into a target store from a source store location.
-
-    All plan access goes through a FixPlanStore backend selected by `--store`
-    and sourced from `--plan` location.
-    """
-
-    target_store = _with_click_errors(lambda: create_fix_plan_store(store_type, plan_location))
-
-    plans = _with_click_errors(
-        lambda: resolve_load_source_plans(
+    """Load plans into a target store from a source store location."""
+    result = _with_click_errors(
+        lambda: execute_load_plans(
+            store_type=store_type,
+            plan_location=plan_location,
             from_plan=from_plan,
-            from_store_type=from_store,
+            from_store=from_store,
             plan_id=plan_id,
         )
     )
-
-    def save_plans() -> None:
-        for plan in plans:
-            target_store.save_plan(plan)
-
-    _with_click_errors(save_plans)
-
-    plan_ids = [plan.id or "<unnamed>" for plan in plans]
     if fmt == "json":
+        click.echo(json.dumps(result, indent=2))
+    else:
         click.echo(
-            json.dumps(
-                {
-                    "loaded": len(plans),
-                    "target_store": store_type,
-                    "target_path": str(plan_location),
-                    "plan_ids": plan_ids,
-                },
-                indent=2,
-            )
+            f"Loaded {result['loaded']} plan(s) into {result['target_store']} store at {result['target_path']}: "
+            + ", ".join(result["plan_ids"])
         )
-        return
-
-    click.echo(
-        f"Loaded {len(plans)} plan(s) into {store_type} store at {plan_location}: "
-        + ", ".join(plan_ids)
-    )
 
 
 @cli.command("check")
@@ -276,7 +225,7 @@ def check_cmd(
         )
     )
 
-    findings = run_check(context.inputs, context.fixes)
+    findings = execute_check_context(context)
     output = format_findings(findings, fmt)
     if output:
         click.echo(output)
@@ -401,34 +350,31 @@ def fix_cmd(
             identifiers=identifiers,
             output_format=output_format,
         )
-        if force_apply and not context.resolved_identifiers:
-            raise click.ClickException(
-                "--force-apply requires explicit fix selection via --select or plan identifiers."
-            )
-        run_fix_kwargs = build_run_fix_kwargs(
+        run_id = None
+        if embed_provenance_metadata and not dry_run:
+            run_id = f"woodpecker-{Path.cwd().name}"
+        stats = execute_fix_context(
             context,
-            dry_run,
-            force_apply,
-            embed_provenance_metadata,
+            dry_run=dry_run,
+            force_apply=force_apply,
+            embed_provenance_metadata=embed_provenance_metadata,
+            provenance_run_id=run_id,
         )
-        stats = run_fix(context.inputs, context.fixes, **run_fix_kwargs)
         return context, stats
 
     context, stats = _with_click_errors(run_fix_command)
 
     if provenance:
-        provenance_source = format_provenance_source(context, store_type, plan)
-        prov = build_prov_document(
-            inputs=context.inputs,
-            selected_fix_ids=[getattr(fix, "canonical_id", "") for fix in context.fixes],
-            selected_fixes=context.fixes,
-            selected_plans=context.selected_plans,
-            stats=stats,
-            mode="dry-run" if dry_run else "write",
-            output_format=context.resolved_output_format,
-            plan=provenance_source,
+        _with_click_errors(
+            lambda: write_fix_provenance(
+                context,
+                stats,
+                dry_run=dry_run,
+                store_type=store_type,
+                plan_location=plan,
+                provenance_path=provenance_path,
+            )
         )
-        write_prov_document(prov, provenance_path)
 
     click.echo(
         format_fix_stats(
