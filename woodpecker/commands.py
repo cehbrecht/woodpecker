@@ -5,13 +5,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Sequence, TypedDict
 
-
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.identity import dataset_type_matches_declared, resolve_dataset_identity
 from woodpecker.io import DataInput, get_output_adapter, normalize_inputs
-from woodpecker.provenance import build_prov_document, write_prov_document
-from woodpecker.stores.helpers import create_fix_plan_store
-from woodpecker.plans.resolver import resolve_load_source_plans
+
 
 if TYPE_CHECKING:
     from woodpecker.plans.models import FixPlan
@@ -477,3 +474,63 @@ def apply_fix_plan(ds: Any, plan: "FixPlan", registry: Any) -> Any:
         )
 
     return ds
+
+
+def execute_load_plans(
+    store_type: str,
+    plan_location: Path,
+    from_plan: Path,
+    from_store: str,
+    plan_id: str | None = None,
+) -> dict:
+    """Load plans into a target store from a source store location."""
+    from woodpecker.stores.helpers import create_fix_plan_store
+    from woodpecker.plans.resolver import resolve_load_source_plans
+
+    target_store = create_fix_plan_store(store_type, plan_location)
+    plans = resolve_load_source_plans(
+        from_plan=from_plan,
+        from_store_type=from_store,
+        plan_id=plan_id,
+    )
+    # For test monkeypatching (do not use at runtime)
+    try:
+        from woodpecker.plans.resolver import resolve_load_source_plans
+        from woodpecker.stores.helpers import create_fix_plan_store
+    except ImportError:
+        resolve_load_source_plans = None
+        create_fix_plan_store = None
+    for plan in plans:
+        target_store.save_plan(plan)
+    plan_ids = [plan.id or "<unnamed>" for plan in plans]
+    return {
+        "loaded": len(plans),
+        "target_store": store_type,
+        "target_path": str(plan_location),
+        "plan_ids": plan_ids,
+    }
+
+
+def write_fix_provenance(
+    context,
+    stats,
+    dry_run: bool,
+    store_type: str,
+    plan_location,
+    provenance_path,
+):
+    """Write a provenance document for a fix run."""
+    from woodpecker.provenance import build_prov_document, write_prov_document
+    from woodpecker.cli import format_provenance_source
+    provenance_source = format_provenance_source(context, store_type, plan_location)
+    prov = build_prov_document(
+        inputs=context.inputs,
+        selected_fix_ids=[getattr(fix, "canonical_id", "") for fix in context.fixes],
+        selected_fixes=context.fixes,
+        selected_plans=context.selected_plans,
+        stats=stats,
+        mode="dry-run" if dry_run else "write",
+        output_format=context.resolved_output_format,
+        plan=provenance_source,
+    )
+    write_prov_document(prov, provenance_path)
