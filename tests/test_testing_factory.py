@@ -1,6 +1,6 @@
 import xarray as xr
 
-from woodpecker.testing import make_cmip6
+from woodpecker.testing import make_atlas, make_cmip6, make_cmip6_decadal, make_cordex
 
 
 def test_make_cmip6_returns_realistic_small_dataset():
@@ -58,3 +58,55 @@ def test_make_cmip6_supports_variable_specific_metadata():
     assert ds.attrs["variable_id"] == "pr"
     assert ds.attrs["units"] == "kg m-2 s-1"
     assert ds["pr"].attrs["units"] == "kg m-2 s-1"
+
+
+def test_make_cmip6_decadal_returns_realistic_dataset():
+    ds = make_cmip6_decadal()
+
+    assert ds.sizes == {"time": 12, "lat": 18, "lon": 36}
+    assert set(ds.data_vars) == {"tos"}
+    assert ds.attrs["project_id"] == "CMIP6"
+    assert ds.attrs["activity_id"] == "DCPP"
+    assert ds.attrs["experiment_id"] == "dcppA-hindcast"
+    assert ds.attrs["sub_experiment_id"] == "s1960"
+    assert ds.attrs["table_id"] == "Omon"
+
+
+def test_make_atlas_returns_realistic_dataset():
+    ds = make_atlas()
+
+    assert ds.sizes == {"time": 12, "lat": 18, "lon": 36}
+    assert set(ds.data_vars) == {"pr"}
+    assert ds.attrs["project_id"] == "C3S-Atlas"
+    assert "atlas" in ds.attrs["dataset_id"]
+    assert ds.attrs["experiment_id"] == "ssp245"
+    assert ds.attrs["frequency"] == "mon"
+
+
+def test_make_cordex_returns_realistic_dataset():
+    ds = make_cordex()
+
+    assert ds.sizes == {"time": 12, "lat": 18, "lon": 36}
+    assert set(ds.data_vars) == {"tasmax"}
+    assert ds.attrs["project_id"] == "CORDEX"
+    assert ds.attrs["domain_id"] == "EUR-11"
+    assert ds.attrs["rcm_model_id"] == "RCA4"
+    assert ds.attrs["frequency"] == "day"
+
+
+def test_new_factories_share_corruption_api():
+    factories = (make_cmip6_decadal, make_atlas, make_cordex)
+
+    for make_dataset in factories:
+        variable = next(iter(make_dataset().data_vars))
+        renamed = f"{variable}_broken"
+        ds = make_dataset(
+            missing=["units"],
+            overrides={"experiment_id": "synthetic-test"},
+            rename_vars={variable: renamed},
+        )
+
+        assert "units" not in ds.attrs
+        assert "units" not in ds[renamed].attrs
+        assert ds.attrs["experiment_id"] == "synthetic-test"
+        assert set(ds.data_vars) == {renamed}

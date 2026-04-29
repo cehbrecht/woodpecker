@@ -6,7 +6,7 @@ from woodpecker.identity import (
     register_dataset_identity,
     resolve_dataset_identity,
 )
-from woodpecker.testing import make_cmip6
+from woodpecker.testing import make_atlas, make_cmip6, make_cmip6_decadal, make_cordex
 
 
 def test_default_identity_resolver_derives_project_id_from_dataset_id():
@@ -44,13 +44,13 @@ def test_dataset_type_resolver_can_override_defaults():
 
 
 def test_identity_uses_detected_cmip6_decadal_dataset_type():
-    ds = xr.Dataset(attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc"})
+    ds = make_cmip6_decadal()
 
     identity = resolve_dataset_identity(ds)
 
     assert identity.dataset_type == "cmip6-decadal"
-    assert identity.dataset_id == "c3s-cmip6-decadal.member.tas.nc"
-    assert identity.project_id == "c3s-cmip6-decadal"
+    assert identity.dataset_id == ds.attrs["dataset_id"]
+    assert identity.project_id == "CMIP6"
     assert identity.evidence
 
 
@@ -62,6 +62,28 @@ def test_identity_uses_detected_cmip6_dataset_type():
     assert identity.dataset_type == "cmip6"
     assert identity.dataset_id == ds.attrs["dataset_id"]
     assert identity.project_id == "CMIP6"
+    assert identity.metadata.get("resolver")
+
+
+def test_identity_uses_detected_atlas_dataset_type():
+    ds = make_atlas()
+
+    identity = resolve_dataset_identity(ds)
+
+    assert identity.dataset_type == "atlas"
+    assert identity.dataset_id == ds.attrs["ds_id"]
+    assert identity.project_id == "C3S-Atlas"
+    assert identity.metadata.get("resolver")
+
+
+def test_identity_uses_detected_cordex_dataset_type():
+    ds = make_cordex()
+
+    identity = resolve_dataset_identity(ds)
+
+    assert identity.dataset_type == "cordex"
+    assert identity.dataset_id == ds.attrs["dataset_id"]
+    assert identity.project_id == "CORDEX"
     assert identity.metadata.get("resolver")
 
 
