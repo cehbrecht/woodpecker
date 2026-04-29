@@ -113,15 +113,24 @@ def test_fix_write_cmip6d01_reports_no_change_for_empty_fallback_dataset(
     assert "0 files changed" in result.output
 
 
+@pytest.mark.parametrize(
+    ("stats", "expected_exit_code"),
+    [
+        (_fix_stats(), 0),
+        (_fix_stats(persisted=0, persist_failed=1), 1),
+    ],
+)
 def test_fix_json_output_contains_write_report(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
     monkeypatch,
+    stats,
+    expected_exit_code,
 ):
     runner, make_placeholder_netcdf_path = isolated_cli_workspace
     make_placeholder_netcdf_path("cmip6_case.nc")
 
     def _fake_run_fix(*args, **kwargs):
-        return _fix_stats()
+        return stats
 
     monkeypatch.setattr("woodpecker.cli.execute_fix_context", _fake_run_fix)
 
@@ -139,45 +148,16 @@ def test_fix_json_output_contains_write_report(
         ],
     )
 
-    assert result.exit_code == 0
+    assert result.exit_code == expected_exit_code
     payload = json.loads(result.output)
     assert payload["mode"] == "write"
     assert payload["output_format"] == "netcdf"
-    assert payload["attempted"] == 1
-    assert payload["changed"] == 1
-    assert payload["persist_attempted"] == 1
-    assert payload["persisted"] == 1
-    assert payload["persist_failed"] == 0
+    assert payload["attempted"] == stats["attempted"]
+    assert payload["changed"] == stats["changed"]
+    assert payload["persist_attempted"] == stats["persist_attempted"]
+    assert payload["persisted"] == stats["persisted"]
+    assert payload["persist_failed"] == stats["persist_failed"]
     assert payload["force_apply"] is False
-
-
-def test_fix_json_write_exits_nonzero_on_persist_failure(
-    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
-    monkeypatch,
-):
-    runner, make_placeholder_netcdf_path = isolated_cli_workspace
-    make_placeholder_netcdf_path("cmip6_case.nc")
-
-    def _fake_run_fix(*args, **kwargs):
-        return _fix_stats(persisted=0, persist_failed=1)
-
-    monkeypatch.setattr("woodpecker.cli.execute_fix_context", _fake_run_fix)
-
-    result = runner.invoke(
-        cli,
-        [
-            "fix",
-            ".",
-            "--select",
-            "woodpecker.normalize_tas_units_to_kelvin",
-            "--format",
-            "json",
-        ],
-    )
-
-    assert result.exit_code == 1
-    payload = json.loads(result.output)
-    assert payload["persist_failed"] == 1
 
 
 def test_check_unknown_fix_code_returns_click_error(
