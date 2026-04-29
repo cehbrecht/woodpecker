@@ -77,6 +77,7 @@ def test_make_atlas_returns_realistic_dataset():
 
     assert ds.sizes == {"time": 12, "lat": 18, "lon": 36}
     assert set(ds.data_vars) == {"pr"}
+    assert ds["pr"].attrs["units"] == "kg m-2 s-1"
     assert ds.attrs["project_id"] == "C3S-Atlas"
     assert "atlas" in ds.attrs["dataset_id"]
     assert ds.attrs["experiment_id"] == "ssp245"
@@ -90,8 +91,19 @@ def test_make_cordex_returns_realistic_dataset():
     assert set(ds.data_vars) == {"tasmax"}
     assert ds.attrs["project_id"] == "CORDEX"
     assert ds.attrs["domain_id"] == "EUR-11"
+    assert ds.attrs["driving_model_id"] == "MOHC-HadGEM2-ES"
+    assert ds.attrs["driving_experiment_id"] == "rcp85"
+    assert ds.attrs["scenario_id"] == "rcp85"
     assert ds.attrs["rcm_model_id"] == "RCA4"
     assert ds.attrs["frequency"] == "day"
+
+
+def test_new_factories_are_deterministic():
+    factories = (make_cmip6_decadal, make_atlas, make_cordex)
+
+    for make_dataset in factories:
+        xr.testing.assert_identical(make_dataset(), make_dataset())
+        xr.testing.assert_identical(make_dataset(seed=10), make_dataset(seed=10))
 
 
 def test_new_factories_share_corruption_api():

@@ -40,7 +40,7 @@ def make_cordex(
 
 def _cordex_attrs(variable: str) -> dict[str, str]:
     dataset_id = (
-        f"CORDEX.output.EUR-11.SMHI.MOHC-HadGEM2-ES.historical.r1i1p1."
+        f"CORDEX.output.EUR-11.SMHI.MOHC-HadGEM2-ES.rcp85.r1i1p1."
         f"RCA4.v1.day.{variable}.v20200101"
     )
     return {
@@ -49,12 +49,13 @@ def _cordex_attrs(variable: str) -> dict[str, str]:
         "source_name": f"{dataset_id}.nc",
         "domain_id": "EUR-11",
         "driving_model_id": "MOHC-HadGEM2-ES",
-        "driving_experiment_id": "historical",
+        "driving_experiment_id": "rcp85",
         "driving_model_ensemble_member": "r1i1p1",
         "rcm_model_id": "RCA4",
         "rcm_version_id": "v1",
         "activity_id": "CORDEX",
-        "experiment_id": "historical",
+        "experiment_id": "rcp85",
+        "scenario_id": "rcp85",
         "variable_id": variable,
         "table_id": "day",
         "units": variable_units(variable),
