@@ -6,7 +6,7 @@ import xarray as xr
 from woodpecker.plans.matcher import plan_matches_dataset
 from woodpecker.plans.models import DatasetMatcher, FixPlan, FixRef
 from woodpecker.stores import DuckDBFixPlanStore, JsonFixPlanStore
-from woodpecker.testing import make_cmip6
+from woodpecker.testing import make_atlas, make_cmip6
 
 
 def _sample_plan() -> FixPlan:
@@ -22,6 +22,21 @@ def _sample_plan() -> FixPlan:
             FixRef(id="woodpecker.ensure_latitude_is_increasing"),
         ],
     )
+
+
+def _single_step_plan(
+    plan_id: str,
+    fix_id: str = "woodpecker.remove_coordinate_fill_value_encodings",
+    *,
+    match: DatasetMatcher | None = None,
+    description: str | None = None,
+) -> FixPlan:
+    kwargs = {"id": plan_id, "steps": [FixRef(id=fix_id)]}
+    if match is not None:
+        kwargs["match"] = match
+    if description is not None:
+        kwargs["description"] = description
+    return FixPlan(**kwargs)
 
 
 def test_fix_plan_serialization_roundtrip():
@@ -60,7 +75,7 @@ def test_plan_matcher_attrs_only():
     )
 
     assert plan_matches_dataset(plan, xr.Dataset(attrs={"project_id": "CMIP7"})) is True
-    assert plan_matches_dataset(plan, xr.Dataset(attrs={"project_id": "CMIP6"})) is False
+    assert plan_matches_dataset(plan, make_cmip6()) is False
 
 
 def test_plan_matcher_path_only():
@@ -80,10 +95,7 @@ def test_plan_matcher_path_only():
 def test_json_store_save_list_lookup(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
     plan_1 = _sample_plan()
-    plan_2 = FixPlan(
-        id="tests.plan_2",
-        steps=[FixRef(id="woodpecker.remove_coordinate_fill_value_encodings")],
-    )
+    plan_2 = _single_step_plan("tests.plan_2")
 
     store.save_plan(plan_1)
     store.save_plan(plan_2)
@@ -105,10 +117,7 @@ def test_json_store_save_list_lookup(tmp_path):
 def test_json_store_yaml_save_list_lookup(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.yaml")
     plan_1 = _sample_plan()
-    plan_2 = FixPlan(
-        id="tests.plan_2",
-        steps=[FixRef(id="woodpecker.remove_coordinate_fill_value_encodings")],
-    )
+    plan_2 = _single_step_plan("tests.plan_2")
 
     store.save_plan(plan_1)
     store.save_plan(plan_2)
@@ -127,21 +136,41 @@ def test_json_store_yaml_save_list_lookup(tmp_path):
     assert [item.id for item in matched] == ["tests.plan_2"]
 
 
+def test_json_store_lookup_matches_atlas_fixture(tmp_path):
+    store = JsonFixPlanStore(tmp_path / "fix-plans.json")
+    atlas_plan = _single_step_plan(
+        "atlas.lookup",
+        "atlas.encoding_cleanup",
+        match=DatasetMatcher(
+            attrs={"project_id": "C3S-Atlas"},
+            path_patterns=["*atlas*.nc"],
+        ),
+    )
+    catchall_plan = _single_step_plan("tests.catchall")
+
+    store.save_plan(atlas_plan)
+    store.save_plan(catchall_plan)
+
+    matched = store.lookup(make_atlas(), path="/tmp/atlas_case.nc")
+
+    assert [item.id for item in matched] == ["atlas.lookup", "tests.catchall"]
+
+
 def test_json_store_save_replaces_existing_plan_id(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
 
     store.save_plan(
-        FixPlan(
-            id="tests.plan_1",
+        _single_step_plan(
+            "tests.plan_1",
+            "woodpecker.normalize_tas_units_to_kelvin",
             description="old",
-            steps=[FixRef(id="woodpecker.normalize_tas_units_to_kelvin")],
         )
     )
     store.save_plan(
-        FixPlan(
-            id="tests.plan_1",
+        _single_step_plan(
+            "tests.plan_1",
+            "woodpecker.ensure_latitude_is_increasing",
             description="new",
-            steps=[FixRef(id="woodpecker.ensure_latitude_is_increasing")],
         )
     )
 
@@ -216,10 +245,7 @@ def test_duckdb_store_save_list_lookup(tmp_path):
 
     store = DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
     plan_1 = _sample_plan()
-    plan_2 = FixPlan(
-        id="tests.plan_2",
-        steps=[FixRef(id="woodpecker.remove_coordinate_fill_value_encodings")],
-    )
+    plan_2 = _single_step_plan("tests.plan_2")
 
     store.save_plan(plan_1)
     store.save_plan(plan_2)
