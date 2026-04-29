@@ -11,6 +11,7 @@ from woodpecker.io import (
     get_io_availability,
     get_output_adapter,
 )
+from woodpecker.testing import make_cmip6
 
 
 def test_check_supports_xarray_dataset_input():
@@ -29,11 +30,7 @@ def test_check_supports_xarray_dataset_input():
 
 
 def test_fix_supports_xarray_dataset_input_write_mode():
-    ds = xr.Dataset(
-        data_vars={"tas": ("time", [0.0, 1.0], {"units": "degC"})},
-        coords={"time": [0, 1]},
-        attrs={"source_name": "example.nc"},
-    )
+    ds = make_cmip6(overrides={"units": "degC"})
 
     stats = fix(ds, identifiers=["woodpecker.normalize_tas_units_to_kelvin"], write=True)
 
@@ -79,11 +76,7 @@ def test_output_adapter_target_paths_for_path_inputs():
 
 
 def test_fix_accepts_explicit_output_format():
-    ds = xr.Dataset(
-        data_vars={"tas": ("time", [0.0, 1.0], {"units": "degC"})},
-        coords={"time": [0, 1]},
-        attrs={"source_name": "example.nc"},
-    )
+    ds = make_cmip6(overrides={"units": "degC"})
 
     stats = fix(
         ds,

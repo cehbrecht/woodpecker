@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 from woodpecker.io.backends.xr import XarrayInput
 from woodpecker.provenance import format_provenance_source, write_fix_provenance
+from woodpecker.testing import make_cmip6
 
 
 def test_format_provenance_source_for_store_mode():
@@ -38,7 +39,7 @@ def test_write_fix_provenance_writes_run_document(tmp_path: Path):
     plan = SimpleNamespace(id="woodpecker.plan")
     context = SimpleNamespace(
         source="store",
-        inputs=[XarrayInput(name="memory-dataset")],
+        inputs=[XarrayInput(payload=make_cmip6())],
         fixes=[fix],
         selected_plans=[plan],
         resolved_output_format="auto",

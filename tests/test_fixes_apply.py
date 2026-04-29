@@ -3,6 +3,7 @@ import pytest
 import xarray as xr
 
 from woodpecker.fixes.common import NormalizeTasUnitsToKelvinFix
+from woodpecker.testing import make_atlas, make_cmip6, make_cmip6_decadal
 
 atlas_plugin = pytest.importorskip("woodpecker_atlas_plugin")
 cmip6d_plugin = pytest.importorskip("woodpecker_cmip6_decadal_plugin")
@@ -29,6 +30,39 @@ DecadalModelGlobalAttributesFix = cmip6d_plugin.DecadalModelGlobalAttributesFix
 DecadalReftimeCoordinateFix = cmip6d_plugin.DecadalReftimeCoordinateFix
 DecadalLeadtimeCoordinateFix = cmip6d_plugin.DecadalLeadtimeCoordinateFix
 
+CMIP6_SOURCE_NAME = "c3s-cmip6.member.tas.nc"
+DECADAL_SOURCE_NAME = "c3s-cmip6-decadal.member.tas.nc"
+EC_EARTH_DECADAL_SOURCE_NAME = (
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3."
+    "dcppA-hindcast.s1960-r2i1p1f1.Amon.tas.gr.v20201215.nc"
+)
+ATLAS_SOURCE_NAME = "c3s-ipcc-atlas.dataset.tas.nc"
+
+
+def _cmip6_attrs(**overrides):
+    return dict(make_cmip6(overrides={"source_name": CMIP6_SOURCE_NAME, **overrides}).attrs)
+
+
+def _decadal_attrs(**overrides):
+    return dict(make_cmip6_decadal(overrides={"source_name": DECADAL_SOURCE_NAME, **overrides}).attrs)
+
+
+def _ec_earth_decadal_attrs(**overrides):
+    return dict(
+        make_cmip6_decadal(
+            overrides={"source_name": EC_EARTH_DECADAL_SOURCE_NAME, **overrides}
+        ).attrs
+    )
+
+
+def _atlas_attrs(**overrides):
+    return dict(
+        make_atlas(
+            missing=["project_id"],
+            overrides={"source_name": ATLAS_SOURCE_NAME, **overrides},
+        ).attrs
+    )
+
 
 def test_cmip601_dummy_apply_write_sets_dummy_marker_attr():
     dataset = xr.Dataset(
@@ -46,7 +80,7 @@ def test_cmip601_dummy_apply_write_sets_dummy_marker_attr():
 def test_cmip6d01_apply_dry_run_reports_change_without_writing_dataset_attrs():
     dataset = xr.Dataset(
         coords={"time": [0, 1]},
-        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc", "realization_index": 2},
+        attrs=_decadal_attrs(realization_index=2),
     )
 
     fix = DecadalTimeMetadataFix()
@@ -60,7 +94,7 @@ def test_cmip6d01_apply_dry_run_reports_change_without_writing_dataset_attrs():
 def test_cmip6d01_apply_write_sets_simple_decadal_metadata_fixes():
     dataset = xr.Dataset(
         coords={"time": [0, 1]},
-        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc", "realization_index": "2"},
+        attrs=_decadal_attrs(realization_index="2"),
     )
 
     fix = DecadalTimeMetadataFix()
@@ -73,7 +107,7 @@ def test_cmip6d01_apply_write_sets_simple_decadal_metadata_fixes():
 def test_cmip6d02_apply_write_normalizes_proleptic_calendar():
     dataset = xr.Dataset(
         coords={"time": [0, 1]},
-        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc"},
+        attrs=_decadal_attrs(),
     )
     dataset["time"].encoding["calendar"] = "proleptic_gregorian"
 
@@ -93,7 +127,7 @@ def test_cmip6d02_apply_write_converts_cftime_proleptic_values_when_available():
                 cftime.DatetimeProlepticGregorian(1960, 11, 2),
             ]
         },
-        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc"},
+        attrs=_decadal_attrs(),
     )
     dataset["time"].encoding["calendar"] = "proleptic_gregorian"
 
@@ -108,7 +142,7 @@ def test_cmip6d02_apply_write_converts_cftime_proleptic_values_when_available():
 def test_cmip6d03_apply_write_adds_realization_variable():
     dataset = xr.Dataset(
         coords={"time": [0, 1]},
-        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc", "realization_index": "2"},
+        attrs=_decadal_attrs(realization_index="2"),
     )
 
     fix = DecadalRealizationVariableFix()
@@ -142,7 +176,7 @@ def test_cmip6d03_apply_write_adds_realization_variable():
 def test_cmip6_decadal_fixes_do_not_match_non_decadal_cmip6(fix_cls):
     dataset = xr.Dataset(
         coords={"time": [0, 1]},
-        attrs={"source_name": "c3s-cmip6.member.tas.nc", "realization_index": "2"},
+        attrs=_cmip6_attrs(realization_index="2"),
     )
 
     fix = fix_cls()
@@ -160,7 +194,7 @@ def test_cmip6d04_apply_write_removes_coordinates_encoding_from_decadal_vars():
             "time_bnds": (("time", "bnds"), [[0.0, 1.0]]),
         },
         coords={"time": [0], "x": [0], "bnds": [0, 1]},
-        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc"},
+        attrs=_decadal_attrs(),
     )
     dataset["realization"].encoding["coordinates"] = "time"
     dataset["lon_bnds"].encoding["coordinates"] = "lon lat"
@@ -180,7 +214,7 @@ def test_cmip6d04_apply_write_removes_coordinates_encoding_from_decadal_vars():
 def test_cmip6d05_apply_write_normalizes_realization_comment():
     dataset = xr.Dataset(
         data_vars={"realization": xr.DataArray(2, attrs={"long_name": "realization"})},
-        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc"},
+        attrs=_decadal_attrs(),
     )
     dataset["realization"].attrs["comment"] = (
         "For more information on the ripf, refer to variant_label and global attributes."
@@ -200,7 +234,7 @@ def test_cmip6d05_apply_write_normalizes_realization_comment():
 def test_cmip6d06_apply_write_normalizes_realization_dtype_to_int32():
     dataset = xr.Dataset(
         data_vars={"realization": xr.DataArray(2)},
-        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc"},
+        attrs=_decadal_attrs(),
     )
     dataset["realization"].encoding["coordinates"] = "time"
 
@@ -221,7 +255,7 @@ def test_cmip6d07_apply_write_removes_fillvalue_encoding_from_decadal_vars():
             "time_bnds": (("time", "bnds"), [[0.0, 1.0]]),
         },
         coords={"time": [0], "x": [0], "bnds": [0, 1]},
-        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc"},
+        attrs=_decadal_attrs(),
     )
     dataset["realization"].encoding["_FillValue"] = -9999
     dataset["lon_bnds"].encoding["_FillValue"] = -9999.0
@@ -240,13 +274,12 @@ def test_cmip6d07_apply_write_removes_fillvalue_encoding_from_decadal_vars():
 
 def test_cmip6d08_apply_write_normalizes_further_info_url_variant_separator():
     dataset = xr.Dataset(
-        attrs={
-            "source_name": "c3s-cmip6-decadal.member.tas.nc",
-            "further_info_url": (
+        attrs=_decadal_attrs(
+            further_info_url=(
                 "https://furtherinfo.es-doc.org/CMIP6.EC-Earth-Consortium.EC-Earth3."
                 "dcppA-hindcast.s1960-r2i1p1f1"
-            ),
-        }
+            )
+        )
     )
 
     fix = DecadalFurtherInfoUrlNormalizationFix()
@@ -261,14 +294,7 @@ def test_cmip6d08_apply_write_normalizes_further_info_url_variant_separator():
 
 def test_cmip6d09_apply_write_normalizes_startdate_and_sub_experiment_id():
     dataset = xr.Dataset(
-        attrs={
-            "source_name": (
-                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3."
-                "dcppA-hindcast.s1960-r2i1p1f1.Amon.tas.gr.v20201215.nc"
-            ),
-            "startdate": "s1960",
-            "sub_experiment_id": "s1960",
-        }
+        attrs=_ec_earth_decadal_attrs(startdate="s1960", sub_experiment_id="s1960")
     )
 
     fix = DecadalStartTokenNormalizationFix()
@@ -282,7 +308,7 @@ def test_cmip6d09_apply_write_normalizes_startdate_and_sub_experiment_id():
 def test_cmip6d10_apply_write_normalizes_realization_long_name():
     dataset = xr.Dataset(
         data_vars={"realization": xr.DataArray(2, attrs={"long_name": "member"})},
-        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc"},
+        attrs=_decadal_attrs(),
     )
 
     fix = DecadalRealizationLongNameNormalizationFix()
@@ -293,12 +319,7 @@ def test_cmip6d10_apply_write_normalizes_realization_long_name():
 
 
 def test_cmip6d11_apply_write_normalizes_realization_index_type_to_int():
-    dataset = xr.Dataset(
-        attrs={
-            "source_name": "c3s-cmip6-decadal.member.tas.nc",
-            "realization_index": "2",
-        }
-    )
+    dataset = xr.Dataset(attrs=_decadal_attrs(realization_index="2"))
 
     fix = DecadalRealizationIndexNormalizationFix()
     changed = fix.apply(dataset, dry_run=False)
@@ -311,7 +332,7 @@ def test_cmip6d11_apply_write_normalizes_realization_index_type_to_int():
 def test_cmip6d12_apply_write_normalizes_leadtime_metadata_attrs():
     dataset = xr.Dataset(
         coords={"leadtime": ("time", [0.0, 1.0]), "time": [0, 1]},
-        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc"},
+        attrs=_decadal_attrs(),
     )
     dataset["leadtime"].attrs["units"] = "hours"
     dataset["leadtime"].attrs["long_name"] = "lead"
@@ -326,12 +347,7 @@ def test_cmip6d12_apply_write_normalizes_leadtime_metadata_attrs():
 
 
 def test_cmip6d13_apply_write_sets_model_specific_global_attrs():
-    dataset = xr.Dataset(
-        attrs={
-            "source_name": "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1960-r2i1p1f1.Amon.tas.gr.v20201215.nc",
-            "forcing_description": "wrong",
-        }
-    )
+    dataset = xr.Dataset(attrs=_ec_earth_decadal_attrs(forcing_description="wrong"))
 
     fix = DecadalModelGlobalAttributesFix()
     changed = fix.apply(dataset, dry_run=False)
@@ -347,10 +363,7 @@ def test_cmip6d13_apply_write_sets_model_specific_global_attrs():
 def test_cmip6d14_apply_write_adds_reftime_coordinate():
     dataset = xr.Dataset(
         coords={"time": np.array(["1960-11-16", "1960-12-16"], dtype="datetime64[D]")},
-        attrs={
-            "source_name": "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1960-r2i1p1f1.Amon.tas.gr.v20201215.nc",
-            "startdate": "s196011",
-        },
+        attrs=_ec_earth_decadal_attrs(startdate="s196011"),
     )
     dataset["time"].encoding["calendar"] = "standard"
 
@@ -367,7 +380,7 @@ def test_cmip6d14_apply_write_adds_reftime_coordinate():
 def test_cmip6d15_apply_write_derives_leadtime_values_from_time_and_reftime():
     dataset = xr.Dataset(
         coords={"time": np.array(["1960-11-16", "1960-12-16"], dtype="datetime64[D]")},
-        attrs={"source_name": "c3s-cmip6-decadal.member.tas.nc"},
+        attrs=_decadal_attrs(),
     )
     dataset.coords["reftime"] = xr.DataArray(np.datetime64("1960-11-01"))
 
@@ -384,7 +397,7 @@ def test_atlas01_apply_dry_run_reports_change_without_mutating_dataset():
     dataset = xr.Dataset(
         data_vars={"tas": ("time", [273.1, 274.2])},
         coords={"time": [0, 1], "member_id": ("time", ["r1", "r1"])},
-        attrs={"source_name": "c3s-ipcc-atlas.dataset.tas.nc"},
+        attrs=_atlas_attrs(),
     )
     dataset["tas"].encoding["complevel"] = 4
     dataset["time"].encoding["_FillValue"] = -9999
@@ -404,7 +417,7 @@ def test_atlas01_apply_write_performs_real_encoding_fixes_only():
     dataset = xr.Dataset(
         data_vars={"tas": ("time", [273.1, 274.2])},
         coords={"time": [0, 1], "member_id": ("time", ["r1", "r1"])},
-        attrs={"source_name": "c3s-ipcc-atlas.dataset.tas.nc"},
+        attrs=_atlas_attrs(),
     )
     dataset["tas"].encoding["complevel"] = 4
     dataset["time"].encoding["_FillValue"] = -9999
@@ -430,7 +443,7 @@ def test_atlas02_apply_write_sets_project_id_only():
     dataset = xr.Dataset(
         data_vars={"tas": ("time", [273.1, 274.2])},
         coords={"time": [0, 1]},
-        attrs={"source_name": "c3s-ipcc-atlas.dataset.tas.nc"},
+        attrs=_atlas_attrs(),
     )
     dataset["tas"].encoding["complevel"] = 4
 

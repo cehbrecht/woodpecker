@@ -6,6 +6,7 @@ import xarray as xr
 from woodpecker.plans.matcher import plan_matches_dataset
 from woodpecker.plans.models import DatasetMatcher, FixPlan, FixRef
 from woodpecker.stores import DuckDBFixPlanStore, JsonFixPlanStore
+from woodpecker.testing import make_cmip6
 
 
 def _sample_plan() -> FixPlan:
@@ -36,7 +37,7 @@ def test_fix_plan_serialization_roundtrip():
 
 def test_plan_matcher_requires_both_attrs_and_path_when_both_defined():
     plan = _sample_plan()
-    ds = xr.Dataset(attrs={"project_id": "CMIP6", "table_id": "Amon"})
+    ds = make_cmip6()
 
     assert plan_matches_dataset(plan, ds, path="/tmp/data/cmip6_case.nc") is True
     assert plan_matches_dataset(plan, ds, path="/tmp/data/other_case.nc") is False
@@ -93,7 +94,7 @@ def test_json_store_save_list_lookup(tmp_path):
     listed = store.list_plans()
     assert [item.id for item in listed] == ["tests.plan_1", "tests.plan_2"]
 
-    ds = xr.Dataset(attrs={"project_id": "CMIP6", "table_id": "Amon"})
+    ds = make_cmip6()
     matched = store.lookup(ds, path="/tmp/cmip6_case.nc")
     assert [item.id for item in matched] == ["tests.plan_1", "tests.plan_2"]
 
@@ -118,7 +119,7 @@ def test_json_store_yaml_save_list_lookup(tmp_path):
     listed = store.list_plans()
     assert [item.id for item in listed] == ["tests.plan_1", "tests.plan_2"]
 
-    ds = xr.Dataset(attrs={"project_id": "CMIP6", "table_id": "Amon"})
+    ds = make_cmip6()
     matched = store.lookup(ds, path="/tmp/cmip6_case.nc")
     assert [item.id for item in matched] == ["tests.plan_1", "tests.plan_2"]
 
@@ -226,7 +227,7 @@ def test_duckdb_store_save_list_lookup(tmp_path):
     listed = store.list_plans()
     assert [item.id for item in listed] == ["tests.plan_1", "tests.plan_2"]
 
-    ds = xr.Dataset(attrs={"project_id": "CMIP6", "table_id": "Amon"})
+    ds = make_cmip6()
     matched = store.lookup(ds, path="/tmp/cmip6_case.nc")
     assert [item.id for item in matched] == ["tests.plan_1", "tests.plan_2"]
 
@@ -251,7 +252,7 @@ def test_duckdb_candidate_query_builds_attr_prefilter(tmp_path):
     pytest.importorskip("duckdb")
 
     store = DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
-    ds = xr.Dataset(attrs={"project_id": "CMIP6", "table_id": "Amon"})
+    ds = make_cmip6()
 
     sql, params = store._candidate_query(ds)
 

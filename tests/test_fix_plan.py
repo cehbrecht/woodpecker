@@ -14,6 +14,7 @@ from woodpecker.plans.models import (
 )
 from woodpecker.runner import apply_fix_plan
 from woodpecker.stores.json_store import JsonFixPlanStore
+from woodpecker.testing import make_cmip6
 
 
 class _FixMethodFix(Fix):
@@ -115,7 +116,7 @@ def test_load_fix_plan_from_yaml(tmp_path: Path):
 
 def test_apply_plan_calls_matches_then_apply_and_passes_options():
     register_fix(_FixMethodFix)
-    ds = xr.Dataset()
+    ds = make_cmip6()
     plan = FixPlan.model_validate(
         {
             "id": "plan_test.execution_order",
@@ -133,7 +134,7 @@ def test_apply_plan_calls_matches_then_apply_and_passes_options():
 
 def test_apply_plan_uses_apply_for_execution():
     register_fix(_ApplyMethodFix)
-    ds = xr.Dataset()
+    ds = make_cmip6()
     plan = FixPlan.model_validate(
         {
             "id": "plan_test.apply_fallback",
@@ -151,7 +152,7 @@ def test_apply_plan_uses_apply_for_execution():
 
 def test_apply_plan_does_not_call_check():
     register_fix(_TypeErrorInsideMethodFix)
-    ds = xr.Dataset()
+    ds = make_cmip6()
     plan = FixPlan.model_validate(
         {
             "id": "plan_test.type_error_passthrough",
