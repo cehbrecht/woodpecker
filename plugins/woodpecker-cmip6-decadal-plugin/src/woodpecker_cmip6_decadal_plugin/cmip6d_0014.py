@@ -49,6 +49,16 @@ def _build_reftime_value(dataset: xr.Dataset) -> object | None:
     return np.datetime64(f"{year:04d}-11-01")
 
 
+def _same_reftime_value(left: object, right: object) -> bool:
+    if left == right:
+        return True
+    left_date = tuple(getattr(left, name, None) for name in ("year", "month", "day"))
+    right_date = tuple(getattr(right, name, None) for name in ("year", "month", "day"))
+    if all(value is not None for value in left_date + right_date):
+        return left_date == right_date
+    return np.datetime64(left, "D") == np.datetime64(right, "D")
+
+
 def _needs_reftime_fix(dataset: xr.Dataset) -> bool:
     target = _build_reftime_value(dataset)
     if target is None:
@@ -58,7 +68,7 @@ def _needs_reftime_fix(dataset: xr.Dataset) -> bool:
     current = dataset["reftime"]
     if current.ndim != 0:
         return True
-    if current.values.item() != target:
+    if not _same_reftime_value(current.values.item(), target):
         return True
     if current.attrs.get("long_name") != "Start date of the forecast":
         return True
