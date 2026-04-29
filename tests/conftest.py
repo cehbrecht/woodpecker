@@ -6,6 +6,8 @@ from typing import Callable, Iterator, Tuple
 import pytest
 from click.testing import CliRunner
 
+from woodpecker.identity import registry as identity_registry
+
 # Shared test-data fixtures for lightweight NetCDF-style tests.
 #
 # We intentionally use tiny placeholder `.nc` files (plain text) to keep tests
@@ -17,6 +19,17 @@ from click.testing import CliRunner
 
 
 PLACEHOLDER_NETCDF_CONTENT = "placeholder-netcdf-path\n"
+
+
+@pytest.fixture(autouse=True)
+def isolate_identity_resolver_registry() -> Iterator[None]:
+    """Restore built-in dataset identity resolvers after each test."""
+    resolvers = dict(identity_registry._RESOLVERS)
+    try:
+        yield
+    finally:
+        identity_registry._RESOLVERS.clear()
+        identity_registry._RESOLVERS.update(resolvers)
 
 
 @pytest.fixture
