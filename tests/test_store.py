@@ -252,7 +252,7 @@ def test_duckdb_candidate_query_builds_attr_prefilter(tmp_path):
     pytest.importorskip("duckdb")
 
     store = DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
-    ds = make_cmip6()
+    ds = xr.Dataset(attrs={"project_id": "CMIP6", "table_id": "Amon"})
 
     sql, params = store._candidate_query(ds)
 
