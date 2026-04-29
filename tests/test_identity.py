@@ -6,6 +6,7 @@ from woodpecker.identity import (
     register_dataset_identity,
     resolve_dataset_identity,
 )
+from woodpecker.testing import make_cmip6
 
 
 def test_default_identity_resolver_derives_project_id_from_dataset_id():
@@ -54,13 +55,13 @@ def test_identity_uses_detected_cmip6_decadal_dataset_type():
 
 
 def test_identity_uses_detected_cmip6_dataset_type():
-    ds = xr.Dataset(attrs={"source_name": "c3s-cmip6.member.tas.nc"})
+    ds = make_cmip6()
 
     identity = resolve_dataset_identity(ds)
 
     assert identity.dataset_type == "cmip6"
-    assert identity.dataset_id == "c3s-cmip6.member.tas.nc"
-    assert identity.project_id == "c3s-cmip6"
+    assert identity.dataset_id == ds.attrs["dataset_id"]
+    assert identity.project_id == "CMIP6"
     assert identity.metadata.get("resolver")
 
 
