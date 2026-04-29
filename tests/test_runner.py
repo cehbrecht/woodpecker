@@ -2,6 +2,7 @@ import xarray as xr
 
 from woodpecker.io import DataInput
 from woodpecker.runner import run_fix
+from woodpecker.testing import make_atlas
 
 
 class DummyInput(DataInput):
@@ -78,7 +79,7 @@ def test_run_fix_reports_failed_persistence():
 
 
 def test_run_fix_skips_fixes_for_other_dataset_types():
-    ds = xr.Dataset(attrs={"source_name": "c3s-ipcc-atlas.dataset.tas.nc"})
+    ds = make_atlas()
     data_input = DummyInput(dataset=ds, save_ok=True)
 
     stats = run_fix([data_input], [DeclaredCmipFix()], dry_run=False, output_format="auto")

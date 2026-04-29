@@ -9,12 +9,19 @@ from .registry import (
 from .resolvers.atlas import AtlasDatasetIdentityResolver
 from .resolvers.cmip6 import CMIP6DatasetIdentityResolver
 from .resolvers.cmip6_decadal import CMIP6DecadalDatasetIdentityResolver
+from .resolvers.cordex import CordexDatasetIdentityResolver
 
 register_dataset_identity("atlas", override=True)(AtlasDatasetIdentityResolver)
 register_dataset_identity("cmip6", override=True)(CMIP6DatasetIdentityResolver)
 register_dataset_identity("cmip6-decadal", override=True)(CMIP6DecadalDatasetIdentityResolver)
+register_dataset_identity("cordex", override=True)(CordexDatasetIdentityResolver)
 
-del AtlasDatasetIdentityResolver, CMIP6DatasetIdentityResolver, CMIP6DecadalDatasetIdentityResolver
+del (
+    AtlasDatasetIdentityResolver,
+    CMIP6DatasetIdentityResolver,
+    CMIP6DecadalDatasetIdentityResolver,
+    CordexDatasetIdentityResolver,
+)
 
 __all__ = [
     "DatasetIdentity",

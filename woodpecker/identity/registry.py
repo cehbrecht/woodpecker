@@ -7,11 +7,23 @@ import xarray as xr
 
 from .base import DatasetIdentity, DatasetIdentityResolver, DefaultDatasetIdentityResolver
 
+RegistrySnapshot = dict[str, DatasetIdentityResolver]
 _RESOLVERS: dict[str, DatasetIdentityResolver] = {}
 _FALLBACK = DefaultDatasetIdentityResolver()
 _ResolverClass = TypeVar("_ResolverClass", bound=type[DatasetIdentityResolver])
 _DEFAULT_PRIORITY = 100
 _DEFAULT_CONFIDENCE = 1.0
+
+
+def snapshot_registry() -> RegistrySnapshot:
+    """Return a shallow copy of the registered dataset identity resolvers."""
+    return dict(_RESOLVERS)
+
+
+def restore_registry(state: RegistrySnapshot) -> None:
+    """Restore registered dataset identity resolvers from a snapshot."""
+    _RESOLVERS.clear()
+    _RESOLVERS.update(state)
 
 
 def _register(
