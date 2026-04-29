@@ -40,8 +40,7 @@ def make_cordex(
 
 def _cordex_attrs(variable: str) -> dict[str, str]:
     dataset_id = (
-        f"CORDEX.output.EUR-11.SMHI.MOHC-HadGEM2-ES.rcp85.r1i1p1."
-        f"RCA4.v1.day.{variable}.v20200101"
+        f"CORDEX.output.EUR-11.SMHI.MOHC-HadGEM2-ES.rcp85.r1i1p1.RCA4.v1.day.{variable}.v20200101"
     )
     return {
         "project_id": "CORDEX",

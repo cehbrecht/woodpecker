@@ -100,6 +100,10 @@ def dataset_with_attrs(
     dataset = field.to_dataset()
     dataset.attrs.update(dict(attrs))
     dataset["time"].attrs.update({"axis": "T", "standard_name": "time"})
-    dataset["lat"].attrs.update({"axis": "Y", "standard_name": "latitude", "units": "degrees_north"})
-    dataset["lon"].attrs.update({"axis": "X", "standard_name": "longitude", "units": "degrees_east"})
+    dataset["lat"].attrs.update(
+        {"axis": "Y", "standard_name": "latitude", "units": "degrees_north"}
+    )
+    dataset["lon"].attrs.update(
+        {"axis": "X", "standard_name": "longitude", "units": "degrees_east"}
+    )
     return dataset

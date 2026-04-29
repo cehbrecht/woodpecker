@@ -44,7 +44,9 @@ def _cmip6_attrs(**overrides):
 
 
 def _decadal_attrs(**overrides):
-    return dict(make_cmip6_decadal(overrides={"source_name": DECADAL_SOURCE_NAME, **overrides}).attrs)
+    return dict(
+        make_cmip6_decadal(overrides={"source_name": DECADAL_SOURCE_NAME, **overrides}).attrs
+    )
 
 
 def _ec_earth_decadal_attrs(**overrides):

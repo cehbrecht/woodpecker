@@ -43,10 +43,7 @@ def make_cmip6(
 
 
 def _cmip6_attrs(variable: str) -> dict[str, str]:
-    dataset_id = (
-        f"CMIP6.CMIP.MOHC.HadGEM3-GC31-LL.historical.r1i1p1f3."
-        f"Amon.{variable}.gn.v20200101"
-    )
+    dataset_id = f"CMIP6.CMIP.MOHC.HadGEM3-GC31-LL.historical.r1i1p1f3.Amon.{variable}.gn.v20200101"
     return {
         "project_id": "CMIP6",
         "dataset_id": dataset_id,

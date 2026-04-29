@@ -41,8 +41,7 @@ def make_cmip6_decadal(
 
 def _cmip6_decadal_attrs(variable: str) -> dict[str, str]:
     dataset_id = (
-        f"CMIP6.DCPP.MPI-M.MPI-ESM1-2-HR.dcppA-hindcast.s1960-r1i1p1f1."
-        f"Omon.{variable}.gn.v20200101"
+        f"CMIP6.DCPP.MPI-M.MPI-ESM1-2-HR.dcppA-hindcast.s1960-r1i1p1f1.Omon.{variable}.gn.v20200101"
     )
     return {
         "project_id": "CMIP6",
