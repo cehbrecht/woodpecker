@@ -1,3 +1,4 @@
+import pytest
 import xarray as xr
 
 from woodpecker.io import DataInput
@@ -106,7 +107,16 @@ def test_run_fix_can_embed_provenance_metadata_on_write():
     assert "woodpecker_provenance" in data_input.saved_attrs
 
 
-def test_run_fix_force_apply_bypasses_matches():
+@pytest.mark.parametrize(
+    ("force_apply", "expected_attempted", "expected_changed"),
+    [
+        (True, 1, 1),
+        (False, 0, 0),
+    ],
+)
+def test_run_fix_force_apply_controls_non_matching_fixes(
+    force_apply, expected_attempted, expected_changed
+):
     ds = xr.Dataset(attrs={"source_name": "dummy.nc"})
     data_input = DummyInput(dataset=ds, save_ok=True)
 
@@ -114,25 +124,9 @@ def test_run_fix_force_apply_bypasses_matches():
         [data_input],
         [NonMatchingFix()],
         dry_run=False,
-        force_apply=True,
+        force_apply=force_apply,
         output_format="auto",
     )
 
-    assert stats["attempted"] == 1
-    assert stats["changed"] == 1
-
-
-def test_run_fix_without_force_apply_respects_matches():
-    ds = xr.Dataset(attrs={"source_name": "dummy.nc"})
-    data_input = DummyInput(dataset=ds, save_ok=True)
-
-    stats = run_fix(
-        [data_input],
-        [NonMatchingFix()],
-        dry_run=False,
-        force_apply=False,
-        output_format="auto",
-    )
-
-    assert stats["attempted"] == 0
-    assert stats["changed"] == 0
+    assert stats["attempted"] == expected_attempted
+    assert stats["changed"] == expected_changed

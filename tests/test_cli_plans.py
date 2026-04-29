@@ -29,24 +29,47 @@ def _successful_fix_stats() -> dict[str, int]:
     }
 
 
+def _write_json(path: str, payload) -> None:
+    Path(path).write_text(json.dumps(payload), encoding="utf-8")
+
+
+def _write_plan_document(path: str, plans: list[dict]) -> None:
+    _write_json(path, {"plans": plans})
+
+
+def _write_multiple_matching_plans(path: str, *, with_path_filters: bool) -> None:
+    plans = [
+        {
+            "id": "test.first",
+            "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
+        },
+        {
+            "id": "test.second",
+            "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+        },
+    ]
+    if with_path_filters:
+        for plan in plans:
+            plan["match"] = {"path_patterns": ["*cmip6_bad.nc"]}
+        _write_json(path, plans)
+    else:
+        _write_plan_document(path, plans)
+
+
 def test_check_uses_plan_defaults(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
     monkeypatch,
 ):
     runner, make_placeholder_netcdf_path = isolated_cli_workspace
     make_placeholder_netcdf_path("cmip6_bad.nc")
-    Path("plan.json").write_text(
-        json.dumps(
+    _write_plan_document(
+        "plan.json",
+        [
             {
-                "plans": [
-                    {
-                        "id": "core.basic",
-                        "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
-                    }
-                ]
+                "id": "core.basic",
+                "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
             }
-        ),
-        encoding="utf-8",
+        ],
     )
 
     def _fake_run_check(*args, **kwargs):
@@ -67,18 +90,14 @@ def test_fix_uses_auto_output_format_when_not_set(
 ):
     runner, make_placeholder_netcdf_path = isolated_cli_workspace
     make_placeholder_netcdf_path("cmip6_case.nc")
-    Path("plan.json").write_text(
-        json.dumps(
+    _write_plan_document(
+        "plan.json",
+        [
             {
-                "plans": [
-                    {
-                        "id": "core.basic",
-                        "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
-                    }
-                ]
+                "id": "core.basic",
+                "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
             }
-        ),
-        encoding="utf-8",
+        ],
     )
 
     def _fake_run_fix(context, **kwargs):
@@ -104,23 +123,19 @@ def test_check_plan_applies_fix_options_to_message(
 ):
     runner, make_placeholder_netcdf_path = isolated_cli_workspace
     make_placeholder_netcdf_path("c3s-cmip6.member.nc")
-    Path("plan.json").write_text(
-        json.dumps(
+    _write_plan_document(
+        "plan.json",
+        [
             {
-                "plans": [
+                "id": "cmip6.msg",
+                "steps": [
                     {
-                        "id": "cmip6.msg",
-                        "steps": [
-                            {
-                                "id": "woodpecker.normalize_tas_units_to_kelvin",
-                                "options": {"message": "configured check message"},
-                            }
-                        ],
+                        "id": "woodpecker.normalize_tas_units_to_kelvin",
+                        "options": {"message": "configured check message"},
                     }
-                ]
+                ],
             }
-        ),
-        encoding="utf-8",
+        ],
     )
 
     def _fake_run_check(context):
@@ -144,17 +159,15 @@ def test_check_uses_json_plan_store_lookup(
 ):
     runner, make_placeholder_netcdf_path = isolated_cli_workspace
     make_placeholder_netcdf_path("cmip6_bad.nc")
-    Path("plans.json").write_text(
-        json.dumps(
-            [
-                {
-                    "id": "cmip6.default",
-                    "match": {"path_patterns": ["*cmip6_bad.nc"]},
-                    "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
-                }
-            ]
-        ),
-        encoding="utf-8",
+    _write_json(
+        "plans.json",
+        [
+            {
+                "id": "cmip6.default",
+                "match": {"path_patterns": ["*cmip6_bad.nc"]},
+                "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+            }
+        ],
     )
 
     def _fake_run_check(*args, **kwargs):
@@ -172,61 +185,49 @@ def test_check_uses_json_plan_store_lookup(
     assert "woodpecker.normalize_tas_units_to_kelvin" in result.output
 
 
-def test_check_plan_store_requires_plan_id_when_multiple_match_without_path_filters(
+@pytest.mark.parametrize(
+    ("plan_path", "with_path_filters", "command_prefix"),
+    [
+        ("plans.json", True, ["check", "."]),
+        ("plan.json", False, ["check"]),
+    ],
+)
+def test_check_plan_store_requires_plan_id_when_multiple_match(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    plan_path,
+    with_path_filters,
+    command_prefix,
 ):
     runner, make_placeholder_netcdf_path = isolated_cli_workspace
     make_placeholder_netcdf_path("cmip6_bad.nc")
-    Path("plans.json").write_text(
-        json.dumps(
-            [
-                {
-                    "id": "test.first",
-                    "match": {"path_patterns": ["*cmip6_bad.nc"]},
-                    "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
-                },
-                {
-                    "id": "test.second",
-                    "match": {"path_patterns": ["*cmip6_bad.nc"]},
-                    "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
-                },
-            ]
-        ),
-        encoding="utf-8",
-    )
+    _write_multiple_matching_plans(plan_path, with_path_filters=with_path_filters)
 
     result = runner.invoke(
         cli,
-        ["check", ".", "--plan", "plans.json"],
+        [*command_prefix, "--plan", plan_path],
     )
 
     assert result.exit_code != 0
     assert "Multiple matching fix plans found" in result.output
 
 
-def test_check_plan_store_plan_id_selects_specific_plan_without_path_filters(
+@pytest.mark.parametrize(
+    ("plan_path", "with_path_filters", "command_prefix"),
+    [
+        ("plans.json", True, ["check", "."]),
+        ("plan.json", False, ["check"]),
+    ],
+)
+def test_check_plan_store_plan_id_selects_specific_plan(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
     monkeypatch,
+    plan_path,
+    with_path_filters,
+    command_prefix,
 ):
     runner, make_placeholder_netcdf_path = isolated_cli_workspace
     make_placeholder_netcdf_path("cmip6_bad.nc")
-    Path("plans.json").write_text(
-        json.dumps(
-            [
-                {
-                    "id": "test.first",
-                    "match": {"path_patterns": ["*cmip6_bad.nc"]},
-                    "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
-                },
-                {
-                    "id": "test.second",
-                    "match": {"path_patterns": ["*cmip6_bad.nc"]},
-                    "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
-                },
-            ]
-        ),
-        encoding="utf-8",
-    )
+    _write_multiple_matching_plans(plan_path, with_path_filters=with_path_filters)
 
     def _fake_run_check(*args, **kwargs):
         _ = (args, kwargs)
@@ -238,9 +239,9 @@ def test_check_plan_store_plan_id_selects_specific_plan_without_path_filters(
         cli,
         [
             "check",
-            ".",
+            *command_prefix[1:],
             "--plan",
-            "plans.json",
+            plan_path,
             "--plan-id",
             "test.second",
         ],
@@ -259,73 +260,6 @@ def test_check_plan_id_without_plan_errors(
 
     assert result.exit_code != 0
     assert "--plan-id requires --plan" in result.output
-
-
-def test_check_plan_store_requires_plan_id_when_multiple_match(
-    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
-):
-    runner, make_placeholder_netcdf_path = isolated_cli_workspace
-    make_placeholder_netcdf_path("cmip6_bad.nc")
-
-    Path("plan.json").write_text(
-        json.dumps(
-            {
-                "plans": [
-                    {
-                        "id": "test.first",
-                        "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
-                    },
-                    {
-                        "id": "test.second",
-                        "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
-                    },
-                ]
-            }
-        ),
-        encoding="utf-8",
-    )
-
-    result = runner.invoke(cli, ["check", "--plan", "plan.json"])
-
-    assert result.exit_code != 0
-    assert "Multiple matching fix plans found" in result.output
-
-
-def test_check_plan_store_plan_id_selects_specific_plan(
-    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
-    monkeypatch,
-):
-    runner, make_placeholder_netcdf_path = isolated_cli_workspace
-    make_placeholder_netcdf_path("cmip6_bad.nc")
-
-    Path("plan.json").write_text(
-        json.dumps(
-            {
-                "plans": [
-                    {
-                        "id": "test.first",
-                        "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
-                    },
-                    {
-                        "id": "test.second",
-                        "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
-                    },
-                ]
-            }
-        ),
-        encoding="utf-8",
-    )
-
-    def _fake_run_check(*args, **kwargs):
-        _ = (args, kwargs)
-        return [_finding("selected plan")]
-
-    monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
-
-    result = runner.invoke(cli, ["check", "--plan", "plan.json", "--plan-id", "test.second"])
-
-    assert result.exit_code == 1
-    assert "woodpecker.normalize_tas_units_to_kelvin" in result.output
 
 
 def test_list_plans_text_output(

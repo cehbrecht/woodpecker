@@ -66,6 +66,27 @@ def _atlas_attrs(**overrides):
     )
 
 
+def _decadal_bounds_dataset() -> xr.Dataset:
+    return xr.Dataset(
+        data_vars={
+            "realization": xr.DataArray(2),
+            "lon_bnds": (("x", "bnds"), [[0.0, 1.0]]),
+            "lat_bnds": (("x", "bnds"), [[10.0, 11.0]]),
+            "time_bnds": (("time", "bnds"), [[0.0, 1.0]]),
+        },
+        coords={"time": [0], "x": [0], "bnds": [0, 1]},
+        attrs=_decadal_attrs(),
+    )
+
+
+def _atlas_encoding_dataset() -> xr.Dataset:
+    return xr.Dataset(
+        data_vars={"tas": ("time", [273.1, 274.2])},
+        coords={"time": [0, 1], "member_id": ("time", ["r1", "r1"])},
+        attrs=_atlas_attrs(),
+    )
+
+
 def test_cmip601_dummy_apply_write_sets_dummy_marker_attr():
     dataset = xr.Dataset(
         {"tas": xr.Variable("time", np.array([20.0, 21.0]), attrs={"units": "degC"})},
@@ -188,16 +209,7 @@ def test_cmip6_decadal_fixes_do_not_match_non_decadal_cmip6(fix_cls):
 
 
 def test_cmip6d04_apply_write_removes_coordinates_encoding_from_decadal_vars():
-    dataset = xr.Dataset(
-        data_vars={
-            "realization": xr.DataArray(2),
-            "lon_bnds": (("x", "bnds"), [[0.0, 1.0]]),
-            "lat_bnds": (("x", "bnds"), [[10.0, 11.0]]),
-            "time_bnds": (("time", "bnds"), [[0.0, 1.0]]),
-        },
-        coords={"time": [0], "x": [0], "bnds": [0, 1]},
-        attrs=_decadal_attrs(),
-    )
+    dataset = _decadal_bounds_dataset()
     dataset["realization"].encoding["coordinates"] = "time"
     dataset["lon_bnds"].encoding["coordinates"] = "lon lat"
     dataset["lat_bnds"].encoding["coordinates"] = "lat lon"
@@ -249,16 +261,7 @@ def test_cmip6d06_apply_write_normalizes_realization_dtype_to_int32():
 
 
 def test_cmip6d07_apply_write_removes_fillvalue_encoding_from_decadal_vars():
-    dataset = xr.Dataset(
-        data_vars={
-            "realization": xr.DataArray(2),
-            "lon_bnds": (("x", "bnds"), [[0.0, 1.0]]),
-            "lat_bnds": (("x", "bnds"), [[10.0, 11.0]]),
-            "time_bnds": (("time", "bnds"), [[0.0, 1.0]]),
-        },
-        coords={"time": [0], "x": [0], "bnds": [0, 1]},
-        attrs=_decadal_attrs(),
-    )
+    dataset = _decadal_bounds_dataset()
     dataset["realization"].encoding["_FillValue"] = -9999
     dataset["lon_bnds"].encoding["_FillValue"] = -9999.0
     dataset["lat_bnds"].encoding["_FillValue"] = -9999.0
@@ -396,11 +399,7 @@ def test_cmip6d15_apply_write_derives_leadtime_values_from_time_and_reftime():
 
 
 def test_atlas01_apply_dry_run_reports_change_without_mutating_dataset():
-    dataset = xr.Dataset(
-        data_vars={"tas": ("time", [273.1, 274.2])},
-        coords={"time": [0, 1], "member_id": ("time", ["r1", "r1"])},
-        attrs=_atlas_attrs(),
-    )
+    dataset = _atlas_encoding_dataset()
     dataset["tas"].encoding["complevel"] = 4
     dataset["time"].encoding["_FillValue"] = -9999
     dataset["member_id"].encoding["zlib"] = True
@@ -416,11 +415,7 @@ def test_atlas01_apply_dry_run_reports_change_without_mutating_dataset():
 
 
 def test_atlas01_apply_write_performs_real_encoding_fixes_only():
-    dataset = xr.Dataset(
-        data_vars={"tas": ("time", [273.1, 274.2])},
-        coords={"time": [0, 1], "member_id": ("time", ["r1", "r1"])},
-        attrs=_atlas_attrs(),
-    )
+    dataset = _atlas_encoding_dataset()
     dataset["tas"].encoding["complevel"] = 4
     dataset["time"].encoding["_FillValue"] = -9999
     dataset["member_id"].encoding["zlib"] = True

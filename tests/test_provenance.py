@@ -2,16 +2,27 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from woodpecker.io.backends.xr import XarrayInput
 from woodpecker.provenance import format_provenance_source, write_fix_provenance
 from woodpecker.testing import make_cmip6
 
 
-def test_format_provenance_source_for_store_mode():
-    context = SimpleNamespace(
-        source="store",
-        selected_plans=[SimpleNamespace(id="alpha"), SimpleNamespace(id="beta")],
-    )
+@pytest.mark.parametrize(
+    ("context", "expected"),
+    [
+        (
+            SimpleNamespace(
+                source="store",
+                selected_plans=[SimpleNamespace(id="alpha"), SimpleNamespace(id="beta")],
+            ),
+            "store type=json location=plans.json plans=alpha, beta",
+        ),
+        (SimpleNamespace(source="direct", selected_plans=[]), None),
+    ],
+)
+def test_format_provenance_source(context, expected):
 
     output = format_provenance_source(
         context,
@@ -19,19 +30,7 @@ def test_format_provenance_source_for_store_mode():
         plan_location=Path("plans.json"),
     )
 
-    assert output == "store type=json location=plans.json plans=alpha, beta"
-
-
-def test_format_provenance_source_for_direct_mode():
-    context = SimpleNamespace(source="direct", selected_plans=[])
-
-    output = format_provenance_source(
-        context,
-        store_type="json",
-        plan_location=Path("plans.json"),
-    )
-
-    assert output is None
+    assert output == expected
 
 
 def test_write_fix_provenance_writes_run_document(tmp_path: Path):

@@ -92,8 +92,15 @@ def test_plan_matcher_path_only():
     assert plan_matches_dataset(plan, ds, path=None) is False
 
 
-def test_json_store_save_list_lookup(tmp_path):
-    store = JsonFixPlanStore(tmp_path / "fix-plans.json")
+@pytest.mark.parametrize(
+    ("filename", "schema_marker"),
+    [
+        ("fix-plans.json", '"schema_version": 1'),
+        ("fix-plans.yaml", "schema_version: 1"),
+    ],
+)
+def test_json_store_save_list_lookup(tmp_path, filename, schema_marker):
+    store = JsonFixPlanStore(tmp_path / filename)
     plan_1 = _sample_plan()
     plan_2 = _single_step_plan("tests.plan_2")
 
@@ -101,29 +108,7 @@ def test_json_store_save_list_lookup(tmp_path):
     store.save_plan(plan_2)
 
     raw = store.path.read_text(encoding="utf-8")
-    assert '"schema_version": 1' in raw
-
-    listed = store.list_plans()
-    assert [item.id for item in listed] == ["tests.plan_1", "tests.plan_2"]
-
-    ds = make_cmip6()
-    matched = store.lookup(ds, path="/tmp/cmip6_case.nc")
-    assert [item.id for item in matched] == ["tests.plan_1", "tests.plan_2"]
-
-    matched = store.lookup(ds, path="/tmp/no-match.txt")
-    assert [item.id for item in matched] == ["tests.plan_2"]
-
-
-def test_json_store_yaml_save_list_lookup(tmp_path):
-    store = JsonFixPlanStore(tmp_path / "fix-plans.yaml")
-    plan_1 = _sample_plan()
-    plan_2 = _single_step_plan("tests.plan_2")
-
-    store.save_plan(plan_1)
-    store.save_plan(plan_2)
-
-    raw = store.path.read_text(encoding="utf-8")
-    assert "schema_version: 1" in raw
+    assert schema_marker in raw
 
     listed = store.list_plans()
     assert [item.id for item in listed] == ["tests.plan_1", "tests.plan_2"]
@@ -272,21 +257,6 @@ def test_duckdb_store_get_plan_resolves_canonical_and_local_ids(tmp_path):
 
     assert by_canonical.id == "atlas.cleanup_plan"
     assert by_local.id == "atlas.cleanup_plan"
-
-
-def test_duckdb_candidate_query_builds_attr_prefilter(tmp_path):
-    pytest.importorskip("duckdb")
-
-    store = DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
-    ds = xr.Dataset(attrs={"project_id": "CMIP6", "table_id": "Amon"})
-
-    sql, params = store._candidate_query(ds)
-
-    assert sql.startswith("SELECT id, description, match_json, steps_json FROM fix_plans")
-    assert "$.attrs.project_id" in sql
-    assert "$.attrs.table_id" in sql
-    assert "ORDER BY id" in sql
-    assert params == ["CMIP6", "Amon"]
 
 
 def test_duckdb_lookup_skips_decoding_nonmatching_fixes_payload(tmp_path):

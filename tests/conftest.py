@@ -6,6 +6,8 @@ from typing import Callable, Iterator, Tuple
 import pytest
 from click.testing import CliRunner
 
+from woodpecker.fixes.identifiers import IdentifierResolver
+from woodpecker.fixes.registry import FixRegistry
 from woodpecker.identity import registry as identity_registry
 
 # Shared test-data fixtures for lightweight NetCDF-style tests.
@@ -29,6 +31,22 @@ def isolate_identity_resolver_registry() -> Iterator[None]:
         yield
     finally:
         identity_registry.restore_registry(resolvers)
+
+
+@pytest.fixture(autouse=True)
+def isolate_fix_registry() -> Iterator[None]:
+    """Keep per-test fix registrations from leaking globally."""
+    registry = dict(FixRegistry._registry)
+    identifier_index = dict(FixRegistry._resolver._identifier_index)
+    ambiguous_identifiers = set(FixRegistry._resolver._ambiguous_identifiers)
+    try:
+        yield
+    finally:
+        FixRegistry._registry = registry
+        FixRegistry._resolver = IdentifierResolver(
+            index=identifier_index,
+            ambiguous_identifiers=ambiguous_identifiers,
+        )
 
 
 @pytest.fixture

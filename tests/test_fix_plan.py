@@ -124,10 +124,7 @@ def test_apply_plan_calls_matches_then_apply_and_passes_options():
         }
     )
 
-    try:
-        apply_fix_plan(ds, plan, FixRegistry)
-    finally:
-        FixRegistry._registry.pop("plan_test.fix_method", None)
+    apply_fix_plan(ds, plan, FixRegistry)
 
     assert ds.attrs["trace"] == [("matches", {"alpha": 1}), ("apply", {"alpha": 1}, False)]
 
@@ -142,10 +139,7 @@ def test_apply_plan_uses_apply_for_execution():
         }
     )
 
-    try:
-        apply_fix_plan(ds, plan, FixRegistry)
-    finally:
-        FixRegistry._registry.pop("plan_test.apply_method", None)
+    apply_fix_plan(ds, plan, FixRegistry)
 
     assert ds.attrs["trace"] == [("matches", {"beta": 2}), ("apply", {"beta": 2}, False)]
 
@@ -160,10 +154,7 @@ def test_apply_plan_does_not_call_check():
         }
     )
 
-    try:
-        apply_fix_plan(ds, plan, FixRegistry)
-    finally:
-        FixRegistry._registry.pop("plan_test.type_error_inside_method", None)
+    apply_fix_plan(ds, plan, FixRegistry)
 
 
 def test_load_fix_plan_document_json(tmp_path: Path):

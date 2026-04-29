@@ -1,24 +1,6 @@
 import pytest
 
-from woodpecker.fixes.identifiers import IdentifierResolver
 from woodpecker.fixes.registry import Fix, FixRegistry, GroupFix, register_fix
-
-
-def _snapshot_registry_state():
-    return (
-        dict(FixRegistry._registry),
-        dict(FixRegistry._resolver._identifier_index),
-        set(FixRegistry._resolver._ambiguous_identifiers),
-    )
-
-
-def _restore_registry_state(snapshot):
-    registry_snapshot, index_snapshot, ambiguous_snapshot = snapshot
-    FixRegistry._registry = registry_snapshot
-    FixRegistry._resolver = IdentifierResolver(
-        index=index_snapshot,
-        ambiguous_identifiers=ambiguous_snapshot,
-    )
 
 
 def test_registry_discovers_builtins():
@@ -66,8 +48,6 @@ def test_registry_rejects_missing_name():
 
 
 def test_register_fix_decorator_alias_registers_class():
-    snapshot = _snapshot_registry_state()
-
     class _AliasFix(Fix):
         namespace_prefix = "test"
         local_id = "alias_fix"
@@ -78,19 +58,14 @@ def test_register_fix_decorator_alias_registers_class():
         priority = 10
         dataset = None
 
-    try:
-        registered = register_fix(_AliasFix)
-        assert registered is _AliasFix
-        assert "test.alias_fix" in FixRegistry.registered_ids()
-        assert FixRegistry.resolve_identifier("alias_lookup") == "test.alias_fix"
-        assert FixRegistry.resolve_identifier("test.alias_lookup") == "test.alias_fix"
-    finally:
-        _restore_registry_state(snapshot)
+    registered = register_fix(_AliasFix)
+    assert registered is _AliasFix
+    assert "test.alias_fix" in FixRegistry.registered_ids()
+    assert FixRegistry.resolve_identifier("alias_lookup") == "test.alias_fix"
+    assert FixRegistry.resolve_identifier("test.alias_lookup") == "test.alias_fix"
 
 
 def test_registry_supports_fully_qualified_aliases_without_local_expansion():
-    snapshot = _snapshot_registry_state()
-
     class _QualifiedAliasFix(Fix):
         namespace_prefix = "test"
         local_id = "qualified_alias_fix"
@@ -101,13 +76,10 @@ def test_registry_supports_fully_qualified_aliases_without_local_expansion():
         priority = 10
         dataset = None
 
-    try:
-        register_fix(_QualifiedAliasFix)
-        assert FixRegistry.resolve_identifier("other.explicit_lookup") == "test.qualified_alias_fix"
-        with pytest.raises(KeyError):
-            FixRegistry.resolve_identifier("explicit_lookup")
-    finally:
-        _restore_registry_state(snapshot)
+    register_fix(_QualifiedAliasFix)
+    assert FixRegistry.resolve_identifier("other.explicit_lookup") == "test.qualified_alias_fix"
+    with pytest.raises(KeyError):
+        FixRegistry.resolve_identifier("explicit_lookup")
 
 
 def test_registry_rejects_invalid_alias_syntax():
@@ -127,8 +99,6 @@ def test_registry_rejects_invalid_alias_syntax():
 
 
 def test_registry_local_id_derivation_precedence_explicit_over_derived():
-    snapshot = _snapshot_registry_state()
-
     class _ExplicitLocalIdWinsFix(Fix):
         namespace_prefix = "test"
         local_id = "explicit_local"
@@ -142,16 +112,11 @@ def test_registry_local_id_derivation_precedence_explicit_over_derived():
         def derived_local_id() -> str:
             return "derived_local"
 
-    try:
-        register_fix(_ExplicitLocalIdWinsFix)
-        assert _ExplicitLocalIdWinsFix.canonical_id == "test.explicit_local"
-    finally:
-        _restore_registry_state(snapshot)
+    register_fix(_ExplicitLocalIdWinsFix)
+    assert _ExplicitLocalIdWinsFix.canonical_id == "test.explicit_local"
 
 
 def test_registry_local_id_derivation_uses_derived_when_local_missing():
-    snapshot = _snapshot_registry_state()
-
     class _DerivedLocalIdFix(Fix):
         namespace_prefix = "test"
         name = "Derived local id"
@@ -164,16 +129,11 @@ def test_registry_local_id_derivation_uses_derived_when_local_missing():
         def derived_local_id() -> str:
             return "derived_local"
 
-    try:
-        register_fix(_DerivedLocalIdFix)
-        assert _DerivedLocalIdFix.canonical_id == "test.derived_local"
-    finally:
-        _restore_registry_state(snapshot)
+    register_fix(_DerivedLocalIdFix)
+    assert _DerivedLocalIdFix.canonical_id == "test.derived_local"
 
 
 def test_registry_local_id_derivation_falls_back_to_class_name_snake_case():
-    snapshot = _snapshot_registry_state()
-
     class FallbackFromClassNameFix:
         namespace_prefix = "test"
         name = "Fallback local id"
@@ -192,11 +152,8 @@ def test_registry_local_id_derivation_falls_back_to_class_name_snake_case():
         priority = 10
         dataset = None
 
-    try:
-        register_fix(FallbackFromClassNameFix)
-        assert FallbackFromClassNameFix.canonical_id == "test.fallback_from_class_name"
-    finally:
-        _restore_registry_state(snapshot)
+    register_fix(FallbackFromClassNameFix)
+    assert FallbackFromClassNameFix.canonical_id == "test.fallback_from_class_name"
 
 
 def test_registry_resolves_canonical_and_local_aliases_for_known_fixes():
@@ -228,8 +185,6 @@ def test_registry_instantiate_unknown_canonical_id_raises_clear_error():
 
 
 def test_registry_rejects_ambiguous_local_identifier():
-    snapshot = _snapshot_registry_state()
-
     class _AmbiguousOne(Fix):
         namespace_prefix = "alpha"
         local_id = "shared"
@@ -248,10 +203,7 @@ def test_registry_rejects_ambiguous_local_identifier():
         priority = 10
         dataset = None
 
-    try:
-        register_fix(_AmbiguousOne)
-        register_fix(_AmbiguousTwo)
-        with pytest.raises(ValueError, match="Ambiguous identifier"):
-            FixRegistry.resolve_identifier("shared")
-    finally:
-        _restore_registry_state(snapshot)
+    register_fix(_AmbiguousOne)
+    register_fix(_AmbiguousTwo)
+    with pytest.raises(ValueError, match="Ambiguous identifier"):
+        FixRegistry.resolve_identifier("shared")

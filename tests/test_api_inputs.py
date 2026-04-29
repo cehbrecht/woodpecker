@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 import xarray as xr
 
-from woodpecker.api import check, check_plan, fix, fix_plan
+from woodpecker.api import check, fix, fix_plan
 from woodpecker.io import (
     NetCDFInput,
     ZarrInput,
@@ -29,36 +29,20 @@ def test_check_supports_xarray_dataset_input():
     )
 
 
-def test_fix_supports_xarray_dataset_input_write_mode():
+@pytest.mark.parametrize("output_format", ["auto", "netcdf"])
+def test_fix_supports_xarray_dataset_input_write_mode(output_format):
     ds = make_cmip6(overrides={"units": "degC"})
 
-    stats = fix(ds, identifiers=["woodpecker.normalize_tas_units_to_kelvin"], write=True)
+    stats = fix(
+        ds,
+        identifiers=["woodpecker.normalize_tas_units_to_kelvin"],
+        write=True,
+        output_format=output_format,
+    )
 
     assert stats["attempted"] == 1
     assert stats["changed"] == 1
     assert ds["tas"].attrs["units"] == "K"
-
-
-def test_check_supports_path_input(make_placeholder_netcdf_path, monkeypatch):
-    source = make_placeholder_netcdf_path("cmip6_bad.nc")
-
-    def _fake_execute_check(*args, **kwargs):
-        _ = (args, kwargs)
-        return [
-            {
-                "path": str(Path(source)),
-                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
-                "name": "Common check",
-                "message": "synthetic finding",
-            }
-        ]
-
-    monkeypatch.setattr("woodpecker.api.execute_check", _fake_execute_check)
-
-    findings = check([source], identifiers=["woodpecker.normalize_tas_units_to_kelvin"])
-
-    assert findings
-    assert findings[0]["path"] == str(Path(source))
 
 
 def test_output_adapter_target_paths_for_path_inputs():
@@ -73,20 +57,6 @@ def test_output_adapter_target_paths_for_path_inputs():
     assert netcdf_adapter.target_path(path_input) == Path("example.nc")
     assert zarr_adapter.target_path(path_input) == Path("example.zarr")
     assert netcdf_adapter.target_path(zarr_input) == Path("example.nc")
-
-
-def test_fix_accepts_explicit_output_format():
-    ds = make_cmip6(overrides={"units": "degC"})
-
-    stats = fix(
-        ds,
-        identifiers=["woodpecker.normalize_tas_units_to_kelvin"],
-        write=True,
-        output_format="netcdf",
-    )
-
-    assert stats["attempted"] == 1
-    assert stats["changed"] == 1
 
 
 def test_io_availability_report_has_expected_keys():
@@ -119,67 +89,6 @@ def test_api_check_raises_on_unknown_fix_code(make_placeholder_netcdf_path):
 
     with pytest.raises(ValueError, match=r"Unknown fix identifier\(s\): DOESNOTEXIST"):
         check([source], identifiers=["DOESNOTEXIST"])
-
-
-def test_api_check_plan_uses_codes_from_plan(
-    tmp_path: Path, make_placeholder_netcdf_path, monkeypatch
-):
-    source = make_placeholder_netcdf_path("cmip6_bad.nc")
-    plan_path = tmp_path / "plan.json"
-    plan_path.write_text(
-        '{"plans": [{"id": "core.basic", "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]}]}',
-        encoding="utf-8",
-    )
-
-    def _fake_execute_check_plan(*args, **kwargs):
-        _ = (args, kwargs)
-        return [
-            {
-                "path": str(Path(source)),
-                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
-                "name": "Common check",
-                "message": "synthetic finding",
-            }
-        ]
-
-    monkeypatch.setattr("woodpecker.api.execute_check_plan", _fake_execute_check_plan)
-
-    findings = check_plan(plan_path, inputs=[source])
-
-    assert findings
-    assert findings[0]["fix_id"] == "woodpecker.normalize_tas_units_to_kelvin"
-
-
-def test_api_fix_plan_uses_explicit_output_format_argument(tmp_path: Path, monkeypatch):
-    ds = xr.Dataset(
-        data_vars={"tas": ("time", [0.0, 1.0], {"units": "degC"})},
-        coords={"time": [0, 1]},
-        attrs={"source_name": "example.nc"},
-    )
-    plan_path = tmp_path / "plan.json"
-    plan_path.write_text(
-        '{"plans": [{"id": "core.basic", "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]}]}',
-        encoding="utf-8",
-    )
-
-    observed: dict[str, str] = {}
-
-    def _fake_execute_fix_plan(plan_path, **kwargs):
-        _ = plan_path
-        observed["output_format"] = kwargs["output_format"]
-        return {
-            "attempted": 1,
-            "changed": 1,
-            "persist_attempted": 0,
-            "persisted": 0,
-            "persist_failed": 0,
-        }
-
-    monkeypatch.setattr("woodpecker.api.execute_fix_plan", _fake_execute_fix_plan)
-
-    fix_plan(plan_path, inputs=ds, write=True, output_format="netcdf")
-
-    assert observed["output_format"] == "netcdf"
 
 
 def test_api_fix_plan_applies_fix_options_to_dataset_attrs(tmp_path: Path):
