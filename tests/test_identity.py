@@ -1,3 +1,4 @@
+import pytest
 import xarray as xr
 
 from woodpecker.identity import (
@@ -43,47 +44,26 @@ def test_dataset_type_resolver_can_override_defaults():
     assert identity.dataset_type == "unit-test-type"
 
 
-def test_identity_uses_detected_cmip6_decadal_dataset_type():
-    ds = make_cmip6_decadal()
+@pytest.mark.parametrize(
+    ("make_dataset", "dataset_type", "dataset_id_attr", "project_id"),
+    [
+        (make_cmip6, "cmip6", "dataset_id", "CMIP6"),
+        (make_cmip6_decadal, "cmip6-decadal", "dataset_id", "CMIP6"),
+        (make_atlas, "atlas", "ds_id", "C3S-Atlas"),
+        (make_cordex, "cordex", "dataset_id", "CORDEX"),
+    ],
+)
+def test_identity_resolves_synthetic_dataset_families(
+    make_dataset, dataset_type, dataset_id_attr, project_id
+):
+    ds = make_dataset()
 
     identity = resolve_dataset_identity(ds)
 
-    assert identity.dataset_type == "cmip6-decadal"
-    assert identity.dataset_id == ds.attrs["dataset_id"]
-    assert identity.project_id == "CMIP6"
+    assert identity.dataset_type == dataset_type
+    assert identity.dataset_id == ds.attrs[dataset_id_attr]
+    assert identity.project_id == project_id
     assert identity.evidence
-
-
-def test_identity_uses_detected_cmip6_dataset_type():
-    ds = make_cmip6()
-
-    identity = resolve_dataset_identity(ds)
-
-    assert identity.dataset_type == "cmip6"
-    assert identity.dataset_id == ds.attrs["dataset_id"]
-    assert identity.project_id == "CMIP6"
-    assert identity.metadata.get("resolver")
-
-
-def test_identity_uses_detected_atlas_dataset_type():
-    ds = make_atlas()
-
-    identity = resolve_dataset_identity(ds)
-
-    assert identity.dataset_type == "atlas"
-    assert identity.dataset_id == ds.attrs["ds_id"]
-    assert identity.project_id == "C3S-Atlas"
-    assert identity.metadata.get("resolver")
-
-
-def test_identity_uses_detected_cordex_dataset_type():
-    ds = make_cordex()
-
-    identity = resolve_dataset_identity(ds)
-
-    assert identity.dataset_type == "cordex"
-    assert identity.dataset_id == ds.attrs["dataset_id"]
-    assert identity.project_id == "CORDEX"
     assert identity.metadata.get("resolver")
 
 

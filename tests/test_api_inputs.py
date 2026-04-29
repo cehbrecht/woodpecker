@@ -29,10 +29,16 @@ def test_check_supports_xarray_dataset_input():
     )
 
 
-def test_fix_supports_xarray_dataset_input_write_mode():
+@pytest.mark.parametrize("output_format", ["auto", "netcdf"])
+def test_fix_supports_xarray_dataset_input_write_mode(output_format):
     ds = make_cmip6(overrides={"units": "degC"})
 
-    stats = fix(ds, identifiers=["woodpecker.normalize_tas_units_to_kelvin"], write=True)
+    stats = fix(
+        ds,
+        identifiers=["woodpecker.normalize_tas_units_to_kelvin"],
+        write=True,
+        output_format=output_format,
+    )
 
     assert stats["attempted"] == 1
     assert stats["changed"] == 1
@@ -73,20 +79,6 @@ def test_output_adapter_target_paths_for_path_inputs():
     assert netcdf_adapter.target_path(path_input) == Path("example.nc")
     assert zarr_adapter.target_path(path_input) == Path("example.zarr")
     assert netcdf_adapter.target_path(zarr_input) == Path("example.nc")
-
-
-def test_fix_accepts_explicit_output_format():
-    ds = make_cmip6(overrides={"units": "degC"})
-
-    stats = fix(
-        ds,
-        identifiers=["woodpecker.normalize_tas_units_to_kelvin"],
-        write=True,
-        output_format="netcdf",
-    )
-
-    assert stats["attempted"] == 1
-    assert stats["changed"] == 1
 
 
 def test_io_availability_report_has_expected_keys():
