@@ -1,4 +1,9 @@
-"""Minimal public API examples using synthetic climate datasets."""
+"""Minimal public API examples using synthetic climate datasets.
+
+This file is intentionally light on test helpers. It shows the shape user code
+should normally take: build or open a dataset, run ``woodpecker.check()``, run a
+dry-run ``woodpecker.fix()``, apply with ``write=True``, and re-check.
+"""
 
 import numpy as np
 
