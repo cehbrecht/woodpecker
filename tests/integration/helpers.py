@@ -8,7 +8,7 @@ CORE_FIX_IDS = {
 }
 
 
-def selected_finding_ids(dataset, fix_id: str, *, fix_options=None) -> set[str]:
+def check_finding_ids(dataset, fix_id: str, *, fix_options=None) -> set[str]:
     return {
         item["fix_id"]
         for item in check(
@@ -19,11 +19,11 @@ def selected_finding_ids(dataset, fix_id: str, *, fix_options=None) -> set[str]:
     }
 
 
-def assert_no_core_findings(dataset) -> None:
+def assert_no_core_fixes_reported(dataset) -> None:
     assert check(dataset, identifiers=sorted(CORE_FIX_IDS)) == []
 
 
-def assert_dry_run_reports_change(dataset, fix_id: str, *, fix_options=None) -> None:
+def assert_fix_dry_run_reports_change(dataset, fix_id: str, *, fix_options=None) -> None:
     stats = fix(dataset, identifiers=[fix_id], fix_options=fix_options, write=False)
 
     assert stats == {
@@ -35,7 +35,7 @@ def assert_dry_run_reports_change(dataset, fix_id: str, *, fix_options=None) -> 
     }
 
 
-def assert_write_reports_change(dataset, fix_id: str, *, fix_options=None) -> None:
+def assert_fix_write_reports_change(dataset, fix_id: str, *, fix_options=None) -> None:
     stats = fix(dataset, identifiers=[fix_id], fix_options=fix_options, write=True)
 
     assert stats == {
@@ -47,7 +47,7 @@ def assert_write_reports_change(dataset, fix_id: str, *, fix_options=None) -> No
     }
 
 
-def assert_public_api_fix_flow(
+def assert_check_fix_cycle(
     dataset,
     fix_id: str,
     *,
@@ -55,13 +55,14 @@ def assert_public_api_fix_flow(
     assert_unchanged=None,
     fix_options=None,
 ) -> None:
-    assert selected_finding_ids(dataset, fix_id, fix_options=fix_options) == {fix_id}
+    """Exercise the public API from finding through dry-run, write, and re-check."""
+    assert check_finding_ids(dataset, fix_id, fix_options=fix_options) == {fix_id}
 
-    assert_dry_run_reports_change(dataset, fix_id, fix_options=fix_options)
+    assert_fix_dry_run_reports_change(dataset, fix_id, fix_options=fix_options)
     if assert_unchanged is not None:
         assert_unchanged(dataset)
 
-    assert_write_reports_change(dataset, fix_id, fix_options=fix_options)
+    assert_fix_write_reports_change(dataset, fix_id, fix_options=fix_options)
     assert_fixed(dataset)
 
-    assert selected_finding_ids(dataset, fix_id, fix_options=fix_options) == set()
+    assert check_finding_ids(dataset, fix_id, fix_options=fix_options) == set()

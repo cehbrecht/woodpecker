@@ -1,10 +1,12 @@
+"""End-to-end public API examples for CMIP6-decadal synthetic datasets."""
+
 import numpy as np
 import pytest
 import xarray as xr
 
 from woodpecker.testing import make_cmip6_decadal
 
-from .helpers import assert_public_api_fix_flow
+from .helpers import assert_check_fix_cycle
 
 pytest.importorskip("woodpecker_cmip6_decadal_plugin")
 
@@ -61,7 +63,7 @@ def test_cmip6_decadal_equivalent_dimensions_are_detected_and_fixed():
         assert "member" not in ds["member_weight"].dims
         assert ds["member_weight"].dims == ("lat",)
 
-    assert_public_api_fix_flow(
+    assert_check_fix_cycle(
         dataset,
         "woodpecker.merge_equivalent_dimensions",
         fix_options=fix_options,
@@ -248,7 +250,7 @@ def _decadal_leadtime_coordinate_case():
 def test_cmip6_decadal_fix_is_detected_and_applied(fix_id, case_factory):
     dataset, assert_fixed = case_factory()
 
-    assert_public_api_fix_flow(
+    assert_check_fix_cycle(
         dataset,
         fix_id,
         assert_fixed=assert_fixed,
@@ -286,7 +288,7 @@ def test_cmip6_decadal_full_fix_suite_is_detected_and_applied():
         assert "reftime" in ds.coords
         assert "leadtime" in ds.coords
 
-    assert_public_api_fix_flow(
+    assert_check_fix_cycle(
         dataset,
         "cmip6_decadal.full_fix_suite",
         assert_unchanged=assert_unchanged,

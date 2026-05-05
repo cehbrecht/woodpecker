@@ -1,8 +1,10 @@
+"""End-to-end public API examples for CORDEX synthetic datasets."""
+
 import numpy as np
 
 from woodpecker.testing import make_cordex
 
-from .helpers import assert_no_core_findings, assert_public_api_fix_flow
+from .helpers import assert_check_fix_cycle, assert_no_core_fixes_reported
 
 
 def test_cordex_decreasing_latitude_is_detected_and_fixed():
@@ -17,7 +19,7 @@ def test_cordex_decreasing_latitude_is_detected_and_fixed():
         assert float(ds["lat"].values[0]) < float(ds["lat"].values[-1])
         np.testing.assert_allclose(ds["tasmax"].values, before_values[:, ::-1, :])
 
-    assert_public_api_fix_flow(
+    assert_check_fix_cycle(
         dataset,
         "woodpecker.ensure_latitude_is_increasing",
         assert_unchanged=assert_unchanged,
@@ -28,4 +30,4 @@ def test_cordex_decreasing_latitude_is_detected_and_fixed():
 def test_cordex_metadata_only_corruption_does_not_trigger_core_fixes():
     dataset = make_cordex(missing=["domain_id", "driving_model_id"])
 
-    assert_no_core_findings(dataset)
+    assert_no_core_fixes_reported(dataset)

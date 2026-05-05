@@ -1,3 +1,5 @@
+"""End-to-end public API examples for write-mode output behavior."""
+
 from woodpecker import fix
 from woodpecker.testing import make_cmip6
 
