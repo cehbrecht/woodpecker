@@ -60,6 +60,14 @@ Notes:
 - In write mode, JSON output exits with status 1 if any persistence operation fails.
 - `--force-apply` bypasses `matches()` prefiltering and requires explicit fix selection (`--select` or plan-provided identifiers).
 
+## Core Concepts
+
+### Fix
+
+A fix is an executable rule that checks and optionally repairs a dataset issue.
+Fixes are registered in the `FixRegistry` and discovered at runtime, including
+through plugin entry points.
+
 ## Adding or Updating Fixes
 
 Fix author contract (minimal):
@@ -71,6 +79,37 @@ Performance guidance:
 - put expensive validation logic in `check()` and expensive mutation logic in `apply()`
 
 Use existing fixes as examples and keep behavior deterministic.
+
+### Fix Identifiers
+
+Every fix and plan has a stable, scoped identifier:
+
+- `namespace_prefix`: owning namespace, for example `cmip6_decadal`, `atlas`, `woodpecker`
+- `local_id`: snake_case identifier unique within that namespace
+- canonical id: `<namespace_prefix>.<local_id>`
+
+Examples:
+
+- `cmip6_decadal.time_metadata`
+- `atlas.encoding_cleanup`
+- `woodpecker.normalize_tas_units_to_kelvin`
+
+Canonical ids are stored in plans, used on the CLI, and resolved through the
+identifier resolver. Short local ids can also be used when unambiguous.
+
+Fix classes declare identifiers as class attributes:
+
+```python
+class TimeMetadataFix(Fix):
+    namespace_prefix = "cmip6_decadal"
+    local_id = "time_metadata"
+```
+
+The registry validates these and derives:
+
+```python
+canonical_id = "cmip6_decadal.time_metadata"
+```
 
 ## Fix Plan Files
 
@@ -134,6 +173,92 @@ woodpecker check --plan plan.json
 woodpecker fix --plan plan.json --dry-run
 ```
 
+## Fix Plan Stores
+
+A fix plan store is a lookup layer that returns matching `FixPlan`s for a
+dataset. Plans can be retrieved by canonical id, local id, or alias.
+
+Current backends:
+
+- JSON
+- DuckDB
+
+Plans are accessed through the CLI:
+
+- `--store`: backend type (`json` or `duckdb`, default: `json`)
+- `--plan`: store location
+- `--plan-id`: optionally select a specific plan by id
+
+Examples:
+
+```bash
+woodpecker check --store json --plan plans.json
+woodpecker check --store duckdb --plan plans.duckdb
+woodpecker fix --plan plans.json --plan-id atlas.encoding_cleanup_suite
+woodpecker list-plans --store duckdb --plan plans.duckdb --format json
+```
+
+## Plugins
+
+Core Woodpecker provides fixes that apply across datasets. Dataset-specific
+fixes live in plugins discovered via the `woodpecker.plugins` entry point group.
+
+Bundled plugin packages live under `plugins/`:
+
+| Plugin package                    | Namespace prefix |
+| --------------------------------- | ---------------- |
+| `woodpecker-atlas-plugin`         | `atlas`          |
+| `woodpecker-cmip6-plugin`         | `cmip6`          |
+| `woodpecker-cmip6-decadal-plugin` | `cmip6_decadal`  |
+| `woodpecker-cmip7-plugin`         | `cmip7`          |
+
+Install bundled plugins during development:
+
+```bash
+make install-plugins
+make dev
+```
+
+Minimal plugin entry point:
+
+```toml
+[project]
+name = "woodpecker-example-plugin"
+version = "0.1.0"
+dependencies = ["woodpecker>=0.2.0"]
+
+[project.entry-points."woodpecker.plugins"]
+example = "woodpecker_example_plugin"
+```
+
+Minimal plugin fix:
+
+```python
+from woodpecker.fixes.registry import Fix, register_fix
+
+@register_fix
+class ExternalDemoFix(Fix):
+    namespace_prefix = "example"
+    local_id = "demo"
+    name = "External demo fix"
+    description = "A minimal plugin-provided fix."
+    categories = ["metadata"]
+    priority = 50
+    dataset = None
+
+    def check(self, dataset):
+        return []
+
+    def apply(self, dataset, dry_run=True):
+        return False
+```
+
+Derived canonical id:
+
+```text
+example.demo
+```
+
 ## Python API (for contributors)
 
 ```python
@@ -143,12 +268,29 @@ import woodpecker
 ds = xr.Dataset(attrs={"source_name": "atlas_bad.nc"})
 
 findings = woodpecker.check(ds, identifiers=["atlas.encoding_cleanup"])
-stats = woodpecker.fix(ds, identifiers=["atlas.encoding_cleanup"], write=True)
+assert findings.fix_ids
+
+result = woodpecker.fix(ds, identifiers=["atlas.encoding_cleanup"], write=True)
+assert result.changed >= 0
 
 # Fix plan helpers
 findings_plan = woodpecker.check_plan("plan.json", inputs=["./data"])
-stats_plan = woodpecker.fix_plan("plan.json", inputs=ds, write=True)
+result_plan = woodpecker.fix_plan("plan.json", inputs=ds, write=True)
 
 # Path input works as well
 findings_from_paths = woodpecker.check(["./data"], identifiers=["atlas.encoding_cleanup"])
 ```
+
+## Tests And Synthetic Data
+
+Prefer public API integration tests for end-to-end behavior. They should read
+like executable examples and use synthetic climate datasets where possible.
+
+Useful references:
+
+- `tests/integration/README.md`: integration test intent and style.
+- `woodpecker/testing/README.md`: synthetic climate dataset factories.
+- `tests/test_testing_factory.py`: expected shape and determinism of fixtures.
+
+Keep technical details close to the module that owns them. The root README
+should stay as a thin project overview.

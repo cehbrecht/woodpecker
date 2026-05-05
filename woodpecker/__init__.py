@@ -8,6 +8,7 @@ from .plans import (
     load_fix_plan,
     load_fix_plan_document,
 )
+from .results import CheckResult, FixResult
 from .runner import apply_fix_plan
 
 __all__ = [
@@ -16,6 +17,8 @@ __all__ = [
     "fix",
     "check_plan",
     "fix_plan",
+    "CheckResult",
+    "FixResult",
     "FixRef",
     "FixPlan",
     "FixPlanDocument",

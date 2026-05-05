@@ -5,8 +5,7 @@ from typing import Any
 
 import xarray as xr
 
-from .broken import apply_metadata_corruption
-from .factory import dataset_with_attrs, variable_units
+from .factory import make_dataset, variable_units
 
 
 def make_cmip6_decadal(
@@ -29,13 +28,13 @@ def make_cmip6_decadal(
     >>> "sub_experiment_id" in broken.attrs
     False
     """
-    attrs = _cmip6_decadal_attrs(variable)
-    dataset = dataset_with_attrs(variable, attrs=attrs, seed=seed)
-    return apply_metadata_corruption(
-        dataset,
+    return make_dataset(
+        variable=variable,
+        attrs_factory=_cmip6_decadal_attrs,
         missing=missing,
         overrides=overrides,
         rename_vars=rename_vars,
+        seed=seed,
     )
 
 

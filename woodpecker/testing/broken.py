@@ -6,7 +6,7 @@ from typing import Any
 import xarray as xr
 
 
-def apply_metadata_corruption(
+def apply_corruption(
     dataset: xr.Dataset,
     *,
     missing: Iterable[str] | None = None,

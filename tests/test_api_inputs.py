@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 import xarray as xr
 
-from woodpecker.api import check, fix, fix_plan
+from woodpecker.api import check, check_plan, fix, fix_plan
 from woodpecker.io import (
     NetCDFInput,
     ZarrInput,
@@ -21,27 +21,53 @@ def test_check_supports_xarray_dataset_input():
         attrs={"source_name": "example.nc"},
     )
 
-    findings = check(ds, identifiers=["woodpecker.ensure_latitude_is_increasing"])
+    result = check(ds, identifiers=["woodpecker.ensure_latitude_is_increasing"])
 
-    assert findings
-    assert {entry["fix_id"] for entry in findings}.issuperset(
-        {"woodpecker.ensure_latitude_is_increasing"}
-    )
+    assert result.has_findings
+    assert set(result.fix_ids).issuperset({"woodpecker.ensure_latitude_is_increasing"})
 
 
 @pytest.mark.parametrize("output_format", ["auto", "netcdf"])
 def test_fix_supports_xarray_dataset_input_write_mode(output_format):
     ds = make_cmip6(overrides={"units": "degC"})
 
-    stats = fix(
+    result = fix(
         ds,
         identifiers=["woodpecker.normalize_tas_units_to_kelvin"],
         write=True,
         output_format=output_format,
     )
 
-    assert stats["attempted"] == 1
-    assert stats["changed"] == 1
+    assert result.attempted == 1
+    assert result.changed == 1
+    assert ds["tas"].attrs["units"] == "K"
+
+
+def test_check_exposes_findings_as_properties():
+    ds = make_cmip6(overrides={"units": "degC"})
+
+    result = check(ds, identifiers=["woodpecker.normalize_tas_units_to_kelvin"])
+
+    assert result.has_findings is True
+    assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
+    assert result.findings[0]["message"]
+
+
+def test_fix_exposes_stats_as_properties():
+    ds = make_cmip6(overrides={"units": "degC"})
+
+    result = fix(
+        ds,
+        identifiers=["woodpecker.normalize_tas_units_to_kelvin"],
+        write=True,
+    )
+
+    assert result.attempted == 1
+    assert result.changed == 1
+    assert result.has_changes is True
+    assert result.persist_attempted == 1
+    assert result.persisted == 1
+    assert result.persist_failed == 0
     assert ds["tas"].attrs["units"] == "K"
 
 
@@ -91,6 +117,20 @@ def test_api_check_raises_on_unknown_fix_code(make_placeholder_netcdf_path):
         check([source], identifiers=["DOESNOTEXIST"])
 
 
+def test_api_check_plan_returns_result_object(tmp_path: Path):
+    ds = make_cmip6(overrides={"units": "degC"})
+    plan_path = tmp_path / "plan.json"
+    plan_path.write_text(
+        '{"plans": [{"id": "core.check", "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]}]}',
+        encoding="utf-8",
+    )
+
+    result = check_plan(plan_path, inputs=ds)
+
+    assert result.has_findings is True
+    assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
+
+
 def test_api_fix_plan_applies_fix_options_to_dataset_attrs(tmp_path: Path):
     ds = xr.Dataset(
         data_vars={
@@ -106,9 +146,9 @@ def test_api_fix_plan_applies_fix_options_to_dataset_attrs(tmp_path: Path):
         encoding="utf-8",
     )
 
-    stats = fix_plan(plan_path, inputs=ds, write=True)
+    result = fix_plan(plan_path, inputs=ds, write=True)
 
-    assert stats["attempted"] == 1
-    assert stats["changed"] == 1
+    assert result.attempted == 1
+    assert result.changed == 1
     assert "y" not in ds["b"].dims
     assert "x" in ds["b"].dims
