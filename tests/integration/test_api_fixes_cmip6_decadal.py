@@ -22,9 +22,7 @@ def _decadal_dataset(**overrides):
 
 
 def _ec_earth_decadal_dataset(**overrides):
-    return make_cmip6_decadal(
-        overrides={"source_name": EC_EARTH_DECADAL_SOURCE_NAME, **overrides}
-    )
+    return make_cmip6_decadal(overrides={"source_name": EC_EARTH_DECADAL_SOURCE_NAME, **overrides})
 
 
 def _with_bounds(dataset):
@@ -38,9 +36,7 @@ def _with_bounds(dataset):
 
 def _with_forecast_times(dataset):
     dataset = dataset.isel(time=slice(0, 2))
-    return dataset.assign_coords(
-        time=np.array(["1960-11-16", "1960-12-16"], dtype="datetime64[D]")
-    )
+    return dataset.assign_coords(time=np.array(["1960-11-16", "1960-12-16"], dtype="datetime64[D]"))
 
 
 def _set_realization(dataset, **attrs):

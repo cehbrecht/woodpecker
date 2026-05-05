@@ -45,9 +45,7 @@ def test_cmip6_tas_celsius_units_are_detected_and_fixed():
 def test_cmip6_dummy_placeholder_fix_is_detected_and_applied():
     dataset = _cmip6_dataset()
 
-    assert check_finding_ids(dataset, "cmip6.dummy_placeholder") == {
-        "cmip6.dummy_placeholder"
-    }
+    assert check_finding_ids(dataset, "cmip6.dummy_placeholder") == {"cmip6.dummy_placeholder"}
     assert_fix_dry_run_reports_change(dataset, "cmip6.dummy_placeholder")
     assert "woodpecker_fix_cmip6_0001" not in dataset.attrs
 
