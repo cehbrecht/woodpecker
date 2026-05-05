@@ -1,10 +1,14 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import Any
+from collections.abc import Iterable, Mapping
+from typing import Any, Callable
 
 import numpy as np
 import xarray as xr
+
+from .broken import apply_corruption
+
+AttrFactory = Callable[[str], Mapping[str, Any]]
 
 
 def monthly_time(start: str = "2000-01", periods: int = 12) -> np.ndarray:
@@ -91,9 +95,13 @@ def dataset_with_attrs(
     *,
     attrs: Mapping[str, Any],
     seed: int | None = None,
+    periods: int = 12,
+    nlat: int = 18,
+    nlon: int = 36,
 ) -> xr.Dataset:
-    time = monthly_time()
-    lat, lon = regular_lat_lon()
+    """Create a compact climate-like dataset with shared coordinates and attrs."""
+    time = monthly_time(periods=periods)
+    lat, lon = regular_lat_lon(nlat=nlat, nlon=nlon)
     units = str(attrs.get("units", variable_units(variable)))
     field = climate_field(variable=variable, units=units, time=time, lat=lat, lon=lon, seed=seed)
 
@@ -107,3 +115,22 @@ def dataset_with_attrs(
         {"axis": "X", "standard_name": "longitude", "units": "degrees_east"}
     )
     return dataset
+
+
+def make_dataset(
+    *,
+    variable: str,
+    attrs_factory: AttrFactory,
+    missing: Iterable[str] | None = None,
+    overrides: Mapping[str, Any] | None = None,
+    rename_vars: Mapping[str, str] | None = None,
+    seed: int | None = None,
+) -> xr.Dataset:
+    """Build a family-specific synthetic dataset and apply optional corruption."""
+    dataset = dataset_with_attrs(variable, attrs=attrs_factory(variable), seed=seed)
+    return apply_corruption(
+        dataset,
+        missing=missing,
+        overrides=overrides,
+        rename_vars=rename_vars,
+    )

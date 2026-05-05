@@ -10,10 +10,6 @@ class CheckResult:
 
     findings: tuple[Mapping[str, str], ...]
 
-    @classmethod
-    def from_findings(cls, findings: list[dict[str, str]]) -> CheckResult:
-        return cls(findings=tuple(dict(finding) for finding in findings))
-
     @property
     def fix_ids(self) -> tuple[str, ...]:
         return tuple(finding.get("fix_id", "") for finding in self.findings)
@@ -28,10 +24,6 @@ class FixResult:
     """Structured result returned by ``woodpecker.fix()``."""
 
     stats: Mapping[str, int]
-
-    @classmethod
-    def from_stats(cls, stats: dict[str, int]) -> FixResult:
-        return cls(stats=dict(stats))
 
     @property
     def attempted(self) -> int:

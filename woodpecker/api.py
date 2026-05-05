@@ -18,14 +18,16 @@ def check(
     ordered_identifiers: Sequence[str] = (),
 ) -> CheckResult:
     """Check inputs and return structured findings."""
-    return CheckResult.from_findings(
-        execute_check(
-            inputs,
-            dataset=dataset,
-            categories=categories,
-            identifiers=identifiers,
-            fix_options=fix_options,
-            ordered_identifiers=ordered_identifiers,
+    return CheckResult(
+        findings=tuple(
+            execute_check(
+                inputs,
+                dataset=dataset,
+                categories=categories,
+                identifiers=identifiers,
+                fix_options=fix_options,
+                ordered_identifiers=ordered_identifiers,
+            )
         )
     )
 
@@ -41,8 +43,8 @@ def fix(
     ordered_identifiers: Sequence[str] = (),
 ) -> FixResult:
     """Apply selected fixes and return structured stats."""
-    return FixResult.from_stats(
-        execute_fix(
+    return FixResult(
+        stats=execute_fix(
             inputs,
             dataset=dataset,
             categories=categories,
@@ -64,14 +66,16 @@ def check_plan(
     plan_id: str | None = None,
 ) -> CheckResult:
     """Check inputs using a fix plan and return structured findings."""
-    return CheckResult.from_findings(
-        execute_check_plan(
-            plan_path,
-            inputs=inputs,
-            dataset=dataset,
-            categories=categories,
-            identifiers=identifiers,
-            plan_id=plan_id,
+    return CheckResult(
+        findings=tuple(
+            execute_check_plan(
+                plan_path,
+                inputs=inputs,
+                dataset=dataset,
+                categories=categories,
+                identifiers=identifiers,
+                plan_id=plan_id,
+            )
         )
     )
 
@@ -87,8 +91,8 @@ def fix_plan(
     plan_id: str | None = None,
 ) -> FixResult:
     """Apply a fix plan and return structured stats."""
-    return FixResult.from_stats(
-        execute_fix_plan(
+    return FixResult(
+        stats=execute_fix_plan(
             plan_path,
             inputs=inputs,
             dataset=dataset,
