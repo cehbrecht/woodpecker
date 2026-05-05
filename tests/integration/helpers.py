@@ -9,24 +9,22 @@ CORE_FIX_IDS = {
 
 
 def check_finding_ids(dataset, fix_id: str, *, fix_options=None) -> set[str]:
-    return {
-        item["fix_id"]
-        for item in check(
-            dataset,
-            identifiers=[fix_id],
-            fix_options=fix_options,
-        )
-    }
+    result = check(
+        dataset,
+        identifiers=[fix_id],
+        fix_options=fix_options,
+    )
+    return set(result.fix_ids)
 
 
 def assert_no_core_fixes_reported(dataset) -> None:
-    assert check(dataset, identifiers=sorted(CORE_FIX_IDS)) == []
+    assert not check(dataset, identifiers=sorted(CORE_FIX_IDS)).has_findings
 
 
 def assert_fix_dry_run_reports_change(dataset, fix_id: str, *, fix_options=None) -> None:
-    stats = fix(dataset, identifiers=[fix_id], fix_options=fix_options, write=False)
+    result = fix(dataset, identifiers=[fix_id], fix_options=fix_options, write=False)
 
-    assert stats == {
+    assert result.stats == {
         "attempted": 1,
         "changed": 1,
         "persist_attempted": 0,
@@ -36,9 +34,9 @@ def assert_fix_dry_run_reports_change(dataset, fix_id: str, *, fix_options=None)
 
 
 def assert_fix_write_reports_change(dataset, fix_id: str, *, fix_options=None) -> None:
-    stats = fix(dataset, identifiers=[fix_id], fix_options=fix_options, write=True)
+    result = fix(dataset, identifiers=[fix_id], fix_options=fix_options, write=True)
 
-    assert stats == {
+    assert result.stats == {
         "attempted": 1,
         "changed": 1,
         "persist_attempted": 1,
