@@ -36,6 +36,15 @@ Woodpecker is intentionally small:
 - plugins provide dataset-specific fixes for families such as Atlas, CMIP6, and
   CMIP6-decadal.
 
+Vocabulary:
+
+- **Fix**: an executable rule that checks for one known dataset issue and can
+  optionally repair it.
+- **FixPlan**: an ordered list of fixes, with optional matching rules and fix
+  options, for a dataset family or workflow.
+- **FixPlanStore**: a lookup layer that finds matching plans from a source such
+  as JSON or DuckDB.
+
 The public Python API returns structured result objects:
 
 ```python
@@ -101,6 +110,14 @@ Using a plan file:
 woodpecker check --plan examples/fix-plans/atlas.json
 woodpecker fix --plan examples/fix-plans/atlas.json --dry-run
 woodpecker list-plans --plan examples/fix-plans/atlas.json
+```
+
+Using an explicit plan store:
+
+```bash
+woodpecker check --store json --plan examples/fix-plans/atlas.json
+woodpecker check --store duckdb --plan plans.duckdb
+woodpecker fix --plan examples/fix-plans/atlas.json --plan-id atlas.encoding_cleanup_suite
 ```
 
 ## Built-In And Bundled Fixes
