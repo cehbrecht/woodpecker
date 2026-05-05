@@ -26,12 +26,23 @@ def _ec_earth_decadal_dataset(**overrides):
 
 
 def _with_bounds(dataset):
-    dataset["realization"] = xr.DataArray(2)
+    _set_realization(dataset)
     dataset["lon_bnds"] = (("x", "bnds"), [[0.0, 1.0]])
     dataset["lat_bnds"] = (("x", "bnds"), [[10.0, 11.0]])
     dataset["time_bnds"] = (("time", "bnds"), [[0.0, 1.0]] * dataset.sizes["time"])
     dataset = dataset.assign_coords(x=[0], bnds=[0, 1])
     return dataset
+
+
+def _with_forecast_times(dataset):
+    dataset = dataset.isel(time=slice(0, 2))
+    return dataset.assign_coords(
+        time=np.array(["1960-11-16", "1960-12-16"], dtype="datetime64[D]")
+    )
+
+
+def _set_realization(dataset, **attrs):
+    dataset["realization"] = xr.DataArray(2, attrs=attrs)
 
 
 def test_cmip6_decadal_equivalent_dimensions_are_detected_and_fixed():
@@ -99,7 +110,7 @@ def _decadal_coordinates_encoding_case():
 
 def _decadal_realization_comment_case():
     dataset = _decadal_dataset()
-    dataset["realization"] = xr.DataArray(2, attrs={"comment": "short"})
+    _set_realization(dataset, comment="short")
 
     def assert_fixed(ds):
         assert "initialization_description" in ds["realization"].attrs["comment"]
@@ -109,7 +120,7 @@ def _decadal_realization_comment_case():
 
 def _decadal_realization_dtype_case():
     dataset = _decadal_dataset()
-    dataset["realization"] = xr.DataArray(2)
+    _set_realization(dataset)
 
     def assert_fixed(ds):
         assert ds["realization"].dtype == np.int32
@@ -153,7 +164,7 @@ def _decadal_start_token_case():
 
 def _decadal_realization_long_name_case():
     dataset = _decadal_dataset()
-    dataset["realization"] = xr.DataArray(2, attrs={"long_name": "member"})
+    _set_realization(dataset, long_name="member")
 
     def assert_fixed(ds):
         assert ds["realization"].attrs["long_name"] == "realization"
@@ -193,10 +204,7 @@ def _decadal_model_global_attrs_case():
 
 
 def _decadal_reftime_coordinate_case():
-    dataset = _ec_earth_decadal_dataset(startdate="s196011").isel(time=slice(0, 2))
-    dataset = dataset.assign_coords(
-        time=np.array(["1960-11-16", "1960-12-16"], dtype="datetime64[D]")
-    )
+    dataset = _with_forecast_times(_ec_earth_decadal_dataset(startdate="s196011"))
     dataset["time"].encoding["calendar"] = "standard"
 
     def assert_fixed(ds):
@@ -207,10 +215,7 @@ def _decadal_reftime_coordinate_case():
 
 
 def _decadal_leadtime_coordinate_case():
-    dataset = _decadal_dataset().isel(time=slice(0, 2))
-    dataset = dataset.assign_coords(
-        time=np.array(["1960-11-16", "1960-12-16"], dtype="datetime64[D]")
-    )
+    dataset = _with_forecast_times(_decadal_dataset())
     dataset.coords["reftime"] = xr.DataArray(np.datetime64("1960-11-01"))
 
     def assert_fixed(ds):
@@ -243,13 +248,9 @@ def _decadal_leadtime_coordinate_case():
 def test_cmip6_decadal_fix_is_detected_and_applied(fix_id, case_factory):
     dataset, assert_fixed = case_factory()
 
-    def assert_unchanged(_ds):
-        pass
-
     assert_public_api_fix_flow(
         dataset,
         fix_id,
-        assert_unchanged=assert_unchanged,
         assert_fixed=assert_fixed,
     )
 
@@ -260,16 +261,11 @@ def test_cmip6_decadal_full_fix_suite_is_detected_and_applied():
         sub_experiment_id="s1960",
         realization_index="2",
         forcing_description="wrong",
-    ).isel(time=slice(0, 2))
-    dataset = dataset.assign_coords(
-        time=np.array(["1960-11-16", "1960-12-16"], dtype="datetime64[D]")
     )
+    dataset = _with_forecast_times(dataset)
     dataset["time"].attrs["long_name"] = "time"
     dataset["time"].encoding["calendar"] = "proleptic_gregorian"
-    dataset["realization"] = xr.DataArray(
-        2,
-        attrs={"comment": "short", "long_name": "member"},
-    )
+    _set_realization(dataset, comment="short", long_name="member")
     dataset["realization"].encoding["_FillValue"] = -9999
 
     def assert_unchanged(ds):

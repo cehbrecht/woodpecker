@@ -1,12 +1,11 @@
 import numpy as np
 import pytest
 
-from woodpecker import check
 from woodpecker.testing import make_cmip6
 
 from .helpers import (
-    CORE_FIX_IDS,
     assert_dry_run_reports_change,
+    assert_no_core_findings,
     assert_public_api_fix_flow,
     assert_write_reports_change,
     selected_finding_ids,
@@ -62,4 +61,4 @@ def test_cmip6_dummy_placeholder_fix_is_detected_and_applied():
     ],
 )
 def test_cmip6_metadata_only_corruption_does_not_trigger_core_fixes(dataset):
-    assert check(dataset, identifiers=sorted(CORE_FIX_IDS)) == []
+    assert_no_core_findings(dataset)

@@ -8,17 +8,6 @@ CORE_FIX_IDS = {
 }
 
 
-def core_finding_ids(dataset, *, fix_options=None) -> set[str]:
-    return {
-        item["fix_id"]
-        for item in check(
-            dataset,
-            identifiers=sorted(CORE_FIX_IDS),
-            fix_options=fix_options,
-        )
-    }
-
-
 def selected_finding_ids(dataset, fix_id: str, *, fix_options=None) -> set[str]:
     return {
         item["fix_id"]
@@ -28,6 +17,10 @@ def selected_finding_ids(dataset, fix_id: str, *, fix_options=None) -> set[str]:
             fix_options=fix_options,
         )
     }
+
+
+def assert_no_core_findings(dataset) -> None:
+    assert check(dataset, identifiers=sorted(CORE_FIX_IDS)) == []
 
 
 def assert_dry_run_reports_change(dataset, fix_id: str, *, fix_options=None) -> None:
@@ -58,14 +51,15 @@ def assert_public_api_fix_flow(
     dataset,
     fix_id: str,
     *,
-    assert_unchanged,
     assert_fixed,
+    assert_unchanged=None,
     fix_options=None,
 ) -> None:
     assert selected_finding_ids(dataset, fix_id, fix_options=fix_options) == {fix_id}
 
     assert_dry_run_reports_change(dataset, fix_id, fix_options=fix_options)
-    assert_unchanged(dataset)
+    if assert_unchanged is not None:
+        assert_unchanged(dataset)
 
     assert_write_reports_change(dataset, fix_id, fix_options=fix_options)
     assert_fixed(dataset)

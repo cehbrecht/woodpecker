@@ -1,7 +1,6 @@
-from woodpecker import check
 from woodpecker.testing import make_atlas
 
-from .helpers import CORE_FIX_IDS, assert_public_api_fix_flow
+from .helpers import assert_no_core_findings, assert_public_api_fix_flow
 
 
 def test_atlas_coordinate_fill_value_encoding_is_detected_and_fixed():
@@ -62,4 +61,4 @@ def test_atlas_project_id_normalization_plugin_is_detected_and_fixed():
 def test_atlas_metadata_only_corruption_does_not_trigger_core_fixes():
     dataset = make_atlas(overrides={"project_id": "not-an-atlas-project"})
 
-    assert check(dataset, identifiers=sorted(CORE_FIX_IDS)) == []
+    assert_no_core_findings(dataset)
