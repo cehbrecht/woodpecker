@@ -139,6 +139,7 @@ with synthetic datasets, built-in core fixes, and bundled plugin fixes:
 jupyter notebook notebooks/cmip6_core_api_example.ipynb
 jupyter notebook notebooks/cmip6_core_fix_plan_example.ipynb
 jupyter notebook notebooks/atlas_fix_plan_example.ipynb
+jupyter notebook notebooks/esa_cci_fix_plan_example.ipynb
 ```
 
 ## Development
