@@ -1,6 +1,17 @@
+from pathlib import Path
+
 import xarray as xr
 
-from woodpecker.testing import make_atlas, make_cmip6, make_cmip6_decadal, make_cmip7, make_cordex
+from woodpecker.testing import (
+    integration_plan_path,
+    integration_root_dir,
+    make_atlas,
+    make_cmip6,
+    make_cmip6_decadal,
+    make_cmip7,
+    make_cordex,
+)
+from woodpecker.testing import testing_root_dir as _testing_root_dir
 
 
 def test_make_cmip6_returns_realistic_small_dataset():
@@ -136,3 +147,11 @@ def test_new_factories_share_corruption_api():
         assert "units" not in ds[renamed].attrs
         assert ds.attrs["experiment_id"] == "synthetic-test"
         assert set(ds.data_vars) == {renamed}
+
+
+def test_testing_paths_point_to_integration_assets():
+    integration_root = integration_root_dir(start=Path(__file__))
+
+    assert _testing_root_dir(start=Path(__file__)).name == "tests"
+    assert integration_root.name == "integration"
+    assert integration_plan_path("cmip6_core_plan.json", start=Path(__file__)).is_file()

@@ -10,12 +10,6 @@ CORE_FIX_IDS = {
     "woodpecker.merge_equivalent_dimensions",
 }
 
-EXAMPLE_PLAN_DIR = Path(__file__).resolve().parent / "plans"
-
-
-def example_plan_path(filename: str) -> Path:
-    return EXAMPLE_PLAN_DIR / filename
-
 
 def write_plan_document(path: Path, plans: list[dict]) -> Path:
     path.write_text(json.dumps({"plans": plans}), encoding="utf-8")

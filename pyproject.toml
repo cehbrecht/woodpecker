@@ -37,6 +37,7 @@ full = [
 docs = [
   "mkdocs<2",
   "mkdocs-material>=9",
+  "mkdocs-jupyter>=0.25",
   "jinja2>=3.1",
 ]
 

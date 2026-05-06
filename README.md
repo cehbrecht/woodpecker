@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/cehbrecht/woodpecker/actions/workflows/ci.yml/badge.svg)](https://github.com/cehbrecht/woodpecker/actions/workflows/ci.yml)
 [![Docs](https://github.com/cehbrecht/woodpecker/actions/workflows/docs.yml/badge.svg)](https://github.com/cehbrecht/woodpecker/actions/workflows/docs.yml)
+[![Online Docs](https://img.shields.io/badge/docs-online-blue)](https://cehbrecht.github.io/woodpecker/)
+[![nbviewer](https://img.shields.io/badge/notebooks-nbviewer-orange)](https://nbviewer.org/github/cehbrecht/woodpecker/tree/main/docs/notebooks/)
 [![License](https://img.shields.io/github/license/cehbrecht/woodpecker)](https://github.com/cehbrecht/woodpecker/blob/main/LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://github.com/cehbrecht/woodpecker/blob/main/pyproject.toml)
 
@@ -132,8 +134,14 @@ See `woodpecker/testing/README.md` for usage details.
 
 ## Notebooks
 
-The `notebooks/` directory contains notebooks that demonstrate the public API
+The `docs/notebooks/` directory contains notebooks that demonstrate the public API
 with synthetic datasets, built-in core fixes, and bundled plugin fixes:
+
+- rendered in the online docs: <https://cehbrecht.github.io/woodpecker/>
+- listed on the examples page:
+  <https://cehbrecht.github.io/woodpecker/examples/>
+- viewable as raw notebooks on nbviewer:
+  <https://nbviewer.org/github/cehbrecht/woodpecker/tree/main/docs/notebooks/>
 
 ```bash
 jupyter notebook notebooks/cmip6_core_api_example.ipynb
@@ -154,7 +162,7 @@ Useful starting points:
 - `CONTRIBUTING.md` for setup, fix authoring, plans, plugins, and test guidance.
 - `tests/integration/README.md` for end-to-end public API integration tests.
 - `woodpecker/testing/README.md` for synthetic climate fixture usage.
-- `notebooks/` for notebook-based public API examples.
+- `docs/notebooks/` for notebook-based public API examples.
 
 ## Provenance
 
