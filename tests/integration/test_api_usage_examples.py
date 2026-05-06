@@ -7,14 +7,10 @@ example shows the same flow through ``woodpecker.check_plan()`` and
 ``woodpecker.fix_plan()``.
 """
 
-from pathlib import Path
-
 import numpy as np
 
 import woodpecker
-from woodpecker.testing import make_cmip6
-
-PLAN_DIR = Path(__file__).resolve().parent / "plans"
+from woodpecker.testing import integration_plan_path, make_cmip6
 
 
 def test_usage_example_check_and_fix_synthetic_cmip6_dataset():
@@ -57,7 +53,7 @@ def test_usage_example_check_and_fix_synthetic_cmip6_dataset():
 def test_usage_example_check_and_fix_synthetic_cmip6_dataset_with_plan():
     dataset = make_cmip6(overrides={"units": "degC"})
     original_values = dataset["tas"].values.copy()
-    plan_path = PLAN_DIR / "cmip6_core_plan.json"
+    plan_path = integration_plan_path("cmip6_core_plan.json")
 
     result = woodpecker.check_plan(plan_path, inputs=dataset)
 

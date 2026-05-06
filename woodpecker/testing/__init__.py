@@ -5,5 +5,16 @@ from .cmip6 import make_cmip6
 from .cmip7 import make_cmip7
 from .cordex import make_cordex
 from .decadal import make_cmip6_decadal
+from .paths import integration_plan_path, integration_root_dir, repository_root, testing_root_dir
 
-__all__ = ["make_atlas", "make_cmip6", "make_cmip6_decadal", "make_cmip7", "make_cordex"]
+__all__ = [
+    "integration_plan_path",
+    "integration_root_dir",
+    "make_atlas",
+    "make_cmip6",
+    "make_cmip6_decadal",
+    "make_cmip7",
+    "make_cordex",
+    "repository_root",
+    "testing_root_dir",
+]

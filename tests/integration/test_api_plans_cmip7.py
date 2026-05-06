@@ -3,9 +3,9 @@
 import numpy as np
 import pytest
 
-from woodpecker.testing import make_cmip7
+from woodpecker.testing import integration_plan_path, make_cmip7
 
-from .helpers import assert_plan_check_fix_cycle, example_plan_path
+from .helpers import assert_plan_check_fix_cycle
 
 pytest.importorskip("woodpecker_cmip7_plugin")
 
@@ -29,7 +29,7 @@ def _esa_cci_water_vapour_dataset():
 
 def test_esa_cci_zarr_plan_checks_and_fixes_synthetic_cmip7_dataset():
     dataset = _esa_cci_water_vapour_dataset()
-    plan_path = example_plan_path("esa_cci_water_vapour_plan.json")
+    plan_path = integration_plan_path("esa_cci_water_vapour_plan.json")
 
     def assert_unchanged(ds):
         assert "prw" in ds.data_vars

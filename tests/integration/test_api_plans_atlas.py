@@ -2,9 +2,9 @@
 
 import pytest
 
-from woodpecker.testing import make_atlas
+from woodpecker.testing import integration_plan_path, make_atlas
 
-from .helpers import assert_plan_check_fix_cycle, example_plan_path
+from .helpers import assert_plan_check_fix_cycle
 
 pytest.importorskip("woodpecker_atlas_plugin")
 
@@ -12,7 +12,7 @@ pytest.importorskip("woodpecker_atlas_plugin")
 def test_atlas_plan_checks_and_fixes_synthetic_dataset():
     dataset = make_atlas(missing=["project_id"])
     dataset["pr"].encoding["complevel"] = 5
-    plan_path = example_plan_path("atlas_basic_plan.json")
+    plan_path = integration_plan_path("atlas_basic_plan.json")
 
     def assert_unchanged(ds):
         assert "project_id" not in ds.attrs
