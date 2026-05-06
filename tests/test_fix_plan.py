@@ -354,14 +354,31 @@ def test_fix_plan_document_to_dict_includes_schema_version():
     assert payload["plans"][0]["id"] == "atlas.basic"
 
 
-def test_esa_cci_example_fix_plan_uses_plugin_cmip7_fix_codes_in_order():
-    plan_path = Path("examples/fix-plans/esa_cci.json")
+def test_cmip7_plan_document_uses_plugin_fix_codes_in_order(tmp_path):
+    plan_path = tmp_path / "fix-plans.json"
+    plan_path.write_text(
+        json.dumps(
+            {
+                "plans": [
+                    {
+                        "id": "cmip7.synthetic_reformat",
+                        "match": {"path_patterns": ["*.zarr"]},
+                        "steps": [
+                            {"id": "cmip7.configurable_reformat_bridge"},
+                            {"id": "woodpecker.ensure_latitude_is_increasing"},
+                        ],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
 
     document = FixPlanDocument(plans=JsonFixPlanStore(plan_path).list_plans())
-    assert len(document.plans) == 2
+    assert len(document.plans) == 1
 
     ds = xr.Dataset()
-    target = "/tmp/ESACCI-WATERVAPOUR-L3C-TCWV-meris-005deg-2002-2017-fv3.2.zarr"
+    target = "/tmp/CMIP7.CMIP.synthetic.case.zarr"
     matched = [plan for plan in document.plans if plan_matches_dataset(plan, ds, path=target)]
 
     assert matched

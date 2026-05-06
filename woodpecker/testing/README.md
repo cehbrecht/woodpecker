@@ -8,6 +8,7 @@ climate-data families that Woodpecker needs to understand:
 
 - `make_cmip6()`
 - `make_cmip6_decadal()`
+- `make_cmip7()`
 - `make_atlas()`
 - `make_cordex()`
 
