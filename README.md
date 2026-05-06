@@ -132,7 +132,7 @@ See `woodpecker/testing/README.md` for usage details.
 
 ## Notebooks
 
-The `notebooks/` directory contains notebooks that demonstrate the public API
+The `docs/notebooks/` directory contains notebooks that demonstrate the public API
 with synthetic datasets, built-in core fixes, and bundled plugin fixes:
 
 ```bash
@@ -154,7 +154,7 @@ Useful starting points:
 - `CONTRIBUTING.md` for setup, fix authoring, plans, plugins, and test guidance.
 - `tests/integration/README.md` for end-to-end public API integration tests.
 - `woodpecker/testing/README.md` for synthetic climate fixture usage.
-- `notebooks/` for notebook-based public API examples.
+- `docs/notebooks/` for notebook-based public API examples.
 
 ## Provenance
 

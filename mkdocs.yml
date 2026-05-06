@@ -1,7 +1,18 @@
 site_name: Woodpecker Fixes
 theme:
   name: material
+plugins:
+  - search
+  - mkdocs-jupyter:
+      execute: true
+      allow_errors: false
+      kernel_name: python3
 nav:
   - Home: index.md
   - Fixes Catalog: FIXES.md
   - Interactive Fixes: fixes.html
+  - Examples:
+      - Direct CMIP6 API: notebooks/cmip6_core_api_example.ipynb
+      - CMIP6 Fix Plan: notebooks/cmip6_core_fix_plan_example.ipynb
+      - Atlas Fix Plan: notebooks/atlas_fix_plan_example.ipynb
+      - ESA CCI Fix Plan: notebooks/esa_cci_fix_plan_example.ipynb
