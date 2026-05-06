@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 import pytest
@@ -15,15 +14,11 @@ from woodpecker.plans.models import (
 )
 from woodpecker.runner import apply_fix_plan
 from woodpecker.stores.json_store import JsonFixPlanStore
-from woodpecker.testing import make_cmip6
-
-
-def _write_json(path: Path, payload: dict) -> None:
-    path.write_text(json.dumps(payload), encoding="utf-8")
+from woodpecker.testing import make_cmip6, write_json
 
 
 def _load_document(path: Path, payload: dict) -> FixPlanDocument:
-    _write_json(path, payload)
+    write_json(path, payload)
     return FixPlanDocument(plans=JsonFixPlanStore(path).list_plans())
 
 

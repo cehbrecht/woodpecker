@@ -6,6 +6,7 @@ import pytest
 from click.testing import CliRunner
 
 from woodpecker.cli import cli
+from woodpecker.testing import write_json, write_plan_document
 
 pytestmark = pytest.mark.filterwarnings("ignore:.*Failed to read NetCDF input.*")
 CliWorkspace = tuple[CliRunner, Callable[[str], Path]]
@@ -25,14 +26,6 @@ def _finding(message: str, *, path: str = "cmip6_bad.nc") -> dict[str, str]:
     }
 
 
-def _write_json(path: str, payload) -> None:
-    Path(path).write_text(json.dumps(payload), encoding="utf-8")
-
-
-def _write_plan_document(path: str, plans: list[dict]) -> None:
-    _write_json(path, {"plans": plans})
-
-
 def _write_multiple_matching_plans(path: str, *, with_path_filters: bool) -> None:
     plans = [
         {
@@ -49,9 +42,9 @@ def _write_multiple_matching_plans(path: str, *, with_path_filters: bool) -> Non
     if with_path_filters:
         for plan in plans:
             plan["match"] = {"path_patterns": ["*cmip6_bad.nc"]}
-        _write_json(path, plans)
+        write_json(path, plans)
     else:
-        _write_plan_document(path, plans)
+        write_plan_document(path, plans)
 
 
 @pytest.mark.parametrize(
@@ -129,7 +122,7 @@ def test_list_plans_text_output(
     isolated_cli_workspace: CliWorkspace,
 ):
     runner, _ = isolated_cli_workspace
-    _write_json(
+    write_json(
         "plans.json",
         [
             {
@@ -160,7 +153,7 @@ def test_list_plans_json_output(
     isolated_cli_workspace: CliWorkspace,
 ):
     runner, _ = isolated_cli_workspace
-    _write_json(
+    write_json(
         "plans.json",
         [
             {
@@ -203,7 +196,7 @@ def test_load_plans_from_plan_document_into_json_store(
 ):
     runner, _ = isolated_cli_workspace
 
-    _write_json(
+    write_json(
         "plan-doc.json",
         {
             "plans": [
@@ -240,7 +233,7 @@ def test_load_plans_from_store_with_plan_id_filter(
 ):
     runner, _ = isolated_cli_workspace
 
-    _write_json(
+    write_json(
         "source.json",
         [
             {"id": "test.alpha", "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]},
