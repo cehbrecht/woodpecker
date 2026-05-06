@@ -27,7 +27,7 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
 
         entry = {
             "id": fix_id,
-            "local_id": getattr(f, "local_id", ""),
+            "suffix": getattr(f, "suffix", "") or getattr(f, "local_id", ""),
             "prefix": getattr(f, "prefix", "") or getattr(f, "namespace_prefix", ""),
             "aliases": list(getattr(f, "aliases", []) or []),
             "name": f.name,
@@ -40,6 +40,7 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
             entry["member_ids"] = [
                 getattr(member, "id", "")
                 or getattr(member, "canonical_id", "")
+                or getattr(member, "suffix", "")
                 or getattr(member, "local_id", "")
                 for member in f.members
             ]

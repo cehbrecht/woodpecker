@@ -47,11 +47,11 @@ class FixRegistry:
         return cls._infer_prefix_from_module(fix_cls)
 
     @classmethod
-    def _derive_fix_local_id(cls, fix_cls: Type[Any], explicit: str) -> str:
-        """Derive local_id with precedence:
+    def _derive_fix_suffix(cls, fix_cls: Type[Any], explicit: str) -> str:
+        """Derive suffix with precedence:
 
-        1) explicit class/local `local_id`
-        2) optional `derived_local_id()`
+        1) explicit class `suffix` or compatibility `local_id`
+        2) optional `derived_suffix()` or compatibility `derived_local_id()`
         3) class name transformed to snake_case
         """
 
@@ -59,13 +59,13 @@ class FixRegistry:
         if token:
             return token
 
-        derived = getattr(fix_cls, "derived_local_id", None)
+        derived = getattr(fix_cls, "derived_suffix", None) or getattr(
+            fix_cls, "derived_local_id", None
+        )
         if callable(derived):
             return IdentifierRules.normalize(str(derived()))
 
-        return IdentifierRules.derive_local_id_from_name(
-            str(getattr(fix_cls, "__name__", "") or "")
-        )
+        return IdentifierRules.derive_suffix_from_name(str(getattr(fix_cls, "__name__", "") or ""))
 
     @classmethod
     def _derive_identifiers(cls, fix_cls: Type[Any]):
@@ -76,23 +76,26 @@ class FixRegistry:
             getattr(fix_cls, "prefix", "") or getattr(fix_cls, "namespace_prefix", "") or ""
         )
         prefix = cls._derive_prefix(fix_cls, explicit_prefix)
-        local_id = cls._derive_fix_local_id(fix_cls, str(getattr(fix_cls, "local_id", "") or ""))
+        explicit_suffix = str(
+            getattr(fix_cls, "suffix", "") or getattr(fix_cls, "local_id", "") or ""
+        )
+        suffix = cls._derive_fix_suffix(fix_cls, explicit_suffix)
 
         if explicit_id and "." in explicit_id:
             IdentifierRules.validate_canonical_id("fix id", explicit_id)
-            parsed_prefix, parsed_local_id = explicit_id.split(".", 1)
+            parsed_prefix, parsed_suffix = explicit_id.split(".", 1)
             if explicit_prefix and prefix != parsed_prefix:
                 raise ValueError("Fix prefix does not match canonical id prefix")
-            if getattr(fix_cls, "local_id", "") and local_id != parsed_local_id:
-                raise ValueError("Fix local_id does not match canonical id local_id")
+            if explicit_suffix and suffix != parsed_suffix:
+                raise ValueError("Fix suffix does not match id suffix")
             prefix = parsed_prefix
-            local_id = parsed_local_id
-        elif explicit_id and not getattr(fix_cls, "local_id", ""):
-            local_id = explicit_id
+            suffix = parsed_suffix
+        elif explicit_id and not explicit_suffix:
+            suffix = explicit_id
 
         return IdentifierRules.build(
             prefix=prefix,
-            local_id=local_id,
+            suffix=suffix,
             aliases=getattr(fix_cls, "aliases", None),
         )
 
@@ -105,7 +108,7 @@ class FixRegistry:
         """Return the registered fix class for a canonical fix id.
 
         The input must be a canonical id in the form
-        "<prefix>.<local_id>".
+        "<prefix>.<suffix>".
         """
 
         key = str(canonical_id).strip()
@@ -166,14 +169,15 @@ class FixRegistry:
             raise ValueError(f"Duplicate fix id '{identifier_set.id}' (already registered)")
 
         setattr(fix_cls, "prefix", identifier_set.prefix)
-        setattr(fix_cls, "local_id", identifier_set.local_id)
+        setattr(fix_cls, "suffix", identifier_set.suffix)
+        setattr(fix_cls, "local_id", identifier_set.suffix)
         setattr(fix_cls, "id", identifier_set.id)
         setattr(fix_cls, "namespace_prefix", identifier_set.prefix)
         setattr(fix_cls, "canonical_id", identifier_set.id)
         setattr(fix_cls, "aliases", list(identifier_set.aliases))
 
         cls._registry[identifier_set.id] = fix_cls
-        cls._resolver.register(identifier_set, include_local_id=True)
+        cls._resolver.register(identifier_set, include_suffix=True)
         return fix_cls  # decorator-friendly
 
     @classmethod
@@ -234,7 +238,7 @@ class FixRegistry:
             data.append(
                 {
                     "id": getattr(f, "id", "") or getattr(f, "canonical_id", ""),
-                    "local_id": getattr(f, "local_id", ""),
+                    "suffix": getattr(f, "suffix", "") or getattr(f, "local_id", ""),
                     "prefix": getattr(f, "prefix", "") or getattr(f, "namespace_prefix", ""),
                     "aliases": list(getattr(f, "aliases", []) or []),
                     "links": list(getattr(f, "links", []) or []),

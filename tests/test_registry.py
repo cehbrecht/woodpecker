@@ -20,11 +20,11 @@ def test_group_fix_is_group_fix_instance():
         assert isinstance(maybe_group[0], GroupFix)
 
 
-def test_registry_rejects_invalid_local_identifier_pattern():
-    with pytest.raises(ValueError, match="Invalid local_id"):
+def test_registry_rejects_invalid_suffix_pattern():
+    with pytest.raises(ValueError, match="Invalid suffix"):
 
         class _InvalidCodeFix:
-            local_id = "bad-id"
+            suffix = "bad-id"
             name = "Invalid code"
             description = ""
             categories = ["metadata"]
@@ -50,7 +50,7 @@ def test_registry_rejects_missing_name():
 def test_register_fix_decorator_alias_registers_class():
     class _AliasFix(Fix):
         prefix = "test"
-        local_id = "alias_fix"
+        suffix = "alias_fix"
         aliases = ["alias_lookup"]
         name = "Alias decorator fix"
         description = ""
@@ -68,7 +68,7 @@ def test_register_fix_decorator_alias_registers_class():
 def test_registry_supports_fully_qualified_aliases_without_local_expansion():
     class _QualifiedAliasFix(Fix):
         prefix = "test"
-        local_id = "qualified_alias_fix"
+        suffix = "qualified_alias_fix"
         aliases = ["other.explicit_lookup"]
         name = "Qualified alias fix"
         description = ""
@@ -87,7 +87,7 @@ def test_registry_rejects_invalid_alias_syntax():
 
         class _InvalidAliasFix(Fix):
             prefix = "test"
-            local_id = "invalid_alias_fix"
+            suffix = "invalid_alias_fix"
             aliases = ["bad-alias"]
             name = "Invalid alias fix"
             description = ""
@@ -98,45 +98,61 @@ def test_registry_rejects_invalid_alias_syntax():
         FixRegistry.register(_InvalidAliasFix)
 
 
-def test_registry_local_id_derivation_precedence_explicit_over_derived():
+def test_registry_suffix_derivation_precedence_explicit_over_derived():
     class _ExplicitLocalIdWinsFix(Fix):
         prefix = "test"
-        local_id = "explicit_local"
-        name = "Explicit local id wins"
+        suffix = "explicit_local"
+        name = "Explicit suffix wins"
         description = ""
         categories = ["metadata"]
         priority = 10
         dataset = None
 
         @staticmethod
-        def derived_local_id() -> str:
+        def derived_suffix() -> str:
             return "derived_local"
 
     register_fix(_ExplicitLocalIdWinsFix)
     assert _ExplicitLocalIdWinsFix.id == "test.explicit_local"
 
 
-def test_registry_local_id_derivation_uses_derived_when_local_missing():
+def test_registry_accepts_local_id_compatibility_alias():
+    class _CompatLocalIdFix(Fix):
+        prefix = "test"
+        local_id = "compat_local"
+        name = "Compatibility local id"
+        description = ""
+        categories = ["metadata"]
+        priority = 10
+        dataset = None
+
+    register_fix(_CompatLocalIdFix)
+    assert _CompatLocalIdFix.suffix == "compat_local"
+    assert _CompatLocalIdFix.local_id == "compat_local"
+    assert _CompatLocalIdFix.id == "test.compat_local"
+
+
+def test_registry_suffix_derivation_uses_derived_when_suffix_missing():
     class _DerivedLocalIdFix(Fix):
         prefix = "test"
-        name = "Derived local id"
+        name = "Derived suffix"
         description = ""
         categories = ["metadata"]
         priority = 10
         dataset = None
 
         @staticmethod
-        def derived_local_id() -> str:
+        def derived_suffix() -> str:
             return "derived_local"
 
     register_fix(_DerivedLocalIdFix)
     assert _DerivedLocalIdFix.id == "test.derived_local"
 
 
-def test_registry_local_id_derivation_falls_back_to_class_name_snake_case():
+def test_registry_suffix_derivation_falls_back_to_class_name_snake_case():
     class FallbackFromClassNameFix:
         prefix = "test"
-        name = "Fallback local id"
+        name = "Fallback suffix"
 
         def matches(self, dataset):
             return True
@@ -156,7 +172,7 @@ def test_registry_local_id_derivation_falls_back_to_class_name_snake_case():
     assert FallbackFromClassNameFix.id == "test.fallback_from_class_name"
 
 
-def test_registry_resolves_canonical_and_local_aliases_for_known_fixes():
+def test_registry_resolves_canonical_suffix_and_aliases_for_known_fixes():
     assert (
         FixRegistry.resolve_identifier("woodpecker.normalize_tas_units_to_kelvin")
         == "woodpecker.normalize_tas_units_to_kelvin"
@@ -175,7 +191,7 @@ def test_registry_resolves_canonical_and_local_aliases_for_known_fixes():
     )
 
 
-def test_registry_instantiate_returns_fix_for_canonical_id():
+def test_registry_instantiate_returns_fix_for_id():
     fix = FixRegistry.instantiate("woodpecker.normalize_tas_units_to_kelvin")
     assert getattr(fix, "id", "") == "woodpecker.normalize_tas_units_to_kelvin"
 
@@ -192,10 +208,10 @@ def test_registry_instantiate_unknown_id_raises_clear_error():
         FixRegistry.instantiate("woodpecker.unknown_fix")
 
 
-def test_registry_rejects_ambiguous_local_identifier():
+def test_registry_rejects_ambiguous_suffix():
     class _AmbiguousOne(Fix):
         prefix = "alpha"
-        local_id = "shared"
+        suffix = "shared"
         name = "Ambiguous One"
         description = ""
         categories = ["metadata"]
@@ -204,7 +220,7 @@ def test_registry_rejects_ambiguous_local_identifier():
 
     class _AmbiguousTwo(Fix):
         prefix = "beta"
-        local_id = "shared"
+        suffix = "shared"
         name = "Ambiguous Two"
         description = ""
         categories = ["metadata"]

@@ -14,8 +14,9 @@ class Fix:
     """
 
     prefix: ClassVar[str] = ""
-    local_id: ClassVar[str] = ""
+    suffix: ClassVar[str] = ""
     id: ClassVar[str] = ""
+    local_id: ClassVar[str] = ""
     namespace_prefix: ClassVar[str] = ""
     canonical_id: ClassVar[str] = ""
     aliases: ClassVar[list[str]] = []
@@ -27,7 +28,7 @@ class Fix:
     dataset: ClassVar[Optional[str]] = None
     metadata_fields: ClassVar[tuple[str, ...]] = (
         "prefix",
-        "local_id",
+        "suffix",
         "id",
         "aliases",
         "links",
@@ -42,13 +43,15 @@ class Fix:
         self.config: dict[str, Any] = {}
 
     @classmethod
-    def derived_local_id(cls) -> str:
+    def derived_suffix(cls) -> str:
         class_name = cls.__name__
         if class_name.endswith("Fix"):
             class_name = class_name[: -len("Fix")]
         first = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", class_name)
         second = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", first)
         return re.sub(r"__+", "_", second).strip("_").lower()
+
+    derived_local_id = derived_suffix
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return isinstance(dataset, xr.Dataset)
@@ -114,7 +117,11 @@ class GroupFix(Fix):
 
         canonical_id = str(getattr(member_cls, "canonical_id", "") or "").strip().lower()
         member_id = str(getattr(member_cls, "id", "") or "").strip().lower()
-        local_id = str(getattr(member_cls, "local_id", "") or "").strip().lower()
+        suffix = (
+            str(getattr(member_cls, "suffix", "") or getattr(member_cls, "local_id", "") or "")
+            .strip()
+            .lower()
+        )
         prefix = (
             str(
                 getattr(member_cls, "prefix", "")
@@ -128,7 +135,7 @@ class GroupFix(Fix):
 
         _add(canonical_id)
         _add(member_id)
-        _add(local_id)
+        _add(suffix)
         for alias in aliases:
             alias_token = str(alias or "").strip().lower()
             if not alias_token:

@@ -189,13 +189,13 @@ def test_json_store_save_upserts_by_canonical_plan_id(tmp_path):
     assert listed[0].description == "new"
 
 
-def test_json_store_save_canonicalizes_prefix_and_local_plan_id(tmp_path):
+def test_json_store_save_canonicalizes_prefix_and_suffix_plan_id(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
     store.save_plan(
         FixPlan.model_validate(
             {
                 "prefix": "atlas",
-                "local_id": "cleanup_plan",
+                "suffix": "cleanup_plan",
                 "steps": [{"id": "encoding_cleanup"}],
             }
         )
@@ -207,19 +207,19 @@ def test_json_store_save_canonicalizes_prefix_and_local_plan_id(tmp_path):
     assert listed[0].id == "atlas.cleanup_plan"
     assert listed[0].steps[0].id == "atlas.encoding_cleanup"
     assert '"id": "atlas.cleanup_plan"' in raw
-    assert "local_id" not in raw
+    assert "suffix" not in raw
 
 
-def test_json_store_get_plan_resolves_canonical_and_local_ids(tmp_path):
+def test_json_store_get_plan_resolves_canonical_and_suffixs(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
     plan = FixPlan(id="atlas.cleanup_plan", steps=[FixRef(id="atlas.encoding_cleanup")])
     store.save_plan(plan)
 
     by_canonical = store.get_plan("atlas.cleanup_plan")
-    by_local = store.get_plan("cleanup_plan")
+    by_suffix = store.get_plan("cleanup_plan")
 
     assert by_canonical.id == "atlas.cleanup_plan"
-    assert by_local.id == "atlas.cleanup_plan"
+    assert by_suffix.id == "atlas.cleanup_plan"
 
 
 def test_json_store_get_plan_resolves_aliases(tmp_path):
@@ -231,11 +231,11 @@ def test_json_store_get_plan_resolves_aliases(tmp_path):
     )
     store.save_plan(plan)
 
-    by_local_alias = store.get_plan("cleanup")
+    by_suffix_alias = store.get_plan("cleanup")
     by_qualified_alias = store.get_plan("atlas.cleanup")
     by_legacy_alias = store.get_plan("legacy.cleanup_plan")
 
-    assert by_local_alias.id == "atlas.cleanup_plan"
+    assert by_suffix_alias.id == "atlas.cleanup_plan"
     assert by_qualified_alias.id == "atlas.cleanup_plan"
     assert by_legacy_alias.id == "atlas.cleanup_plan"
 
@@ -285,17 +285,17 @@ def test_duckdb_store_save_list_lookup(tmp_path):
     assert [item.id for item in matched] == ["tests.plan_2"]
 
 
-def test_duckdb_store_get_plan_resolves_canonical_and_local_ids(tmp_path):
+def test_duckdb_store_get_plan_resolves_canonical_and_suffixs(tmp_path):
     pytest.importorskip("duckdb")
 
     store = DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
     store.save_plan(FixPlan(id="atlas.cleanup_plan", steps=[FixRef(id="atlas.encoding_cleanup")]))
 
     by_canonical = store.get_plan("atlas.cleanup_plan")
-    by_local = store.get_plan("cleanup_plan")
+    by_suffix = store.get_plan("cleanup_plan")
 
     assert by_canonical.id == "atlas.cleanup_plan"
-    assert by_local.id == "atlas.cleanup_plan"
+    assert by_suffix.id == "atlas.cleanup_plan"
 
 
 def test_duckdb_store_get_plan_resolves_aliases(tmp_path):
@@ -310,11 +310,11 @@ def test_duckdb_store_get_plan_resolves_aliases(tmp_path):
         )
     )
 
-    by_local_alias = store.get_plan("cleanup")
+    by_suffix_alias = store.get_plan("cleanup")
     by_qualified_alias = store.get_plan("atlas.cleanup")
     by_legacy_alias = store.get_plan("legacy.cleanup_plan")
 
-    assert by_local_alias.id == "atlas.cleanup_plan"
+    assert by_suffix_alias.id == "atlas.cleanup_plan"
     assert by_qualified_alias.id == "atlas.cleanup_plan"
     assert by_legacy_alias.id == "atlas.cleanup_plan"
 

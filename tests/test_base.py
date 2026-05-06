@@ -6,7 +6,7 @@ from woodpecker.fixes.base import Fix, GroupFix
 
 class _BaseMetadataFix(Fix):
     prefix = "test"
-    local_id = "base_metadata"
+    suffix = "base_metadata"
     id = "test.base_metadata"
     aliases = ["base_metadata_alias"]
     links = [{"rel": "docs", "href": "https://example.invalid/fix"}]
@@ -19,7 +19,7 @@ class _BaseMetadataFix(Fix):
 
 class _MemberFix(Fix):
     prefix = "group"
-    local_id = "member_fix"
+    suffix = "member_fix"
     id = "group.member_fix"
     aliases = ["member_alias"]
     links = []
@@ -39,7 +39,7 @@ class _MemberFix(Fix):
 
 class _ContainerGroupFix(GroupFix):
     prefix = "group"
-    local_id = "container"
+    suffix = "container"
     id = "group.container"
     aliases = []
     links = []
@@ -53,7 +53,7 @@ class _ContainerGroupFix(GroupFix):
 
 class _EmptyGroupFix(GroupFix):
     prefix = "group"
-    local_id = "empty"
+    suffix = "empty"
     id = "group.empty"
     aliases = []
     links = []
@@ -69,7 +69,7 @@ def test_fix_metadata_is_class_level_and_config_is_instance_runtime_state():
     fix = _BaseMetadataFix()
 
     assert fix.name == "Base metadata fix"
-    assert fix.local_id == "base_metadata"
+    assert fix.suffix == "base_metadata"
     assert fix.id == "test.base_metadata"
     assert fix.config == {}
 

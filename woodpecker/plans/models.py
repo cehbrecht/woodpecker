@@ -75,7 +75,7 @@ class FixRef(BaseModel):
         if "." in normalized:
             IdentifierRules.validate_canonical_id("FixRef.id", normalized)
         else:
-            IdentifierRules.validate_local_id("FixRef.id", normalized)
+            IdentifierRules.validate_suffix("FixRef.id", normalized)
         return normalized
 
     @field_validator("options", mode="before")
@@ -174,35 +174,38 @@ class FixPlan(BaseModel):
         raw_id = IdentifierRules.normalize(payload.get("id", ""))
         raw_prefix = IdentifierRules.normalize(payload.pop("prefix", ""))
         raw_namespace_prefix = IdentifierRules.normalize(payload.pop("namespace_prefix", ""))
+        raw_suffix = IdentifierRules.normalize(payload.pop("suffix", ""))
         raw_local_id = IdentifierRules.normalize(payload.pop("local_id", ""))
 
         if raw_prefix and raw_namespace_prefix and raw_prefix != raw_namespace_prefix:
             raise ValueError("FixPlan prefix and namespace_prefix must match when both are set")
+        if raw_suffix and raw_local_id and raw_suffix != raw_local_id:
+            raise ValueError("FixPlan suffix and local_id must match when both are set")
         prefix = raw_prefix or raw_namespace_prefix
-        local_id = raw_local_id
+        suffix = raw_suffix or raw_local_id
 
         if raw_id and "." in raw_id:
             IdentifierRules.validate_canonical_id("FixPlan.id", raw_id)
-            parsed_prefix, parsed_local_id = raw_id.split(".", 1)
+            parsed_prefix, parsed_suffix = raw_id.split(".", 1)
             if prefix and prefix != parsed_prefix:
                 raise ValueError("FixPlan prefix does not match canonical id prefix")
-            if local_id and local_id != parsed_local_id:
-                raise ValueError("FixPlan local_id does not match canonical id local_id")
+            if suffix and suffix != parsed_suffix:
+                raise ValueError("FixPlan suffix does not match id suffix")
             prefix = parsed_prefix
-            local_id = parsed_local_id
+            suffix = parsed_suffix
         elif raw_id:
-            if not local_id:
-                local_id = raw_id
-            elif raw_id != local_id:
-                raise ValueError("FixPlan id and local_id must match when id is unqualified")
+            if not suffix:
+                suffix = raw_id
+            elif raw_id != suffix:
+                raise ValueError("FixPlan id and suffix must match when id is unqualified")
 
         if prefix:
-            IdentifierRules.validate_local_id("FixPlan prefix", prefix)
-        if local_id:
-            IdentifierRules.validate_local_id("FixPlan local_id", local_id)
+            IdentifierRules.validate_suffix("FixPlan prefix", prefix)
+        if suffix:
+            IdentifierRules.validate_suffix("FixPlan suffix", suffix)
 
-        if prefix and local_id:
-            payload["id"] = f"{prefix}.{local_id}"
+        if prefix and suffix:
+            payload["id"] = f"{prefix}.{suffix}"
         elif raw_id:
             payload["id"] = raw_id
 
@@ -241,7 +244,7 @@ class FixPlan(BaseModel):
 
     @model_validator(mode="after")
     def _scope_fix_refs(self) -> FixPlan:
-        """Scope local fix refs to this plan namespace."""
+        """Scope local fix refs to this plan prefix."""
         self.aliases = list(
             IdentifierRules.expand_aliases(
                 self.prefix,
@@ -265,13 +268,18 @@ class FixPlan(BaseModel):
         return self.prefix
 
     @property
-    def local_id(self) -> str:
+    def suffix(self) -> str:
         return self.id.split(".", 1)[1]
+
+    @property
+    def local_id(self) -> str:
+        """Compatibility alias for ``suffix``."""
+        return self.suffix
 
     @cached_property
     def identifier_set(self) -> IdentifierSet:
         """Cached identifier set for plan identity."""
-        return IdentifierRules.build(self.prefix, self.local_id, aliases=self.aliases)
+        return IdentifierRules.build(self.prefix, self.suffix, aliases=self.aliases)
 
     def resolve_fix_identifier(self, ref: FixRef) -> str:
         token = IdentifierRules.normalize(ref.id)

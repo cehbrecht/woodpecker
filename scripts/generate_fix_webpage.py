@@ -40,6 +40,7 @@ def main():
             entry["member_codes"] = [
                 getattr(member, "id", "")
                 or getattr(member, "canonical_id", "")
+                or getattr(member, "suffix", "")
                 or getattr(member, "local_id", "")
                 for member in fix.members
             ]

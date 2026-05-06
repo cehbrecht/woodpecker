@@ -1,7 +1,7 @@
 [
   {
     "id": "cmip6_decadal.time_metadata",
-    "local_id": "time_metadata",
+    "suffix": "time_metadata",
     "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal time metadata",
@@ -15,7 +15,7 @@
   },
   {
     "id": "cmip6_decadal.calendar_normalization",
-    "local_id": "calendar_normalization",
+    "suffix": "calendar_normalization",
     "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal calendar normalization",
@@ -30,7 +30,7 @@
   },
   {
     "id": "cmip6_decadal.realization_variable",
-    "local_id": "realization_variable",
+    "suffix": "realization_variable",
     "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal realization variable",
@@ -44,7 +44,7 @@
   },
   {
     "id": "cmip6_decadal.coordinates_encoding_cleanup",
-    "local_id": "coordinates_encoding_cleanup",
+    "suffix": "coordinates_encoding_cleanup",
     "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal coordinates encoding cleanup",
@@ -59,7 +59,7 @@
   },
   {
     "id": "cmip6_decadal.realization_comment_normalization",
-    "local_id": "realization_comment_normalization",
+    "suffix": "realization_comment_normalization",
     "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal realization comment normalization",
@@ -73,7 +73,7 @@
   },
   {
     "id": "cmip6_decadal.realization_dtype_normalization",
-    "local_id": "realization_dtype_normalization",
+    "suffix": "realization_dtype_normalization",
     "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal realization dtype normalization",
@@ -88,7 +88,7 @@
   },
   {
     "id": "cmip6_decadal.fillvalue_encoding_cleanup",
-    "local_id": "fillvalue_encoding_cleanup",
+    "suffix": "fillvalue_encoding_cleanup",
     "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal _FillValue encoding cleanup",
@@ -103,7 +103,7 @@
   },
   {
     "id": "cmip6_decadal.further_info_url_normalization",
-    "local_id": "further_info_url_normalization",
+    "suffix": "further_info_url_normalization",
     "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal further_info_url normalization",
@@ -117,7 +117,7 @@
   },
   {
     "id": "cmip6_decadal.start_token_normalization",
-    "local_id": "start_token_normalization",
+    "suffix": "start_token_normalization",
     "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal start token normalization",
@@ -131,7 +131,7 @@
   },
   {
     "id": "cmip6_decadal.realization_long_name_normalization",
-    "local_id": "realization_long_name_normalization",
+    "suffix": "realization_long_name_normalization",
     "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal realization long_name normalization",
@@ -145,7 +145,7 @@
   },
   {
     "id": "cmip6_decadal.realization_index_normalization",
-    "local_id": "realization_index_normalization",
+    "suffix": "realization_index_normalization",
     "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal realization_index normalization",
@@ -159,7 +159,7 @@
   },
   {
     "id": "atlas.encoding_cleanup",
-    "local_id": "encoding_cleanup",
+    "suffix": "encoding_cleanup",
     "prefix": "atlas",
     "aliases": [],
     "name": "ATLAS encoding cleanup",
@@ -173,7 +173,7 @@
   },
   {
     "id": "cmip6_decadal.leadtime_metadata_normalization",
-    "local_id": "leadtime_metadata_normalization",
+    "suffix": "leadtime_metadata_normalization",
     "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal leadtime metadata normalization",
@@ -187,7 +187,7 @@
   },
   {
     "id": "atlas.project_id_normalization",
-    "local_id": "project_id_normalization",
+    "suffix": "project_id_normalization",
     "prefix": "atlas",
     "aliases": [],
     "name": "ATLAS project_id normalization",
@@ -201,7 +201,7 @@
   },
   {
     "id": "cmip6_decadal.model_global_attributes",
-    "local_id": "model_global_attributes",
+    "suffix": "model_global_attributes",
     "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal model global attributes",
@@ -215,7 +215,7 @@
   },
   {
     "id": "cmip6_decadal.reftime_coordinate",
-    "local_id": "reftime_coordinate",
+    "suffix": "reftime_coordinate",
     "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal reftime coordinate",
@@ -230,7 +230,7 @@
   },
   {
     "id": "cmip6_decadal.leadtime_coordinate",
-    "local_id": "leadtime_coordinate",
+    "suffix": "leadtime_coordinate",
     "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal leadtime coordinate",
@@ -245,7 +245,7 @@
   },
   {
     "id": "woodpecker.normalize_tas_units_to_kelvin",
-    "local_id": "normalize_tas_units_to_kelvin",
+    "suffix": "normalize_tas_units_to_kelvin",
     "prefix": "woodpecker",
     "aliases": [
       "tas_units_to_kelvin",
@@ -263,7 +263,7 @@
   },
   {
     "id": "woodpecker.merge_equivalent_dimensions",
-    "local_id": "merge_equivalent_dimensions",
+    "suffix": "merge_equivalent_dimensions",
     "prefix": "woodpecker",
     "aliases": [],
     "name": "Merge equivalent dimensions",
@@ -277,7 +277,7 @@
   },
   {
     "id": "woodpecker.ensure_latitude_is_increasing",
-    "local_id": "ensure_latitude_is_increasing",
+    "suffix": "ensure_latitude_is_increasing",
     "prefix": "woodpecker",
     "aliases": [],
     "name": "Ensure latitude is increasing",
@@ -291,7 +291,7 @@
   },
   {
     "id": "woodpecker.remove_coordinate_fill_value_encodings",
-    "local_id": "remove_coordinate_fill_value_encodings",
+    "suffix": "remove_coordinate_fill_value_encodings",
     "prefix": "woodpecker",
     "aliases": [],
     "name": "Remove coordinate FillValue encodings",
@@ -306,7 +306,7 @@
   },
   {
     "id": "cmip6.dummy_placeholder",
-    "local_id": "dummy_placeholder",
+    "suffix": "dummy_placeholder",
     "prefix": "cmip6",
     "aliases": [],
     "name": "CMIP6 dummy placeholder",
@@ -320,7 +320,7 @@
   },
   {
     "id": "cmip7.ensure_project_id_present",
-    "local_id": "ensure_project_id_present",
+    "suffix": "ensure_project_id_present",
     "prefix": "cmip7",
     "aliases": [],
     "name": "Ensure project_id is present (plugin)",
@@ -334,7 +334,7 @@
   },
   {
     "id": "cmip7.rename_temp_variable_to_tas",
-    "local_id": "rename_temp_variable_to_tas",
+    "suffix": "rename_temp_variable_to_tas",
     "prefix": "cmip7",
     "aliases": [],
     "name": "Rename temp variable to tas (plugin)",
@@ -349,7 +349,7 @@
   },
   {
     "id": "cmip7.configurable_reformat_bridge",
-    "local_id": "configurable_reformat_bridge",
+    "suffix": "configurable_reformat_bridge",
     "prefix": "cmip7",
     "aliases": [],
     "name": "Configurable CMIP7 reformat bridge (plugin)",
@@ -364,7 +364,7 @@
   },
   {
     "id": "cmip6_decadal.full_fix_suite",
-    "local_id": "full_fix_suite",
+    "suffix": "full_fix_suite",
     "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "CMIP6 Decadal: full fix suite",

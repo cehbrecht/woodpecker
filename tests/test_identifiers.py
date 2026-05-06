@@ -10,25 +10,33 @@ from woodpecker.fixes.identifiers import (
 
 
 def test_identifier_rules_build_creates_canonical_identifier_set():
-    identifiers = IdentifierRules.build(prefix="cmip7", local_id="configurable_reformat_bridge")
+    identifiers = IdentifierRules.build(prefix="cmip7", suffix="configurable_reformat_bridge")
 
     assert identifiers == IdentifierSet(
         prefix="cmip7",
-        local_id="configurable_reformat_bridge",
+        suffix="configurable_reformat_bridge",
         id="cmip7.configurable_reformat_bridge",
         aliases=(),
     )
 
 
-def test_identifier_rules_derive_local_id_from_name_strips_fix_and_plan_suffixes():
+def test_identifier_rules_build_accepts_local_id_compatibility_alias():
+    identifiers = IdentifierRules.build(prefix="cmip7", local_id="bridge")
+
+    assert identifiers.suffix == "bridge"
+    assert identifiers.local_id == "bridge"
+    assert identifiers.id == "cmip7.bridge"
+
+
+def test_identifier_rules_derive_suffix_from_name_strips_fix_and_plan_suffixes():
     assert (
-        IdentifierRules.derive_local_id_from_name("NormalizeTasUnitsToKelvinFix")
+        IdentifierRules.derive_suffix_from_name("NormalizeTasUnitsToKelvinFix")
         == "normalize_tas_units_to_kelvin"
     )
-    assert IdentifierRules.derive_local_id_from_name("AtlasMonitoringPlan") == "atlas_monitoring"
+    assert IdentifierRules.derive_suffix_from_name("AtlasMonitoringPlan") == "atlas_monitoring"
 
 
-def test_identifier_rules_expand_aliases_for_local_and_qualified_values():
+def test_identifier_rules_expand_aliases_for_suffix_and_qualified_values():
     aliases = IdentifierRules.expand_aliases(
         prefix="atlas",
         id="atlas.encoding_cleanup",
@@ -52,7 +60,7 @@ def test_identifier_resolver_registers_and_resolves_canonical_and_alias_forms():
     resolver.register(
         IdentifierSet(
             prefix="cmip7",
-            local_id="bridge",
+            suffix="bridge",
             id="cmip7.bridge",
             aliases=("bridge_alias", "cmip7.bridge_alias"),
         )
@@ -70,7 +78,7 @@ def test_identifier_resolver_rejects_ambiguous_identifiers():
     resolver.register(
         IdentifierSet(
             prefix="alpha",
-            local_id="shared",
+            suffix="shared",
             id="alpha.shared",
             aliases=(),
         )
@@ -78,7 +86,7 @@ def test_identifier_resolver_rejects_ambiguous_identifiers():
     resolver.register(
         IdentifierSet(
             prefix="beta",
-            local_id="shared",
+            suffix="shared",
             id="beta.shared",
             aliases=(),
         )
@@ -88,20 +96,20 @@ def test_identifier_resolver_rejects_ambiguous_identifiers():
         resolver.resolve("shared")
 
 
-def test_coerce_scoped_identifier_builds_identifier_set_from_canonical_id():
+def test_coerce_scoped_identifier_builds_identifier_set_from_id():
     resolved = coerce_scoped_identifier(
         id="atlas.basic",
-        local_id="",
+        suffix="",
         prefix="",
         canonical_label="FixPlan.id",
     )
 
     assert resolved.id == "atlas.basic"
     assert resolved.prefix == "atlas"
-    assert resolved.local_id == "basic"
+    assert resolved.suffix == "basic"
     assert resolved.identifier_set == IdentifierSet(
         prefix="atlas",
-        local_id="basic",
+        suffix="basic",
         id="atlas.basic",
         aliases=(),
     )
@@ -112,7 +120,7 @@ def test_build_identifier_resolver_registers_identifier_sets():
         [
             IdentifierSet(
                 prefix="atlas",
-                local_id="cleanup",
+                suffix="cleanup",
                 id="atlas.cleanup",
                 aliases=("encoding_cleanup",),
             )
