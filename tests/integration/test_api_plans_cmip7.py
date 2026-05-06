@@ -1,14 +1,11 @@
 """End-to-end public API examples for CMIP7 fix plans."""
 
-from pathlib import Path
-
 import numpy as np
 import pytest
 
-import woodpecker
 from woodpecker.testing import make_cmip7
 
-from .helpers import write_plan_document
+from .helpers import assert_plan_check_fix_cycle, example_plan_path
 
 pytest.importorskip("woodpecker_cmip7_plugin")
 
@@ -30,54 +27,32 @@ def _esa_cci_water_vapour_dataset():
     return dataset
 
 
-def test_esa_cci_zarr_plan_checks_and_fixes_synthetic_cmip7_dataset(tmp_path: Path):
+def test_esa_cci_zarr_plan_checks_and_fixes_synthetic_cmip7_dataset():
     dataset = _esa_cci_water_vapour_dataset()
-    plan_path = write_plan_document(
-        tmp_path / "plans.json",
-        [
-            {
-                "id": "cmip7.esa_cci_water_vapour_zarr",
-                "description": "CMIP7/ESA CCI zarr-style inputs",
-                "match": {"path_patterns": ["*ESACCI-WATERVAPOUR-*.zarr"]},
-                "steps": [
-                    {
-                        "id": "cmip7.configurable_reformat_bridge",
-                        "options": {
-                            "realm": "atmos",
-                            "branded_variable": "prw_tavg-u-hxy-u",
-                            "dim_map": {"bnds": "nv"},
-                            "variable_map": {"prw": "tcwv"},
-                            "keep_global_attrs": True,
-                        },
-                    },
-                    {"id": "woodpecker.ensure_latitude_is_increasing"},
-                ],
-            }
-        ],
+    plan_path = example_plan_path("esa_cci_water_vapour_plan.json")
+
+    def assert_unchanged(ds):
+        assert "prw" in ds.data_vars
+        assert "bnds" in ds.dims
+        assert float(ds["lat"].values[0]) > float(ds["lat"].values[-1])
+
+    def assert_fixed(ds):
+        assert "tcwv" in ds.data_vars
+        assert "prw" not in ds.data_vars
+        assert "nv" in ds.dims
+        assert "bnds" not in ds.dims
+        assert ds.attrs["realm"] == "atmos"
+        assert ds.attrs["branded_variable"] == "prw_tavg-u-hxy-u"
+        assert float(ds["lat"].values[0]) < float(ds["lat"].values[-1])
+
+    assert_plan_check_fix_cycle(
+        plan_path,
+        dataset,
+        expected_fix_ids=(
+            "cmip7.configurable_reformat_bridge",
+            "woodpecker.ensure_latitude_is_increasing",
+        ),
+        expected_changed=2,
+        assert_unchanged=assert_unchanged,
+        assert_fixed=assert_fixed,
     )
-
-    findings = woodpecker.check_plan(plan_path, inputs=dataset)
-
-    assert findings.fix_ids == (
-        "cmip7.configurable_reformat_bridge",
-        "woodpecker.ensure_latitude_is_increasing",
-    )
-
-    dry_run = woodpecker.fix_plan(plan_path, inputs=dataset, write=False)
-
-    assert dry_run.changed == 2
-    assert "prw" in dataset.data_vars
-    assert "bnds" in dataset.dims
-    assert float(dataset["lat"].values[0]) > float(dataset["lat"].values[-1])
-
-    write = woodpecker.fix_plan(plan_path, inputs=dataset, write=True)
-
-    assert write.changed == 2
-    assert "tcwv" in dataset.data_vars
-    assert "prw" not in dataset.data_vars
-    assert "nv" in dataset.dims
-    assert "bnds" not in dataset.dims
-    assert dataset.attrs["realm"] == "atmos"
-    assert dataset.attrs["branded_variable"] == "prw_tavg-u-hxy-u"
-    assert float(dataset["lat"].values[0]) < float(dataset["lat"].values[-1])
-    assert not woodpecker.check_plan(plan_path, inputs=dataset).has_findings

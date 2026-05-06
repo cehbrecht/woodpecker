@@ -8,40 +8,30 @@ import pytest
 import woodpecker
 from woodpecker.testing import make_cmip6
 
-from .helpers import write_plan_document
+from .helpers import assert_plan_check_fix_cycle, example_plan_path, write_plan_document
 
 
-def test_plan_checks_and_fixes_synthetic_cmip6_dataset(tmp_path: Path):
+def test_plan_checks_and_fixes_synthetic_cmip6_dataset():
     dataset = make_cmip6(overrides={"units": "degC"})
     original_values = dataset["tas"].values.copy()
-    plan_path = write_plan_document(
-        tmp_path / "plans.json",
-        [
-            {
-                "id": "cmip6.core_units",
-                "match": {"attrs": {"project_id": "CMIP6"}},
-                "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
-            }
-        ],
+    plan_path = example_plan_path("cmip6_core_plan.json")
+
+    def assert_unchanged(ds):
+        assert ds["tas"].attrs["units"] == "degC"
+        np.testing.assert_allclose(ds["tas"].values, original_values)
+
+    def assert_fixed(ds):
+        assert ds["tas"].attrs["units"] == "K"
+        np.testing.assert_allclose(ds["tas"].values, original_values + 273.15)
+
+    assert_plan_check_fix_cycle(
+        plan_path,
+        dataset,
+        expected_fix_ids=("woodpecker.normalize_tas_units_to_kelvin",),
+        expected_changed=1,
+        assert_unchanged=assert_unchanged,
+        assert_fixed=assert_fixed,
     )
-
-    findings = woodpecker.check_plan(plan_path, inputs=dataset)
-
-    assert findings.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
-
-    dry_run = woodpecker.fix_plan(plan_path, inputs=dataset, write=False)
-
-    assert dry_run.changed == 1
-    assert dataset["tas"].attrs["units"] == "degC"
-    np.testing.assert_allclose(dataset["tas"].values, original_values)
-
-    write = woodpecker.fix_plan(plan_path, inputs=dataset, write=True)
-
-    assert write.changed == 1
-    assert dataset["tas"].attrs["units"] == "K"
-    np.testing.assert_allclose(dataset["tas"].values, original_values + 273.15)
-
-    assert not woodpecker.check_plan(plan_path, inputs=dataset).has_findings
 
 
 def test_plan_step_options_are_used_for_core_fixes(tmp_path: Path):
@@ -64,20 +54,20 @@ def test_plan_step_options_are_used_for_core_fixes(tmp_path: Path):
         ],
     )
 
-    findings = woodpecker.check_plan(plan_path, inputs=dataset)
+    def assert_unchanged(ds):
+        assert ds["member_weight"].dims == ("member",)
 
-    assert findings.fix_ids == ("woodpecker.merge_equivalent_dimensions",)
+    def assert_fixed(ds):
+        assert ds["member_weight"].dims == ("lat",)
 
-    dry_run = woodpecker.fix_plan(plan_path, inputs=dataset, write=False)
-
-    assert dry_run.changed == 1
-    assert dataset["member_weight"].dims == ("member",)
-
-    write = woodpecker.fix_plan(plan_path, inputs=dataset, write=True)
-
-    assert write.changed == 1
-    assert dataset["member_weight"].dims == ("lat",)
-    assert not woodpecker.check_plan(plan_path, inputs=dataset).has_findings
+    assert_plan_check_fix_cycle(
+        plan_path,
+        dataset,
+        expected_fix_ids=("woodpecker.merge_equivalent_dimensions",),
+        expected_changed=1,
+        assert_unchanged=assert_unchanged,
+        assert_fixed=assert_fixed,
+    )
 
 
 def test_plan_id_selects_one_plan_when_multiple_plans_match(tmp_path: Path):

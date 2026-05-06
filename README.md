@@ -153,7 +153,7 @@ Useful starting points:
 - `CONTRIBUTING.md` for setup, fix authoring, plans, plugins, and test guidance.
 - `tests/integration/README.md` for end-to-end public API integration tests.
 - `woodpecker/testing/README.md` for synthetic climate fixture usage.
-- `notebooks/` for a notebook-based public API example.
+- `notebooks/` for notebook-based public API examples.
 
 ## Provenance
 
