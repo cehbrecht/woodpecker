@@ -23,7 +23,6 @@ from woodpecker.testing import make_cmip6
     ],
 )
 def test_format_provenance_source(context, expected):
-
     output = format_provenance_source(
         context,
         store_type="json",
