@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 import xarray as xr
 
@@ -7,6 +9,8 @@ from woodpecker.plans.matcher import plan_matches_dataset
 from woodpecker.plans.models import DatasetMatcher, FixPlan, FixRef
 from woodpecker.stores import DuckDBFixPlanStore, JsonFixPlanStore
 from woodpecker.testing import make_atlas, make_cmip6
+
+UNKNOWN_PLAN_ID_ERROR = "Unknown plan identifier"
 
 
 def _sample_plan() -> FixPlan:
@@ -37,6 +41,29 @@ def _single_step_plan(
     if description is not None:
         kwargs["description"] = description
     return FixPlan(**kwargs)
+
+
+def _json_store(tmp_path: Path) -> JsonFixPlanStore:
+    return JsonFixPlanStore(tmp_path / "fix-plans.json")
+
+
+def _duckdb_store(tmp_path: Path) -> DuckDBFixPlanStore:
+    pytest.importorskip("duckdb")
+    return DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
+
+
+STORE_FACTORIES = [
+    pytest.param(_json_store, id="json-store"),
+    pytest.param(_duckdb_store, id="duckdb-store"),
+]
+
+
+def _assert_lookup_ids(store, dataset: xr.Dataset, *, path: str, expected_ids: list[str]) -> None:
+    matched = store.lookup(dataset, path=path)
+    assert [item.id for item in matched] == expected_ids
+
+
+# Serialization and matcher behavior
 
 
 def test_fix_plan_serialization_roundtrip():
@@ -114,11 +141,16 @@ def test_json_store_save_list_lookup(tmp_path, filename, schema_marker):
     assert [item.id for item in listed] == ["tests.plan_1", "tests.plan_2"]
 
     ds = make_cmip6()
-    matched = store.lookup(ds, path="/tmp/cmip6_case.nc")
-    assert [item.id for item in matched] == ["tests.plan_1", "tests.plan_2"]
+    _assert_lookup_ids(
+        store,
+        ds,
+        path="/tmp/cmip6_case.nc",
+        expected_ids=["tests.plan_1", "tests.plan_2"],
+    )
+    _assert_lookup_ids(store, ds, path="/tmp/no-match.txt", expected_ids=["tests.plan_2"])
 
-    matched = store.lookup(ds, path="/tmp/no-match.txt")
-    assert [item.id for item in matched] == ["tests.plan_2"]
+
+# JSON store behavior
 
 
 def test_json_store_lookup_matches_atlas_fixture(tmp_path):
@@ -210,20 +242,22 @@ def test_json_store_save_canonicalizes_prefix_and_suffix_plan_id(tmp_path):
     assert "suffix" not in raw
 
 
-def test_json_store_get_plan_resolves_id(tmp_path):
-    store = JsonFixPlanStore(tmp_path / "fix-plans.json")
+@pytest.mark.parametrize("store_factory", STORE_FACTORIES)
+def test_store_get_plan_resolves_id(tmp_path, store_factory):
+    store = store_factory(tmp_path)
     plan = FixPlan(id="atlas.cleanup_plan", steps=[FixRef(id="atlas.encoding_cleanup")])
     store.save_plan(plan)
 
     by_canonical = store.get_plan("atlas.cleanup_plan")
     assert by_canonical.id == "atlas.cleanup_plan"
 
-    with pytest.raises(ValueError, match="Unknown plan identifier"):
+    with pytest.raises(ValueError, match=UNKNOWN_PLAN_ID_ERROR):
         store.get_plan("cleanup_plan")
 
 
-def test_json_store_get_plan_resolves_aliases(tmp_path):
-    store = JsonFixPlanStore(tmp_path / "fix-plans.json")
+@pytest.mark.parametrize("store_factory", STORE_FACTORIES)
+def test_store_get_plan_resolves_aliases(tmp_path, store_factory):
+    store = store_factory(tmp_path)
     plan = FixPlan(
         id="atlas.cleanup_plan",
         aliases=["cleanup", "legacy.cleanup_plan"],
@@ -237,7 +271,7 @@ def test_json_store_get_plan_resolves_aliases(tmp_path):
     assert by_qualified_alias.id == "atlas.cleanup_plan"
     assert by_legacy_alias.id == "atlas.cleanup_plan"
 
-    with pytest.raises(ValueError, match="Unknown plan identifier"):
+    with pytest.raises(ValueError, match=UNKNOWN_PLAN_ID_ERROR):
         store.get_plan("cleanup")
 
 
@@ -250,7 +284,7 @@ def test_json_store_get_plan_rejects_unqualified_suffix(tmp_path):
         FixPlan(id="beta.shared", steps=[FixRef(id="woodpecker.normalize_tas_units_to_kelvin")])
     )
 
-    with pytest.raises(ValueError, match="Unknown plan identifier"):
+    with pytest.raises(ValueError, match=UNKNOWN_PLAN_ID_ERROR):
         store.get_plan("shared")
 
 
@@ -265,10 +299,11 @@ def test_json_store_get_plan_detects_duplicate_ids(tmp_path):
         store.get_plan("atlas.cleanup_plan")
 
 
-def test_duckdb_store_save_list_lookup(tmp_path):
-    pytest.importorskip("duckdb")
+# DuckDB store behavior
 
-    store = DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
+
+def test_duckdb_store_save_list_lookup(tmp_path):
+    store = _duckdb_store(tmp_path)
     plan_1 = _sample_plan()
     plan_2 = _single_step_plan("tests.plan_2")
 
@@ -279,46 +314,13 @@ def test_duckdb_store_save_list_lookup(tmp_path):
     assert [item.id for item in listed] == ["tests.plan_1", "tests.plan_2"]
 
     ds = make_cmip6()
-    matched = store.lookup(ds, path="/tmp/cmip6_case.nc")
-    assert [item.id for item in matched] == ["tests.plan_1", "tests.plan_2"]
-
-    matched = store.lookup(ds, path="/tmp/no-match.txt")
-    assert [item.id for item in matched] == ["tests.plan_2"]
-
-
-def test_duckdb_store_get_plan_resolves_id(tmp_path):
-    pytest.importorskip("duckdb")
-
-    store = DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
-    store.save_plan(FixPlan(id="atlas.cleanup_plan", steps=[FixRef(id="atlas.encoding_cleanup")]))
-
-    by_canonical = store.get_plan("atlas.cleanup_plan")
-    assert by_canonical.id == "atlas.cleanup_plan"
-
-    with pytest.raises(ValueError, match="Unknown plan identifier"):
-        store.get_plan("cleanup_plan")
-
-
-def test_duckdb_store_get_plan_resolves_aliases(tmp_path):
-    pytest.importorskip("duckdb")
-
-    store = DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
-    store.save_plan(
-        FixPlan(
-            id="atlas.cleanup_plan",
-            aliases=["cleanup", "legacy.cleanup_plan"],
-            steps=[FixRef(id="atlas.encoding_cleanup")],
-        )
+    _assert_lookup_ids(
+        store,
+        ds,
+        path="/tmp/cmip6_case.nc",
+        expected_ids=["tests.plan_1", "tests.plan_2"],
     )
-
-    by_qualified_alias = store.get_plan("atlas.cleanup")
-    by_legacy_alias = store.get_plan("legacy.cleanup_plan")
-
-    assert by_qualified_alias.id == "atlas.cleanup_plan"
-    assert by_legacy_alias.id == "atlas.cleanup_plan"
-
-    with pytest.raises(ValueError, match="Unknown plan identifier"):
-        store.get_plan("cleanup")
+    _assert_lookup_ids(store, ds, path="/tmp/no-match.txt", expected_ids=["tests.plan_2"])
 
 
 def test_duckdb_lookup_skips_decoding_nonmatching_fixes_payload(tmp_path):

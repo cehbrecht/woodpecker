@@ -48,7 +48,7 @@ woodpecker = "woodpecker.cli:cli"
 include = ["woodpecker*"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests/unit", "tests/integration"]
 markers = [
   "io_backend: tests that require optional NetCDF/Zarr backends",
 ]
