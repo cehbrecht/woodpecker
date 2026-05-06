@@ -31,6 +31,7 @@ def _apply_kelvin_conversion(dataset: xr.Dataset) -> bool:
 
 @FixRegistry.register
 class NormalizeTasUnitsToKelvinFix(Fix):
+    aliases = ["tas_units_to_kelvin"]
     name = "Normalize tas-like units to Kelvin"
     description = "Converts tas/temp from Celsius-like units to Kelvin."
     categories = ["metadata", "units"]

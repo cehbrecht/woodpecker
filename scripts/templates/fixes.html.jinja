@@ -22,6 +22,7 @@
   code { background: #f2f2f2; padding: 0.1rem 0.25rem; border-radius: 4px; }
   .group-badge { background: #e0edff; color: #0050c8; font-size: 0.7rem; font-weight: 600;
     padding: 0.1rem 0.35rem; border-radius: 3px; margin-left: 0.3rem; vertical-align: middle; }
+  .aliases { margin-top: 0.35rem; font-size: 0.78rem; color: #555; }
   .member-codes { margin-top: 0.35rem; font-size: 0.78rem; color: #555; }
   .source-badge { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
   .source-core { background: #e6f4ea; color: #0e7a35; }
@@ -65,7 +66,7 @@
     <tbody>
     {% for f in group.fixes %}
       <tr class="fix-row" data-source-kind="{{ f.source_kind or '' }}">
-        <td id="{{ f.code }}"><a href="#{{ f.code }}"><code>{{ f.code }}</code></a></td>
+        <td id="{{ f.code }}"><a href="#{{ f.code }}"><code>{{ f.code }}</code></a>{% if f.aliases %}<div class="aliases">Aliases: {% for alias in f.aliases %}<code>{{ alias }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</div>{% endif %}</td>
         <td>{{ f.name }}</td>
         <td>{{ f.description }}{% if f.get('member_codes') %}<div class="member-codes">Members: {% for mc in f.member_codes %}<code>{{ mc }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</div>{% endif %}</td>
         <td>{{ (f.categories or []) | join(', ') }}</td>

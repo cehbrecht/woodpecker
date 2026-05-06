@@ -152,6 +152,7 @@ class FixPlan(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     id: str
+    aliases: list[str] = Field(default_factory=list)
     description: str = ""
     match: DatasetMatcher | None = None
     steps: list[FixRef] = Field(default_factory=list)
@@ -172,6 +173,17 @@ class FixPlan(BaseModel):
         IdentifierRules.validate_canonical_id("FixPlan.id", normalized)
         return normalized
 
+    @field_validator("aliases", mode="before")
+    @classmethod
+    def _coerce_aliases(cls, v: object) -> list[str]:
+        if v is None:
+            return []
+        if isinstance(v, str):
+            return [v]
+        if not isinstance(v, list):
+            raise ValueError("FixPlan.aliases must be a list of strings")
+        return list(v)
+
     @field_validator("steps", mode="before")
     @classmethod
     def _parse_fix_refs(cls, v: object) -> list[Any]:
@@ -186,6 +198,13 @@ class FixPlan(BaseModel):
     @model_validator(mode="after")
     def _scope_fix_refs(self) -> FixPlan:
         """Scope local fix refs to this plan namespace."""
+        self.aliases = list(
+            IdentifierRules.expand_aliases(
+                self.namespace_prefix,
+                self.id,
+                self.aliases,
+            )
+        )
         self.steps = [
             FixRef(id=self.resolve_fix_identifier(ref), options=ref.options, links=ref.links)
             for ref in self.steps
@@ -203,7 +222,7 @@ class FixPlan(BaseModel):
     @cached_property
     def identifier_set(self) -> IdentifierSet:
         """Cached identifier set for plan identity."""
-        return IdentifierRules.build(self.namespace_prefix, self.local_id)
+        return IdentifierRules.build(self.namespace_prefix, self.local_id, aliases=self.aliases)
 
     def resolve_fix_identifier(self, ref: FixRef) -> str:
         token = IdentifierRules.normalize(ref.id)

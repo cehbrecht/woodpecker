@@ -201,6 +201,24 @@ def test_json_store_get_plan_resolves_canonical_and_local_ids(tmp_path):
     assert by_local.id == "atlas.cleanup_plan"
 
 
+def test_json_store_get_plan_resolves_aliases(tmp_path):
+    store = JsonFixPlanStore(tmp_path / "fix-plans.json")
+    plan = FixPlan(
+        id="atlas.cleanup_plan",
+        aliases=["cleanup", "legacy.cleanup_plan"],
+        steps=[FixRef(id="atlas.encoding_cleanup")],
+    )
+    store.save_plan(plan)
+
+    by_local_alias = store.get_plan("cleanup")
+    by_qualified_alias = store.get_plan("atlas.cleanup")
+    by_legacy_alias = store.get_plan("legacy.cleanup_plan")
+
+    assert by_local_alias.id == "atlas.cleanup_plan"
+    assert by_qualified_alias.id == "atlas.cleanup_plan"
+    assert by_legacy_alias.id == "atlas.cleanup_plan"
+
+
 def test_json_store_get_plan_rejects_ambiguous_shorthand(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
     store.save_plan(
@@ -257,6 +275,27 @@ def test_duckdb_store_get_plan_resolves_canonical_and_local_ids(tmp_path):
 
     assert by_canonical.id == "atlas.cleanup_plan"
     assert by_local.id == "atlas.cleanup_plan"
+
+
+def test_duckdb_store_get_plan_resolves_aliases(tmp_path):
+    pytest.importorskip("duckdb")
+
+    store = DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
+    store.save_plan(
+        FixPlan(
+            id="atlas.cleanup_plan",
+            aliases=["cleanup", "legacy.cleanup_plan"],
+            steps=[FixRef(id="atlas.encoding_cleanup")],
+        )
+    )
+
+    by_local_alias = store.get_plan("cleanup")
+    by_qualified_alias = store.get_plan("atlas.cleanup")
+    by_legacy_alias = store.get_plan("legacy.cleanup_plan")
+
+    assert by_local_alias.id == "atlas.cleanup_plan"
+    assert by_qualified_alias.id == "atlas.cleanup_plan"
+    assert by_legacy_alias.id == "atlas.cleanup_plan"
 
 
 def test_duckdb_lookup_skips_decoding_nonmatching_fixes_payload(tmp_path):

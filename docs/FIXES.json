@@ -247,7 +247,10 @@
     "id": "woodpecker.normalize_tas_units_to_kelvin",
     "local_id": "normalize_tas_units_to_kelvin",
     "namespace": "woodpecker",
-    "aliases": [],
+    "aliases": [
+      "tas_units_to_kelvin",
+      "woodpecker.tas_units_to_kelvin"
+    ],
     "name": "Normalize tas-like units to Kelvin",
     "description": "Converts tas/temp from Celsius-like units to Kelvin.",
     "categories": [

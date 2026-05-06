@@ -17,7 +17,7 @@ def main():
     plugin_packages: set[str] = set()
 
     for fix in fixes:
-        entry = fix.model_dump() if hasattr(fix, "model_dump") else dict(fix.__dict__)
+        entry = fix.metadata() if hasattr(fix, "metadata") else dict(fix.__dict__)
         source = FixRegistry.source_label(fix)
         source_kind = "core"
         source_package = ""
@@ -30,9 +30,17 @@ def main():
         else:
             core_count += 1
 
+        aliases = list(entry.get("aliases", []) or [])
+        entry["code"] = entry.get("canonical_id") or entry.get("id") or ""
+        entry["aliases"] = aliases
         entry["source"] = source
         entry["source_kind"] = source_kind
         entry["source_package"] = source_package
+        if getattr(fix, "members", None):
+            entry["member_codes"] = [
+                getattr(member, "canonical_id", "") or getattr(member, "local_id", "")
+                for member in fix.members
+            ]
         fix_dicts.append(entry)
 
     grouped: dict[str, list[dict]] = {"core": []}

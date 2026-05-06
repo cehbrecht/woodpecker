@@ -270,6 +270,21 @@ def test_fix_plan_identity_uses_identifier_set_when_prefix_and_local_available()
     assert plan.namespace_prefix == "atlas"
 
 
+def test_fix_plan_identity_includes_aliases():
+    plan = FixPlan(
+        id="atlas.atlas_basic",
+        aliases=["basic", "legacy.atlas_basic"],
+        steps=[FixRef(id="atlas.encoding_cleanup")],
+    )
+
+    assert plan.aliases == ["basic", "atlas.basic", "legacy.atlas_basic"]
+    assert plan.identifier_set.aliases == (
+        "basic",
+        "atlas.basic",
+        "legacy.atlas_basic",
+    )
+
+
 def test_fix_plan_namespace_scopes_unqualified_fix_refs():
     plan = FixPlan.model_validate(
         {

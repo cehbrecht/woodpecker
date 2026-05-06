@@ -165,6 +165,14 @@ def test_registry_resolves_canonical_and_local_aliases_for_known_fixes():
         FixRegistry.resolve_identifier("normalize_tas_units_to_kelvin")
         == "woodpecker.normalize_tas_units_to_kelvin"
     )
+    assert (
+        FixRegistry.resolve_identifier("tas_units_to_kelvin")
+        == "woodpecker.normalize_tas_units_to_kelvin"
+    )
+    assert (
+        FixRegistry.resolve_identifier("woodpecker.tas_units_to_kelvin")
+        == "woodpecker.normalize_tas_units_to_kelvin"
+    )
 
 
 def test_registry_instantiate_returns_fix_for_canonical_id():
