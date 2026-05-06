@@ -189,6 +189,28 @@ def test_json_store_save_upserts_by_canonical_plan_id(tmp_path):
     assert listed[0].description == "new"
 
 
+def test_json_store_save_canonicalizes_prefix_and_local_plan_id(tmp_path):
+    store = JsonFixPlanStore(tmp_path / "fix-plans.json")
+    store.save_plan(
+        FixPlan.model_validate(
+            {
+                "namespace_prefix": "atlas",
+                "local_id": "cleanup_plan",
+                "steps": [{"id": "encoding_cleanup"}],
+            }
+        )
+    )
+
+    listed = store.list_plans()
+    raw = store.path.read_text(encoding="utf-8")
+
+    assert listed[0].id == "atlas.cleanup_plan"
+    assert listed[0].steps[0].id == "atlas.encoding_cleanup"
+    assert '"id": "atlas.cleanup_plan"' in raw
+    assert "namespace_prefix" not in raw
+    assert "local_id" not in raw
+
+
 def test_json_store_get_plan_resolves_canonical_and_local_ids(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
     plan = FixPlan(id="atlas.cleanup_plan", steps=[FixRef(id="atlas.encoding_cleanup")])

@@ -164,6 +164,50 @@ class FixPlan(BaseModel):
     def _coerce_description(cls, v: object) -> str:
         return _string_or_empty(v)
 
+    @model_validator(mode="before")
+    @classmethod
+    def _canonicalize_identity(cls, data: object) -> object:
+        if not isinstance(data, Mapping):
+            return data
+
+        payload = dict(data)
+        raw_id = IdentifierRules.normalize(payload.get("id", ""))
+        raw_prefix = IdentifierRules.normalize(payload.pop("namespace_prefix", ""))
+        raw_prefix_alias = IdentifierRules.normalize(payload.pop("prefix", ""))
+        raw_local_id = IdentifierRules.normalize(payload.pop("local_id", ""))
+
+        if raw_prefix and raw_prefix_alias and raw_prefix != raw_prefix_alias:
+            raise ValueError("FixPlan prefix and namespace_prefix must match when both are set")
+        prefix = raw_prefix or raw_prefix_alias
+        local_id = raw_local_id
+
+        if raw_id and "." in raw_id:
+            IdentifierRules.validate_canonical_id("FixPlan.id", raw_id)
+            parsed_prefix, parsed_local_id = raw_id.split(".", 1)
+            if prefix and prefix != parsed_prefix:
+                raise ValueError("FixPlan namespace_prefix does not match canonical id prefix")
+            if local_id and local_id != parsed_local_id:
+                raise ValueError("FixPlan local_id does not match canonical id local_id")
+            prefix = parsed_prefix
+            local_id = parsed_local_id
+        elif raw_id:
+            if not local_id:
+                local_id = raw_id
+            elif raw_id != local_id:
+                raise ValueError("FixPlan id and local_id must match when id is unqualified")
+
+        if prefix:
+            IdentifierRules.validate_local_id("FixPlan namespace_prefix", prefix)
+        if local_id:
+            IdentifierRules.validate_local_id("FixPlan local_id", local_id)
+
+        if prefix and local_id:
+            payload["id"] = f"{prefix}.{local_id}"
+        elif raw_id:
+            payload["id"] = raw_id
+
+        return payload
+
     @field_validator("id", mode="before")
     @classmethod
     def _normalize_and_validate_id(cls, v: object) -> str:

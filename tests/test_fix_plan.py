@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import pytest
 import xarray as xr
 
 from woodpecker.fixes.registry import Fix, FixRegistry, register_fix
@@ -268,6 +269,62 @@ def test_fix_plan_identity_uses_identifier_set_when_prefix_and_local_available()
     assert plan.identifier_set.local_id == "atlas_basic"
     assert plan.identifier_set.canonical_id == "atlas.atlas_basic"
     assert plan.namespace_prefix == "atlas"
+
+
+def test_fix_plan_identity_can_be_built_from_prefix_and_local_id():
+    plan = FixPlan.model_validate(
+        {
+            "namespace_prefix": "atlas",
+            "local_id": "atlas_basic",
+            "steps": [{"id": "encoding_cleanup"}],
+        }
+    )
+
+    assert plan.id == "atlas.atlas_basic"
+    assert plan.namespace_prefix == "atlas"
+    assert plan.local_id == "atlas_basic"
+    assert [item.id for item in plan.steps] == ["atlas.encoding_cleanup"]
+
+
+def test_fix_plan_identity_can_scope_unqualified_id_with_prefix_alias():
+    plan = FixPlan.model_validate(
+        {
+            "prefix": "atlas",
+            "id": "atlas_basic",
+            "steps": [{"id": "encoding_cleanup"}],
+        }
+    )
+
+    assert plan.id == "atlas.atlas_basic"
+    assert [item.id for item in plan.steps] == ["atlas.encoding_cleanup"]
+
+
+def test_fix_plan_identity_persists_canonical_id_only():
+    plan = FixPlan.model_validate(
+        {
+            "namespace_prefix": "atlas",
+            "local_id": "atlas_basic",
+            "steps": [{"id": "encoding_cleanup"}],
+        }
+    )
+
+    payload = plan.model_dump()
+
+    assert payload["id"] == "atlas.atlas_basic"
+    assert "namespace_prefix" not in payload
+    assert "prefix" not in payload
+    assert "local_id" not in payload
+
+
+def test_fix_plan_identity_rejects_conflicting_explicit_parts():
+    with pytest.raises(ValueError, match="local_id does not match"):
+        FixPlan.model_validate(
+            {
+                "id": "atlas.basic",
+                "local_id": "other",
+                "steps": [{"id": "encoding_cleanup"}],
+            }
+        )
 
 
 def test_fix_plan_identity_includes_aliases():
