@@ -104,22 +104,6 @@ woodpecker fix . --select cmip6_decadal.time_metadata --dry-run
 woodpecker fix . --select cmip6_decadal.time_metadata
 ```
 
-Using a plan file:
-
-```bash
-woodpecker check --plan examples/fix-plans/atlas.json
-woodpecker fix --plan examples/fix-plans/atlas.json --dry-run
-woodpecker list-plans --plan examples/fix-plans/atlas.json
-```
-
-Using an explicit plan store:
-
-```bash
-woodpecker check --store json --plan examples/fix-plans/atlas.json
-woodpecker check --store duckdb --plan plans.duckdb
-woodpecker fix --plan examples/fix-plans/atlas.json --plan-id atlas.encoding_cleanup_suite
-```
-
 ## Built-In And Bundled Fixes
 
 Core Woodpecker provides fixes that apply across dataset families.
@@ -140,10 +124,20 @@ tests, examples, docs, and CI:
 
 - `make_cmip6()`
 - `make_cmip6_decadal()`
+- `make_cmip7()`
 - `make_atlas()`
 - `make_cordex()`
 
 See `woodpecker/testing/README.md` for usage details.
+
+## Examples
+
+The `examples/` directory contains a notebook that demonstrates the public API
+with a synthetic CMIP7 dataset:
+
+```bash
+jupyter notebook examples/cmip7_api_example.ipynb
+```
 
 ## Development
 
@@ -154,7 +148,7 @@ Useful starting points:
 - `CONTRIBUTING.md` for setup, fix authoring, plans, plugins, and test guidance.
 - `tests/integration/README.md` for end-to-end public API integration tests.
 - `woodpecker/testing/README.md` for synthetic climate fixture usage.
-- `examples/fix-plans/` for example plan documents.
+- `examples/` for a notebook-based public API example.
 
 ## Provenance
 

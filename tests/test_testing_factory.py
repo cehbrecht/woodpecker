@@ -1,6 +1,6 @@
 import xarray as xr
 
-from woodpecker.testing import make_atlas, make_cmip6, make_cmip6_decadal, make_cordex
+from woodpecker.testing import make_atlas, make_cmip6, make_cmip6_decadal, make_cmip7, make_cordex
 
 
 def test_make_cmip6_returns_realistic_small_dataset():
@@ -72,6 +72,20 @@ def test_make_cmip6_decadal_returns_realistic_dataset():
     assert ds.attrs["table_id"] == "Omon"
 
 
+def test_make_cmip7_returns_realistic_dataset():
+    ds = make_cmip7()
+
+    assert ds.sizes == {"time": 12, "lat": 18, "lon": 36}
+    assert set(ds.data_vars) == {"tas"}
+    assert ds.attrs["project_id"] == "CMIP7"
+    assert ds.attrs["mip_era"] == "CMIP7"
+    assert ds.attrs["source_id"] == "UKESM2-1"
+    assert ds.attrs["activity_id"] == "CMIP"
+    assert ds.attrs["experiment_id"] == "historical"
+    assert ds.attrs["variable_id"] == "tas"
+    assert ds.attrs["table_id"] == "Amon"
+
+
 def test_make_atlas_returns_realistic_dataset():
     ds = make_atlas()
 
@@ -99,7 +113,7 @@ def test_make_cordex_returns_realistic_dataset():
 
 
 def test_new_factories_are_deterministic():
-    factories = (make_cmip6_decadal, make_atlas, make_cordex)
+    factories = (make_cmip6_decadal, make_cmip7, make_atlas, make_cordex)
 
     for make_dataset in factories:
         xr.testing.assert_identical(make_dataset(), make_dataset())
@@ -107,7 +121,7 @@ def test_new_factories_are_deterministic():
 
 
 def test_new_factories_share_corruption_api():
-    factories = (make_cmip6_decadal, make_atlas, make_cordex)
+    factories = (make_cmip6_decadal, make_cmip7, make_atlas, make_cordex)
 
     for make_dataset in factories:
         variable = next(iter(make_dataset().data_vars))
