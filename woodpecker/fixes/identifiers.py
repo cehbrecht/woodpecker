@@ -44,15 +44,20 @@ class IdentifierRules:
 
     @classmethod
     def validate_suffix(cls, label: str, value: str) -> None:
-        """Raise ``ValueError`` if *value* is not a valid snake_case token."""
+        """Raise ``ValueError`` if *value* is not a valid safe identifier token."""
+        if not value.isascii():
+            raise ValueError(f"Invalid {label} '{value}'. Expected ASCII characters only.")
         if not _IDENTIFIER_PART_PATTERN.fullmatch(value):
             raise ValueError(
-                f"Invalid {label} '{value}'. Expected lowercase snake_case identifier."
+                f"Invalid {label} '{value}'. Expected lowercase snake_case identifier "
+                "(ASCII letters/digits/underscore only; no spaces or special characters)."
             )
 
     @classmethod
     def validate_canonical_id(cls, label: str, value: str) -> None:
         """Raise ``ValueError`` if *value* is not a valid ``<prefix>.<suffix>`` string."""
+        if not value.isascii():
+            raise ValueError(f"Invalid {label} '{value}'. Expected ASCII characters only.")
         parts = value.split(".")
         if len(parts) != 2:
             raise ValueError(
