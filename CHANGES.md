@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Introduced canonical identifiers for fixes and fix plans with alias support. Simplified plan lookup and shared identifier handling across the codebase.
+- Simplified identifier metadata to `prefix`, `local_id`, `id`, and `aliases`.
 - Added prefix/local-id based authoring for fix-plan identifiers.
 - Restored alias resolution for fix-plan lookup and added a core fix alias example.
 - Added synthetic climate test data.

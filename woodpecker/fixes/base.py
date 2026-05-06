@@ -13,8 +13,10 @@ class Fix:
     Runtime mutable state (such as config) lives on instances.
     """
 
-    namespace_prefix: ClassVar[str] = ""
+    prefix: ClassVar[str] = ""
     local_id: ClassVar[str] = ""
+    id: ClassVar[str] = ""
+    namespace_prefix: ClassVar[str] = ""
     canonical_id: ClassVar[str] = ""
     aliases: ClassVar[list[str]] = []
     links: ClassVar[list[dict[str, str]]] = []
@@ -24,9 +26,9 @@ class Fix:
     priority: ClassVar[int] = 10
     dataset: ClassVar[Optional[str]] = None
     metadata_fields: ClassVar[tuple[str, ...]] = (
-        "namespace_prefix",
+        "prefix",
         "local_id",
-        "canonical_id",
+        "id",
         "aliases",
         "links",
         "name",
@@ -111,11 +113,21 @@ class GroupFix(Fix):
             keys.append(value)
 
         canonical_id = str(getattr(member_cls, "canonical_id", "") or "").strip().lower()
+        member_id = str(getattr(member_cls, "id", "") or "").strip().lower()
         local_id = str(getattr(member_cls, "local_id", "") or "").strip().lower()
-        namespace_prefix = str(getattr(member_cls, "namespace_prefix", "") or "").strip().lower()
+        prefix = (
+            str(
+                getattr(member_cls, "prefix", "")
+                or getattr(member_cls, "namespace_prefix", "")
+                or ""
+            )
+            .strip()
+            .lower()
+        )
         aliases = list(getattr(member_cls, "aliases", []) or [])
 
         _add(canonical_id)
+        _add(member_id)
         _add(local_id)
         for alias in aliases:
             alias_token = str(alias or "").strip().lower()
@@ -125,8 +137,8 @@ class GroupFix(Fix):
                 _add(alias_token)
             else:
                 _add(alias_token)
-                if namespace_prefix:
-                    _add(f"{namespace_prefix}.{alias_token}")
+                if prefix:
+                    _add(f"{prefix}.{alias_token}")
         return keys
 
     def _member_config(self, member_cls: Type[Any]) -> dict[str, Any]:

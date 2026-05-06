@@ -20,8 +20,8 @@ class FixRegistry:
     _resolver: IdentifierResolver = IdentifierResolver()
 
     @classmethod
-    def _infer_namespace_prefix_from_module(cls, fix_cls: Type[Any]) -> str:
-        """Infer a namespace prefix from the fix module path.
+    def _infer_prefix_from_module(cls, fix_cls: Type[Any]) -> str:
+        """Infer a prefix from the fix module path.
 
         This is intentionally isolated so registry-level prefix ownership can
         replace module inference later without touching caller flow.
@@ -40,11 +40,11 @@ class FixRegistry:
         return package or "woodpecker"
 
     @classmethod
-    def _derive_namespace_prefix(cls, fix_cls: Type[Any], explicit: str) -> str:
+    def _derive_prefix(cls, fix_cls: Type[Any], explicit: str) -> str:
         token = IdentifierRules.normalize(explicit)
         if token:
             return token
-        return cls._infer_namespace_prefix_from_module(fix_cls)
+        return cls._infer_prefix_from_module(fix_cls)
 
     @classmethod
     def _derive_fix_local_id(cls, fix_cls: Type[Any], explicit: str) -> str:
@@ -69,13 +69,29 @@ class FixRegistry:
 
     @classmethod
     def _derive_identifiers(cls, fix_cls: Type[Any]):
-        prefix = cls._derive_namespace_prefix(
-            fix_cls, str(getattr(fix_cls, "namespace_prefix", "") or "")
+        explicit_id = IdentifierRules.normalize(
+            getattr(fix_cls, "id", "") or getattr(fix_cls, "canonical_id", "") or ""
         )
+        explicit_prefix = str(
+            getattr(fix_cls, "prefix", "") or getattr(fix_cls, "namespace_prefix", "") or ""
+        )
+        prefix = cls._derive_prefix(fix_cls, explicit_prefix)
         local_id = cls._derive_fix_local_id(fix_cls, str(getattr(fix_cls, "local_id", "") or ""))
 
+        if explicit_id and "." in explicit_id:
+            IdentifierRules.validate_canonical_id("fix id", explicit_id)
+            parsed_prefix, parsed_local_id = explicit_id.split(".", 1)
+            if explicit_prefix and prefix != parsed_prefix:
+                raise ValueError("Fix prefix does not match canonical id prefix")
+            if getattr(fix_cls, "local_id", "") and local_id != parsed_local_id:
+                raise ValueError("Fix local_id does not match canonical id local_id")
+            prefix = parsed_prefix
+            local_id = parsed_local_id
+        elif explicit_id and not getattr(fix_cls, "local_id", ""):
+            local_id = explicit_id
+
         return IdentifierRules.build(
-            namespace_prefix=prefix,
+            prefix=prefix,
             local_id=local_id,
             aliases=getattr(fix_cls, "aliases", None),
         )
@@ -89,13 +105,13 @@ class FixRegistry:
         """Return the registered fix class for a canonical fix id.
 
         The input must be a canonical id in the form
-        "<namespace_prefix>.<local_id>".
+        "<prefix>.<local_id>".
         """
 
         key = str(canonical_id).strip()
         fix_cls = cls._registry.get(key)
         if fix_cls is None:
-            raise KeyError(f"Unknown fix canonical_id: {key}")
+            raise KeyError(f"Unknown fix id: {key}")
         return fix_cls
 
     @classmethod
@@ -146,17 +162,17 @@ class FixRegistry:
         cls._validate_fix_definition(fix, fix_cls)
 
         identifier_set = cls._derive_identifiers(fix_cls)
-        if identifier_set.canonical_id in cls._registry:
-            raise ValueError(
-                f"Duplicate fix canonical id '{identifier_set.canonical_id}' (already registered)"
-            )
+        if identifier_set.id in cls._registry:
+            raise ValueError(f"Duplicate fix id '{identifier_set.id}' (already registered)")
 
-        setattr(fix_cls, "namespace_prefix", identifier_set.namespace_prefix)
+        setattr(fix_cls, "prefix", identifier_set.prefix)
         setattr(fix_cls, "local_id", identifier_set.local_id)
-        setattr(fix_cls, "canonical_id", identifier_set.canonical_id)
+        setattr(fix_cls, "id", identifier_set.id)
+        setattr(fix_cls, "namespace_prefix", identifier_set.prefix)
+        setattr(fix_cls, "canonical_id", identifier_set.id)
         setattr(fix_cls, "aliases", list(identifier_set.aliases))
 
-        cls._registry[identifier_set.canonical_id] = fix_cls
+        cls._registry[identifier_set.id] = fix_cls
         cls._resolver.register(identifier_set, include_local_id=True)
         return fix_cls  # decorator-friendly
 
@@ -217,9 +233,9 @@ class FixRegistry:
         for f in fixes:
             data.append(
                 {
-                    "id": getattr(f, "canonical_id", ""),
+                    "id": getattr(f, "id", "") or getattr(f, "canonical_id", ""),
                     "local_id": getattr(f, "local_id", ""),
-                    "namespace": getattr(f, "namespace_prefix", ""),
+                    "prefix": getattr(f, "prefix", "") or getattr(f, "namespace_prefix", ""),
                     "aliases": list(getattr(f, "aliases", []) or []),
                     "links": list(getattr(f, "links", []) or []),
                     "name": getattr(f, "name", ""),

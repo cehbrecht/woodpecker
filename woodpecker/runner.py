@@ -27,7 +27,7 @@ def run_check(inputs: Iterable[DataInput], fixes: Iterable[Any]) -> list[dict[st
                 findings.append(
                     {
                         "path": data_input.reference,
-                        "fix_id": getattr(fix, "canonical_id", ""),
+                        "fix_id": getattr(fix, "id", "") or getattr(fix, "canonical_id", ""),
                         "name": fix.name,
                         "message": message,
                     }
@@ -59,7 +59,7 @@ def run_fix(
         dataset_changed = False
         applied_fix_ids: list[str] = []
         for fix in fixes:
-            canonical_id = getattr(fix, "canonical_id", "")
+            canonical_id = getattr(fix, "id", "") or getattr(fix, "canonical_id", "")
             attempted_fix, changed_fix = apply_configured_fix(
                 dataset,
                 fix,
@@ -126,7 +126,7 @@ def apply_configured_fix(
 def _instantiate_fix(registry: Any, fix_id: str) -> Any:
     instantiate = getattr(registry, "instantiate", None)
     if not callable(instantiate):
-        raise TypeError("Registry must provide instantiate(canonical_id)")
+        raise TypeError("Registry must provide instantiate(id)")
     return instantiate(fix_id)
 
 

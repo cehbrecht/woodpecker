@@ -5,9 +5,9 @@ from woodpecker.fixes.base import Fix, GroupFix
 
 
 class _BaseMetadataFix(Fix):
-    namespace_prefix = "test"
+    prefix = "test"
     local_id = "base_metadata"
-    canonical_id = "test.base_metadata"
+    id = "test.base_metadata"
     aliases = ["base_metadata_alias"]
     links = [{"rel": "docs", "href": "https://example.invalid/fix"}]
     name = "Base metadata fix"
@@ -18,9 +18,9 @@ class _BaseMetadataFix(Fix):
 
 
 class _MemberFix(Fix):
-    namespace_prefix = "group"
+    prefix = "group"
     local_id = "member_fix"
-    canonical_id = "group.member_fix"
+    id = "group.member_fix"
     aliases = ["member_alias"]
     links = []
     name = "Member fix"
@@ -38,9 +38,9 @@ class _MemberFix(Fix):
 
 
 class _ContainerGroupFix(GroupFix):
-    namespace_prefix = "group"
+    prefix = "group"
     local_id = "container"
-    canonical_id = "group.container"
+    id = "group.container"
     aliases = []
     links = []
     name = "Container"
@@ -52,9 +52,9 @@ class _ContainerGroupFix(GroupFix):
 
 
 class _EmptyGroupFix(GroupFix):
-    namespace_prefix = "group"
+    prefix = "group"
     local_id = "empty"
-    canonical_id = "group.empty"
+    id = "group.empty"
     aliases = []
     links = []
     name = "Empty"
@@ -70,7 +70,7 @@ def test_fix_metadata_is_class_level_and_config_is_instance_runtime_state():
 
     assert fix.name == "Base metadata fix"
     assert fix.local_id == "base_metadata"
-    assert fix.canonical_id == "test.base_metadata"
+    assert fix.id == "test.base_metadata"
     assert fix.config == {}
 
     fix.configure({"mode": "strict"})
@@ -82,7 +82,7 @@ def test_fix_metadata_is_class_level_and_config_is_instance_runtime_state():
 def test_fix_metadata_accessor_returns_copied_mutable_fields():
     meta = _BaseMetadataFix.class_metadata()
 
-    assert meta["canonical_id"] == "test.base_metadata"
+    assert meta["id"] == "test.base_metadata"
     assert meta["aliases"] == ["base_metadata_alias"]
 
     meta["aliases"].append("new_alias")

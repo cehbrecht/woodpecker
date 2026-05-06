@@ -19,7 +19,7 @@ from woodpecker.testing import make_cmip6
 
 
 class _FixMethodFix(Fix):
-    namespace_prefix = "plan_test"
+    prefix = "plan_test"
     local_id = "fix_method"
     name = "Plan fix method"
     description = ""
@@ -43,7 +43,7 @@ class _FixMethodFix(Fix):
 
 
 class _ApplyMethodFix(Fix):
-    namespace_prefix = "plan_test"
+    prefix = "plan_test"
     local_id = "apply_method"
     name = "Plan apply method"
     description = ""
@@ -67,7 +67,7 @@ class _ApplyMethodFix(Fix):
 
 
 class _TypeErrorInsideMethodFix(Fix):
-    namespace_prefix = "plan_test"
+    prefix = "plan_test"
     local_id = "type_error_inside_method"
     name = "Plan type error fix"
     description = ""
@@ -265,23 +265,23 @@ def test_fix_plan_identity_uses_identifier_set_when_prefix_and_local_available()
     plan = FixPlan(id="atlas.atlas_basic", steps=[FixRef(id="atlas.encoding_cleanup")])
 
     assert plan.identifier_set is not None
-    assert plan.identifier_set.namespace_prefix == "atlas"
+    assert plan.identifier_set.prefix == "atlas"
     assert plan.identifier_set.local_id == "atlas_basic"
     assert plan.identifier_set.canonical_id == "atlas.atlas_basic"
-    assert plan.namespace_prefix == "atlas"
+    assert plan.prefix == "atlas"
 
 
 def test_fix_plan_identity_can_be_built_from_prefix_and_local_id():
     plan = FixPlan.model_validate(
         {
-            "namespace_prefix": "atlas",
+            "prefix": "atlas",
             "local_id": "atlas_basic",
             "steps": [{"id": "encoding_cleanup"}],
         }
     )
 
     assert plan.id == "atlas.atlas_basic"
-    assert plan.namespace_prefix == "atlas"
+    assert plan.prefix == "atlas"
     assert plan.local_id == "atlas_basic"
     assert [item.id for item in plan.steps] == ["atlas.encoding_cleanup"]
 
@@ -302,7 +302,7 @@ def test_fix_plan_identity_can_scope_unqualified_id_with_prefix_alias():
 def test_fix_plan_identity_persists_canonical_id_only():
     plan = FixPlan.model_validate(
         {
-            "namespace_prefix": "atlas",
+            "prefix": "atlas",
             "local_id": "atlas_basic",
             "steps": [{"id": "encoding_cleanup"}],
         }
@@ -311,7 +311,6 @@ def test_fix_plan_identity_persists_canonical_id_only():
     payload = plan.model_dump()
 
     assert payload["id"] == "atlas.atlas_basic"
-    assert "namespace_prefix" not in payload
     assert "prefix" not in payload
     assert "local_id" not in payload
 
@@ -350,7 +349,7 @@ def test_fix_plan_namespace_scopes_unqualified_fix_refs():
         }
     )
 
-    assert plan.namespace_prefix == "atlas"
+    assert plan.prefix == "atlas"
     assert [item.id for item in plan.steps] == ["atlas.encoding_cleanup"]
 
 

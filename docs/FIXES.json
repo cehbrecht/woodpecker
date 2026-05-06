@@ -2,7 +2,7 @@
   {
     "id": "cmip6_decadal.time_metadata",
     "local_id": "time_metadata",
-    "namespace": "cmip6_decadal",
+    "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal time metadata",
     "description": "Ensures CMIP6-decadal time coordinate has long_name='valid_time'.",
@@ -16,7 +16,7 @@
   {
     "id": "cmip6_decadal.calendar_normalization",
     "local_id": "calendar_normalization",
-    "namespace": "cmip6_decadal",
+    "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal calendar normalization",
     "description": "Normalizes CMIP6-decadal time calendar from proleptic_gregorian to standard.",
@@ -31,7 +31,7 @@
   {
     "id": "cmip6_decadal.realization_variable",
     "local_id": "realization_variable",
-    "namespace": "cmip6_decadal",
+    "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal realization variable",
     "description": "Adds realization data variable from realization_index for CMIP6-decadal datasets.",
@@ -45,7 +45,7 @@
   {
     "id": "cmip6_decadal.coordinates_encoding_cleanup",
     "local_id": "coordinates_encoding_cleanup",
-    "namespace": "cmip6_decadal",
+    "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal coordinates encoding cleanup",
     "description": "Removes stale 'coordinates' encoding entries from realization and bounds variables in CMIP6-decadal datasets.",
@@ -60,7 +60,7 @@
   {
     "id": "cmip6_decadal.realization_comment_normalization",
     "local_id": "realization_comment_normalization",
-    "namespace": "cmip6_decadal",
+    "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal realization comment normalization",
     "description": "Normalizes realization comment to the full CMIP6-decadal ripf guidance text.",
@@ -74,7 +74,7 @@
   {
     "id": "cmip6_decadal.realization_dtype_normalization",
     "local_id": "realization_dtype_normalization",
-    "namespace": "cmip6_decadal",
+    "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal realization dtype normalization",
     "description": "Normalizes realization data variable dtype to int32 for CMIP6-decadal datasets.",
@@ -89,7 +89,7 @@
   {
     "id": "cmip6_decadal.fillvalue_encoding_cleanup",
     "local_id": "fillvalue_encoding_cleanup",
-    "namespace": "cmip6_decadal",
+    "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal _FillValue encoding cleanup",
     "description": "Removes stale '_FillValue' encoding entries from realization and bounds variables in CMIP6-decadal datasets.",
@@ -104,7 +104,7 @@
   {
     "id": "cmip6_decadal.further_info_url_normalization",
     "local_id": "further_info_url_normalization",
-    "namespace": "cmip6_decadal",
+    "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal further_info_url normalization",
     "description": "Normalizes malformed CMIP6-decadal further_info_url variant separators from '-' to '.'.",
@@ -118,7 +118,7 @@
   {
     "id": "cmip6_decadal.start_token_normalization",
     "local_id": "start_token_normalization",
-    "namespace": "cmip6_decadal",
+    "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal start token normalization",
     "description": "Normalizes CMIP6-decadal startdate and sub_experiment_id to the canonical sYYYY11 token.",
@@ -132,7 +132,7 @@
   {
     "id": "cmip6_decadal.realization_long_name_normalization",
     "local_id": "realization_long_name_normalization",
-    "namespace": "cmip6_decadal",
+    "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal realization long_name normalization",
     "description": "Normalizes realization long_name metadata to 'realization' for CMIP6-decadal datasets.",
@@ -146,7 +146,7 @@
   {
     "id": "cmip6_decadal.realization_index_normalization",
     "local_id": "realization_index_normalization",
-    "namespace": "cmip6_decadal",
+    "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal realization_index normalization",
     "description": "Normalizes CMIP6-decadal realization_index global attribute to integer type.",
@@ -160,7 +160,7 @@
   {
     "id": "atlas.encoding_cleanup",
     "local_id": "encoding_cleanup",
-    "namespace": "atlas",
+    "prefix": "atlas",
     "aliases": [],
     "name": "ATLAS encoding cleanup",
     "description": "Applies rook-equivalent ATLAS deflation/encoding cleanup.",
@@ -174,7 +174,7 @@
   {
     "id": "cmip6_decadal.leadtime_metadata_normalization",
     "local_id": "leadtime_metadata_normalization",
-    "namespace": "cmip6_decadal",
+    "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal leadtime metadata normalization",
     "description": "Normalizes CMIP6-decadal leadtime metadata (units, long_name, standard_name).",
@@ -188,7 +188,7 @@
   {
     "id": "atlas.project_id_normalization",
     "local_id": "project_id_normalization",
-    "namespace": "atlas",
+    "prefix": "atlas",
     "aliases": [],
     "name": "ATLAS project_id normalization",
     "description": "Adds or normalizes ATLAS project_id from dataset identifier prefix.",
@@ -202,7 +202,7 @@
   {
     "id": "cmip6_decadal.model_global_attributes",
     "local_id": "model_global_attributes",
-    "namespace": "cmip6_decadal",
+    "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal model global attributes",
     "description": "Normalizes model-specific global metadata fields for CMIP6-decadal datasets.",
@@ -216,7 +216,7 @@
   {
     "id": "cmip6_decadal.reftime_coordinate",
     "local_id": "reftime_coordinate",
-    "namespace": "cmip6_decadal",
+    "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal reftime coordinate",
     "description": "Adds or normalizes CMIP6-decadal scalar reftime coordinate and metadata.",
@@ -231,7 +231,7 @@
   {
     "id": "cmip6_decadal.leadtime_coordinate",
     "local_id": "leadtime_coordinate",
-    "namespace": "cmip6_decadal",
+    "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "Decadal leadtime coordinate",
     "description": "Adds or normalizes CMIP6-decadal leadtime coordinate values from time and reftime.",
@@ -246,7 +246,7 @@
   {
     "id": "woodpecker.normalize_tas_units_to_kelvin",
     "local_id": "normalize_tas_units_to_kelvin",
-    "namespace": "woodpecker",
+    "prefix": "woodpecker",
     "aliases": [
       "tas_units_to_kelvin",
       "woodpecker.tas_units_to_kelvin"
@@ -264,7 +264,7 @@
   {
     "id": "woodpecker.merge_equivalent_dimensions",
     "local_id": "merge_equivalent_dimensions",
-    "namespace": "woodpecker",
+    "prefix": "woodpecker",
     "aliases": [],
     "name": "Merge equivalent dimensions",
     "description": "Merges two or more same-sized dimensions into the first configured dimension.",
@@ -278,7 +278,7 @@
   {
     "id": "woodpecker.ensure_latitude_is_increasing",
     "local_id": "ensure_latitude_is_increasing",
-    "namespace": "woodpecker",
+    "prefix": "woodpecker",
     "aliases": [],
     "name": "Ensure latitude is increasing",
     "description": "Flips datasets with decreasing latitude coordinates to increasing order.",
@@ -292,7 +292,7 @@
   {
     "id": "woodpecker.remove_coordinate_fill_value_encodings",
     "local_id": "remove_coordinate_fill_value_encodings",
-    "namespace": "woodpecker",
+    "prefix": "woodpecker",
     "aliases": [],
     "name": "Remove coordinate FillValue encodings",
     "description": "Removes _FillValue encoding entries from common coordinate variables.",
@@ -307,7 +307,7 @@
   {
     "id": "cmip6.dummy_placeholder",
     "local_id": "dummy_placeholder",
-    "namespace": "cmip6",
+    "prefix": "cmip6",
     "aliases": [],
     "name": "CMIP6 dummy placeholder",
     "description": "Dummy placeholder for future non-decadal CMIP6 fixes.",
@@ -321,7 +321,7 @@
   {
     "id": "cmip7.ensure_project_id_present",
     "local_id": "ensure_project_id_present",
-    "namespace": "cmip7",
+    "prefix": "cmip7",
     "aliases": [],
     "name": "Ensure project_id is present (plugin)",
     "description": "Sets project_id from dataset identifier metadata when missing.",
@@ -335,7 +335,7 @@
   {
     "id": "cmip7.rename_temp_variable_to_tas",
     "local_id": "rename_temp_variable_to_tas",
-    "namespace": "cmip7",
+    "prefix": "cmip7",
     "aliases": [],
     "name": "Rename temp variable to tas (plugin)",
     "description": "Renames data variable temp to tas when tas is missing.",
@@ -350,7 +350,7 @@
   {
     "id": "cmip7.configurable_reformat_bridge",
     "local_id": "configurable_reformat_bridge",
-    "namespace": "cmip7",
+    "prefix": "cmip7",
     "aliases": [],
     "name": "Configurable CMIP7 reformat bridge (plugin)",
     "description": "Applies workflow-driven variable/dimension remapping and selected metadata updates.",
@@ -365,7 +365,7 @@
   {
     "id": "cmip6_decadal.full_fix_suite",
     "local_id": "full_fix_suite",
-    "namespace": "cmip6_decadal",
+    "prefix": "cmip6_decadal",
     "aliases": [],
     "name": "CMIP6 Decadal: full fix suite",
     "description": "Applies all CMIP6-decadal fixes (DecadalTimeMetadataFix\u2013DecadalLeadtimeCoordinateFix) in sequence: calendar, encoding, realization metadata, start-token normalisation, model-specific global attributes, and leadtime/reftime coordinates.",

@@ -172,20 +172,20 @@ class FixPlan(BaseModel):
 
         payload = dict(data)
         raw_id = IdentifierRules.normalize(payload.get("id", ""))
-        raw_prefix = IdentifierRules.normalize(payload.pop("namespace_prefix", ""))
-        raw_prefix_alias = IdentifierRules.normalize(payload.pop("prefix", ""))
+        raw_prefix = IdentifierRules.normalize(payload.pop("prefix", ""))
+        raw_namespace_prefix = IdentifierRules.normalize(payload.pop("namespace_prefix", ""))
         raw_local_id = IdentifierRules.normalize(payload.pop("local_id", ""))
 
-        if raw_prefix and raw_prefix_alias and raw_prefix != raw_prefix_alias:
+        if raw_prefix and raw_namespace_prefix and raw_prefix != raw_namespace_prefix:
             raise ValueError("FixPlan prefix and namespace_prefix must match when both are set")
-        prefix = raw_prefix or raw_prefix_alias
+        prefix = raw_prefix or raw_namespace_prefix
         local_id = raw_local_id
 
         if raw_id and "." in raw_id:
             IdentifierRules.validate_canonical_id("FixPlan.id", raw_id)
             parsed_prefix, parsed_local_id = raw_id.split(".", 1)
             if prefix and prefix != parsed_prefix:
-                raise ValueError("FixPlan namespace_prefix does not match canonical id prefix")
+                raise ValueError("FixPlan prefix does not match canonical id prefix")
             if local_id and local_id != parsed_local_id:
                 raise ValueError("FixPlan local_id does not match canonical id local_id")
             prefix = parsed_prefix
@@ -197,7 +197,7 @@ class FixPlan(BaseModel):
                 raise ValueError("FixPlan id and local_id must match when id is unqualified")
 
         if prefix:
-            IdentifierRules.validate_local_id("FixPlan namespace_prefix", prefix)
+            IdentifierRules.validate_local_id("FixPlan prefix", prefix)
         if local_id:
             IdentifierRules.validate_local_id("FixPlan local_id", local_id)
 
@@ -244,7 +244,7 @@ class FixPlan(BaseModel):
         """Scope local fix refs to this plan namespace."""
         self.aliases = list(
             IdentifierRules.expand_aliases(
-                self.namespace_prefix,
+                self.prefix,
                 self.id,
                 self.aliases,
             )
@@ -256,8 +256,13 @@ class FixPlan(BaseModel):
         return self
 
     @property
-    def namespace_prefix(self) -> str:
+    def prefix(self) -> str:
         return self.id.split(".", 1)[0]
+
+    @property
+    def namespace_prefix(self) -> str:
+        """Compatibility alias for ``prefix``."""
+        return self.prefix
 
     @property
     def local_id(self) -> str:
@@ -266,7 +271,7 @@ class FixPlan(BaseModel):
     @cached_property
     def identifier_set(self) -> IdentifierSet:
         """Cached identifier set for plan identity."""
-        return IdentifierRules.build(self.namespace_prefix, self.local_id, aliases=self.aliases)
+        return IdentifierRules.build(self.prefix, self.local_id, aliases=self.aliases)
 
     def resolve_fix_identifier(self, ref: FixRef) -> str:
         token = IdentifierRules.normalize(ref.id)
@@ -274,7 +279,7 @@ class FixPlan(BaseModel):
             return token
         if "." in token:
             return token
-        return f"{self.namespace_prefix}.{token}"
+        return f"{self.prefix}.{token}"
 
     def step_identifiers_and_options(self) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
         """Return ordered canonical step identifiers and per-step options."""

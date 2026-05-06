@@ -26,7 +26,7 @@ class FixPlanIndex:
         used.  Otherwise the normalized raw ``plan.id`` string is returned.
         """
         if plan.identifier_set is not None:
-            return plan.identifier_set.canonical_id
+            return plan.identifier_set.id
         return str(plan.id).strip().lower()
 
     @classmethod

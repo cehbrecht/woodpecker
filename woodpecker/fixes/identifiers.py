@@ -14,25 +14,44 @@ class IdentifierSet:
     Use ``IdentifierRules.build()`` rather than constructing directly.
     """
 
-    namespace_prefix: str
+    prefix: str
     local_id: str
-    canonical_id: str
+    id: str
     aliases: tuple[str, ...] = ()
+
+    @property
+    def namespace_prefix(self) -> str:
+        """Compatibility alias for ``prefix``."""
+        return self.prefix
+
+    @property
+    def canonical_id(self) -> str:
+        """Compatibility alias for canonical ``id``."""
+        return self.id
 
 
 @dataclass(frozen=True)
 class ScopedIdentifierResolution:
-    """Result of resolving a possibly-partial identifier within a namespace scope.
+    """Result of resolving a possibly-partial identifier within a prefix scope.
 
     Produced by ``coerce_scoped_identifier()``.  ``identifier_set`` is ``None``
-    when only a bare (non-qualified) id was available and no namespace prefix
-    could be inferred.
+    when only a bare id was available and no prefix could be inferred.
     """
 
-    canonical_id: str
+    id: str
     local_id: str
-    namespace_prefix: str
+    prefix: str
     identifier_set: IdentifierSet | None
+
+    @property
+    def canonical_id(self) -> str:
+        """Compatibility alias for canonical ``id``."""
+        return self.id
+
+    @property
+    def namespace_prefix(self) -> str:
+        """Compatibility alias for ``prefix``."""
+        return self.prefix
 
 
 class IdentifierRules:
@@ -82,16 +101,28 @@ class IdentifierRules:
     @classmethod
     def expand_aliases(
         cls,
-        namespace_prefix: str,
-        canonical_id: str,
-        declared_aliases: object,
+        prefix: str | None = None,
+        id: str | None = None,
+        declared_aliases: object = None,
+        **kwargs: object,
     ) -> tuple[str, ...]:
         """Expand *declared_aliases* into a deduplicated tuple of alias strings.
 
         Unqualified aliases are expanded to both the bare form and the
-        ``<namespace_prefix>.<alias>`` qualified form.  Qualified aliases are
+        ``<prefix>.<alias>`` qualified form.  Qualified aliases are
         validated but kept as-is.
         """
+        if prefix is None and "namespace_prefix" in kwargs:
+            prefix = str(kwargs.pop("namespace_prefix"))
+        if id is None and "canonical_id" in kwargs:
+            id = str(kwargs.pop("canonical_id"))
+        if kwargs:
+            unknown = ", ".join(sorted(kwargs))
+            raise TypeError(f"Unknown alias field(s): {unknown}")
+
+        normalized_prefix = cls.normalize(prefix)
+        normalized_id = cls.normalize(id)
+
         if declared_aliases is None:
             raw_aliases: list[object] = []
         elif isinstance(declared_aliases, str):
@@ -113,10 +144,10 @@ class IdentifierRules:
                 candidates = [alias]
             else:
                 cls.validate_local_id("alias", alias)
-                candidates = [alias, f"{namespace_prefix}.{alias}"]
+                candidates = [alias, f"{normalized_prefix}.{alias}"]
 
             for candidate in candidates:
-                if candidate == canonical_id or candidate in seen:
+                if candidate == normalized_id or candidate in seen:
                     continue
                 seen.add(candidate)
                 out_aliases.append(candidate)
@@ -126,28 +157,35 @@ class IdentifierRules:
     @classmethod
     def build(
         cls,
-        namespace_prefix: object,
-        local_id: object,
+        prefix: object = None,
+        local_id: object = None,
         aliases: object = None,
+        **kwargs: object,
     ) -> IdentifierSet:
         """Build a validated, normalized ``IdentifierSet``.
 
-        Both *namespace_prefix* and *local_id* are normalized and validated
+        Both *prefix* and *local_id* are normalized and validated
         as lowercase snake_case tokens before the canonical id is assembled.
         """
-        normalized_prefix = cls.normalize(namespace_prefix)
+        if prefix is None and "namespace_prefix" in kwargs:
+            prefix = kwargs.pop("namespace_prefix")
+        if kwargs:
+            unknown = ", ".join(sorted(kwargs))
+            raise TypeError(f"Unknown identifier field(s): {unknown}")
+
+        normalized_prefix = cls.normalize(prefix)
         normalized_local_id = cls.normalize(local_id)
 
-        cls.validate_local_id("namespace prefix", normalized_prefix)
+        cls.validate_local_id("prefix", normalized_prefix)
         cls.validate_local_id("local_id", normalized_local_id)
 
         canonical_id = f"{normalized_prefix}.{normalized_local_id}"
         expanded_aliases = cls.expand_aliases(normalized_prefix, canonical_id, aliases)
 
         return IdentifierSet(
-            namespace_prefix=normalized_prefix,
+            prefix=normalized_prefix,
             local_id=normalized_local_id,
-            canonical_id=canonical_id,
+            id=canonical_id,
             aliases=expanded_aliases,
         )
 
@@ -189,11 +227,11 @@ class IdentifierResolver:
 
     def register(self, identifier_set: IdentifierSet, include_local_id: bool = True) -> None:
         """Register all tokens from *identifier_set* (canonical id, local id, aliases)."""
-        self._register_one(identifier_set.canonical_id, identifier_set.canonical_id)
+        self._register_one(identifier_set.id, identifier_set.id)
         if include_local_id:
-            self._register_one(identifier_set.local_id, identifier_set.canonical_id)
+            self._register_one(identifier_set.local_id, identifier_set.id)
         for alias in identifier_set.aliases:
-            self._register_one(alias, identifier_set.canonical_id)
+            self._register_one(alias, identifier_set.id)
 
     def resolve(self, identifier: str) -> str:
         """Return the canonical id for *identifier*.
@@ -215,26 +253,30 @@ class IdentifierResolver:
 
 def coerce_scoped_identifier(
     *,
-    canonical_id: object,
     local_id: object,
-    namespace_prefix: object,
+    id: object = None,
+    prefix: object = None,
     canonical_label: str,
+    canonical_id: object = None,
+    namespace_prefix: object = None,
 ) -> ScopedIdentifierResolution:
-    """Normalize and resolve a possibly-partial identifier within a namespace scope.
+    """Normalize and resolve a possibly-partial identifier within a prefix scope.
 
-    Accepts any combination of *canonical_id*, *local_id*, and *namespace_prefix*
+    Accepts any combination of canonical *id*, *local_id*, and *prefix*
     and returns a fully populated ``ScopedIdentifierResolution``.  When both a
-    namespace prefix and a local id are available, a validated ``IdentifierSet``
-    is constructed and attached to the result.
+    prefix and local id are available, a validated ``IdentifierSet`` is attached.
 
     Precedence for inferring missing pieces:
     - A dotted *canonical_id* is split to fill in missing prefix / local_id.
     - A plain *canonical_id* with no dots is treated as a bare local_id when
       *local_id* is not provided.
     """
-    normalized_canonical_id = IdentifierRules.normalize(canonical_id)
+    raw_id = id if id is not None else canonical_id
+    raw_prefix = prefix if prefix is not None else namespace_prefix
+
+    normalized_canonical_id = IdentifierRules.normalize(raw_id)
     normalized_local_id = IdentifierRules.normalize(local_id)
-    normalized_prefix = IdentifierRules.normalize(namespace_prefix)
+    normalized_prefix = IdentifierRules.normalize(raw_prefix)
 
     if normalized_canonical_id and "." in normalized_canonical_id:
         IdentifierRules.validate_canonical_id(canonical_label, normalized_canonical_id)
@@ -249,14 +291,14 @@ def coerce_scoped_identifier(
     identifier_set: IdentifierSet | None = None
     if normalized_prefix and normalized_local_id:
         identifier_set = IdentifierRules.build(normalized_prefix, normalized_local_id)
-        normalized_prefix = identifier_set.namespace_prefix
+        normalized_prefix = identifier_set.prefix
         normalized_local_id = identifier_set.local_id
-        normalized_canonical_id = identifier_set.canonical_id
+        normalized_canonical_id = identifier_set.id
 
     return ScopedIdentifierResolution(
-        canonical_id=normalized_canonical_id,
+        id=normalized_canonical_id,
         local_id=normalized_local_id,
-        namespace_prefix=normalized_prefix,
+        prefix=normalized_prefix,
         identifier_set=identifier_set,
     )
 

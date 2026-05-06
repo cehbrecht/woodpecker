@@ -112,7 +112,7 @@ Core Woodpecker provides fixes that apply across dataset families.
 
 The repository also ships local plugins under `plugins/`:
 
-| Plugin package                    | Namespace prefix |
+| Plugin package                    | Prefix |
 | --------------------------------- | ---------------- |
 | `woodpecker-atlas-plugin`         | `atlas`          |
 | `woodpecker-cmip6-plugin`         | `cmip6`          |

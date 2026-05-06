@@ -194,7 +194,7 @@ def test_json_store_save_canonicalizes_prefix_and_local_plan_id(tmp_path):
     store.save_plan(
         FixPlan.model_validate(
             {
-                "namespace_prefix": "atlas",
+                "prefix": "atlas",
                 "local_id": "cleanup_plan",
                 "steps": [{"id": "encoding_cleanup"}],
             }
@@ -207,7 +207,6 @@ def test_json_store_save_canonicalizes_prefix_and_local_plan_id(tmp_path):
     assert listed[0].id == "atlas.cleanup_plan"
     assert listed[0].steps[0].id == "atlas.encoding_cleanup"
     assert '"id": "atlas.cleanup_plan"' in raw
-    assert "namespace_prefix" not in raw
     assert "local_id" not in raw
 
 
