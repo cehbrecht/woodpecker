@@ -138,6 +138,8 @@ The `docs/notebooks/` directory contains notebooks that demonstrate the public A
 with synthetic datasets, built-in core fixes, and bundled plugin fixes:
 
 - rendered in the online docs: <https://cehbrecht.github.io/woodpecker/>
+- listed on the examples page:
+  <https://cehbrecht.github.io/woodpecker/examples/>
 - viewable as raw notebooks on nbviewer:
   <https://nbviewer.org/github/cehbrecht/woodpecker/tree/main/docs/notebooks/>
 
