@@ -100,6 +100,13 @@ resolver. Short suffix values can also be used when unambiguous.
 Aliases are additional suffix names. They resolve to the same id and do not
 change the prefix.
 
+Identifier defaults are derived automatically:
+
+- `prefix` defaults to the plugin/package namespace (core fixes use `woodpecker`)
+- `suffix` defaults to a snake_case value derived from the fix class name
+
+Both values can be set explicitly on the fix class to override these defaults.
+
 Fix classes declare identifiers as class attributes:
 
 ```python
