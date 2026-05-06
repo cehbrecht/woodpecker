@@ -3,6 +3,9 @@
 `woodpecker.testing` provides tiny synthetic `xarray.Dataset` factories for
 tests, examples, docs, and CI.
 
+Synthetic dataset generation logic lives in the
+`woodpecker.testing.synthetic` subpackage.
+
 The datasets are not real source data, but they are shaped to look like common
 climate-data families that Woodpecker needs to understand:
 
