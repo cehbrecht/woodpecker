@@ -14,7 +14,7 @@ from .helpers import assert_plan_check_fix_cycle, write_plan_document
 def test_plan_checks_and_fixes_synthetic_cmip6_dataset():
     dataset = make_cmip6(overrides={"units": "degC"})
     original_values = dataset["tas"].values.copy()
-    plan_path = integration_plan_path("cmip6_core_plan.json")
+    plan_path = integration_plan_path("cmip6_core_plan.yaml")
 
     def assert_unchanged(ds):
         assert ds["tas"].attrs["units"] == "degC"

@@ -15,6 +15,12 @@ from a plan document:
 - [Atlas Fix Plan](notebooks/atlas_fix_plan_example.ipynb)
 - [ESA CCI Fix Plan](notebooks/esa_cci_fix_plan_example.ipynb)
 
+The fix-plan notebooks also show the loaded plan content directly. The CMIP6
+fix-plan notebook loads a shared YAML plan fixture from
+`tests/integration/plans/cmip6_core_plan.yaml`, while the Atlas and ESA CCI
+examples load JSON fixtures. This exercises both JSON and YAML plan formats in
+documentation builds.
+
 The notebooks use `woodpecker.testing` factories such as `make_cmip6()` and
 `make_atlas()` so they can run in CI and in the documentation build. The
 fix-plan documents are shared with integration tests and live in

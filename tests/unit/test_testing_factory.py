@@ -154,4 +154,4 @@ def test_testing_paths_point_to_integration_assets():
 
     assert _testing_root_dir(start=Path(__file__)).name == "tests"
     assert integration_root.name == "integration"
-    assert integration_plan_path("cmip6_core_plan.json", start=Path(__file__)).is_file()
+    assert integration_plan_path("cmip6_core_plan.yaml", start=Path(__file__)).is_file()

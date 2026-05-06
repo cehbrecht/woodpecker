@@ -53,7 +53,7 @@ def test_usage_example_check_and_fix_synthetic_cmip6_dataset():
 def test_usage_example_check_and_fix_synthetic_cmip6_dataset_with_plan():
     dataset = make_cmip6(overrides={"units": "degC"})
     original_values = dataset["tas"].values.copy()
-    plan_path = integration_plan_path("cmip6_core_plan.json")
+    plan_path = integration_plan_path("cmip6_core_plan.yaml")
 
     result = woodpecker.check_plan(plan_path, inputs=dataset)
 
