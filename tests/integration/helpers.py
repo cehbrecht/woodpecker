@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 from woodpecker import check, fix
 
 CORE_FIX_IDS = {
@@ -6,6 +9,11 @@ CORE_FIX_IDS = {
     "woodpecker.remove_coordinate_fill_value_encodings",
     "woodpecker.merge_equivalent_dimensions",
 }
+
+
+def write_plan_document(path: Path, plans: list[dict]) -> Path:
+    path.write_text(json.dumps({"plans": plans}), encoding="utf-8")
+    return path
 
 
 def check_finding_ids(dataset, fix_id: str, *, fix_options=None) -> set[str]:

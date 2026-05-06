@@ -1,6 +1,5 @@
 """End-to-end public API examples for CMIP6 fix plans."""
 
-import json
 from pathlib import Path
 
 import numpy as np
@@ -9,16 +8,13 @@ import pytest
 import woodpecker
 from woodpecker.testing import make_cmip6
 
-
-def _write_plan_document(path: Path, plans: list[dict]) -> Path:
-    path.write_text(json.dumps({"plans": plans}), encoding="utf-8")
-    return path
+from .helpers import write_plan_document
 
 
 def test_plan_checks_and_fixes_synthetic_cmip6_dataset(tmp_path: Path):
     dataset = make_cmip6(overrides={"units": "degC"})
     original_values = dataset["tas"].values.copy()
-    plan_path = _write_plan_document(
+    plan_path = write_plan_document(
         tmp_path / "plans.json",
         [
             {
@@ -52,7 +48,7 @@ def test_plan_step_options_are_used_for_core_fixes(tmp_path: Path):
     dataset = make_cmip6()
     dataset = dataset.assign_coords(member=np.arange(dataset.sizes["lat"]))
     dataset["member_weight"] = ("member", np.ones(dataset.sizes["lat"], dtype="float32"))
-    plan_path = _write_plan_document(
+    plan_path = write_plan_document(
         tmp_path / "plans.json",
         [
             {
@@ -86,7 +82,7 @@ def test_plan_step_options_are_used_for_core_fixes(tmp_path: Path):
 
 def test_plan_id_selects_one_plan_when_multiple_plans_match(tmp_path: Path):
     dataset = make_cmip6(overrides={"units": "degC"})
-    plan_path = _write_plan_document(
+    plan_path = write_plan_document(
         tmp_path / "plans.json",
         [
             {

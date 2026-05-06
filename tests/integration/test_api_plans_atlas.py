@@ -1,6 +1,5 @@
 """End-to-end public API examples for Atlas fix plans."""
 
-import json
 from pathlib import Path
 
 import pytest
@@ -8,18 +7,15 @@ import pytest
 import woodpecker
 from woodpecker.testing import make_atlas
 
+from .helpers import write_plan_document
+
 pytest.importorskip("woodpecker_atlas_plugin")
-
-
-def _write_plan_document(path: Path, plans: list[dict]) -> Path:
-    path.write_text(json.dumps({"plans": plans}), encoding="utf-8")
-    return path
 
 
 def test_atlas_plan_checks_and_fixes_synthetic_dataset(tmp_path: Path):
     dataset = make_atlas(missing=["project_id"])
     dataset["pr"].encoding["complevel"] = 5
-    plan_path = _write_plan_document(
+    plan_path = write_plan_document(
         tmp_path / "plans.json",
         [
             {
