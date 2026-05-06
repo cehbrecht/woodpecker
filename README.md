@@ -132,12 +132,18 @@ See `woodpecker/testing/README.md` for usage details.
 
 ## Notebooks
 
-The `notebooks/` directory contains a notebook that demonstrates the public API
-with a synthetic CMIP6 dataset and a built-in core fix:
+The `notebooks/` directory contains notebooks that demonstrate the public API
+with synthetic datasets, built-in core fixes, and bundled plugin fixes:
 
 ```bash
 jupyter notebook notebooks/cmip6_core_api_example.ipynb
+jupyter notebook notebooks/cmip6_core_fix_plan_example.ipynb
+jupyter notebook notebooks/atlas_fix_plan_example.ipynb
+jupyter notebook notebooks/esa_cci_fix_plan_example.ipynb
 ```
+
+The fix-plan documents used by the plan notebooks are covered by integration
+tests and live in `tests/integration/plans/`.
 
 ## Development
 
@@ -148,7 +154,7 @@ Useful starting points:
 - `CONTRIBUTING.md` for setup, fix authoring, plans, plugins, and test guidance.
 - `tests/integration/README.md` for end-to-end public API integration tests.
 - `woodpecker/testing/README.md` for synthetic climate fixture usage.
-- `notebooks/` for a notebook-based public API example.
+- `notebooks/` for notebook-based public API examples.
 
 ## Provenance
 

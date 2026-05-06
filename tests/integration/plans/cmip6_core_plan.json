@@ -1,0 +1,17 @@
+{
+  "plans": [
+    {
+      "id": "cmip6.core_units",
+      "match": {
+        "attrs": {
+          "project_id": "CMIP6"
+        }
+      },
+      "steps": [
+        {
+          "id": "woodpecker.normalize_tas_units_to_kelvin"
+        }
+      ]
+    }
+  ]
+}

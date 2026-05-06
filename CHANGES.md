@@ -3,6 +3,9 @@
 ## Unreleased
 
 - Introduced canonical identifiers for fixes and fix plans with alias support. Simplified plan lookup and shared identifier handling across the codebase.
+- Added synthetic CMIP7 test data.
+- Added public API integration tests for fix plans, including CMIP6, Atlas, and ESA CCI/CMIP7 examples.
+- Added notebook examples for direct fixes and fix-plan workflows.
 
 
 ## 0.2.0 (2026-04-17)

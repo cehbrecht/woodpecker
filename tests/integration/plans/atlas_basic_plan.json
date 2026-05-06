@@ -1,0 +1,21 @@
+{
+  "plans": [
+    {
+      "id": "atlas.basic",
+      "description": "Concrete Atlas plan for atlas*.nc files",
+      "match": {
+        "path_patterns": [
+          "*atlas*.nc"
+        ]
+      },
+      "steps": [
+        {
+          "id": "atlas.encoding_cleanup"
+        },
+        {
+          "id": "atlas.project_id_normalization"
+        }
+      ]
+    }
+  ]
+}
