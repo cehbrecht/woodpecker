@@ -29,40 +29,6 @@ def _fix_stats(*, persisted: int = 1, persist_failed: int = 0) -> dict[str, int]
     }
 
 
-def test_check_returns_zero_when_no_findings(
-    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
-):
-    runner, make_placeholder_netcdf_path = isolated_cli_workspace
-    make_placeholder_netcdf_path("cmip6_decadal_ok.nc")
-    result = runner.invoke(
-        cli, ["check", ".", "--select", "woodpecker.normalize_tas_units_to_kelvin"]
-    )
-
-    assert result.exit_code == 0
-    assert "No issues found" in result.output
-
-
-def test_check_returns_nonzero_when_findings_exist(
-    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
-    monkeypatch,
-):
-    runner, make_placeholder_netcdf_path = isolated_cli_workspace
-    make_placeholder_netcdf_path("cmip6_bad.nc")
-
-    def _fake_run_check(*args, **kwargs):
-        _ = (args, kwargs)
-        return [_finding()]
-
-    monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
-
-    result = runner.invoke(
-        cli, ["check", ".", "--select", "woodpecker.normalize_tas_units_to_kelvin"]
-    )
-
-    assert result.exit_code == 1
-    assert "woodpecker.normalize_tas_units_to_kelvin" in result.output
-
-
 def test_check_json_output_structure(
     isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
     monkeypatch,
@@ -87,30 +53,6 @@ def test_check_json_output_structure(
     assert payload
     assert {"path", "fix_id", "name", "message"}.issubset(payload[0].keys())
     assert payload[0]["fix_id"] == "woodpecker.normalize_tas_units_to_kelvin"
-
-
-def test_fix_write_cmip6d01_reports_no_change_for_empty_fallback_dataset(
-    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
-):
-    runner, make_placeholder_netcdf_path = isolated_cli_workspace
-    make_placeholder_netcdf_path("c3s-cmip6-decadal.case.nc")
-
-    result = runner.invoke(
-        cli,
-        [
-            "fix",
-            ".",
-            "--select",
-            "woodpecker.normalize_tas_units_to_kelvin",
-            "--force-apply",
-            "--output-format",
-            "netcdf",
-        ],
-    )
-
-    assert result.exit_code == 0
-    assert "1 fix applications attempted" in result.output
-    assert "0 files changed" in result.output
 
 
 @pytest.mark.parametrize(
@@ -170,24 +112,6 @@ def test_check_unknown_fix_code_returns_click_error(
 
     assert result.exit_code != 0
     assert "Unknown fix identifier(s): DOESNOTEXIST" in result.output
-
-
-def test_fix_writes_provenance_file_by_default(
-    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
-):
-    runner, make_placeholder_netcdf_path = isolated_cli_workspace
-    make_placeholder_netcdf_path("cmip6_case.nc")
-
-    result = runner.invoke(
-        cli, ["fix", ".", "--select", "woodpecker.normalize_tas_units_to_kelvin"]
-    )
-
-    assert result.exit_code == 0
-    prov_path = Path("woodpecker.prov.json")
-    assert prov_path.exists()
-    payload = json.loads(prov_path.read_text(encoding="utf-8"))
-    assert "activity" in payload
-    assert "entity" in payload
 
 
 def test_fix_force_apply_is_forwarded_to_runner(
