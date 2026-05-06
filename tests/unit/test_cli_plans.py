@@ -8,6 +8,12 @@ from click.testing import CliRunner
 from woodpecker.cli import cli
 
 pytestmark = pytest.mark.filterwarnings("ignore:.*Failed to read NetCDF input.*")
+CliWorkspace = tuple[CliRunner, Callable[[str], Path]]
+
+PLAN_COMMAND_CASES = [
+    pytest.param("plans.json", True, ["check", "."], id="store-list-payload"),
+    pytest.param("plan.json", False, ["check"], id="plan-document-payload"),
+]
 
 
 def _finding(message: str, *, path: str = "cmip6_bad.nc") -> dict[str, str]:
@@ -16,16 +22,6 @@ def _finding(message: str, *, path: str = "cmip6_bad.nc") -> dict[str, str]:
         "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
         "name": "Common check",
         "message": message,
-    }
-
-
-def _successful_fix_stats() -> dict[str, int]:
-    return {
-        "attempted": 1,
-        "changed": 1,
-        "persist_attempted": 1,
-        "persisted": 1,
-        "persist_failed": 0,
     }
 
 
@@ -60,13 +56,10 @@ def _write_multiple_matching_plans(path: str, *, with_path_filters: bool) -> Non
 
 @pytest.mark.parametrize(
     ("plan_path", "with_path_filters", "command_prefix"),
-    [
-        ("plans.json", True, ["check", "."]),
-        ("plan.json", False, ["check"]),
-    ],
+    PLAN_COMMAND_CASES,
 )
 def test_check_plan_store_requires_plan_id_when_multiple_match(
-    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    isolated_cli_workspace: CliWorkspace,
     plan_path,
     with_path_filters,
     command_prefix,
@@ -86,13 +79,10 @@ def test_check_plan_store_requires_plan_id_when_multiple_match(
 
 @pytest.mark.parametrize(
     ("plan_path", "with_path_filters", "command_prefix"),
-    [
-        ("plans.json", True, ["check", "."]),
-        ("plan.json", False, ["check"]),
-    ],
+    PLAN_COMMAND_CASES,
 )
 def test_check_plan_store_plan_id_selects_specific_plan(
-    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    isolated_cli_workspace: CliWorkspace,
     monkeypatch,
     plan_path,
     with_path_filters,
@@ -125,7 +115,7 @@ def test_check_plan_store_plan_id_selects_specific_plan(
 
 
 def test_check_plan_id_without_plan_errors(
-    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    isolated_cli_workspace: CliWorkspace,
 ):
     runner, _ = isolated_cli_workspace
 
@@ -136,26 +126,24 @@ def test_check_plan_id_without_plan_errors(
 
 
 def test_list_plans_text_output(
-    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    isolated_cli_workspace: CliWorkspace,
 ):
     runner, _ = isolated_cli_workspace
-    Path("plans.json").write_text(
-        json.dumps(
-            [
-                {
-                    "id": "test.alpha",
-                    "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
-                },
-                {
-                    "id": "test.beta",
-                    "steps": [
-                        {"id": "woodpecker.ensure_latitude_is_increasing"},
-                        {"id": "woodpecker.remove_coordinate_fill_value_encodings"},
-                    ],
-                },
-            ]
-        ),
-        encoding="utf-8",
+    _write_json(
+        "plans.json",
+        [
+            {
+                "id": "test.alpha",
+                "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+            },
+            {
+                "id": "test.beta",
+                "steps": [
+                    {"id": "woodpecker.ensure_latitude_is_increasing"},
+                    {"id": "woodpecker.remove_coordinate_fill_value_encodings"},
+                ],
+            },
+        ],
     )
 
     result = runner.invoke(
@@ -169,19 +157,17 @@ def test_list_plans_text_output(
 
 
 def test_list_plans_json_output(
-    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    isolated_cli_workspace: CliWorkspace,
 ):
     runner, _ = isolated_cli_workspace
-    Path("plans.json").write_text(
-        json.dumps(
-            [
-                {
-                    "id": "test.alpha",
-                    "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
-                }
-            ]
-        ),
-        encoding="utf-8",
+    _write_json(
+        "plans.json",
+        [
+            {
+                "id": "test.alpha",
+                "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+            }
+        ],
     )
 
     result = runner.invoke(
@@ -202,7 +188,7 @@ def test_list_plans_json_output(
 
 
 def test_list_plans_requires_store_options(
-    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    isolated_cli_workspace: CliWorkspace,
 ):
     runner, _ = isolated_cli_workspace
 
@@ -213,26 +199,24 @@ def test_list_plans_requires_store_options(
 
 
 def test_load_plans_from_plan_document_into_json_store(
-    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    isolated_cli_workspace: CliWorkspace,
 ):
     runner, _ = isolated_cli_workspace
 
-    Path("plan-doc.json").write_text(
-        json.dumps(
-            {
-                "plans": [
-                    {
-                        "id": "test.alpha",
-                        "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
-                    },
-                    {
-                        "id": "test.beta",
-                        "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
-                    },
-                ]
-            }
-        ),
-        encoding="utf-8",
+    _write_json(
+        "plan-doc.json",
+        {
+            "plans": [
+                {
+                    "id": "test.alpha",
+                    "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                },
+                {
+                    "id": "test.beta",
+                    "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
+                },
+            ]
+        },
     )
 
     result = runner.invoke(
@@ -252,22 +236,20 @@ def test_load_plans_from_plan_document_into_json_store(
 
 
 def test_load_plans_from_store_with_plan_id_filter(
-    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    isolated_cli_workspace: CliWorkspace,
 ):
     runner, _ = isolated_cli_workspace
 
-    Path("source.json").write_text(
-        json.dumps(
-            [
-                {"id": "test.alpha", "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]},
-                {
-                    "id": "test.beta",
-                    "aliases": ["beta_alias"],
-                    "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
-                },
-            ]
-        ),
-        encoding="utf-8",
+    _write_json(
+        "source.json",
+        [
+            {"id": "test.alpha", "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]},
+            {
+                "id": "test.beta",
+                "aliases": ["beta_alias"],
+                "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
+            },
+        ],
     )
 
     result = runner.invoke(
@@ -296,7 +278,7 @@ def test_load_plans_from_store_with_plan_id_filter(
 
 
 def test_load_plans_requires_source_plan_location(
-    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    isolated_cli_workspace: CliWorkspace,
 ):
     runner, _ = isolated_cli_workspace
 

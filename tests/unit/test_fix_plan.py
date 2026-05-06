@@ -18,6 +18,15 @@ from woodpecker.stores.json_store import JsonFixPlanStore
 from woodpecker.testing import make_cmip6
 
 
+def _write_json(path: Path, payload: dict) -> None:
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+
+def _load_document(path: Path, payload: dict) -> FixPlanDocument:
+    _write_json(path, payload)
+    return FixPlanDocument(plans=JsonFixPlanStore(path).list_plans())
+
+
 class _FixMethodFix(Fix):
     prefix = "plan_test"
     suffix = "fix_method"
@@ -83,6 +92,9 @@ class _TypeErrorInsideMethodFix(Fix):
 
     def apply(self, dataset, dry_run=True):
         return True
+
+
+# Plan file parsing and normalization
 
 
 def test_load_fix_plan_from_json(tmp_path: Path):
@@ -160,23 +172,19 @@ def test_apply_plan_does_not_call_check():
 
 def test_load_fix_plan_document_json(tmp_path: Path):
     plan_path = tmp_path / "plan.json"
-    plan_path.write_text(
-        json.dumps(
-            {
-                "plans": [
-                    {
-                        "id": "cmip6.basic",
-                        "description": "simple plan",
-                        "match": {"path_patterns": ["*cmip6*.nc"]},
-                        "steps": [{"id": "CMIP6_0001", "options": {"message": "ok"}}],
-                    }
-                ]
-            }
-        ),
-        encoding="utf-8",
+    document = _load_document(
+        plan_path,
+        {
+            "plans": [
+                {
+                    "id": "cmip6.basic",
+                    "description": "simple plan",
+                    "match": {"path_patterns": ["*cmip6*.nc"]},
+                    "steps": [{"id": "CMIP6_0001", "options": {"message": "ok"}}],
+                }
+            ]
+        },
     )
-
-    document = FixPlanDocument(plans=JsonFixPlanStore(plan_path).list_plans())
 
     assert isinstance(document, FixPlanDocument)
     assert document.schema_version == 1
@@ -187,17 +195,13 @@ def test_load_fix_plan_document_json(tmp_path: Path):
 
 def test_load_fix_plan_document_single_plan_shorthand(tmp_path: Path):
     plan_path = tmp_path / "plan.json"
-    plan_path.write_text(
-        json.dumps(
-            {
-                "id": "atlas.single",
-                "steps": [{"id": "CMIP6_0001"}],
-            }
-        ),
-        encoding="utf-8",
+    document = _load_document(
+        plan_path,
+        {
+            "id": "atlas.single",
+            "steps": [{"id": "CMIP6_0001"}],
+        },
     )
-
-    document = FixPlanDocument(plans=JsonFixPlanStore(plan_path).list_plans())
 
     assert document.schema_version == 1
     assert len(document.plans) == 1
@@ -207,27 +211,23 @@ def test_load_fix_plan_document_single_plan_shorthand(tmp_path: Path):
 
 def test_load_fix_plan_document_plan_entries_normalize_fix_ids(tmp_path: Path):
     plan_path = tmp_path / "plan.json"
-    plan_path.write_text(
-        json.dumps(
-            {
-                "plans": [
-                    {
-                        "id": "atlas.mixed_case",
-                        "steps": [
-                            {
-                                "id": "cmip6.dummy_placeholder",
-                                "options": {"marker_attr": "my_marker"},
-                            },
-                            {"id": "atlas.encoding_cleanup", "options": {}},
-                        ],
-                    }
-                ]
-            }
-        ),
-        encoding="utf-8",
+    document = _load_document(
+        plan_path,
+        {
+            "plans": [
+                {
+                    "id": "atlas.mixed_case",
+                    "steps": [
+                        {
+                            "id": "cmip6.dummy_placeholder",
+                            "options": {"marker_attr": "my_marker"},
+                        },
+                        {"id": "atlas.encoding_cleanup", "options": {}},
+                    ],
+                }
+            ]
+        },
     )
-
-    document = FixPlanDocument(plans=JsonFixPlanStore(plan_path).list_plans())
 
     fixes = document.plans[0].steps
     assert [item.id for item in fixes] == ["cmip6.dummy_placeholder", "atlas.encoding_cleanup"]
@@ -259,6 +259,9 @@ def test_fix_plan_to_dict_persists_canonical_ids_from_suffix_fix_refs():
     assert payload["id"] == "atlas.atlas_basic"
     assert "namespace" not in payload
     assert "suffix" not in payload
+
+
+# Plan identity and alias behavior
 
 
 def test_fix_plan_identity_uses_identifier_set_when_prefix_and_suffix_available():
@@ -370,44 +373,36 @@ def test_fix_plan_runtime_metadata_provider_is_available_but_not_persisted():
 
 def test_fix_plan_document_description_fields_are_parsed(tmp_path: Path):
     plan_path = tmp_path / "plan.json"
-    plan_path.write_text(
-        json.dumps(
-            {
-                "plans": [
-                    {
-                        "id": "atlas.with_description",
-                        "description": "Dataset selector note",
-                        "steps": [{"id": "CMIP6_0001", "options": {"message": "selector message"}}],
-                    }
-                ]
-            }
-        ),
-        encoding="utf-8",
+    document = _load_document(
+        plan_path,
+        {
+            "plans": [
+                {
+                    "id": "atlas.with_description",
+                    "description": "Dataset selector note",
+                    "steps": [{"id": "CMIP6_0001", "options": {"message": "selector message"}}],
+                }
+            ]
+        },
     )
-
-    document = FixPlanDocument(plans=JsonFixPlanStore(plan_path).list_plans())
 
     assert document.plans[0].description == "Dataset selector note"
 
 
 def test_fix_plan_document_uses_explicit_schema_version_when_present(tmp_path: Path):
     plan_path = tmp_path / "plan.json"
-    plan_path.write_text(
-        json.dumps(
-            {
-                "schema_version": 1,
-                "plans": [
-                    {
-                        "id": "atlas.basic",
-                        "steps": [{"id": "atlas.encoding_cleanup"}],
-                    }
-                ],
-            }
-        ),
-        encoding="utf-8",
+    document = _load_document(
+        plan_path,
+        {
+            "schema_version": 1,
+            "plans": [
+                {
+                    "id": "atlas.basic",
+                    "steps": [{"id": "atlas.encoding_cleanup"}],
+                }
+            ],
+        },
     )
-
-    document = FixPlanDocument(plans=JsonFixPlanStore(plan_path).list_plans())
 
     assert document.schema_version == 1
     assert document.plans[0].id == "atlas.basic"
@@ -426,25 +421,21 @@ def test_fix_plan_document_to_dict_includes_schema_version():
 
 def test_cmip7_plan_document_uses_plugin_fix_codes_in_order(tmp_path):
     plan_path = tmp_path / "fix-plans.json"
-    plan_path.write_text(
-        json.dumps(
-            {
-                "plans": [
-                    {
-                        "id": "cmip7.synthetic_reformat",
-                        "match": {"path_patterns": ["*.zarr"]},
-                        "steps": [
-                            {"id": "cmip7.configurable_reformat_bridge"},
-                            {"id": "woodpecker.ensure_latitude_is_increasing"},
-                        ],
-                    }
-                ]
-            }
-        ),
-        encoding="utf-8",
+    document = _load_document(
+        plan_path,
+        {
+            "plans": [
+                {
+                    "id": "cmip7.synthetic_reformat",
+                    "match": {"path_patterns": ["*.zarr"]},
+                    "steps": [
+                        {"id": "cmip7.configurable_reformat_bridge"},
+                        {"id": "woodpecker.ensure_latitude_is_increasing"},
+                    ],
+                }
+            ]
+        },
     )
-
-    document = FixPlanDocument(plans=JsonFixPlanStore(plan_path).list_plans())
     assert len(document.plans) == 1
 
     ds = xr.Dataset()
