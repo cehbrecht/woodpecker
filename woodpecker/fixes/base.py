@@ -13,9 +13,9 @@ class Fix:
     Runtime mutable state (such as config) lives on instances.
     """
 
-    namespace_prefix: ClassVar[str] = ""
-    local_id: ClassVar[str] = ""
-    canonical_id: ClassVar[str] = ""
+    prefix: ClassVar[str] = ""
+    suffix: ClassVar[str] = ""
+    id: ClassVar[str] = ""
     aliases: ClassVar[list[str]] = []
     links: ClassVar[list[dict[str, str]]] = []
     name: ClassVar[str] = ""
@@ -24,9 +24,9 @@ class Fix:
     priority: ClassVar[int] = 10
     dataset: ClassVar[Optional[str]] = None
     metadata_fields: ClassVar[tuple[str, ...]] = (
-        "namespace_prefix",
-        "local_id",
-        "canonical_id",
+        "prefix",
+        "suffix",
+        "id",
         "aliases",
         "links",
         "name",
@@ -40,7 +40,7 @@ class Fix:
         self.config: dict[str, Any] = {}
 
     @classmethod
-    def derived_local_id(cls) -> str:
+    def derived_suffix(cls) -> str:
         class_name = cls.__name__
         if class_name.endswith("Fix"):
             class_name = class_name[: -len("Fix")]
@@ -110,23 +110,19 @@ class GroupFix(Fix):
             seen.add(value)
             keys.append(value)
 
-        canonical_id = str(getattr(member_cls, "canonical_id", "") or "").strip().lower()
-        local_id = str(getattr(member_cls, "local_id", "") or "").strip().lower()
-        namespace_prefix = str(getattr(member_cls, "namespace_prefix", "") or "").strip().lower()
+        member_id = str(getattr(member_cls, "id", "") or "").strip().lower()
+        prefix = str(getattr(member_cls, "prefix", "") or "").strip().lower()
         aliases = list(getattr(member_cls, "aliases", []) or [])
 
-        _add(canonical_id)
-        _add(local_id)
+        _add(member_id)
         for alias in aliases:
             alias_token = str(alias or "").strip().lower()
             if not alias_token:
                 continue
             if "." in alias_token:
                 _add(alias_token)
-            else:
-                _add(alias_token)
-                if namespace_prefix:
-                    _add(f"{namespace_prefix}.{alias_token}")
+            elif prefix:
+                _add(f"{prefix}.{alias_token}")
         return keys
 
     def _member_config(self, member_cls: Type[Any]) -> dict[str, Any]:

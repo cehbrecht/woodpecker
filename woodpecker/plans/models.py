@@ -75,7 +75,7 @@ class FixRef(BaseModel):
         if "." in normalized:
             IdentifierRules.validate_canonical_id("FixRef.id", normalized)
         else:
-            IdentifierRules.validate_local_id("FixRef.id", normalized)
+            IdentifierRules.validate_suffix("FixRef.id", normalized)
         return normalized
 
     @field_validator("options", mode="before")
@@ -152,6 +152,7 @@ class FixPlan(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     id: str
+    aliases: list[str] = Field(default_factory=list)
     description: str = ""
     match: DatasetMatcher | None = None
     steps: list[FixRef] = Field(default_factory=list)
@@ -163,6 +164,46 @@ class FixPlan(BaseModel):
     def _coerce_description(cls, v: object) -> str:
         return _string_or_empty(v)
 
+    @model_validator(mode="before")
+    @classmethod
+    def _canonicalize_identity(cls, data: object) -> object:
+        if not isinstance(data, Mapping):
+            return data
+
+        payload = dict(data)
+        raw_id = IdentifierRules.normalize(payload.get("id", ""))
+        raw_prefix = IdentifierRules.normalize(payload.pop("prefix", ""))
+        raw_suffix = IdentifierRules.normalize(payload.pop("suffix", ""))
+        prefix = raw_prefix
+        suffix = raw_suffix
+
+        if raw_id and "." in raw_id:
+            IdentifierRules.validate_canonical_id("FixPlan.id", raw_id)
+            parsed_prefix, parsed_suffix = raw_id.split(".", 1)
+            if prefix and prefix != parsed_prefix:
+                raise ValueError("FixPlan prefix does not match canonical id prefix")
+            if suffix and suffix != parsed_suffix:
+                raise ValueError("FixPlan suffix does not match id suffix")
+            prefix = parsed_prefix
+            suffix = parsed_suffix
+        elif raw_id:
+            if not suffix:
+                suffix = raw_id
+            elif raw_id != suffix:
+                raise ValueError("FixPlan id and suffix must match when id is unqualified")
+
+        if prefix:
+            IdentifierRules.validate_suffix("FixPlan prefix", prefix)
+        if suffix:
+            IdentifierRules.validate_suffix("FixPlan suffix", suffix)
+
+        if prefix and suffix:
+            payload["id"] = f"{prefix}.{suffix}"
+        elif raw_id:
+            payload["id"] = raw_id
+
+        return payload
+
     @field_validator("id", mode="before")
     @classmethod
     def _normalize_and_validate_id(cls, v: object) -> str:
@@ -171,6 +212,17 @@ class FixPlan(BaseModel):
             raise ValueError("FixPlan.id must be a non-empty canonical identifier")
         IdentifierRules.validate_canonical_id("FixPlan.id", normalized)
         return normalized
+
+    @field_validator("aliases", mode="before")
+    @classmethod
+    def _coerce_aliases(cls, v: object) -> list[str]:
+        if v is None:
+            return []
+        if isinstance(v, str):
+            return [v]
+        if not isinstance(v, list):
+            raise ValueError("FixPlan.aliases must be a list of strings")
+        return list(v)
 
     @field_validator("steps", mode="before")
     @classmethod
@@ -185,7 +237,14 @@ class FixPlan(BaseModel):
 
     @model_validator(mode="after")
     def _scope_fix_refs(self) -> FixPlan:
-        """Scope local fix refs to this plan namespace."""
+        """Scope local fix refs to this plan prefix."""
+        self.aliases = list(
+            IdentifierRules.expand_aliases(
+                self.prefix,
+                self.id,
+                self.aliases,
+            )
+        )
         self.steps = [
             FixRef(id=self.resolve_fix_identifier(ref), options=ref.options, links=ref.links)
             for ref in self.steps
@@ -193,17 +252,17 @@ class FixPlan(BaseModel):
         return self
 
     @property
-    def namespace_prefix(self) -> str:
+    def prefix(self) -> str:
         return self.id.split(".", 1)[0]
 
     @property
-    def local_id(self) -> str:
+    def suffix(self) -> str:
         return self.id.split(".", 1)[1]
 
     @cached_property
     def identifier_set(self) -> IdentifierSet:
         """Cached identifier set for plan identity."""
-        return IdentifierRules.build(self.namespace_prefix, self.local_id)
+        return IdentifierRules.build(self.prefix, self.suffix, aliases=self.aliases)
 
     def resolve_fix_identifier(self, ref: FixRef) -> str:
         token = IdentifierRules.normalize(ref.id)
@@ -211,7 +270,7 @@ class FixPlan(BaseModel):
             return token
         if "." in token:
             return token
-        return f"{self.namespace_prefix}.{token}"
+        return f"{self.prefix}.{token}"
 
     def step_identifiers_and_options(self) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
         """Return ordered canonical step identifiers and per-step options."""

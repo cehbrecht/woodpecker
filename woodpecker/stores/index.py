@@ -8,64 +8,58 @@ from ..plans.models import FixPlan
 class FixPlanIndex:
     """Index a collection of ``FixPlan`` objects for fast identifier-based retrieval.
 
-    On construction, plans are keyed by their canonical id and an
-    ``IdentifierResolver`` is built so plans can be looked up by canonical id,
-    local id, or any declared alias.  Duplicate canonical ids raise immediately.
+    On construction, plans are keyed by their id and an ``IdentifierResolver``
+    is built so plans can be looked up by id or declared alias.
+    Duplicate ids raise immediately.
     """
 
     def __init__(self, plans: list[FixPlan]):
         self._plans = list(plans)
-        self._plans_by_canonical_id = self._index_plans_by_canonical_id(self._plans)
-        self._resolver = self._build_plan_identifier_resolver(self._plans_by_canonical_id)
+        self._plans_by_id = self._index_plans_by_id(self._plans)
+        self._resolver = self._build_plan_identifier_resolver(self._plans_by_id)
 
     @staticmethod
-    def canonical_plan_id(plan: FixPlan) -> str:
-        """Return the canonical id for *plan*.
-
-        When the plan carries a full ``IdentifierSet``, that canonical id is
-        used.  Otherwise the normalized raw ``plan.id`` string is returned.
-        """
+    def plan_id(plan: FixPlan) -> str:
+        """Return normalized id for *plan*."""
         if plan.identifier_set is not None:
-            return plan.identifier_set.canonical_id
+            return plan.identifier_set.id
         return str(plan.id).strip().lower()
 
     @classmethod
-    def _index_plans_by_canonical_id(cls, plans: list[FixPlan]) -> dict[str, FixPlan]:
-        """Build a canonical-id-keyed dict, raising on duplicate ids."""
+    def _index_plans_by_id(cls, plans: list[FixPlan]) -> dict[str, FixPlan]:
+        """Build an id-keyed dict, raising on duplicate ids."""
         indexed: dict[str, FixPlan] = {}
         for plan in plans:
-            canonical_id = cls.canonical_plan_id(plan)
-            if not canonical_id:
+            plan_id = cls.plan_id(plan)
+            if not plan_id:
                 raise ValueError("Encountered plan with empty identifier.")
-            if canonical_id in indexed:
-                raise ValueError(f"Duplicate canonical plan id detected: {canonical_id}")
-            indexed[canonical_id] = plan
+            if plan_id in indexed:
+                raise ValueError(f"Duplicate plan id detected: {plan_id}")
+            indexed[plan_id] = plan
         return indexed
 
     @staticmethod
     def _build_plan_identifier_resolver(
-        plans_by_canonical_id: dict[str, FixPlan],
+        plans_by_id: dict[str, FixPlan],
     ) -> IdentifierResolver:
-        """Build a resolver seeded with every canonical id and alias in the index."""
-        resolver = IdentifierResolver(
-            index={canonical_id: canonical_id for canonical_id in plans_by_canonical_id}
-        )
-        for plan in plans_by_canonical_id.values():
+        """Build a resolver seeded with every plan id and alias in the index."""
+        resolver = IdentifierResolver(index={plan_id: plan_id for plan_id in plans_by_id})
+        for plan in plans_by_id.values():
             if plan.identifier_set is not None:
                 resolver.register(plan.identifier_set)
         return resolver
 
     def get(self, identifier: str) -> FixPlan:
-        """Return the plan matching *identifier* (canonical id, local id, or alias).
+        """Return the plan matching *identifier* (id or alias).
 
         Raises ``ValueError`` for unknown or ambiguous identifiers.
         """
         try:
-            canonical_id = self._resolver.resolve(identifier)
+            resolved_id = self._resolver.resolve(identifier)
         except KeyError as exc:
             raise ValueError(f"Unknown plan identifier: {identifier}") from exc
 
-        return self._plans_by_canonical_id[canonical_id]
+        return self._plans_by_id[resolved_id]
 
     def list(self) -> list[FixPlan]:
         """Return all plans in insertion order."""

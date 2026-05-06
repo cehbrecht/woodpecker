@@ -3,6 +3,9 @@
 ## Unreleased
 
 - Introduced canonical identifiers for fixes and fix plans with alias support. Simplified plan lookup and shared identifier handling across the codebase.
+- Simplified identifier metadata to `prefix`, `suffix`, `id`, and `aliases`.
+- Added prefix/suffix based authoring for fix-plan identifiers.
+- Restored alias resolution for fix-plan lookup and added a core fix alias example.
 - Added synthetic climate test data.
 - Added public API integration tests for fix plans, including CMIP6, Atlas, and ESA CCI/CMIP7 examples.
 - Added notebook examples for direct fixes and fix-plan workflows.

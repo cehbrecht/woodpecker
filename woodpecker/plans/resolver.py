@@ -54,6 +54,7 @@ def _plan_key(plan: FixPlan) -> str:
 def _finalize_matching_plans(
     plans: Iterable[FixPlan],
     *,
+    store: FixPlanStore | None = None,
     plan_id: str | None,
     not_found_message: str,
     multiple_message_prefix: str,
@@ -67,7 +68,11 @@ def _finalize_matching_plans(
     matches = list(unique.values())
     if plan_id:
         requested = plan_id.strip()
-        matches = [plan for plan in matches if plan.id == requested]
+        if store is not None:
+            selected = store.get_plan(requested)
+            matches = [plan for plan in matches if plan.id == selected.id]
+        else:
+            matches = [plan for plan in matches if plan.id == requested]
         if not matches:
             raise ValueError(not_found_message.format(plan_id=requested))
 
@@ -105,6 +110,7 @@ def select_matching_store_plans(
 
     return _finalize_matching_plans(
         _iter_store_matches(inputs, store),
+        store=store,
         plan_id=plan_id,
         not_found_message="No matching plan found for --plan-id '{plan_id}'.",
         multiple_message_prefix="Multiple matching fix plans found; specify --plan-id to choose one: ",
@@ -246,10 +252,8 @@ def resolve_load_source_plans(
     plans = list(source_store.list_plans())
 
     if plan_id:
-        requested = plan_id.strip()
-        plans = [plan for plan in plans if plan.id == requested]
-        if not plans:
-            raise ValueError(f"No plans found for --plan-id '{requested}' in selected source.")
+        selected = source_store.get_plan(plan_id.strip())
+        plans = [plan for plan in plans if plan.id == selected.id]
 
     if not plans:
         raise ValueError("No plans found in selected source store.")

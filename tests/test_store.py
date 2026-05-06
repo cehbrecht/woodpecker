@@ -189,19 +189,59 @@ def test_json_store_save_upserts_by_canonical_plan_id(tmp_path):
     assert listed[0].description == "new"
 
 
-def test_json_store_get_plan_resolves_canonical_and_local_ids(tmp_path):
+def test_json_store_save_canonicalizes_prefix_and_suffix_plan_id(tmp_path):
+    store = JsonFixPlanStore(tmp_path / "fix-plans.json")
+    store.save_plan(
+        FixPlan.model_validate(
+            {
+                "prefix": "atlas",
+                "suffix": "cleanup_plan",
+                "steps": [{"id": "encoding_cleanup"}],
+            }
+        )
+    )
+
+    listed = store.list_plans()
+    raw = store.path.read_text(encoding="utf-8")
+
+    assert listed[0].id == "atlas.cleanup_plan"
+    assert listed[0].steps[0].id == "atlas.encoding_cleanup"
+    assert '"id": "atlas.cleanup_plan"' in raw
+    assert "suffix" not in raw
+
+
+def test_json_store_get_plan_resolves_id(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
     plan = FixPlan(id="atlas.cleanup_plan", steps=[FixRef(id="atlas.encoding_cleanup")])
     store.save_plan(plan)
 
     by_canonical = store.get_plan("atlas.cleanup_plan")
-    by_local = store.get_plan("cleanup_plan")
-
     assert by_canonical.id == "atlas.cleanup_plan"
-    assert by_local.id == "atlas.cleanup_plan"
+
+    with pytest.raises(ValueError, match="Unknown plan identifier"):
+        store.get_plan("cleanup_plan")
 
 
-def test_json_store_get_plan_rejects_ambiguous_shorthand(tmp_path):
+def test_json_store_get_plan_resolves_aliases(tmp_path):
+    store = JsonFixPlanStore(tmp_path / "fix-plans.json")
+    plan = FixPlan(
+        id="atlas.cleanup_plan",
+        aliases=["cleanup", "legacy.cleanup_plan"],
+        steps=[FixRef(id="atlas.encoding_cleanup")],
+    )
+    store.save_plan(plan)
+
+    by_qualified_alias = store.get_plan("atlas.cleanup")
+    by_legacy_alias = store.get_plan("legacy.cleanup_plan")
+
+    assert by_qualified_alias.id == "atlas.cleanup_plan"
+    assert by_legacy_alias.id == "atlas.cleanup_plan"
+
+    with pytest.raises(ValueError, match="Unknown plan identifier"):
+        store.get_plan("cleanup")
+
+
+def test_json_store_get_plan_rejects_unqualified_suffix(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
     store.save_plan(
         FixPlan(id="alpha.shared", steps=[FixRef(id="woodpecker.ensure_latitude_is_increasing")])
@@ -210,18 +250,18 @@ def test_json_store_get_plan_rejects_ambiguous_shorthand(tmp_path):
         FixPlan(id="beta.shared", steps=[FixRef(id="woodpecker.normalize_tas_units_to_kelvin")])
     )
 
-    with pytest.raises(ValueError, match="Ambiguous identifier"):
+    with pytest.raises(ValueError, match="Unknown plan identifier"):
         store.get_plan("shared")
 
 
-def test_json_store_get_plan_detects_duplicate_canonical_ids(tmp_path):
+def test_json_store_get_plan_detects_duplicate_ids(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
     store.path.write_text(
         '{"plans": [{"id": "atlas.cleanup_plan", "steps": [{"id": "atlas.encoding_cleanup"}]}, {"id": "atlas.cleanup_plan", "steps": [{"id": "atlas.project_id_normalization"}]}]}',
         encoding="utf-8",
     )
 
-    with pytest.raises(ValueError, match="Duplicate canonical plan id detected"):
+    with pytest.raises(ValueError, match="Duplicate plan id detected"):
         store.get_plan("atlas.cleanup_plan")
 
 
@@ -246,17 +286,39 @@ def test_duckdb_store_save_list_lookup(tmp_path):
     assert [item.id for item in matched] == ["tests.plan_2"]
 
 
-def test_duckdb_store_get_plan_resolves_canonical_and_local_ids(tmp_path):
+def test_duckdb_store_get_plan_resolves_id(tmp_path):
     pytest.importorskip("duckdb")
 
     store = DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
     store.save_plan(FixPlan(id="atlas.cleanup_plan", steps=[FixRef(id="atlas.encoding_cleanup")]))
 
     by_canonical = store.get_plan("atlas.cleanup_plan")
-    by_local = store.get_plan("cleanup_plan")
-
     assert by_canonical.id == "atlas.cleanup_plan"
-    assert by_local.id == "atlas.cleanup_plan"
+
+    with pytest.raises(ValueError, match="Unknown plan identifier"):
+        store.get_plan("cleanup_plan")
+
+
+def test_duckdb_store_get_plan_resolves_aliases(tmp_path):
+    pytest.importorskip("duckdb")
+
+    store = DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
+    store.save_plan(
+        FixPlan(
+            id="atlas.cleanup_plan",
+            aliases=["cleanup", "legacy.cleanup_plan"],
+            steps=[FixRef(id="atlas.encoding_cleanup")],
+        )
+    )
+
+    by_qualified_alias = store.get_plan("atlas.cleanup")
+    by_legacy_alias = store.get_plan("legacy.cleanup_plan")
+
+    assert by_qualified_alias.id == "atlas.cleanup_plan"
+    assert by_legacy_alias.id == "atlas.cleanup_plan"
+
+    with pytest.raises(ValueError, match="Unknown plan identifier"):
+        store.get_plan("cleanup")
 
 
 def test_duckdb_lookup_skips_decoding_nonmatching_fixes_payload(tmp_path):

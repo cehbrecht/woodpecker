@@ -53,6 +53,14 @@ def test_check_exposes_findings_as_properties():
     assert result.findings[0]["message"]
 
 
+def test_check_accepts_fix_alias():
+    ds = make_cmip6(overrides={"units": "degC"})
+
+    result = check(ds, identifiers=["woodpecker.tas_units_to_kelvin"])
+
+    assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
+
+
 def test_fix_exposes_stats_as_properties():
     ds = make_cmip6(overrides={"units": "degC"})
 
@@ -128,6 +136,19 @@ def test_api_check_plan_returns_result_object(tmp_path: Path):
     result = check_plan(plan_path, inputs=ds)
 
     assert result.has_findings is True
+    assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
+
+
+def test_api_check_plan_accepts_plan_alias(tmp_path: Path):
+    ds = make_cmip6(overrides={"units": "degC"})
+    plan_path = tmp_path / "plan.json"
+    plan_path.write_text(
+        '{"plans": [{"id": "core.check", "aliases": ["units_check"], "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]}]}',
+        encoding="utf-8",
+    )
+
+    result = check_plan(plan_path, inputs=ds, plan_id="core.units_check")
+
     assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
 
 

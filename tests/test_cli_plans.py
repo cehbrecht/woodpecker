@@ -41,10 +41,12 @@ def _write_multiple_matching_plans(path: str, *, with_path_filters: bool) -> Non
     plans = [
         {
             "id": "test.first",
+            "aliases": ["selected_first"],
             "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
         },
         {
             "id": "test.second",
+            "aliases": ["selected_second"],
             "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
         },
     ]
@@ -243,7 +245,7 @@ def test_check_plan_store_plan_id_selects_specific_plan(
             "--plan",
             plan_path,
             "--plan-id",
-            "test.second",
+            "test.selected_second",
         ],
     )
 
@@ -387,7 +389,11 @@ def test_load_plans_from_store_with_plan_id_filter(
         json.dumps(
             [
                 {"id": "test.alpha", "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}]},
-                {"id": "test.beta", "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}]},
+                {
+                    "id": "test.beta",
+                    "aliases": ["beta_alias"],
+                    "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
+                },
             ]
         ),
         encoding="utf-8",
@@ -404,7 +410,7 @@ def test_load_plans_from_store_with_plan_id_filter(
             "--from-store",
             "json",
             "--plan-id",
-            "test.beta",
+            "test.beta_alias",
             "--format",
             "json",
         ],

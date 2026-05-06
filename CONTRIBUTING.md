@@ -71,7 +71,7 @@ through plugin entry points.
 ## Adding or Updating Fixes
 
 Fix author contract (minimal):
-- metadata: `local_id`, `name`, `description`, `categories`, `priority`, `dataset`
+- metadata: `prefix`, `suffix`, `name`, `description`, `categories`, `priority`, `dataset`
 - methods: `matches(dataset)`, `check(dataset) -> list[str]`, `apply(dataset, dry_run=True) -> bool`
 
 Performance guidance:
@@ -84,9 +84,9 @@ Use existing fixes as examples and keep behavior deterministic.
 
 Every fix and plan has a stable, scoped identifier:
 
-- `namespace_prefix`: owning namespace, for example `cmip6_decadal`, `atlas`, `woodpecker`
-- `local_id`: snake_case identifier unique within that namespace
-- canonical id: `<namespace_prefix>.<local_id>`
+- `prefix`: owning namespace, for example `cmip6_decadal`, `atlas`, `woodpecker`
+- `suffix`: snake_case identifier unique within that prefix
+- id: `<prefix>.<suffix>`
 
 Examples:
 
@@ -94,21 +94,31 @@ Examples:
 - `atlas.encoding_cleanup`
 - `woodpecker.normalize_tas_units_to_kelvin`
 
-Canonical ids are stored in plans, used on the CLI, and resolved through the
-identifier resolver. Short local ids can also be used when unambiguous.
+Ids are stored in plans, used on the CLI, and resolved through the identifier
+resolver. Use full ids (`prefix.suffix`) in plans and examples.
+
+Aliases are additional suffix names. They resolve to the same id and do not
+change the prefix.
+
+Identifier defaults are derived automatically:
+
+- `prefix` defaults to the plugin/package namespace (core fixes use `woodpecker`)
+- `suffix` defaults to a snake_case value derived from the fix class name
+
+Both values can be set explicitly on the fix class to override these defaults.
 
 Fix classes declare identifiers as class attributes:
 
 ```python
 class TimeMetadataFix(Fix):
-    namespace_prefix = "cmip6_decadal"
-    local_id = "time_metadata"
+  prefix = "cmip6_decadal"
+  suffix = "time_metadata"
 ```
 
 The registry validates these and derives:
 
 ```python
-canonical_id = "cmip6_decadal.time_metadata"
+id = "cmip6_decadal.time_metadata"
 ```
 
 ## Fix Plan Files
@@ -116,12 +126,12 @@ canonical_id = "cmip6_decadal.time_metadata"
 Woodpecker uses one schema for both plan files and plan stores:
 
 - `FixPlanDocument`: top-level container with `plans: [...]`.
-- `FixPlan`: plan entry with canonical `id`, `description`, optional `match`, ordered `steps`, optional `links`.
+- `FixPlan`: plan entry with `id`, `description`, optional `match`, ordered `steps`, optional `links`.
 - `FixRef`: each step entry (`id`, optional `options`, optional `links`).
 
 Common `FixPlan` fields:
 
-- `id`: canonical plan identifier, for example `atlas.basic`.
+- `id`: plan identifier, for example `atlas.basic`.
 - `description`: optional human-readable description.
 - `match.attrs`: key/value attribute matcher for dataset metadata.
 - `match.path_patterns`: optional fnmatch-style path patterns.
@@ -140,7 +150,7 @@ Minimal `FixPlanDocument` example:
         "path_patterns": ["*atlas*.nc"]
       },
       "steps": [
-        "encoding_cleanup",
+        "atlas.encoding_cleanup",
         {"id": "woodpecker.ensure_latitude_is_increasing"}
       ]
     },
@@ -151,7 +161,7 @@ Minimal `FixPlanDocument` example:
         "path_patterns": ["*ESACCI-WATERVAPOUR-*.zarr"]
       },
       "steps": [
-        "configurable_reformat_bridge",
+        "cmip7.configurable_reformat_bridge",
         {"id": "woodpecker.ensure_latitude_is_increasing"}
       ]
     }
@@ -176,7 +186,7 @@ woodpecker fix --plan plan.json --dry-run
 ## Fix Plan Stores
 
 A fix plan store is a lookup layer that returns matching `FixPlan`s for a
-dataset. Plans can be retrieved by canonical id, local id, or alias.
+dataset. Plans can be retrieved by id or alias.
 
 Current backends:
 
@@ -238,8 +248,8 @@ from woodpecker.fixes.registry import Fix, register_fix
 
 @register_fix
 class ExternalDemoFix(Fix):
-    namespace_prefix = "example"
-    local_id = "demo"
+  prefix = "example"
+  suffix = "demo"
     name = "External demo fix"
     description = "A minimal plugin-provided fix."
     categories = ["metadata"]

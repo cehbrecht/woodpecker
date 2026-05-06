@@ -5,7 +5,7 @@ from woodpecker.fixes.registry import Fix, FixRegistry, GroupFix, register_fix
 
 def test_registry_discovers_builtins():
     fixes = FixRegistry.discover()
-    ids = {fix.canonical_id for fix in fixes}
+    ids = {fix.id for fix in fixes}
 
     # Common non-project fix family (always available in core package).
     assert "woodpecker.normalize_tas_units_to_kelvin" in ids
@@ -20,11 +20,11 @@ def test_group_fix_is_group_fix_instance():
         assert isinstance(maybe_group[0], GroupFix)
 
 
-def test_registry_rejects_invalid_local_identifier_pattern():
-    with pytest.raises(ValueError, match="Invalid local_id"):
+def test_registry_rejects_invalid_suffix_pattern():
+    with pytest.raises(ValueError, match="Invalid suffix"):
 
         class _InvalidCodeFix:
-            local_id = "bad-id"
+            suffix = "bad-id"
             name = "Invalid code"
             description = ""
             categories = ["metadata"]
@@ -49,8 +49,8 @@ def test_registry_rejects_missing_name():
 
 def test_register_fix_decorator_alias_registers_class():
     class _AliasFix(Fix):
-        namespace_prefix = "test"
-        local_id = "alias_fix"
+        prefix = "test"
+        suffix = "alias_fix"
         aliases = ["alias_lookup"]
         name = "Alias decorator fix"
         description = ""
@@ -61,14 +61,16 @@ def test_register_fix_decorator_alias_registers_class():
     registered = register_fix(_AliasFix)
     assert registered is _AliasFix
     assert "test.alias_fix" in FixRegistry.registered_ids()
-    assert FixRegistry.resolve_identifier("alias_lookup") == "test.alias_fix"
     assert FixRegistry.resolve_identifier("test.alias_lookup") == "test.alias_fix"
+
+    with pytest.raises(KeyError):
+        FixRegistry.resolve_identifier("alias_lookup")
 
 
 def test_registry_supports_fully_qualified_aliases_without_local_expansion():
     class _QualifiedAliasFix(Fix):
-        namespace_prefix = "test"
-        local_id = "qualified_alias_fix"
+        prefix = "test"
+        suffix = "qualified_alias_fix"
         aliases = ["other.explicit_lookup"]
         name = "Qualified alias fix"
         description = ""
@@ -86,8 +88,8 @@ def test_registry_rejects_invalid_alias_syntax():
     with pytest.raises(ValueError, match="Invalid alias"):
 
         class _InvalidAliasFix(Fix):
-            namespace_prefix = "test"
-            local_id = "invalid_alias_fix"
+            prefix = "test"
+            suffix = "invalid_alias_fix"
             aliases = ["bad-alias"]
             name = "Invalid alias fix"
             description = ""
@@ -98,45 +100,60 @@ def test_registry_rejects_invalid_alias_syntax():
         FixRegistry.register(_InvalidAliasFix)
 
 
-def test_registry_local_id_derivation_precedence_explicit_over_derived():
+def test_registry_suffix_derivation_precedence_explicit_over_derived():
     class _ExplicitLocalIdWinsFix(Fix):
-        namespace_prefix = "test"
-        local_id = "explicit_local"
-        name = "Explicit local id wins"
+        prefix = "test"
+        suffix = "explicit_local"
+        name = "Explicit suffix wins"
         description = ""
         categories = ["metadata"]
         priority = 10
         dataset = None
 
         @staticmethod
-        def derived_local_id() -> str:
+        def derived_suffix() -> str:
             return "derived_local"
 
     register_fix(_ExplicitLocalIdWinsFix)
-    assert _ExplicitLocalIdWinsFix.canonical_id == "test.explicit_local"
+    assert _ExplicitLocalIdWinsFix.id == "test.explicit_local"
 
 
-def test_registry_local_id_derivation_uses_derived_when_local_missing():
+def test_registry_uses_suffix_field_for_identifier_derivation():
+    class _SuffixFix(Fix):
+        prefix = "test"
+        suffix = "compat_local"
+        name = "Suffix identifier"
+        description = ""
+        categories = ["metadata"]
+        priority = 10
+        dataset = None
+
+    register_fix(_SuffixFix)
+    assert _SuffixFix.suffix == "compat_local"
+    assert _SuffixFix.id == "test.compat_local"
+
+
+def test_registry_suffix_derivation_uses_derived_when_suffix_missing():
     class _DerivedLocalIdFix(Fix):
-        namespace_prefix = "test"
-        name = "Derived local id"
+        prefix = "test"
+        name = "Derived suffix"
         description = ""
         categories = ["metadata"]
         priority = 10
         dataset = None
 
         @staticmethod
-        def derived_local_id() -> str:
+        def derived_suffix() -> str:
             return "derived_local"
 
     register_fix(_DerivedLocalIdFix)
-    assert _DerivedLocalIdFix.canonical_id == "test.derived_local"
+    assert _DerivedLocalIdFix.id == "test.derived_local"
 
 
-def test_registry_local_id_derivation_falls_back_to_class_name_snake_case():
+def test_registry_suffix_derivation_falls_back_to_class_name_snake_case():
     class FallbackFromClassNameFix:
-        namespace_prefix = "test"
-        name = "Fallback local id"
+        prefix = "test"
+        name = "Fallback suffix"
 
         def matches(self, dataset):
             return True
@@ -153,23 +170,28 @@ def test_registry_local_id_derivation_falls_back_to_class_name_snake_case():
         dataset = None
 
     register_fix(FallbackFromClassNameFix)
-    assert FallbackFromClassNameFix.canonical_id == "test.fallback_from_class_name"
+    assert FallbackFromClassNameFix.id == "test.fallback_from_class_name"
 
 
-def test_registry_resolves_canonical_and_local_aliases_for_known_fixes():
+def test_registry_resolves_canonical_suffix_and_aliases_for_known_fixes():
     assert (
         FixRegistry.resolve_identifier("woodpecker.normalize_tas_units_to_kelvin")
         == "woodpecker.normalize_tas_units_to_kelvin"
     )
     assert (
-        FixRegistry.resolve_identifier("normalize_tas_units_to_kelvin")
+        FixRegistry.resolve_identifier("woodpecker.tas_units_to_kelvin")
         == "woodpecker.normalize_tas_units_to_kelvin"
     )
 
+    with pytest.raises(KeyError):
+        FixRegistry.resolve_identifier("normalize_tas_units_to_kelvin")
+    with pytest.raises(KeyError):
+        FixRegistry.resolve_identifier("tas_units_to_kelvin")
 
-def test_registry_instantiate_returns_fix_for_canonical_id():
+
+def test_registry_instantiate_returns_fix_for_id():
     fix = FixRegistry.instantiate("woodpecker.normalize_tas_units_to_kelvin")
-    assert getattr(fix, "canonical_id", "") == "woodpecker.normalize_tas_units_to_kelvin"
+    assert getattr(fix, "id", "") == "woodpecker.normalize_tas_units_to_kelvin"
 
 
 def test_registry_instantiate_returns_fresh_instance_each_time():
@@ -179,15 +201,15 @@ def test_registry_instantiate_returns_fresh_instance_each_time():
     assert first is not second
 
 
-def test_registry_instantiate_unknown_canonical_id_raises_clear_error():
-    with pytest.raises(KeyError, match="Unknown fix canonical_id"):
+def test_registry_instantiate_unknown_id_raises_clear_error():
+    with pytest.raises(KeyError, match="Unknown fix id"):
         FixRegistry.instantiate("woodpecker.unknown_fix")
 
 
-def test_registry_rejects_ambiguous_local_identifier():
+def test_registry_does_not_resolve_unqualified_suffix():
     class _AmbiguousOne(Fix):
-        namespace_prefix = "alpha"
-        local_id = "shared"
+        prefix = "alpha"
+        suffix = "shared"
         name = "Ambiguous One"
         description = ""
         categories = ["metadata"]
@@ -195,8 +217,8 @@ def test_registry_rejects_ambiguous_local_identifier():
         dataset = None
 
     class _AmbiguousTwo(Fix):
-        namespace_prefix = "beta"
-        local_id = "shared"
+        prefix = "beta"
+        suffix = "shared"
         name = "Ambiguous Two"
         description = ""
         categories = ["metadata"]
@@ -205,5 +227,5 @@ def test_registry_rejects_ambiguous_local_identifier():
 
     register_fix(_AmbiguousOne)
     register_fix(_AmbiguousTwo)
-    with pytest.raises(ValueError, match="Ambiguous identifier"):
+    with pytest.raises(KeyError):
         FixRegistry.resolve_identifier("shared")

@@ -18,16 +18,17 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
     for f in fixes:
         cats = ", ".join(getattr(f, "categories", []) or [])
         source = FixRegistry.source_label(f)
-        row = (f.canonical_id, f.name, f.description, cats, f.dataset or "", f.priority, source)
+        fix_id = getattr(f, "id", "") or getattr(f, "canonical_id", "")
+        row = (fix_id, f.name, f.description, cats, f.dataset or "", f.priority, source)
         if source == "core":
             grouped_rows["core"].append(row)
         else:
             grouped_rows.setdefault(source, []).append(row)
 
         entry = {
-            "id": f.canonical_id,
-            "local_id": getattr(f, "local_id", ""),
-            "namespace": getattr(f, "namespace_prefix", ""),
+            "id": fix_id,
+            "suffix": getattr(f, "suffix", "") or getattr(f, "local_id", ""),
+            "prefix": getattr(f, "prefix", "") or getattr(f, "namespace_prefix", ""),
             "aliases": list(getattr(f, "aliases", []) or []),
             "name": f.name,
             "description": f.description,
@@ -37,7 +38,10 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
         }
         if isinstance(f, GroupFix) and getattr(f, "members", None):
             entry["member_ids"] = [
-                getattr(member, "canonical_id", "") or getattr(member, "local_id", "")
+                getattr(member, "id", "")
+                or getattr(member, "canonical_id", "")
+                or getattr(member, "suffix", "")
+                or getattr(member, "local_id", "")
                 for member in f.members
             ]
         entry["source"] = source

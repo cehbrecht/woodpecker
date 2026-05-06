@@ -5,9 +5,9 @@ from woodpecker.fixes.base import Fix, GroupFix
 
 
 class _BaseMetadataFix(Fix):
-    namespace_prefix = "test"
-    local_id = "base_metadata"
-    canonical_id = "test.base_metadata"
+    prefix = "test"
+    suffix = "base_metadata"
+    id = "test.base_metadata"
     aliases = ["base_metadata_alias"]
     links = [{"rel": "docs", "href": "https://example.invalid/fix"}]
     name = "Base metadata fix"
@@ -18,9 +18,9 @@ class _BaseMetadataFix(Fix):
 
 
 class _MemberFix(Fix):
-    namespace_prefix = "group"
-    local_id = "member_fix"
-    canonical_id = "group.member_fix"
+    prefix = "group"
+    suffix = "member_fix"
+    id = "group.member_fix"
     aliases = ["member_alias"]
     links = []
     name = "Member fix"
@@ -38,9 +38,9 @@ class _MemberFix(Fix):
 
 
 class _ContainerGroupFix(GroupFix):
-    namespace_prefix = "group"
-    local_id = "container"
-    canonical_id = "group.container"
+    prefix = "group"
+    suffix = "container"
+    id = "group.container"
     aliases = []
     links = []
     name = "Container"
@@ -52,9 +52,9 @@ class _ContainerGroupFix(GroupFix):
 
 
 class _EmptyGroupFix(GroupFix):
-    namespace_prefix = "group"
-    local_id = "empty"
-    canonical_id = "group.empty"
+    prefix = "group"
+    suffix = "empty"
+    id = "group.empty"
     aliases = []
     links = []
     name = "Empty"
@@ -69,8 +69,8 @@ def test_fix_metadata_is_class_level_and_config_is_instance_runtime_state():
     fix = _BaseMetadataFix()
 
     assert fix.name == "Base metadata fix"
-    assert fix.local_id == "base_metadata"
-    assert fix.canonical_id == "test.base_metadata"
+    assert fix.suffix == "base_metadata"
+    assert fix.id == "test.base_metadata"
     assert fix.config == {}
 
     fix.configure({"mode": "strict"})
@@ -82,22 +82,14 @@ def test_fix_metadata_is_class_level_and_config_is_instance_runtime_state():
 def test_fix_metadata_accessor_returns_copied_mutable_fields():
     meta = _BaseMetadataFix.class_metadata()
 
-    assert meta["canonical_id"] == "test.base_metadata"
+    assert meta["id"] == "test.base_metadata"
     assert meta["aliases"] == ["base_metadata_alias"]
 
     meta["aliases"].append("new_alias")
     assert _BaseMetadataFix.aliases == ["base_metadata_alias"]
 
 
-def test_group_fix_member_config_accepts_canonical_or_local_member_keys():
-    ds = xr.Dataset(attrs={"source_name": "dummy.nc"})
-
-    group_local = _ContainerGroupFix().configure({"members": {"member_fix": {"marker": "local"}}})
-    changed_local = group_local.apply(ds, dry_run=False)
-
-    assert changed_local is True
-    assert ds.attrs["marker"] == "local"
-
+def test_group_fix_member_config_accepts_qualified_member_keys():
     ds2 = xr.Dataset(attrs={"source_name": "dummy.nc"})
     group_canonical = _ContainerGroupFix().configure(
         {"members": {"group.member_fix": {"marker": "canonical"}}}
@@ -108,22 +100,13 @@ def test_group_fix_member_config_accepts_canonical_or_local_member_keys():
     assert ds2.attrs["marker"] == "canonical"
 
     ds3 = xr.Dataset(attrs={"source_name": "dummy.nc"})
-    group_alias_local = _ContainerGroupFix().configure(
-        {"members": {"member_alias": {"marker": "alias-local"}}}
-    )
-    changed_alias_local = group_alias_local.apply(ds3, dry_run=False)
-
-    assert changed_alias_local is True
-    assert ds3.attrs["marker"] == "alias-local"
-
-    ds4 = xr.Dataset(attrs={"source_name": "dummy.nc"})
     group_alias_canonical = _ContainerGroupFix().configure(
         {"members": {"group.member_alias": {"marker": "alias-canonical"}}}
     )
-    changed_alias_canonical = group_alias_canonical.apply(ds4, dry_run=False)
+    changed_alias_canonical = group_alias_canonical.apply(ds3, dry_run=False)
 
     assert changed_alias_canonical is True
-    assert ds4.attrs["marker"] == "alias-canonical"
+    assert ds3.attrs["marker"] == "alias-canonical"
 
 
 def test_group_fix_rejects_empty_members_in_matches_check_and_apply():
