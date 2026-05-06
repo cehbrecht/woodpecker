@@ -47,6 +47,14 @@ Vocabulary:
 - **FixPlanStore**: a lookup layer that finds matching plans from a source such
   as JSON or DuckDB.
 
+Identifier idea (short version):
+
+- every fix and plan has an id in the form `prefix.suffix`
+- `suffix` can be used as shorthand when unambiguous
+- aliases are extra names for the suffix and resolve to the same id
+
+See `CONTRIBUTING.md` for full identifier rules and authoring details.
+
 The public Python API returns structured result objects:
 
 ```python
