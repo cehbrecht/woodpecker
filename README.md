@@ -142,6 +142,8 @@ jupyter notebook notebooks/atlas_fix_plan_example.ipynb
 jupyter notebook notebooks/esa_cci_fix_plan_example.ipynb
 ```
 
+The example fix-plan documents used by the notebooks live in `notebooks/plans/`.
+
 ## Development
 
 Contributor and developer details live in `CONTRIBUTING.md`.
