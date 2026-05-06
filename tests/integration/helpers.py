@@ -10,7 +10,7 @@ CORE_FIX_IDS = {
     "woodpecker.merge_equivalent_dimensions",
 }
 
-EXAMPLE_PLAN_DIR = Path(__file__).resolve().parents[2] / "notebooks" / "plans"
+EXAMPLE_PLAN_DIR = Path(__file__).resolve().parent / "plans"
 
 
 def example_plan_path(filename: str) -> Path:
