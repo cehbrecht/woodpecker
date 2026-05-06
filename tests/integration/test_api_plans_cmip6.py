@@ -1,4 +1,4 @@
-"""End-to-end public API examples for fix plans."""
+"""End-to-end public API examples for CMIP6 fix plans."""
 
 import json
 from pathlib import Path
