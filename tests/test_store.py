@@ -210,16 +210,16 @@ def test_json_store_save_canonicalizes_prefix_and_suffix_plan_id(tmp_path):
     assert "suffix" not in raw
 
 
-def test_json_store_get_plan_resolves_canonical_and_suffixs(tmp_path):
+def test_json_store_get_plan_resolves_id(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
     plan = FixPlan(id="atlas.cleanup_plan", steps=[FixRef(id="atlas.encoding_cleanup")])
     store.save_plan(plan)
 
     by_canonical = store.get_plan("atlas.cleanup_plan")
-    by_suffix = store.get_plan("cleanup_plan")
-
     assert by_canonical.id == "atlas.cleanup_plan"
-    assert by_suffix.id == "atlas.cleanup_plan"
+
+    with pytest.raises(ValueError, match="Unknown plan identifier"):
+        store.get_plan("cleanup_plan")
 
 
 def test_json_store_get_plan_resolves_aliases(tmp_path):
@@ -231,16 +231,17 @@ def test_json_store_get_plan_resolves_aliases(tmp_path):
     )
     store.save_plan(plan)
 
-    by_suffix_alias = store.get_plan("cleanup")
     by_qualified_alias = store.get_plan("atlas.cleanup")
     by_legacy_alias = store.get_plan("legacy.cleanup_plan")
 
-    assert by_suffix_alias.id == "atlas.cleanup_plan"
     assert by_qualified_alias.id == "atlas.cleanup_plan"
     assert by_legacy_alias.id == "atlas.cleanup_plan"
 
+    with pytest.raises(ValueError, match="Unknown plan identifier"):
+        store.get_plan("cleanup")
 
-def test_json_store_get_plan_rejects_ambiguous_shorthand(tmp_path):
+
+def test_json_store_get_plan_rejects_unqualified_suffix(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
     store.save_plan(
         FixPlan(id="alpha.shared", steps=[FixRef(id="woodpecker.ensure_latitude_is_increasing")])
@@ -249,7 +250,7 @@ def test_json_store_get_plan_rejects_ambiguous_shorthand(tmp_path):
         FixPlan(id="beta.shared", steps=[FixRef(id="woodpecker.normalize_tas_units_to_kelvin")])
     )
 
-    with pytest.raises(ValueError, match="Ambiguous identifier"):
+    with pytest.raises(ValueError, match="Unknown plan identifier"):
         store.get_plan("shared")
 
 
@@ -285,17 +286,17 @@ def test_duckdb_store_save_list_lookup(tmp_path):
     assert [item.id for item in matched] == ["tests.plan_2"]
 
 
-def test_duckdb_store_get_plan_resolves_canonical_and_suffixs(tmp_path):
+def test_duckdb_store_get_plan_resolves_id(tmp_path):
     pytest.importorskip("duckdb")
 
     store = DuckDBFixPlanStore(tmp_path / "fix-plans.duckdb")
     store.save_plan(FixPlan(id="atlas.cleanup_plan", steps=[FixRef(id="atlas.encoding_cleanup")]))
 
     by_canonical = store.get_plan("atlas.cleanup_plan")
-    by_suffix = store.get_plan("cleanup_plan")
-
     assert by_canonical.id == "atlas.cleanup_plan"
-    assert by_suffix.id == "atlas.cleanup_plan"
+
+    with pytest.raises(ValueError, match="Unknown plan identifier"):
+        store.get_plan("cleanup_plan")
 
 
 def test_duckdb_store_get_plan_resolves_aliases(tmp_path):
@@ -310,13 +311,14 @@ def test_duckdb_store_get_plan_resolves_aliases(tmp_path):
         )
     )
 
-    by_suffix_alias = store.get_plan("cleanup")
     by_qualified_alias = store.get_plan("atlas.cleanup")
     by_legacy_alias = store.get_plan("legacy.cleanup_plan")
 
-    assert by_suffix_alias.id == "atlas.cleanup_plan"
     assert by_qualified_alias.id == "atlas.cleanup_plan"
     assert by_legacy_alias.id == "atlas.cleanup_plan"
+
+    with pytest.raises(ValueError, match="Unknown plan identifier"):
+        store.get_plan("cleanup")
 
 
 def test_duckdb_lookup_skips_decoding_nonmatching_fixes_payload(tmp_path):

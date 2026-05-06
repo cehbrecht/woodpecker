@@ -87,9 +87,8 @@ class IdentifierRules:
     ) -> tuple[str, ...]:
         """Expand *declared_aliases* into a deduplicated tuple of alias strings.
 
-        Unqualified aliases are expanded to both the bare form and the
-        ``<prefix>.<alias>`` qualified form.  Qualified aliases are
-        validated but kept as-is.
+        Unqualified aliases are expanded to ``<prefix>.<alias>``.
+        Qualified aliases are validated but kept as-is.
         """
         normalized_prefix = cls.normalize(prefix)
         normalized_id = cls.normalize(id)
@@ -115,7 +114,7 @@ class IdentifierRules:
                 candidates = [alias]
             else:
                 cls.validate_suffix("alias", alias)
-                candidates = [alias, f"{normalized_prefix}.{alias}"]
+                candidates = [f"{normalized_prefix}.{alias}"]
 
             for candidate in candidates:
                 if candidate == normalized_id or candidate in seen:
@@ -189,8 +188,8 @@ class IdentifierResolver:
         self._identifier_index.pop(token, None)
         self._ambiguous_identifiers.add(token)
 
-    def register(self, identifier_set: IdentifierSet, include_suffix: bool = True) -> None:
-        """Register all tokens from *identifier_set* (id, suffix, aliases)."""
+    def register(self, identifier_set: IdentifierSet, include_suffix: bool = False) -> None:
+        """Register tokens from *identifier_set* (id, optional suffix, aliases)."""
         self._register_one(identifier_set.id, identifier_set.id)
         if include_suffix:
             self._register_one(identifier_set.suffix, identifier_set.id)
@@ -266,12 +265,12 @@ def coerce_scoped_identifier(
 
 
 def build_identifier_resolver(
-    identifier_sets: list[IdentifierSet], include_suffix: bool = True
+    identifier_sets: list[IdentifierSet], include_suffix: bool = False
 ) -> IdentifierResolver:
     """Build a resolver pre-populated from a list of identifier sets.
 
-    Useful for stores that need duplicate detection, shorthand lookups, and
-    canonical identifier resolution via a single shared resolver.
+    Useful for stores that need duplicate detection and id/alias resolution
+    via a single shared resolver.
     """
     resolver = IdentifierResolver()
     for identifier_set in identifier_sets:

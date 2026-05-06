@@ -61,8 +61,10 @@ def test_register_fix_decorator_alias_registers_class():
     registered = register_fix(_AliasFix)
     assert registered is _AliasFix
     assert "test.alias_fix" in FixRegistry.registered_ids()
-    assert FixRegistry.resolve_identifier("alias_lookup") == "test.alias_fix"
     assert FixRegistry.resolve_identifier("test.alias_lookup") == "test.alias_fix"
+
+    with pytest.raises(KeyError):
+        FixRegistry.resolve_identifier("alias_lookup")
 
 
 def test_registry_supports_fully_qualified_aliases_without_local_expansion():
@@ -177,17 +179,14 @@ def test_registry_resolves_canonical_suffix_and_aliases_for_known_fixes():
         == "woodpecker.normalize_tas_units_to_kelvin"
     )
     assert (
-        FixRegistry.resolve_identifier("normalize_tas_units_to_kelvin")
-        == "woodpecker.normalize_tas_units_to_kelvin"
-    )
-    assert (
-        FixRegistry.resolve_identifier("tas_units_to_kelvin")
-        == "woodpecker.normalize_tas_units_to_kelvin"
-    )
-    assert (
         FixRegistry.resolve_identifier("woodpecker.tas_units_to_kelvin")
         == "woodpecker.normalize_tas_units_to_kelvin"
     )
+
+    with pytest.raises(KeyError):
+        FixRegistry.resolve_identifier("normalize_tas_units_to_kelvin")
+    with pytest.raises(KeyError):
+        FixRegistry.resolve_identifier("tas_units_to_kelvin")
 
 
 def test_registry_instantiate_returns_fix_for_id():
@@ -207,7 +206,7 @@ def test_registry_instantiate_unknown_id_raises_clear_error():
         FixRegistry.instantiate("woodpecker.unknown_fix")
 
 
-def test_registry_rejects_ambiguous_suffix():
+def test_registry_does_not_resolve_unqualified_suffix():
     class _AmbiguousOne(Fix):
         prefix = "alpha"
         suffix = "shared"
@@ -228,5 +227,5 @@ def test_registry_rejects_ambiguous_suffix():
 
     register_fix(_AmbiguousOne)
     register_fix(_AmbiguousTwo)
-    with pytest.raises(ValueError, match="Ambiguous identifier"):
+    with pytest.raises(KeyError):
         FixRegistry.resolve_identifier("shared")

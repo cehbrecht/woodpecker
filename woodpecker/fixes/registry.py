@@ -166,7 +166,7 @@ class FixRegistry:
         setattr(fix_cls, "aliases", list(identifier_set.aliases))
 
         cls._registry[identifier_set.id] = fix_cls
-        cls._resolver.register(identifier_set, include_suffix=True)
+        cls._resolver.register(identifier_set, include_suffix=False)
         return fix_cls  # decorator-friendly
 
     @classmethod

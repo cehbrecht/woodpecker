@@ -111,22 +111,18 @@ class GroupFix(Fix):
             keys.append(value)
 
         member_id = str(getattr(member_cls, "id", "") or "").strip().lower()
-        suffix = str(getattr(member_cls, "suffix", "") or "").strip().lower()
         prefix = str(getattr(member_cls, "prefix", "") or "").strip().lower()
         aliases = list(getattr(member_cls, "aliases", []) or [])
 
         _add(member_id)
-        _add(suffix)
         for alias in aliases:
             alias_token = str(alias or "").strip().lower()
             if not alias_token:
                 continue
             if "." in alias_token:
                 _add(alias_token)
-            else:
-                _add(alias_token)
-                if prefix:
-                    _add(f"{prefix}.{alias_token}")
+            elif prefix:
+                _add(f"{prefix}.{alias_token}")
         return keys
 
     def _member_config(self, member_cls: Type[Any]) -> dict[str, Any]:

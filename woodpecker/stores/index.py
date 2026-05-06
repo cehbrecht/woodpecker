@@ -9,7 +9,7 @@ class FixPlanIndex:
     """Index a collection of ``FixPlan`` objects for fast identifier-based retrieval.
 
     On construction, plans are keyed by their id and an ``IdentifierResolver``
-    is built so plans can be looked up by id, suffix, or any declared alias.
+    is built so plans can be looked up by id or declared alias.
     Duplicate ids raise immediately.
     """
 
@@ -46,11 +46,11 @@ class FixPlanIndex:
         resolver = IdentifierResolver(index={plan_id: plan_id for plan_id in plans_by_id})
         for plan in plans_by_id.values():
             if plan.identifier_set is not None:
-                resolver.register(plan.identifier_set)
+                resolver.register(plan.identifier_set, include_suffix=False)
         return resolver
 
     def get(self, identifier: str) -> FixPlan:
-        """Return the plan matching *identifier* (id, suffix, or alias).
+        """Return the plan matching *identifier* (id or alias).
 
         Raises ``ValueError`` for unknown or ambiguous identifiers.
         """

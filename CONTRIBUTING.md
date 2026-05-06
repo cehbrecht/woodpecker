@@ -95,7 +95,7 @@ Examples:
 - `woodpecker.normalize_tas_units_to_kelvin`
 
 Ids are stored in plans, used on the CLI, and resolved through the identifier
-resolver. Short suffix values can also be used when unambiguous.
+resolver. Use full ids (`prefix.suffix`) in plans and examples.
 
 Aliases are additional suffix names. They resolve to the same id and do not
 change the prefix.
@@ -126,12 +126,12 @@ id = "cmip6_decadal.time_metadata"
 Woodpecker uses one schema for both plan files and plan stores:
 
 - `FixPlanDocument`: top-level container with `plans: [...]`.
-- `FixPlan`: plan entry with canonical `id`, `description`, optional `match`, ordered `steps`, optional `links`.
+- `FixPlan`: plan entry with `id`, `description`, optional `match`, ordered `steps`, optional `links`.
 - `FixRef`: each step entry (`id`, optional `options`, optional `links`).
 
 Common `FixPlan` fields:
 
-- `id`: canonical plan identifier, for example `atlas.basic`.
+- `id`: plan identifier, for example `atlas.basic`.
 - `description`: optional human-readable description.
 - `match.attrs`: key/value attribute matcher for dataset metadata.
 - `match.path_patterns`: optional fnmatch-style path patterns.
@@ -150,7 +150,7 @@ Minimal `FixPlanDocument` example:
         "path_patterns": ["*atlas*.nc"]
       },
       "steps": [
-        "encoding_cleanup",
+        "atlas.encoding_cleanup",
         {"id": "woodpecker.ensure_latitude_is_increasing"}
       ]
     },
@@ -161,7 +161,7 @@ Minimal `FixPlanDocument` example:
         "path_patterns": ["*ESACCI-WATERVAPOUR-*.zarr"]
       },
       "steps": [
-        "configurable_reformat_bridge",
+        "cmip7.configurable_reformat_bridge",
         {"id": "woodpecker.ensure_latitude_is_increasing"}
       ]
     }
@@ -186,7 +186,7 @@ woodpecker fix --plan plan.json --dry-run
 ## Fix Plan Stores
 
 A fix plan store is a lookup layer that returns matching `FixPlan`s for a
-dataset. Plans can be retrieved by id, suffix, or alias.
+dataset. Plans can be retrieved by id or alias.
 
 Current backends:
 

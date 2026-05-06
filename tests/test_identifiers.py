@@ -42,7 +42,7 @@ def test_identifier_rules_expand_aliases_for_suffix_and_qualified_values():
         declared_aliases=["cleanup", "atlas.cleanup2"],
     )
 
-    assert aliases == ("cleanup", "atlas.cleanup", "atlas.cleanup2")
+    assert aliases == ("atlas.cleanup", "atlas.cleanup2")
 
 
 def test_identifier_rules_reject_invalid_alias_syntax():
@@ -61,17 +61,18 @@ def test_identifier_resolver_registers_and_resolves_canonical_and_alias_forms():
             prefix="cmip7",
             suffix="bridge",
             id="cmip7.bridge",
-            aliases=("bridge_alias", "cmip7.bridge_alias"),
+            aliases=("cmip7.bridge_alias",),
         )
     )
 
     assert resolver.resolve("cmip7.bridge") == "cmip7.bridge"
-    assert resolver.resolve("bridge") == "cmip7.bridge"
-    assert resolver.resolve("bridge_alias") == "cmip7.bridge"
     assert resolver.resolve("cmip7.bridge_alias") == "cmip7.bridge"
 
+    with pytest.raises(KeyError):
+        resolver.resolve("bridge")
 
-def test_identifier_resolver_rejects_ambiguous_identifiers():
+
+def test_identifier_resolver_rejects_unqualified_suffix_lookup():
     resolver = IdentifierResolver()
 
     resolver.register(
@@ -91,7 +92,7 @@ def test_identifier_resolver_rejects_ambiguous_identifiers():
         )
     )
 
-    with pytest.raises(ValueError, match="Ambiguous identifier"):
+    with pytest.raises(KeyError):
         resolver.resolve("shared")
 
 
@@ -121,11 +122,13 @@ def test_build_identifier_resolver_registers_identifier_sets():
                 prefix="atlas",
                 suffix="cleanup",
                 id="atlas.cleanup",
-                aliases=("encoding_cleanup",),
+                aliases=("atlas.encoding_cleanup",),
             )
         ]
     )
 
     assert resolver.resolve("atlas.cleanup") == "atlas.cleanup"
-    assert resolver.resolve("cleanup") == "atlas.cleanup"
-    assert resolver.resolve("encoding_cleanup") == "atlas.cleanup"
+    assert resolver.resolve("atlas.encoding_cleanup") == "atlas.cleanup"
+
+    with pytest.raises(KeyError):
+        resolver.resolve("cleanup")

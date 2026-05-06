@@ -56,7 +56,7 @@ def test_check_exposes_findings_as_properties():
 def test_check_accepts_fix_alias():
     ds = make_cmip6(overrides={"units": "degC"})
 
-    result = check(ds, identifiers=["tas_units_to_kelvin"])
+    result = check(ds, identifiers=["woodpecker.tas_units_to_kelvin"])
 
     assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
 
@@ -147,7 +147,7 @@ def test_api_check_plan_accepts_plan_alias(tmp_path: Path):
         encoding="utf-8",
     )
 
-    result = check_plan(plan_path, inputs=ds, plan_id="units_check")
+    result = check_plan(plan_path, inputs=ds, plan_id="core.units_check")
 
     assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
 

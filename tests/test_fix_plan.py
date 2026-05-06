@@ -333,9 +333,8 @@ def test_fix_plan_identity_includes_aliases():
         steps=[FixRef(id="atlas.encoding_cleanup")],
     )
 
-    assert plan.aliases == ["basic", "atlas.basic", "legacy.atlas_basic"]
+    assert plan.aliases == ["atlas.basic", "legacy.atlas_basic"]
     assert plan.identifier_set.aliases == (
-        "basic",
         "atlas.basic",
         "legacy.atlas_basic",
     )
