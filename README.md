@@ -133,10 +133,10 @@ See `woodpecker/testing/README.md` for usage details.
 ## Notebooks
 
 The `notebooks/` directory contains a notebook that demonstrates the public API
-with a synthetic CMIP7 dataset:
+with a synthetic CMIP6 dataset and a built-in core fix:
 
 ```bash
-jupyter notebook notebooks/cmip7_api_example.ipynb
+jupyter notebook notebooks/cmip6_core_api_example.ipynb
 ```
 
 ## Development
