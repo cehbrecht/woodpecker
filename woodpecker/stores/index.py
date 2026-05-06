@@ -46,7 +46,7 @@ class FixPlanIndex:
         resolver = IdentifierResolver(index={plan_id: plan_id for plan_id in plans_by_id})
         for plan in plans_by_id.values():
             if plan.identifier_set is not None:
-                resolver.register(plan.identifier_set, include_suffix=False)
+                resolver.register(plan.identifier_set)
         return resolver
 
     def get(self, identifier: str) -> FixPlan:

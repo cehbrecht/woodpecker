@@ -188,11 +188,9 @@ class IdentifierResolver:
         self._identifier_index.pop(token, None)
         self._ambiguous_identifiers.add(token)
 
-    def register(self, identifier_set: IdentifierSet, include_suffix: bool = False) -> None:
-        """Register tokens from *identifier_set* (id, optional suffix, aliases)."""
+    def register(self, identifier_set: IdentifierSet) -> None:
+        """Register tokens from *identifier_set* (id and aliases)."""
         self._register_one(identifier_set.id, identifier_set.id)
-        if include_suffix:
-            self._register_one(identifier_set.suffix, identifier_set.id)
         for alias in identifier_set.aliases:
             self._register_one(alias, identifier_set.id)
 
@@ -227,9 +225,10 @@ def coerce_scoped_identifier(
     and returns a fully populated ``ScopedIdentifierResolution``.  When both a
     prefix and suffix are available, a validated ``IdentifierSet`` is attached.
 
-    Precedence for inferring missing pieces:
-    - A dotted *id* is split to fill in missing prefix / suffix.
-    - A plain *id* with no dots is treated as a bare suffix when *suffix* is not provided.
+    Rules:
+    - When *id* is provided, it must be canonical (``prefix.suffix``).
+    - Optional *prefix* and *suffix* must match the parsed *id* parts when provided.
+    - Without *id*, both *prefix* and *suffix* are required to build an identifier.
     """
     raw_id = id
     raw_prefix = prefix
@@ -239,15 +238,20 @@ def coerce_scoped_identifier(
     normalized_suffix = IdentifierRules.normalize(raw_suffix)
     normalized_prefix = IdentifierRules.normalize(raw_prefix)
 
-    if normalized_canonical_id and "." in normalized_canonical_id:
+    if normalized_canonical_id:
+        if "." not in normalized_canonical_id:
+            raise ValueError(
+                f"Invalid {canonical_label} '{normalized_canonical_id}'. "
+                "Expected '<prefix>.<suffix>' with snake_case tokens."
+            )
         IdentifierRules.validate_canonical_id(canonical_label, normalized_canonical_id)
         parsed_prefix, parsed_suffix = normalized_canonical_id.split(".", 1)
-        if not normalized_prefix:
-            normalized_prefix = parsed_prefix
-        if not normalized_suffix:
-            normalized_suffix = parsed_suffix
-    elif normalized_canonical_id and not normalized_suffix:
-        normalized_suffix = normalized_canonical_id
+        if normalized_prefix and normalized_prefix != parsed_prefix:
+            raise ValueError(f"{canonical_label} prefix does not match id prefix")
+        if normalized_suffix and normalized_suffix != parsed_suffix:
+            raise ValueError(f"{canonical_label} suffix does not match id suffix")
+        normalized_prefix = parsed_prefix
+        normalized_suffix = parsed_suffix
 
     identifier_set: IdentifierSet | None = None
     if normalized_prefix and normalized_suffix:
@@ -255,6 +259,10 @@ def coerce_scoped_identifier(
         normalized_prefix = identifier_set.prefix
         normalized_suffix = identifier_set.suffix
         normalized_canonical_id = identifier_set.id
+    elif not normalized_canonical_id and (normalized_prefix or normalized_suffix):
+        raise ValueError(
+            f"{canonical_label} requires both prefix and suffix when id is not provided"
+        )
 
     return ScopedIdentifierResolution(
         id=normalized_canonical_id,
@@ -264,9 +272,7 @@ def coerce_scoped_identifier(
     )
 
 
-def build_identifier_resolver(
-    identifier_sets: list[IdentifierSet], include_suffix: bool = False
-) -> IdentifierResolver:
+def build_identifier_resolver(identifier_sets: list[IdentifierSet]) -> IdentifierResolver:
     """Build a resolver pre-populated from a list of identifier sets.
 
     Useful for stores that need duplicate detection and id/alias resolution
@@ -274,5 +280,5 @@ def build_identifier_resolver(
     """
     resolver = IdentifierResolver()
     for identifier_set in identifier_sets:
-        resolver.register(identifier_set, include_suffix=include_suffix)
+        resolver.register(identifier_set)
     return resolver
