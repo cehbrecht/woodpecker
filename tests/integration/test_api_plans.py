@@ -1,0 +1,110 @@
+"""End-to-end public API examples for fix plans."""
+
+import json
+from pathlib import Path
+
+import numpy as np
+import pytest
+
+import woodpecker
+from woodpecker.testing import make_cmip6
+
+
+def _write_plan_document(path: Path, plans: list[dict]) -> Path:
+    path.write_text(json.dumps({"plans": plans}), encoding="utf-8")
+    return path
+
+
+def test_plan_checks_and_fixes_synthetic_cmip6_dataset(tmp_path: Path):
+    dataset = make_cmip6(overrides={"units": "degC"})
+    original_values = dataset["tas"].values.copy()
+    plan_path = _write_plan_document(
+        tmp_path / "plans.json",
+        [
+            {
+                "id": "cmip6.core_units",
+                "match": {"attrs": {"project_id": "CMIP6"}},
+                "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+            }
+        ],
+    )
+
+    findings = woodpecker.check_plan(plan_path, inputs=dataset)
+
+    assert findings.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
+
+    dry_run = woodpecker.fix_plan(plan_path, inputs=dataset, write=False)
+
+    assert dry_run.changed == 1
+    assert dataset["tas"].attrs["units"] == "degC"
+    np.testing.assert_allclose(dataset["tas"].values, original_values)
+
+    write = woodpecker.fix_plan(plan_path, inputs=dataset, write=True)
+
+    assert write.changed == 1
+    assert dataset["tas"].attrs["units"] == "K"
+    np.testing.assert_allclose(dataset["tas"].values, original_values + 273.15)
+
+    assert not woodpecker.check_plan(plan_path, inputs=dataset).has_findings
+
+
+def test_plan_step_options_are_used_for_core_fixes(tmp_path: Path):
+    dataset = make_cmip6()
+    dataset = dataset.assign_coords(member=np.arange(dataset.sizes["lat"]))
+    dataset["member_weight"] = ("member", np.ones(dataset.sizes["lat"], dtype="float32"))
+    plan_path = _write_plan_document(
+        tmp_path / "plans.json",
+        [
+            {
+                "id": "cmip6.merge_member",
+                "match": {"attrs": {"project_id": "CMIP6"}},
+                "steps": [
+                    {
+                        "id": "woodpecker.merge_equivalent_dimensions",
+                        "options": {"dims": ["lat", "member"]},
+                    }
+                ],
+            }
+        ],
+    )
+
+    findings = woodpecker.check_plan(plan_path, inputs=dataset)
+
+    assert findings.fix_ids == ("woodpecker.merge_equivalent_dimensions",)
+
+    dry_run = woodpecker.fix_plan(plan_path, inputs=dataset, write=False)
+
+    assert dry_run.changed == 1
+    assert dataset["member_weight"].dims == ("member",)
+
+    write = woodpecker.fix_plan(plan_path, inputs=dataset, write=True)
+
+    assert write.changed == 1
+    assert dataset["member_weight"].dims == ("lat",)
+    assert not woodpecker.check_plan(plan_path, inputs=dataset).has_findings
+
+
+def test_plan_id_selects_one_plan_when_multiple_plans_match(tmp_path: Path):
+    dataset = make_cmip6(overrides={"units": "degC"})
+    plan_path = _write_plan_document(
+        tmp_path / "plans.json",
+        [
+            {
+                "id": "cmip6.structure",
+                "match": {"attrs": {"project_id": "CMIP6"}},
+                "steps": [{"id": "woodpecker.ensure_latitude_is_increasing"}],
+            },
+            {
+                "id": "cmip6.units",
+                "match": {"attrs": {"project_id": "CMIP6"}},
+                "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+            },
+        ],
+    )
+
+    with pytest.raises(ValueError, match="Multiple matching fix plans found"):
+        woodpecker.check_plan(plan_path, inputs=dataset)
+
+    findings = woodpecker.check_plan(plan_path, inputs=dataset, plan_id="cmip6.units")
+
+    assert findings.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)

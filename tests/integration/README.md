@@ -11,9 +11,9 @@ The integration tests should read like executable examples:
 
 1. create a realistic synthetic dataset,
 2. corrupt it in a realistic way,
-3. call `woodpecker.check(...)`,
-4. call `woodpecker.fix(..., write=False)` for a dry run,
-5. call `woodpecker.fix(..., write=True)` to apply the fix,
+3. call `woodpecker.check(...)` or `woodpecker.check_plan(...)`,
+4. call `woodpecker.fix(..., write=False)` or `woodpecker.fix_plan(..., write=False)` for a dry run,
+5. call `woodpecker.fix(..., write=True)` or `woodpecker.fix_plan(..., write=True)` to apply the fix,
 6. check that the dataset is corrected and the finding is gone.
 
 Prefer the public API here. Avoid reaching into registries, runners, stores, or
