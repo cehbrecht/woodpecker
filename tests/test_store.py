@@ -253,14 +253,14 @@ def test_json_store_get_plan_rejects_ambiguous_shorthand(tmp_path):
         store.get_plan("shared")
 
 
-def test_json_store_get_plan_detects_duplicate_canonical_ids(tmp_path):
+def test_json_store_get_plan_detects_duplicate_ids(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
     store.path.write_text(
         '{"plans": [{"id": "atlas.cleanup_plan", "steps": [{"id": "atlas.encoding_cleanup"}]}, {"id": "atlas.cleanup_plan", "steps": [{"id": "atlas.project_id_normalization"}]}]}',
         encoding="utf-8",
     )
 
-    with pytest.raises(ValueError, match="Duplicate canonical plan id detected"):
+    with pytest.raises(ValueError, match="Duplicate plan id detected"):
         store.get_plan("atlas.cleanup_plan")
 
 

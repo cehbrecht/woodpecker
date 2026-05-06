@@ -50,8 +50,8 @@ class FixRegistry:
     def _derive_fix_suffix(cls, fix_cls: Type[Any], explicit: str) -> str:
         """Derive suffix with precedence:
 
-        1) explicit class `suffix` or compatibility `local_id`
-        2) optional `derived_suffix()` or compatibility `derived_local_id()`
+        1) explicit class `suffix`
+        2) optional `derived_suffix()`
         3) class name transformed to snake_case
         """
 
@@ -59,9 +59,7 @@ class FixRegistry:
         if token:
             return token
 
-        derived = getattr(fix_cls, "derived_suffix", None) or getattr(
-            fix_cls, "derived_local_id", None
-        )
+        derived = getattr(fix_cls, "derived_suffix", None)
         if callable(derived):
             return IdentifierRules.normalize(str(derived()))
 
@@ -69,16 +67,10 @@ class FixRegistry:
 
     @classmethod
     def _derive_identifiers(cls, fix_cls: Type[Any]):
-        explicit_id = IdentifierRules.normalize(
-            getattr(fix_cls, "id", "") or getattr(fix_cls, "canonical_id", "") or ""
-        )
-        explicit_prefix = str(
-            getattr(fix_cls, "prefix", "") or getattr(fix_cls, "namespace_prefix", "") or ""
-        )
+        explicit_id = IdentifierRules.normalize(getattr(fix_cls, "id", "") or "")
+        explicit_prefix = str(getattr(fix_cls, "prefix", "") or "")
         prefix = cls._derive_prefix(fix_cls, explicit_prefix)
-        explicit_suffix = str(
-            getattr(fix_cls, "suffix", "") or getattr(fix_cls, "local_id", "") or ""
-        )
+        explicit_suffix = str(getattr(fix_cls, "suffix", "") or "")
         suffix = cls._derive_fix_suffix(fix_cls, explicit_suffix)
 
         if explicit_id and "." in explicit_id:
@@ -104,24 +96,24 @@ class FixRegistry:
         return cls._resolver.resolve(identifier)
 
     @classmethod
-    def get_fix(cls, canonical_id: str) -> Type[Any]:
-        """Return the registered fix class for a canonical fix id.
+    def get_fix(cls, id: str) -> Type[Any]:
+        """Return the registered fix class for an id.
 
-        The input must be a canonical id in the form
+        The input must be an id in the form
         "<prefix>.<suffix>".
         """
 
-        key = str(canonical_id).strip()
+        key = str(id).strip()
         fix_cls = cls._registry.get(key)
         if fix_cls is None:
             raise KeyError(f"Unknown fix id: {key}")
         return fix_cls
 
     @classmethod
-    def instantiate(cls, canonical_id: str) -> Any:
-        """Instantiate and return a fresh fix instance from a canonical id."""
+    def instantiate(cls, id: str) -> Any:
+        """Instantiate and return a fresh fix instance from an id."""
 
-        return cls._instantiate_fix(cls.get_fix(canonical_id))
+        return cls._instantiate_fix(cls.get_fix(id))
 
     @staticmethod
     def _instantiate_fix(fix_cls: Type[Any]) -> Any:
@@ -170,10 +162,7 @@ class FixRegistry:
 
         setattr(fix_cls, "prefix", identifier_set.prefix)
         setattr(fix_cls, "suffix", identifier_set.suffix)
-        setattr(fix_cls, "local_id", identifier_set.suffix)
         setattr(fix_cls, "id", identifier_set.id)
-        setattr(fix_cls, "namespace_prefix", identifier_set.prefix)
-        setattr(fix_cls, "canonical_id", identifier_set.id)
         setattr(fix_cls, "aliases", list(identifier_set.aliases))
 
         cls._registry[identifier_set.id] = fix_cls
@@ -237,9 +226,9 @@ class FixRegistry:
         for f in fixes:
             data.append(
                 {
-                    "id": getattr(f, "id", "") or getattr(f, "canonical_id", ""),
-                    "suffix": getattr(f, "suffix", "") or getattr(f, "local_id", ""),
-                    "prefix": getattr(f, "prefix", "") or getattr(f, "namespace_prefix", ""),
+                    "id": getattr(f, "id", ""),
+                    "suffix": getattr(f, "suffix", ""),
+                    "prefix": getattr(f, "prefix", ""),
                     "aliases": list(getattr(f, "aliases", []) or []),
                     "links": list(getattr(f, "links", []) or []),
                     "name": getattr(f, "name", ""),

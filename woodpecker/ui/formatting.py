@@ -31,7 +31,7 @@ def format_fixes(fixes: list[object], fmt: str) -> str:
             cats = ", ".join(getattr(fix, "categories", []) or [])
             lines.append(
                 "| "
-                f"{getattr(fix, 'id', '') or getattr(fix, 'canonical_id', '')} | "
+                f"{getattr(fix, 'id', '')} | "
                 f"{getattr(fix, 'name', '')} | "
                 f"{getattr(fix, 'description', '')} | "
                 f"{cats} | "
@@ -44,7 +44,7 @@ def format_fixes(fixes: list[object], fmt: str) -> str:
     for fix in fixes:
         cats = ", ".join(getattr(fix, "categories", []) or [])
         lines.append(
-            f"{getattr(fix, 'id', '') or getattr(fix, 'canonical_id', '')}: {getattr(fix, 'description', '')} "
+            f"{getattr(fix, 'id', '')}: {getattr(fix, 'description', '')} "
             f"(cats: {cats}; dataset: {getattr(fix, 'dataset', None) or '-'}; "
             f"priority: {getattr(fix, 'priority', 10)})"
         )

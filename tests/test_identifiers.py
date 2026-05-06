@@ -20,11 +20,10 @@ def test_identifier_rules_build_creates_canonical_identifier_set():
     )
 
 
-def test_identifier_rules_build_accepts_local_id_compatibility_alias():
-    identifiers = IdentifierRules.build(prefix="cmip7", local_id="bridge")
+def test_identifier_rules_build_uses_suffix_field():
+    identifiers = IdentifierRules.build(prefix="cmip7", suffix="bridge")
 
     assert identifiers.suffix == "bridge"
-    assert identifiers.local_id == "bridge"
     assert identifiers.id == "cmip7.bridge"
 
 

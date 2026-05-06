@@ -27,7 +27,7 @@ def run_check(inputs: Iterable[DataInput], fixes: Iterable[Any]) -> list[dict[st
                 findings.append(
                     {
                         "path": data_input.reference,
-                        "fix_id": getattr(fix, "id", "") or getattr(fix, "canonical_id", ""),
+                        "fix_id": getattr(fix, "id", ""),
                         "name": fix.name,
                         "message": message,
                     }
@@ -59,21 +59,21 @@ def run_fix(
         dataset_changed = False
         applied_fix_ids: list[str] = []
         for fix in fixes:
-            canonical_id = getattr(fix, "id", "") or getattr(fix, "canonical_id", "")
+            fix_id = getattr(fix, "id", "")
             attempted_fix, changed_fix = apply_configured_fix(
                 dataset,
                 fix,
                 dataset_type=identity.dataset_type,
                 dry_run=dry_run,
                 force_apply=force_apply,
-                fix_id=canonical_id,
+                fix_id=fix_id,
             )
             if attempted_fix:
                 attempted += 1
             if changed_fix:
                 changed += 1
                 dataset_changed = True
-                applied_fix_ids.append(canonical_id)
+                applied_fix_ids.append(fix_id)
         if dataset_changed and not dry_run:
             if embed_provenance_metadata:
                 dataset.attrs["woodpecker_provenance"] = json.dumps(

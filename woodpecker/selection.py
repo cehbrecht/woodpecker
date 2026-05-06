@@ -100,7 +100,7 @@ def select_fixes(
     )
 
     if resolved_ordered_identifiers:
-        by_id = {getattr(fix, "id", "") or getattr(fix, "canonical_id", ""): fix for fix in fixes}
+        by_id = {getattr(fix, "id", ""): fix for fix in fixes}
         missing = [item for item in resolved_ordered_identifiers if item not in by_id]
         if strict_identifiers and missing:
             raise ValueError(
@@ -114,14 +114,13 @@ def select_fixes(
         selected = [
             fix
             for fix in fixes
-            if (getattr(fix, "id", "") or getattr(fix, "canonical_id", ""))
-            in resolved_selected_identifiers
+            if getattr(fix, "id", "") in resolved_selected_identifiers
         ]
 
     if normalized_fix_options:
         for fix in selected:
             options = normalized_fix_options.get(
-                getattr(fix, "id", "") or getattr(fix, "canonical_id", "")
+                getattr(fix, "id", "")
             )
             if options and hasattr(fix, "configure"):
                 fix.configure(options)

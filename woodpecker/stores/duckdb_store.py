@@ -73,7 +73,7 @@ class DuckDBFixPlanStore(FixPlanStore):
         aliases_json = json.dumps(list(plan.aliases))
         match_json = json.dumps(plan.match.model_dump()) if plan.match is not None else None
         steps_json = json.dumps([item.model_dump() for item in plan.steps])
-        plan_id = FixPlanIndex.canonical_plan_id(plan)
+        plan_id = FixPlanIndex.plan_id(plan)
 
         with self._connect() as con:
             con.execute(

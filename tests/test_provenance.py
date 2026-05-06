@@ -34,7 +34,7 @@ def test_format_provenance_source(context, expected):
 
 
 def test_write_fix_provenance_writes_run_document(tmp_path: Path):
-    fix = SimpleNamespace(canonical_id="woodpecker.example")
+    fix = SimpleNamespace(id="woodpecker.example")
     plan = SimpleNamespace(id="woodpecker.plan")
     context = SimpleNamespace(
         source="store",

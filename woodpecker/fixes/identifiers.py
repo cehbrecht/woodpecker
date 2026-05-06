@@ -19,21 +19,6 @@ class IdentifierSet:
     id: str
     aliases: tuple[str, ...] = ()
 
-    @property
-    def local_id(self) -> str:
-        """Compatibility alias for ``suffix``."""
-        return self.suffix
-
-    @property
-    def namespace_prefix(self) -> str:
-        """Compatibility alias for ``prefix``."""
-        return self.prefix
-
-    @property
-    def canonical_id(self) -> str:
-        """Compatibility alias for canonical ``id``."""
-        return self.id
-
 
 @dataclass(frozen=True)
 class ScopedIdentifierResolution:
@@ -47,21 +32,6 @@ class ScopedIdentifierResolution:
     suffix: str
     prefix: str
     identifier_set: IdentifierSet | None
-
-    @property
-    def local_id(self) -> str:
-        """Compatibility alias for ``suffix``."""
-        return self.suffix
-
-    @property
-    def canonical_id(self) -> str:
-        """Compatibility alias for canonical ``id``."""
-        return self.id
-
-    @property
-    def namespace_prefix(self) -> str:
-        """Compatibility alias for ``prefix``."""
-        return self.prefix
 
 
 class IdentifierRules:
@@ -80,8 +50,6 @@ class IdentifierRules:
                 f"Invalid {label} '{value}'. Expected lowercase snake_case identifier."
             )
 
-    validate_local_id = validate_suffix
-
     @classmethod
     def validate_canonical_id(cls, label: str, value: str) -> None:
         """Raise ``ValueError`` if *value* is not a valid ``<prefix>.<suffix>`` string."""
@@ -90,8 +58,8 @@ class IdentifierRules:
             raise ValueError(
                 f"Invalid {label} '{value}'. Expected '<prefix>.<suffix>' with snake_case tokens."
             )
-        namespace_prefix, suffix = parts
-        cls.validate_suffix(f"{label} prefix", namespace_prefix)
+        prefix, suffix = parts
+        cls.validate_suffix(f"{label} prefix", prefix)
         cls.validate_suffix(f"{label} suffix", suffix)
 
     @staticmethod
@@ -110,15 +78,12 @@ class IdentifierRules:
         second = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", first)
         return re.sub(r"__+", "_", second).strip("_").lower()
 
-    derive_local_id_from_name = derive_suffix_from_name
-
     @classmethod
     def expand_aliases(
         cls,
-        prefix: str | None = None,
-        id: str | None = None,
+        prefix: str,
+        id: str,
         declared_aliases: object = None,
-        **kwargs: object,
     ) -> tuple[str, ...]:
         """Expand *declared_aliases* into a deduplicated tuple of alias strings.
 
@@ -126,14 +91,6 @@ class IdentifierRules:
         ``<prefix>.<alias>`` qualified form.  Qualified aliases are
         validated but kept as-is.
         """
-        if prefix is None and "namespace_prefix" in kwargs:
-            prefix = str(kwargs.pop("namespace_prefix"))
-        if id is None and "canonical_id" in kwargs:
-            id = str(kwargs.pop("canonical_id"))
-        if kwargs:
-            unknown = ", ".join(sorted(kwargs))
-            raise TypeError(f"Unknown alias field(s): {unknown}")
-
         normalized_prefix = cls.normalize(prefix)
         normalized_id = cls.normalize(id)
 
@@ -171,37 +128,28 @@ class IdentifierRules:
     @classmethod
     def build(
         cls,
-        prefix: object = None,
-        suffix: object = None,
+        prefix: object,
+        suffix: object,
         aliases: object = None,
-        **kwargs: object,
     ) -> IdentifierSet:
         """Build a validated, normalized ``IdentifierSet``.
 
         Both *prefix* and *suffix* are normalized and validated
         as lowercase snake_case tokens before the canonical id is assembled.
         """
-        if prefix is None and "namespace_prefix" in kwargs:
-            prefix = kwargs.pop("namespace_prefix")
-        if suffix is None and "local_id" in kwargs:
-            suffix = kwargs.pop("local_id")
-        if kwargs:
-            unknown = ", ".join(sorted(kwargs))
-            raise TypeError(f"Unknown identifier field(s): {unknown}")
-
         normalized_prefix = cls.normalize(prefix)
         normalized_suffix = cls.normalize(suffix)
 
         cls.validate_suffix("prefix", normalized_prefix)
         cls.validate_suffix("suffix", normalized_suffix)
 
-        canonical_id = f"{normalized_prefix}.{normalized_suffix}"
-        expanded_aliases = cls.expand_aliases(normalized_prefix, canonical_id, aliases)
+        resolved_id = f"{normalized_prefix}.{normalized_suffix}"
+        expanded_aliases = cls.expand_aliases(normalized_prefix, resolved_id, aliases)
 
         return IdentifierSet(
             prefix=normalized_prefix,
             suffix=normalized_suffix,
-            id=canonical_id,
+            id=resolved_id,
             aliases=expanded_aliases,
         )
 
@@ -224,7 +172,7 @@ class IdentifierResolver:
             ambiguous_identifiers if ambiguous_identifiers is not None else set()
         )
 
-    def _register_one(self, identifier: str, canonical_id: str) -> None:
+    def _register_one(self, identifier: str, resolved_id: str) -> None:
         token = IdentifierRules.normalize(identifier)
         if not token:
             return
@@ -233,9 +181,9 @@ class IdentifierResolver:
 
         existing = self._identifier_index.get(token)
         if existing is None:
-            self._identifier_index[token] = canonical_id
+            self._identifier_index[token] = resolved_id
             return
-        if existing == canonical_id:
+        if existing == resolved_id:
             return
 
         self._identifier_index.pop(token, None)
@@ -261,21 +209,18 @@ class IdentifierResolver:
                 f"Ambiguous identifier '{identifier}'. Use canonical '<prefix>.<suffix>' form."
             )
 
-        canonical_id = self._identifier_index.get(token)
-        if canonical_id is None:
+        resolved_id = self._identifier_index.get(token)
+        if resolved_id is None:
             raise KeyError(identifier)
-        return canonical_id
+        return resolved_id
 
 
 def coerce_scoped_identifier(
     *,
-    suffix: object = None,
-    id: object = None,
-    prefix: object = None,
+    suffix: object,
+    id: object,
+    prefix: object,
     canonical_label: str,
-    local_id: object = None,
-    canonical_id: object = None,
-    namespace_prefix: object = None,
 ) -> ScopedIdentifierResolution:
     """Normalize and resolve a possibly-partial identifier within a prefix scope.
 
@@ -287,9 +232,9 @@ def coerce_scoped_identifier(
     - A dotted *id* is split to fill in missing prefix / suffix.
     - A plain *id* with no dots is treated as a bare suffix when *suffix* is not provided.
     """
-    raw_id = id if id is not None else canonical_id
-    raw_prefix = prefix if prefix is not None else namespace_prefix
-    raw_suffix = suffix if suffix is not None else local_id
+    raw_id = id
+    raw_prefix = prefix
+    raw_suffix = suffix
 
     normalized_canonical_id = IdentifierRules.normalize(raw_id)
     normalized_suffix = IdentifierRules.normalize(raw_suffix)

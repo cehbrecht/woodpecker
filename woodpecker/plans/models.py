@@ -173,16 +173,9 @@ class FixPlan(BaseModel):
         payload = dict(data)
         raw_id = IdentifierRules.normalize(payload.get("id", ""))
         raw_prefix = IdentifierRules.normalize(payload.pop("prefix", ""))
-        raw_namespace_prefix = IdentifierRules.normalize(payload.pop("namespace_prefix", ""))
         raw_suffix = IdentifierRules.normalize(payload.pop("suffix", ""))
-        raw_local_id = IdentifierRules.normalize(payload.pop("local_id", ""))
-
-        if raw_prefix and raw_namespace_prefix and raw_prefix != raw_namespace_prefix:
-            raise ValueError("FixPlan prefix and namespace_prefix must match when both are set")
-        if raw_suffix and raw_local_id and raw_suffix != raw_local_id:
-            raise ValueError("FixPlan suffix and local_id must match when both are set")
-        prefix = raw_prefix or raw_namespace_prefix
-        suffix = raw_suffix or raw_local_id
+        prefix = raw_prefix
+        suffix = raw_suffix
 
         if raw_id and "." in raw_id:
             IdentifierRules.validate_canonical_id("FixPlan.id", raw_id)
@@ -263,18 +256,8 @@ class FixPlan(BaseModel):
         return self.id.split(".", 1)[0]
 
     @property
-    def namespace_prefix(self) -> str:
-        """Compatibility alias for ``prefix``."""
-        return self.prefix
-
-    @property
     def suffix(self) -> str:
         return self.id.split(".", 1)[1]
-
-    @property
-    def local_id(self) -> str:
-        """Compatibility alias for ``suffix``."""
-        return self.suffix
 
     @cached_property
     def identifier_set(self) -> IdentifierSet:

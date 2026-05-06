@@ -116,20 +116,19 @@ def test_registry_suffix_derivation_precedence_explicit_over_derived():
     assert _ExplicitLocalIdWinsFix.id == "test.explicit_local"
 
 
-def test_registry_accepts_local_id_compatibility_alias():
-    class _CompatLocalIdFix(Fix):
+def test_registry_uses_suffix_field_for_identifier_derivation():
+    class _SuffixFix(Fix):
         prefix = "test"
-        local_id = "compat_local"
-        name = "Compatibility local id"
+        suffix = "compat_local"
+        name = "Suffix identifier"
         description = ""
         categories = ["metadata"]
         priority = 10
         dataset = None
 
-    register_fix(_CompatLocalIdFix)
-    assert _CompatLocalIdFix.suffix == "compat_local"
-    assert _CompatLocalIdFix.local_id == "compat_local"
-    assert _CompatLocalIdFix.id == "test.compat_local"
+    register_fix(_SuffixFix)
+    assert _SuffixFix.suffix == "compat_local"
+    assert _SuffixFix.id == "test.compat_local"
 
 
 def test_registry_suffix_derivation_uses_derived_when_suffix_missing():

@@ -69,11 +69,11 @@ class JsonFixPlanStore(FixPlanStore):
 
     def save_plan(self, plan: FixPlan) -> None:
         plans = self._read_raw()
-        target_canonical_id = FixPlanIndex.canonical_plan_id(plan)
+        target_id = FixPlanIndex.plan_id(plan)
         replaced = False
         for idx, existing in enumerate(plans):
             existing_plan = FixPlan.model_validate(existing)
-            if FixPlanIndex.canonical_plan_id(existing_plan) == target_canonical_id:
+            if FixPlanIndex.plan_id(existing_plan) == target_id:
                 plans[idx] = plan.model_dump()
                 replaced = True
                 break

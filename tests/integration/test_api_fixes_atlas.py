@@ -1,8 +1,12 @@
 """End-to-end public API examples for Atlas synthetic datasets."""
 
+import pytest
+
 from woodpecker.testing import make_atlas
 
 from .helpers import assert_check_fix_cycle, assert_no_core_fixes_reported
+
+pytest.importorskip("woodpecker_atlas_plugin")
 
 
 def test_atlas_coordinate_fill_value_encoding_is_detected_and_fixed():

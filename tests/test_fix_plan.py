@@ -286,20 +286,6 @@ def test_fix_plan_identity_can_be_built_from_prefix_and_suffix():
     assert [item.id for item in plan.steps] == ["atlas.encoding_cleanup"]
 
 
-def test_fix_plan_identity_accepts_local_id_compatibility_alias():
-    plan = FixPlan.model_validate(
-        {
-            "prefix": "atlas",
-            "local_id": "atlas_basic",
-            "steps": [{"id": "encoding_cleanup"}],
-        }
-    )
-
-    assert plan.id == "atlas.atlas_basic"
-    assert plan.suffix == "atlas_basic"
-    assert plan.local_id == "atlas_basic"
-
-
 def test_fix_plan_identity_can_scope_unqualified_id_with_prefix_alias():
     plan = FixPlan.model_validate(
         {
