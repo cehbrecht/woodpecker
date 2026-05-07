@@ -44,6 +44,11 @@ def test_generate_fix_plan_catalog_loads_single_yaml_plan_source(tmp_path):
 
     assert [item["id"] for item in catalog] == ["cmip6.core_units"]
     assert catalog[0]["source_files"] == [(plan_dir / "cmip6_core_plan.yaml").as_posix()]
+    assert (
+        f"[{(plan_dir / 'cmip6_core_plan.yaml').as_posix()}]"
+        f"(https://github.com/cehbrecht/woodpecker/blob/main/"
+        f"{(plan_dir / 'cmip6_core_plan.yaml').as_posix()})"
+    ) in markdown
     assert "woodpecker.normalize_tas_units_to_kelvin" in markdown
 
 

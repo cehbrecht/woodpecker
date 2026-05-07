@@ -8,6 +8,7 @@ from woodpecker.plans.models import FixPlan
 from woodpecker.stores.json_store import JsonFixPlanStore
 
 DEFAULT_PLAN_DIR = Path("tests/integration/plans")
+GITHUB_BLOB_BASE_URL = "https://github.com/cehbrecht/woodpecker/blob/main"
 
 
 def _markdown_cell(value: object) -> str:
@@ -30,6 +31,12 @@ def _format_match(plan: FixPlan) -> str:
 
 def _format_steps(plan: FixPlan) -> str:
     return "<br>".join(step.id for step in plan.steps)
+
+
+def _github_source_links(source_files: list[str]) -> str:
+    return "<br>".join(
+        f"[{source_file}]({GITHUB_BLOB_BASE_URL}/{source_file})" for source_file in source_files
+    )
 
 
 def _plan_payload(plan: FixPlan, source_files: list[str]) -> dict[str, Any]:
@@ -86,7 +93,7 @@ def generate_fix_plan_catalog(
             f" | {_markdown_cell(plan.description)}"
             f" | {_markdown_cell(_format_match(plan))}"
             f" | {_markdown_cell(_format_steps(plan))}"
-            f" | {_markdown_cell('<br>'.join(source_files))} |"
+            f" | {_github_source_links(source_files)} |"
         )
         json_list.append(_plan_payload(plan, source_files))
 
