@@ -229,7 +229,7 @@ def test_load_fix_plan_document_plan_entries_normalize_fix_ids(tmp_path: Path):
     assert fixes[0].options["marker_attr"] == "my_marker"
 
 
-def test_fix_plan_to_dict_persists_canonical_ids_from_suffix_fix_refs():
+def test_fix_plan_to_dict_persists_ids_from_suffix_fix_refs():
     plan = FixPlan.model_validate(
         {
             "id": "atlas.atlas_basic",
@@ -284,20 +284,18 @@ def test_fix_plan_identity_can_be_built_from_prefix_and_suffix():
     assert [item.id for item in plan.steps] == ["atlas.encoding_cleanup"]
 
 
-def test_fix_plan_identity_can_scope_unqualified_id_with_prefix_alias():
-    plan = FixPlan.model_validate(
-        {
-            "prefix": "atlas",
-            "id": "atlas_basic",
-            "steps": [{"id": "encoding_cleanup"}],
-        }
-    )
-
-    assert plan.id == "atlas.atlas_basic"
-    assert [item.id for item in plan.steps] == ["atlas.encoding_cleanup"]
+def test_fix_plan_identity_rejects_unqualified_id():
+    with pytest.raises(ValueError, match="Expected '<prefix>.<suffix>'"):
+        FixPlan.model_validate(
+            {
+                "prefix": "atlas",
+                "id": "atlas_basic",
+                "steps": [{"id": "encoding_cleanup"}],
+            }
+        )
 
 
-def test_fix_plan_identity_persists_canonical_id_only():
+def test_fix_plan_identity_persists_id_only():
     plan = FixPlan.model_validate(
         {
             "prefix": "atlas",

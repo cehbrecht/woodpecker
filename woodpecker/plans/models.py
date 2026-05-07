@@ -73,7 +73,7 @@ class FixRef(BaseModel):
         if not normalized:
             raise ValueError("FixRef.id must be a non-empty string")
         if "." in normalized:
-            IdentifierRules.validate_canonical_id("FixRef.id", normalized)
+            IdentifierRules.validate_id("FixRef.id", normalized)
         else:
             IdentifierRules.validate_suffix("FixRef.id", normalized)
         return normalized
@@ -166,7 +166,7 @@ class FixPlan(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def _canonicalize_identity(cls, data: object) -> object:
+    def _normalize_identity(cls, data: object) -> object:
         if not isinstance(data, Mapping):
             return data
 
@@ -177,20 +177,15 @@ class FixPlan(BaseModel):
         prefix = raw_prefix
         suffix = raw_suffix
 
-        if raw_id and "." in raw_id:
-            IdentifierRules.validate_canonical_id("FixPlan.id", raw_id)
+        if raw_id:
+            IdentifierRules.validate_id("FixPlan.id", raw_id)
             parsed_prefix, parsed_suffix = raw_id.split(".", 1)
             if prefix and prefix != parsed_prefix:
-                raise ValueError("FixPlan prefix does not match canonical id prefix")
+                raise ValueError("FixPlan prefix does not match id prefix")
             if suffix and suffix != parsed_suffix:
                 raise ValueError("FixPlan suffix does not match id suffix")
             prefix = parsed_prefix
             suffix = parsed_suffix
-        elif raw_id:
-            if not suffix:
-                suffix = raw_id
-            elif raw_id != suffix:
-                raise ValueError("FixPlan id and suffix must match when id is unqualified")
 
         if prefix:
             IdentifierRules.validate_suffix("FixPlan prefix", prefix)
@@ -209,8 +204,8 @@ class FixPlan(BaseModel):
     def _normalize_and_validate_id(cls, v: object) -> str:
         normalized = IdentifierRules.normalize(v)
         if not normalized:
-            raise ValueError("FixPlan.id must be a non-empty canonical identifier")
-        IdentifierRules.validate_canonical_id("FixPlan.id", normalized)
+            raise ValueError("FixPlan.id must be a non-empty identifier")
+        IdentifierRules.validate_id("FixPlan.id", normalized)
         return normalized
 
     @field_validator("aliases", mode="before")
@@ -273,7 +268,7 @@ class FixPlan(BaseModel):
         return f"{self.prefix}.{token}"
 
     def step_identifiers_and_options(self) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
-        """Return ordered canonical step identifiers and per-step options."""
+        """Return ordered step ids and per-step options."""
 
         identifiers = tuple(self.resolve_fix_identifier(ref) for ref in self.steps)
         options = {self.resolve_fix_identifier(ref): dict(ref.options) for ref in self.steps}

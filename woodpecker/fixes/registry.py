@@ -73,17 +73,15 @@ class FixRegistry:
         explicit_suffix = str(getattr(fix_cls, "suffix", "") or "")
         suffix = cls._derive_fix_suffix(fix_cls, explicit_suffix)
 
-        if explicit_id and "." in explicit_id:
-            IdentifierRules.validate_canonical_id("fix id", explicit_id)
+        if explicit_id:
+            IdentifierRules.validate_id("fix id", explicit_id)
             parsed_prefix, parsed_suffix = explicit_id.split(".", 1)
             if explicit_prefix and prefix != parsed_prefix:
-                raise ValueError("Fix prefix does not match canonical id prefix")
+                raise ValueError("Fix prefix does not match id prefix")
             if explicit_suffix and suffix != parsed_suffix:
                 raise ValueError("Fix suffix does not match id suffix")
             prefix = parsed_prefix
             suffix = parsed_suffix
-        elif explicit_id and not explicit_suffix:
-            suffix = explicit_id
 
         return IdentifierRules.build(
             prefix=prefix,
@@ -144,12 +142,8 @@ class FixRegistry:
             )
 
     @classmethod
-    def registered_canonical_ids(cls) -> list[str]:
-        return sorted(cls._registry.keys())
-
-    @classmethod
     def registered_ids(cls) -> list[str]:
-        return cls.registered_canonical_ids()
+        return sorted(cls._registry.keys())
 
     @classmethod
     def register(cls, fix_cls: Type[Any]):

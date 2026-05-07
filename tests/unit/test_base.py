@@ -91,22 +91,22 @@ def test_fix_metadata_accessor_returns_copied_mutable_fields():
 
 def test_group_fix_member_config_accepts_qualified_member_keys():
     ds2 = xr.Dataset(attrs={"source_name": "dummy.nc"})
-    group_canonical = _ContainerGroupFix().configure(
-        {"members": {"group.member_fix": {"marker": "canonical"}}}
+    group_by_id = _ContainerGroupFix().configure(
+        {"members": {"group.member_fix": {"marker": "id"}}}
     )
-    changed_canonical = group_canonical.apply(ds2, dry_run=False)
+    changed_by_id = group_by_id.apply(ds2, dry_run=False)
 
-    assert changed_canonical is True
-    assert ds2.attrs["marker"] == "canonical"
+    assert changed_by_id is True
+    assert ds2.attrs["marker"] == "id"
 
     ds3 = xr.Dataset(attrs={"source_name": "dummy.nc"})
-    group_alias_canonical = _ContainerGroupFix().configure(
-        {"members": {"group.member_alias": {"marker": "alias-canonical"}}}
+    group_by_alias = _ContainerGroupFix().configure(
+        {"members": {"group.member_alias": {"marker": "alias-id"}}}
     )
-    changed_alias_canonical = group_alias_canonical.apply(ds3, dry_run=False)
+    changed_by_alias = group_by_alias.apply(ds3, dry_run=False)
 
-    assert changed_alias_canonical is True
-    assert ds3.attrs["marker"] == "alias-canonical"
+    assert changed_by_alias is True
+    assert ds3.attrs["marker"] == "alias-id"
 
 
 def test_group_fix_rejects_empty_members_in_matches_check_and_apply():
