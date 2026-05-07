@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -11,8 +12,12 @@ from .index import FixPlanIndex
 
 
 class DuckDBFixPlanStore(FixPlanStore):
-    def __init__(self, path: str | Path):
-        self.path = Path(path)
+    def __init__(self, path: str | Path | None = None):
+        # Use an in-memory database when no path is provided.
+        self._is_in_memory = path is None or str(path) == ":memory:"
+        self._dsn = ":memory:" if self._is_in_memory else str(path)
+        self.path = None if self._is_in_memory else Path(path)
+        self._in_memory_connection: Any | None = None
         self._ensure_schema()
 
     @staticmethod
@@ -27,11 +32,31 @@ class DuckDBFixPlanStore(FixPlanStore):
 
     def _connect(self) -> Any:
         duckdb = self._import_duckdb()
+        if self._is_in_memory:
+            if self._in_memory_connection is None:
+                self._in_memory_connection = duckdb.connect(self._dsn)
+            return self._in_memory_connection
+
+        assert self.path is not None
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        return duckdb.connect(str(self.path))
+        return duckdb.connect(self._dsn)
+
+    @contextmanager
+    def _connection(self):
+        con = self._connect()
+        try:
+            yield con
+        finally:
+            if not self._is_in_memory:
+                con.close()
+
+    def close(self) -> None:
+        if self._in_memory_connection is not None:
+            self._in_memory_connection.close()
+            self._in_memory_connection = None
 
     def _ensure_schema(self) -> None:
-        with self._connect() as con:
+        with self._connection() as con:
             con.execute(
                 """
                 CREATE TABLE IF NOT EXISTS fix_plans (
@@ -46,7 +71,7 @@ class DuckDBFixPlanStore(FixPlanStore):
             con.execute("ALTER TABLE fix_plans ADD COLUMN IF NOT EXISTS aliases_json TEXT")
 
     def list_plans(self) -> list[FixPlan]:
-        with self._connect() as con:
+        with self._connection() as con:
             rows = con.execute(
                 "SELECT id, aliases_json, description, match_json, steps_json FROM fix_plans ORDER BY id"
             ).fetchall()
@@ -75,7 +100,7 @@ class DuckDBFixPlanStore(FixPlanStore):
         steps_json = json.dumps([item.model_dump() for item in plan.steps])
         plan_id = FixPlanIndex.plan_id(plan)
 
-        with self._connect() as con:
+        with self._connection() as con:
             con.execute(
                 """
                 INSERT OR REPLACE INTO fix_plans (id, aliases_json, description, match_json, steps_json)
@@ -128,7 +153,7 @@ class DuckDBFixPlanStore(FixPlanStore):
 
     def lookup(self, dataset: Any, path: str | None = None) -> list[FixPlan]:
         sql, params = self._candidate_query(dataset)
-        with self._connect() as con:
+        with self._connection() as con:
             rows = con.execute(sql, params).fetchall()
 
         matched: list[FixPlan] = []
