@@ -16,5 +16,6 @@ nav:
       - Overview: examples.md
       - Direct CMIP6 API: notebooks/cmip6_core_api_example.ipynb
       - CMIP6 Fix Plan: notebooks/cmip6_core_fix_plan_example.ipynb
+      - DuckDB Plan Store: notebooks/duckdb_fix_plan_store_example.ipynb
       - Atlas Fix Plan: notebooks/atlas_fix_plan_example.ipynb
       - ESA CCI Fix Plan: notebooks/esa_cci_fix_plan_example.ipynb

@@ -323,6 +323,31 @@ def test_duckdb_store_save_list_lookup(tmp_path):
     _assert_lookup_ids(store, ds, path="/tmp/no-match.txt", expected_ids=["tests.plan_2"])
 
 
+def test_duckdb_store_save_list_lookup_in_memory():
+    pytest.importorskip("duckdb")
+
+    store = DuckDBFixPlanStore()
+    plan_1 = _sample_plan()
+    plan_2 = _single_step_plan("tests.plan_2")
+
+    store.save_plan(plan_1)
+    store.save_plan(plan_2)
+
+    listed = store.list_plans()
+    assert [item.id for item in listed] == ["tests.plan_1", "tests.plan_2"]
+
+    ds = make_cmip6()
+    _assert_lookup_ids(
+        store,
+        ds,
+        path="/tmp/cmip6_case.nc",
+        expected_ids=["tests.plan_1", "tests.plan_2"],
+    )
+    _assert_lookup_ids(store, ds, path="/tmp/no-match.txt", expected_ids=["tests.plan_2"])
+
+    store.close()
+
+
 def test_duckdb_lookup_skips_decoding_nonmatching_fixes_payload(tmp_path):
     duckdb = pytest.importorskip("duckdb")
 
