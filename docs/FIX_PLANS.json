@@ -45,7 +45,8 @@
     "description": "",
     "match": {
       "attrs": {
-        "project_id": "CMIP6"
+        "project_id": "CMIP6",
+        "activity_id": "CMIP"
       },
       "path_patterns": []
     },

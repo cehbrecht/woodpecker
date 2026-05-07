@@ -12,6 +12,7 @@
 - Kept one source format per example fix plan, with the CMIP6 core plan using YAML.
 - Added a generated MkDocs fix-plan catalog from the integration-test plans.
 - Added notebook examples for direct fixes and fix-plan workflows.
+- Added a DuckDB fix-plan store notebook showing how to load and query plan documents.
 - Render notebook examples as executed pages in the MkDocs documentation.
 - Added a docs examples overview with links to rendered notebooks and nbviewer.
 
