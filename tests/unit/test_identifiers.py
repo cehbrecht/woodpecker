@@ -9,7 +9,7 @@ from woodpecker.fixes.identifiers import (
 )
 
 
-def test_identifier_rules_build_creates_canonical_identifier_set():
+def test_identifier_rules_build_creates_identifier_set():
     identifiers = IdentifierRules.build(prefix="cmip7", suffix="configurable_reformat_bridge")
 
     assert identifiers == IdentifierSet(
@@ -64,10 +64,10 @@ def test_identifier_rules_reject_spaces_and_special_chars_in_id_parts():
         IdentifierRules.build(prefix="cmip6", suffix="bad id")
 
     with pytest.raises(ValueError, match="no spaces or special characters"):
-        IdentifierRules.validate_canonical_id("fix id", "cmip6.bad-id")
+        IdentifierRules.validate_id("fix id", "cmip6.bad-id")
 
 
-def test_identifier_resolver_registers_and_resolves_canonical_and_alias_forms():
+def test_identifier_resolver_registers_and_resolves_id_and_alias_forms():
     resolver = IdentifierResolver()
     resolver.register(
         IdentifierSet(
@@ -114,7 +114,7 @@ def test_coerce_scoped_identifier_builds_identifier_set_from_id():
         id="atlas.basic",
         suffix="",
         prefix="",
-        canonical_label="FixPlan.id",
+        id_label="FixPlan.id",
     )
 
     assert resolved.id == "atlas.basic"

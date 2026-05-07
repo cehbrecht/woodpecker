@@ -197,7 +197,7 @@ def test_json_store_save_replaces_existing_plan_id(tmp_path):
     assert listed[0].steps[0].id == "woodpecker.ensure_latitude_is_increasing"
 
 
-def test_json_store_save_upserts_by_canonical_plan_id(tmp_path):
+def test_json_store_save_upserts_by_plan_id(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
 
     store.save_plan(
@@ -221,7 +221,7 @@ def test_json_store_save_upserts_by_canonical_plan_id(tmp_path):
     assert listed[0].description == "new"
 
 
-def test_json_store_save_canonicalizes_prefix_and_suffix_plan_id(tmp_path):
+def test_json_store_save_normalizes_prefix_and_suffix_plan_id(tmp_path):
     store = JsonFixPlanStore(tmp_path / "fix-plans.json")
     store.save_plan(
         FixPlan.model_validate(
@@ -248,8 +248,8 @@ def test_store_get_plan_resolves_id(tmp_path, store_factory):
     plan = FixPlan(id="atlas.cleanup_plan", steps=[FixRef(id="atlas.encoding_cleanup")])
     store.save_plan(plan)
 
-    by_canonical = store.get_plan("atlas.cleanup_plan")
-    assert by_canonical.id == "atlas.cleanup_plan"
+    by_id = store.get_plan("atlas.cleanup_plan")
+    assert by_id.id == "atlas.cleanup_plan"
 
     with pytest.raises(ValueError, match=UNKNOWN_PLAN_ID_ERROR):
         store.get_plan("cleanup_plan")

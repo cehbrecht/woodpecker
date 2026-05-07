@@ -31,19 +31,13 @@ def main():
             core_count += 1
 
         aliases = list(entry.get("aliases", []) or [])
-        entry["code"] = entry.get("id") or entry.get("canonical_id") or ""
+        entry["code"] = entry["id"]
         entry["aliases"] = aliases
         entry["source"] = source
         entry["source_kind"] = source_kind
         entry["source_package"] = source_package
         if getattr(fix, "members", None):
-            entry["member_codes"] = [
-                getattr(member, "id", "")
-                or getattr(member, "canonical_id", "")
-                or getattr(member, "suffix", "")
-                or getattr(member, "local_id", "")
-                for member in fix.members
-            ]
+            entry["member_codes"] = [member.id for member in fix.members]
         fix_dicts.append(entry)
 
     grouped: dict[str, list[dict]] = {"core": []}

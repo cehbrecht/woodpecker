@@ -54,7 +54,7 @@ class IdentifierRules:
             )
 
     @classmethod
-    def validate_canonical_id(cls, label: str, value: str) -> None:
+    def validate_id(cls, label: str, value: str) -> None:
         """Raise ``ValueError`` if *value* is not a valid ``<prefix>.<suffix>`` string."""
         if not value.isascii():
             raise ValueError(f"Invalid {label} '{value}'. Expected ASCII characters only.")
@@ -115,7 +115,7 @@ class IdentifierRules:
                 continue
 
             if "." in alias:
-                cls.validate_canonical_id("alias", alias)
+                cls.validate_id("alias", alias)
                 candidates = [alias]
             else:
                 cls.validate_suffix("alias", alias)
@@ -139,7 +139,7 @@ class IdentifierRules:
         """Build a validated, normalized ``IdentifierSet``.
 
         Both *prefix* and *suffix* are normalized and validated
-        as lowercase snake_case tokens before the canonical id is assembled.
+        as lowercase snake_case tokens before the id is assembled.
         """
         normalized_prefix = cls.normalize(prefix)
         normalized_suffix = cls.normalize(suffix)
@@ -159,10 +159,10 @@ class IdentifierRules:
 
 
 class IdentifierResolver:
-    """Bidirectional map from identifier tokens to canonical ids.
+    """Bidirectional map from identifier tokens to ids.
 
     Registration is incremental: call ``register()`` for each ``IdentifierSet``.
-    Tokens that collide across different canonical ids are marked ambiguous and
+    Tokens that collide across different ids are marked ambiguous and
     will raise ``ValueError`` on ``resolve()``.
     """
 
@@ -200,7 +200,7 @@ class IdentifierResolver:
             self._register_one(alias, identifier_set.id)
 
     def resolve(self, identifier: str) -> str:
-        """Return the canonical id for *identifier*.
+        """Return the id for *identifier*.
 
         Raises ``ValueError`` if the token is ambiguous, or ``KeyError`` if
         it is not registered.
@@ -208,7 +208,7 @@ class IdentifierResolver:
         token = IdentifierRules.normalize(identifier)
         if token in self._ambiguous_identifiers:
             raise ValueError(
-                f"Ambiguous identifier '{identifier}'. Use canonical '<prefix>.<suffix>' form."
+                f"Ambiguous identifier '{identifier}'. Use complete '<prefix>.<suffix>' form."
             )
 
         resolved_id = self._identifier_index.get(token)
@@ -222,16 +222,16 @@ def coerce_scoped_identifier(
     suffix: object,
     id: object,
     prefix: object,
-    canonical_label: str,
+    id_label: str,
 ) -> ScopedIdentifierResolution:
     """Normalize and resolve a possibly-partial identifier within a prefix scope.
 
-    Accepts any combination of canonical *id*, *suffix*, and *prefix*
+    Accepts any combination of *id*, *suffix*, and *prefix*
     and returns a fully populated ``ScopedIdentifierResolution``.  When both a
     prefix and suffix are available, a validated ``IdentifierSet`` is attached.
 
     Rules:
-    - When *id* is provided, it must be canonical (``prefix.suffix``).
+    - When *id* is provided, it must be complete (``prefix.suffix``).
     - Optional *prefix* and *suffix* must match the parsed *id* parts when provided.
     - Without *id*, both *prefix* and *suffix* are required to build an identifier.
     """
@@ -239,22 +239,22 @@ def coerce_scoped_identifier(
     raw_prefix = prefix
     raw_suffix = suffix
 
-    normalized_canonical_id = IdentifierRules.normalize(raw_id)
+    normalized_id = IdentifierRules.normalize(raw_id)
     normalized_suffix = IdentifierRules.normalize(raw_suffix)
     normalized_prefix = IdentifierRules.normalize(raw_prefix)
 
-    if normalized_canonical_id:
-        if "." not in normalized_canonical_id:
+    if normalized_id:
+        if "." not in normalized_id:
             raise ValueError(
-                f"Invalid {canonical_label} '{normalized_canonical_id}'. "
+                f"Invalid {id_label} '{normalized_id}'. "
                 "Expected '<prefix>.<suffix>' with snake_case tokens."
             )
-        IdentifierRules.validate_canonical_id(canonical_label, normalized_canonical_id)
-        parsed_prefix, parsed_suffix = normalized_canonical_id.split(".", 1)
+        IdentifierRules.validate_id(id_label, normalized_id)
+        parsed_prefix, parsed_suffix = normalized_id.split(".", 1)
         if normalized_prefix and normalized_prefix != parsed_prefix:
-            raise ValueError(f"{canonical_label} prefix does not match id prefix")
+            raise ValueError(f"{id_label} prefix does not match id prefix")
         if normalized_suffix and normalized_suffix != parsed_suffix:
-            raise ValueError(f"{canonical_label} suffix does not match id suffix")
+            raise ValueError(f"{id_label} suffix does not match id suffix")
         normalized_prefix = parsed_prefix
         normalized_suffix = parsed_suffix
 
@@ -263,14 +263,12 @@ def coerce_scoped_identifier(
         identifier_set = IdentifierRules.build(normalized_prefix, normalized_suffix)
         normalized_prefix = identifier_set.prefix
         normalized_suffix = identifier_set.suffix
-        normalized_canonical_id = identifier_set.id
-    elif not normalized_canonical_id and (normalized_prefix or normalized_suffix):
-        raise ValueError(
-            f"{canonical_label} requires both prefix and suffix when id is not provided"
-        )
+        normalized_id = identifier_set.id
+    elif not normalized_id and (normalized_prefix or normalized_suffix):
+        raise ValueError(f"{id_label} requires both prefix and suffix when id is not provided")
 
     return ScopedIdentifierResolution(
-        id=normalized_canonical_id,
+        id=normalized_id,
         suffix=normalized_suffix,
         prefix=normalized_prefix,
         identifier_set=identifier_set,
