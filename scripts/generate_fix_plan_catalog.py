@@ -8,6 +8,7 @@ from woodpecker.plans.models import FixPlan
 from woodpecker.stores.json_store import JsonFixPlanStore
 
 DEFAULT_PLAN_DIR = Path("tests/integration/plans")
+GITHUB_BLOB_BASE_URL = "https://github.com/cehbrecht/woodpecker/blob/main"
 
 
 def _markdown_cell(value: object) -> str:
@@ -32,6 +33,12 @@ def _format_steps(plan: FixPlan) -> str:
     return "<br>".join(step.id for step in plan.steps)
 
 
+def _github_source_links(source_files: list[str]) -> str:
+    return "<br>".join(
+        f"[{source_file}]({GITHUB_BLOB_BASE_URL}/{source_file})" for source_file in source_files
+    )
+
+
 def _plan_payload(plan: FixPlan, source_files: list[str]) -> dict[str, Any]:
     payload = plan.model_dump()
     payload["prefix"] = plan.prefix
@@ -43,7 +50,7 @@ def _plan_payload(plan: FixPlan, source_files: list[str]) -> dict[str, Any]:
 
 
 def load_integration_plans(plan_dir: Path = DEFAULT_PLAN_DIR) -> list[tuple[FixPlan, list[str]]]:
-    """Load integration-test plans, de-duplicated by plan id."""
+    """Load integration-test plans, raising on duplicate plan ids."""
 
     plans_by_id: dict[str, FixPlan] = {}
     source_files_by_id: dict[str, list[str]] = {}
@@ -55,8 +62,8 @@ def load_integration_plans(plan_dir: Path = DEFAULT_PLAN_DIR) -> list[tuple[FixP
         source_label = path.as_posix()
         for plan in JsonFixPlanStore(path).list_plans():
             existing = plans_by_id.get(plan.id)
-            if existing is not None and existing.model_dump() != plan.model_dump():
-                raise ValueError(f"Conflicting definitions for plan id '{plan.id}'")
+            if existing is not None:
+                raise ValueError(f"Duplicate definition for plan id '{plan.id}'")
             plans_by_id[plan.id] = plan
             source_files_by_id.setdefault(plan.id, []).append(source_label)
 
@@ -86,7 +93,7 @@ def generate_fix_plan_catalog(
             f" | {_markdown_cell(plan.description)}"
             f" | {_markdown_cell(_format_match(plan))}"
             f" | {_markdown_cell(_format_steps(plan))}"
-            f" | {_markdown_cell('<br>'.join(source_files))} |"
+            f" | {_github_source_links(source_files)} |"
         )
         json_list.append(_plan_payload(plan, source_files))
 

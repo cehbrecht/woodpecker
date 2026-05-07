@@ -5,7 +5,7 @@ from typing import Any, Optional, Type
 
 from woodpecker.fixes.identifiers import IdentifierResolver, IdentifierRules
 
-from .base import Fix, GroupFix
+from .base import Fix
 
 
 class FixRegistry:
@@ -252,4 +252,4 @@ def register_fix(fix_cls: Type[Any]) -> Type[Any]:
     return FixRegistry.register(fix_cls)
 
 
-__all__ = ["Fix", "GroupFix", "FixRegistry", "register_fix"]
+__all__ = ["Fix", "FixRegistry", "register_fix"]

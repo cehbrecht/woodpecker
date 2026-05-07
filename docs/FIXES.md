@@ -35,7 +35,6 @@ Source values: core (built-in) or plugin:<package> (discovered plugin fix).
 | cmip6_decadal.model_global_attributes | Decadal model global attributes | Normalizes model-specific global metadata fields for CMIP6-decadal datasets. | metadata | CMIP6-decadal | 22 | plugin:woodpecker_cmip6_decadal_plugin |
 | cmip6_decadal.reftime_coordinate | Decadal reftime coordinate | Adds or normalizes CMIP6-decadal scalar reftime coordinate and metadata. | metadata, structure | CMIP6-decadal | 23 | plugin:woodpecker_cmip6_decadal_plugin |
 | cmip6_decadal.leadtime_coordinate | Decadal leadtime coordinate | Adds or normalizes CMIP6-decadal leadtime coordinate values from time and reftime. | metadata, structure | CMIP6-decadal | 24 | plugin:woodpecker_cmip6_decadal_plugin |
-| cmip6_decadal.full_fix_suite | CMIP6 Decadal: full fix suite | Applies all CMIP6-decadal fixes (DecadalTimeMetadataFix–DecadalLeadtimeCoordinateFix) in sequence: calendar, encoding, realization metadata, start-token normalisation, model-specific global attributes, and leadtime/reftime coordinates. | metadata, calendar, encoding, structure | CMIP6-decadal | 99 | plugin:woodpecker_cmip6_decadal_plugin |
 
 ## Plugin: woodpecker_cmip6_plugin
 

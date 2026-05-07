@@ -1,7 +1,4 @@
-import pytest
-import xarray as xr
-
-from woodpecker.fixes.base import Fix, GroupFix
+from woodpecker.fixes.base import Fix
 
 
 class _BaseMetadataFix(Fix):
@@ -15,54 +12,6 @@ class _BaseMetadataFix(Fix):
     categories = ["metadata"]
     priority = 7
     dataset = "cmip6"
-
-
-class _MemberFix(Fix):
-    prefix = "group"
-    suffix = "member_fix"
-    id = "group.member_fix"
-    aliases = ["member_alias"]
-    links = []
-    name = "Member fix"
-    description = ""
-    categories = ["metadata"]
-    priority = 10
-    dataset = None
-
-    def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
-        marker = self.config.get("marker")
-        if marker:
-            dataset.attrs["marker"] = marker
-            return True
-        return False
-
-
-class _ContainerGroupFix(GroupFix):
-    prefix = "group"
-    suffix = "container"
-    id = "group.container"
-    aliases = []
-    links = []
-    name = "Container"
-    description = ""
-    categories = ["metadata"]
-    priority = 10
-    dataset = None
-    members = [_MemberFix]
-
-
-class _EmptyGroupFix(GroupFix):
-    prefix = "group"
-    suffix = "empty"
-    id = "group.empty"
-    aliases = []
-    links = []
-    name = "Empty"
-    description = ""
-    categories = ["metadata"]
-    priority = 10
-    dataset = None
-    members = []
 
 
 def test_fix_metadata_is_class_level_and_config_is_instance_runtime_state():
@@ -87,37 +36,3 @@ def test_fix_metadata_accessor_returns_copied_mutable_fields():
 
     meta["aliases"].append("new_alias")
     assert _BaseMetadataFix.aliases == ["base_metadata_alias"]
-
-
-def test_group_fix_member_config_accepts_qualified_member_keys():
-    ds2 = xr.Dataset(attrs={"source_name": "dummy.nc"})
-    group_by_id = _ContainerGroupFix().configure(
-        {"members": {"group.member_fix": {"marker": "id"}}}
-    )
-    changed_by_id = group_by_id.apply(ds2, dry_run=False)
-
-    assert changed_by_id is True
-    assert ds2.attrs["marker"] == "id"
-
-    ds3 = xr.Dataset(attrs={"source_name": "dummy.nc"})
-    group_by_alias = _ContainerGroupFix().configure(
-        {"members": {"group.member_alias": {"marker": "alias-id"}}}
-    )
-    changed_by_alias = group_by_alias.apply(ds3, dry_run=False)
-
-    assert changed_by_alias is True
-    assert ds3.attrs["marker"] == "alias-id"
-
-
-def test_group_fix_rejects_empty_members_in_matches_check_and_apply():
-    group = _EmptyGroupFix()
-    ds = xr.Dataset(attrs={"source_name": "dummy.nc"})
-
-    with pytest.raises(ValueError, match="must define non-empty members"):
-        group.matches(ds)
-
-    with pytest.raises(ValueError, match="must define non-empty members"):
-        group.check(ds)
-
-    with pytest.raises(ValueError, match="must define non-empty members"):
-        group.apply(ds, dry_run=True)

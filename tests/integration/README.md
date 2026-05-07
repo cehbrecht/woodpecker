@@ -22,7 +22,8 @@ Files are grouped by dataset family or example role:
 - `test_api_fixes_*.py`: family-specific fix behavior against synthetic data.
 - `test_api_plans_*.py`: family-specific fix-plan behavior against synthetic
   data.
-- `plans/*.json`: plan documents used by plan integration tests and notebooks.
+- `plans/*.json` and `plans/*.yaml`: plan documents used by plan integration
+  tests, notebooks, and the generated fix-plan docs catalog.
 
 ## Test Shape
 

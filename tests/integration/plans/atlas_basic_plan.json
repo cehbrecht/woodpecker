@@ -3,6 +3,13 @@
     {
       "id": "atlas.basic",
       "description": "Concrete Atlas plan for atlas*.nc files",
+      "links": [
+        {
+          "rel": "self",
+          "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/atlas_basic_plan.json",
+          "title": "Source plan document"
+        }
+      ],
       "match": {
         "path_patterns": [
           "*atlas*.nc"

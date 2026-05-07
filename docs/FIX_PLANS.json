@@ -21,7 +21,13 @@
         "links": []
       }
     ],
-    "links": [],
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/atlas_basic_plan.json",
+        "title": "Source plan document"
+      }
+    ],
     "prefix": "atlas",
     "suffix": "basic",
     "source": "integration-tests",
@@ -50,16 +56,141 @@
         "links": []
       }
     ],
-    "links": [],
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/cmip6_core_plan.yaml",
+        "title": "Source plan document"
+      }
+    ],
     "prefix": "cmip6",
     "suffix": "core_units",
     "source": "integration-tests",
     "source_files": [
-      "tests/integration/plans/cmip6_core_plan.json",
       "tests/integration/plans/cmip6_core_plan.yaml"
     ],
     "step_ids": [
       "woodpecker.normalize_tas_units_to_kelvin"
+    ]
+  },
+  {
+    "id": "cmip6_decadal.full",
+    "aliases": [],
+    "description": "Full CMIP6-decadal plan for NetCDF hindcast datasets",
+    "match": {
+      "attrs": {
+        "project_id": "CMIP6",
+        "activity_id": "DCPP",
+        "experiment_id": "dcppA-hindcast"
+      },
+      "path_patterns": []
+    },
+    "steps": [
+      {
+        "id": "cmip6_decadal.time_metadata",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.calendar_normalization",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.realization_variable",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.coordinates_encoding_cleanup",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.realization_comment_normalization",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.realization_dtype_normalization",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.fillvalue_encoding_cleanup",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.further_info_url_normalization",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.start_token_normalization",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.realization_long_name_normalization",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.realization_index_normalization",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.leadtime_metadata_normalization",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.model_global_attributes",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.reftime_coordinate",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.leadtime_coordinate",
+        "options": {},
+        "links": []
+      }
+    ],
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/cmip6_decadal_full_plan.json",
+        "title": "Source plan document"
+      }
+    ],
+    "prefix": "cmip6_decadal",
+    "suffix": "full",
+    "source": "integration-tests",
+    "source_files": [
+      "tests/integration/plans/cmip6_decadal_full_plan.json"
+    ],
+    "step_ids": [
+      "cmip6_decadal.time_metadata",
+      "cmip6_decadal.calendar_normalization",
+      "cmip6_decadal.realization_variable",
+      "cmip6_decadal.coordinates_encoding_cleanup",
+      "cmip6_decadal.realization_comment_normalization",
+      "cmip6_decadal.realization_dtype_normalization",
+      "cmip6_decadal.fillvalue_encoding_cleanup",
+      "cmip6_decadal.further_info_url_normalization",
+      "cmip6_decadal.start_token_normalization",
+      "cmip6_decadal.realization_long_name_normalization",
+      "cmip6_decadal.realization_index_normalization",
+      "cmip6_decadal.leadtime_metadata_normalization",
+      "cmip6_decadal.model_global_attributes",
+      "cmip6_decadal.reftime_coordinate",
+      "cmip6_decadal.leadtime_coordinate"
     ]
   },
   {
@@ -101,7 +232,13 @@
         "links": []
       }
     ],
-    "links": [],
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/esa_cci_water_vapour_plan.json",
+        "title": "Source plan document"
+      }
+    ],
     "prefix": "cmip7",
     "suffix": "esa_cci_water_vapour_dotname",
     "source": "integration-tests",
@@ -147,6 +284,11 @@
       }
     ],
     "links": [
+      {
+        "rel": "self",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/esa_cci_water_vapour_plan.json",
+        "title": "Source plan document"
+      },
       {
         "rel": "issue",
         "href": "https://github.com/cehbrecht/woodpecker/issues",

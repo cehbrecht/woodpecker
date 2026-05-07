@@ -1,6 +1,6 @@
 import pytest
 
-from woodpecker.fixes.registry import Fix, FixRegistry, GroupFix, register_fix
+from woodpecker.fixes.registry import Fix, FixRegistry, register_fix
 
 
 def test_registry_discovers_builtins():
@@ -11,13 +11,6 @@ def test_registry_discovers_builtins():
     assert "woodpecker.normalize_tas_units_to_kelvin" in ids
     assert "woodpecker.ensure_latitude_is_increasing" in ids
     assert "woodpecker.remove_coordinate_fill_value_encodings" in ids
-
-
-def test_group_fix_is_group_fix_instance():
-    fixes = FixRegistry.discover()
-    maybe_group = [f for f in fixes if isinstance(f, GroupFix)]
-    if maybe_group:
-        assert isinstance(maybe_group[0], GroupFix)
 
 
 def test_registry_rejects_invalid_suffix_pattern():

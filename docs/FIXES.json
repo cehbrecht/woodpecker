@@ -360,39 +360,5 @@
     "dataset": "CMIP7",
     "priority": 43,
     "source": "plugin:woodpecker_cmip7_plugin"
-  },
-  {
-    "id": "cmip6_decadal.full_fix_suite",
-    "suffix": "full_fix_suite",
-    "prefix": "cmip6_decadal",
-    "aliases": [],
-    "name": "CMIP6 Decadal: full fix suite",
-    "description": "Applies all CMIP6-decadal fixes (DecadalTimeMetadataFix\u2013DecadalLeadtimeCoordinateFix) in sequence: calendar, encoding, realization metadata, start-token normalisation, model-specific global attributes, and leadtime/reftime coordinates.",
-    "categories": [
-      "metadata",
-      "calendar",
-      "encoding",
-      "structure"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 99,
-    "member_ids": [
-      "cmip6_decadal.time_metadata",
-      "cmip6_decadal.calendar_normalization",
-      "cmip6_decadal.realization_variable",
-      "cmip6_decadal.coordinates_encoding_cleanup",
-      "cmip6_decadal.realization_comment_normalization",
-      "cmip6_decadal.realization_dtype_normalization",
-      "cmip6_decadal.fillvalue_encoding_cleanup",
-      "cmip6_decadal.further_info_url_normalization",
-      "cmip6_decadal.start_token_normalization",
-      "cmip6_decadal.realization_long_name_normalization",
-      "cmip6_decadal.realization_index_normalization",
-      "cmip6_decadal.leadtime_metadata_normalization",
-      "cmip6_decadal.model_global_attributes",
-      "cmip6_decadal.reftime_coordinate",
-      "cmip6_decadal.leadtime_coordinate"
-    ],
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   }
 ]
