@@ -5,7 +5,7 @@ from pathlib import Path
 
 # Import fixes to ensure registration
 import woodpecker.fixes  # noqa: F401
-from woodpecker.fixes.registry import FixRegistry, GroupFix
+from woodpecker.fixes.registry import FixRegistry
 
 
 def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXES.json"):
@@ -36,8 +36,6 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
             "dataset": f.dataset,
             "priority": f.priority,
         }
-        if isinstance(f, GroupFix) and getattr(f, "members", None):
-            entry["member_ids"] = [member.id for member in f.members]
         entry["source"] = source
         json_list.append(entry)
 

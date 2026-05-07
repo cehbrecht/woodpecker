@@ -36,8 +36,6 @@ def main():
         entry["source"] = source
         entry["source_kind"] = source_kind
         entry["source_package"] = source_package
-        if getattr(fix, "members", None):
-            entry["member_codes"] = [member.id for member in fix.members]
         fix_dicts.append(entry)
 
     grouped: dict[str, list[dict]] = {"core": []}

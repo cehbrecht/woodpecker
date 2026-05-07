@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, ClassVar, Optional, Type
+from typing import Any, ClassVar, Optional
 
 import xarray as xr
 
@@ -86,76 +86,3 @@ class Fix:
         """Return instance-visible metadata backed by class defaults."""
 
         return type(self).class_metadata()
-
-
-class GroupFix(Fix):
-    """A Fix that chains multiple member fixes, applying them in sequence."""
-
-    members: ClassVar[list[Type[Any]]] = []
-
-    @classmethod
-    def _validate_members(cls) -> None:
-        if not cls.members:
-            raise ValueError(f"GroupFix '{cls.__name__}' must define non-empty members")
-
-    @staticmethod
-    def _member_keys(member_cls: Type[Any]) -> list[str]:
-        keys: list[str] = []
-        seen: set[str] = set()
-
-        def _add(token: str) -> None:
-            value = str(token or "").strip().lower()
-            if not value or value in seen:
-                return
-            seen.add(value)
-            keys.append(value)
-
-        member_id = str(getattr(member_cls, "id", "") or "").strip().lower()
-        prefix = str(getattr(member_cls, "prefix", "") or "").strip().lower()
-        aliases = list(getattr(member_cls, "aliases", []) or [])
-
-        _add(member_id)
-        for alias in aliases:
-            alias_token = str(alias or "").strip().lower()
-            if not alias_token:
-                continue
-            if "." in alias_token:
-                _add(alias_token)
-            elif prefix:
-                _add(f"{prefix}.{alias_token}")
-        return keys
-
-    def _member_config(self, member_cls: Type[Any]) -> dict[str, Any]:
-        config = getattr(self, "config", {}) or {}
-        members = config.get("members", {}) if isinstance(config, dict) else {}
-        if not isinstance(members, dict):
-            return {}
-        for key in self._member_keys(member_cls):
-            value = members.get(key)
-            if isinstance(value, dict):
-                return value
-        return {}
-
-    def matches(self, dataset: xr.Dataset) -> bool:
-        self._validate_members()
-        return any(cls().matches(dataset) for cls in self.members)
-
-    def check(self, dataset: xr.Dataset, **options: Any) -> list[str]:
-        self._validate_members()
-        issues: list[str] = []
-        for cls in self.members:
-            fix = cls().configure(self._member_config(cls))
-            if fix.matches(dataset):
-                findings = fix.check(dataset, **options)
-                if isinstance(findings, list):
-                    issues.extend([str(item) for item in findings])
-        return issues
-
-    def apply(self, dataset: xr.Dataset, dry_run: bool = True) -> bool:
-        self._validate_members()
-        applied = False
-        for cls in sorted(self.members, key=lambda c: getattr(c, "priority", 10)):
-            fix = cls().configure(self._member_config(cls))
-            if fix.apply(dataset, dry_run=dry_run):
-                applied = True
-        return applied
