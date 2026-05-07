@@ -121,7 +121,7 @@ def test_registry_suffix_derivation_precedence_explicit_over_derived():
 def test_registry_uses_suffix_field_for_identifier_derivation():
     class _SuffixFix(Fix):
         prefix = "test"
-        suffix = "compat_local"
+        suffix = "explicit_suffix"
         name = "Suffix identifier"
         description = ""
         categories = ["metadata"]
@@ -129,8 +129,8 @@ def test_registry_uses_suffix_field_for_identifier_derivation():
         dataset = None
 
     register_fix(_SuffixFix)
-    assert _SuffixFix.suffix == "compat_local"
-    assert _SuffixFix.id == "test.compat_local"
+    assert _SuffixFix.suffix == "explicit_suffix"
+    assert _SuffixFix.id == "test.explicit_suffix"
 
 
 def test_registry_suffix_derivation_uses_derived_when_suffix_missing():
