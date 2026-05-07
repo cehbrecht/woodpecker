@@ -43,7 +43,7 @@ def _plan_payload(plan: FixPlan, source_files: list[str]) -> dict[str, Any]:
 
 
 def load_integration_plans(plan_dir: Path = DEFAULT_PLAN_DIR) -> list[tuple[FixPlan, list[str]]]:
-    """Load integration-test plans, de-duplicated by plan id."""
+    """Load integration-test plans, raising on duplicate plan ids."""
 
     plans_by_id: dict[str, FixPlan] = {}
     source_files_by_id: dict[str, list[str]] = {}
@@ -55,8 +55,8 @@ def load_integration_plans(plan_dir: Path = DEFAULT_PLAN_DIR) -> list[tuple[FixP
         source_label = path.as_posix()
         for plan in JsonFixPlanStore(path).list_plans():
             existing = plans_by_id.get(plan.id)
-            if existing is not None and existing.model_dump() != plan.model_dump():
-                raise ValueError(f"Conflicting definitions for plan id '{plan.id}'")
+            if existing is not None:
+                raise ValueError(f"Duplicate definition for plan id '{plan.id}'")
             plans_by_id[plan.id] = plan
             source_files_by_id.setdefault(plan.id, []).append(source_label)
 

@@ -55,7 +55,6 @@
     "suffix": "core_units",
     "source": "integration-tests",
     "source_files": [
-      "tests/integration/plans/cmip6_core_plan.json",
       "tests/integration/plans/cmip6_core_plan.yaml"
     ],
     "step_ids": [
