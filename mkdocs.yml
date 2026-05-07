@@ -10,6 +10,7 @@ plugins:
 nav:
   - Home: index.md
   - Fixes Catalog: FIXES.md
+  - Fix Plans: FIX_PLANS.md
   - Interactive Fixes: fixes.html
   - Examples:
       - Overview: examples.md

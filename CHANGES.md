@@ -8,6 +8,7 @@
 - Restored alias resolution for fix-plan lookup and added a core fix alias example.
 - Added synthetic climate test data.
 - Added public API integration tests for fix plans, including CMIP6, Atlas, and ESA CCI/CMIP7 examples.
+- Added a generated MkDocs fix-plan catalog from the integration-test plans.
 - Added notebook examples for direct fixes and fix-plan workflows.
 - Render notebook examples as executed pages in the MkDocs documentation.
 - Added a docs examples overview with links to rendered notebooks and nbviewer.
