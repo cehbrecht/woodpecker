@@ -3,6 +3,13 @@
     {
       "id": "cmip6_decadal.full",
       "description": "Full CMIP6-decadal plan for NetCDF hindcast datasets",
+      "links": [
+        {
+          "rel": "self",
+          "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/cmip6_decadal_full_plan.json",
+          "title": "Source plan document"
+        }
+      ],
       "match": {
         "attrs": {
           "project_id": "CMIP6",

@@ -1,5 +1,9 @@
 plans:
   - id: cmip6.core_units
+    links:
+      - rel: self
+        href: https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/cmip6_core_plan.yaml
+        title: Source plan document
     match:
       attrs:
         project_id: CMIP6

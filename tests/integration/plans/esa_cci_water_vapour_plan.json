@@ -6,6 +6,11 @@
       "description": "CMIP7/ESA CCI zarr-style inputs",
       "links": [
         {
+          "rel": "self",
+          "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/esa_cci_water_vapour_plan.json",
+          "title": "Source plan document"
+        },
+        {
           "rel": "issue",
           "href": "https://github.com/cehbrecht/woodpecker/issues",
           "title": "Track ESA CCI fix discussions"
@@ -39,6 +44,13 @@
     {
       "id": "cmip7.esa_cci_water_vapour_dotname",
       "description": "CMIP7/ESA CCI dot-name inputs",
+      "links": [
+        {
+          "rel": "self",
+          "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/esa_cci_water_vapour_plan.json",
+          "title": "Source plan document"
+        }
+      ],
       "match": {
         "path_patterns": [
           "esacci.WATERVAPOUR.*"

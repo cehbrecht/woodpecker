@@ -21,7 +21,13 @@
         "links": []
       }
     ],
-    "links": [],
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/atlas_basic_plan.json",
+        "title": "Source plan document"
+      }
+    ],
     "prefix": "atlas",
     "suffix": "basic",
     "source": "integration-tests",
@@ -50,7 +56,13 @@
         "links": []
       }
     ],
-    "links": [],
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/cmip6_core_plan.yaml",
+        "title": "Source plan document"
+      }
+    ],
     "prefix": "cmip6",
     "suffix": "core_units",
     "source": "integration-tests",
@@ -150,7 +162,13 @@
         "links": []
       }
     ],
-    "links": [],
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/cmip6_decadal_full_plan.json",
+        "title": "Source plan document"
+      }
+    ],
     "prefix": "cmip6_decadal",
     "suffix": "full",
     "source": "integration-tests",
@@ -214,7 +232,13 @@
         "links": []
       }
     ],
-    "links": [],
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/esa_cci_water_vapour_plan.json",
+        "title": "Source plan document"
+      }
+    ],
     "prefix": "cmip7",
     "suffix": "esa_cci_water_vapour_dotname",
     "source": "integration-tests",
@@ -260,6 +284,11 @@
       }
     ],
     "links": [
+      {
+        "rel": "self",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/esa_cci_water_vapour_plan.json",
+        "title": "Source plan document"
+      },
       {
         "rel": "issue",
         "href": "https://github.com/cehbrecht/woodpecker/issues",
