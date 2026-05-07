@@ -1,0 +1,167 @@
+[
+  {
+    "id": "atlas.basic",
+    "aliases": [],
+    "description": "Concrete Atlas plan for atlas*.nc files",
+    "match": {
+      "attrs": {},
+      "path_patterns": [
+        "*atlas*.nc"
+      ]
+    },
+    "steps": [
+      {
+        "id": "atlas.encoding_cleanup",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "atlas.project_id_normalization",
+        "options": {},
+        "links": []
+      }
+    ],
+    "links": [],
+    "prefix": "atlas",
+    "suffix": "basic",
+    "source": "integration-tests",
+    "source_files": [
+      "tests/integration/plans/atlas_basic_plan.json"
+    ],
+    "step_ids": [
+      "atlas.encoding_cleanup",
+      "atlas.project_id_normalization"
+    ]
+  },
+  {
+    "id": "cmip6.core_units",
+    "aliases": [],
+    "description": "",
+    "match": {
+      "attrs": {
+        "project_id": "CMIP6"
+      },
+      "path_patterns": []
+    },
+    "steps": [
+      {
+        "id": "woodpecker.normalize_tas_units_to_kelvin",
+        "options": {},
+        "links": []
+      }
+    ],
+    "links": [],
+    "prefix": "cmip6",
+    "suffix": "core_units",
+    "source": "integration-tests",
+    "source_files": [
+      "tests/integration/plans/cmip6_core_plan.json",
+      "tests/integration/plans/cmip6_core_plan.yaml"
+    ],
+    "step_ids": [
+      "woodpecker.normalize_tas_units_to_kelvin"
+    ]
+  },
+  {
+    "id": "cmip7.esa_cci_water_vapour_dotname",
+    "aliases": [],
+    "description": "CMIP7/ESA CCI dot-name inputs",
+    "match": {
+      "attrs": {},
+      "path_patterns": [
+        "esacci.WATERVAPOUR.*"
+      ]
+    },
+    "steps": [
+      {
+        "id": "woodpecker.merge_equivalent_dimensions",
+        "options": {
+          "dims": [
+            "bnds",
+            "nv"
+          ]
+        },
+        "links": []
+      },
+      {
+        "id": "cmip7.configurable_reformat_bridge",
+        "options": {
+          "realm": "atmos",
+          "branded_variable": "prw_tavg-u-hxy-u",
+          "variable_map": {
+            "prw": "tcwv"
+          },
+          "keep_global_attrs": true
+        },
+        "links": []
+      },
+      {
+        "id": "woodpecker.ensure_latitude_is_increasing",
+        "options": {},
+        "links": []
+      }
+    ],
+    "links": [],
+    "prefix": "cmip7",
+    "suffix": "esa_cci_water_vapour_dotname",
+    "source": "integration-tests",
+    "source_files": [
+      "tests/integration/plans/esa_cci_water_vapour_plan.json"
+    ],
+    "step_ids": [
+      "woodpecker.merge_equivalent_dimensions",
+      "cmip7.configurable_reformat_bridge",
+      "woodpecker.ensure_latitude_is_increasing"
+    ]
+  },
+  {
+    "id": "cmip7.esa_cci_water_vapour_zarr",
+    "aliases": [],
+    "description": "CMIP7/ESA CCI zarr-style inputs",
+    "match": {
+      "attrs": {},
+      "path_patterns": [
+        "*ESACCI-WATERVAPOUR-*.zarr"
+      ]
+    },
+    "steps": [
+      {
+        "id": "cmip7.configurable_reformat_bridge",
+        "options": {
+          "realm": "atmos",
+          "branded_variable": "prw_tavg-u-hxy-u",
+          "dim_map": {
+            "bnds": "nv"
+          },
+          "variable_map": {
+            "prw": "tcwv"
+          },
+          "keep_global_attrs": true
+        },
+        "links": []
+      },
+      {
+        "id": "woodpecker.ensure_latitude_is_increasing",
+        "options": {},
+        "links": []
+      }
+    ],
+    "links": [
+      {
+        "rel": "issue",
+        "href": "https://github.com/cehbrecht/woodpecker/issues",
+        "title": "Track ESA CCI fix discussions"
+      }
+    ],
+    "prefix": "cmip7",
+    "suffix": "esa_cci_water_vapour_zarr",
+    "source": "integration-tests",
+    "source_files": [
+      "tests/integration/plans/esa_cci_water_vapour_plan.json"
+    ],
+    "step_ids": [
+      "cmip7.configurable_reformat_bridge",
+      "woodpecker.ensure_latitude_is_increasing"
+    ]
+  }
+]

@@ -62,11 +62,13 @@ test:
 
 docs:
 	python scripts/generate_fix_catalog.py
+	python scripts/generate_fix_plan_catalog.py
 	python scripts/generate_fix_webpage.py
 	NO_MKDOCS_2_WARNING=1 mkdocs build --strict
 
 docs-serve:
 	python scripts/generate_fix_catalog.py
+	python scripts/generate_fix_plan_catalog.py
 	python scripts/generate_fix_webpage.py
 	NO_MKDOCS_2_WARNING=1 mkdocs serve
 
