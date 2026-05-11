@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.3.0 (2026-05-11)
+
 - Introduced `prefix.suffix` identifiers for fixes and fix plans with alias support. Simplified plan lookup and shared identifier handling across the codebase.
 - Simplified identifier metadata to `prefix`, `suffix`, `id`, and `aliases`.
 - Added prefix/suffix based authoring for fix-plan identifiers.
