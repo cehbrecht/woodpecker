@@ -5,6 +5,7 @@
 - Added a read-only auto fix-plan store that exposes registered fixes as single-step plans.
 - Added API, CLI, and integration examples for auto plans.
 - Added a prototype `FixPlanCatalog` for querying multiple fix-plan sources together.
+- Added notebook examples for the auto store and `FixPlanCatalog`.
 
 ## 0.3.0 (2026-05-11)
 
