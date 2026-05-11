@@ -11,6 +11,9 @@
         }
       ],
       "match": {
+        "dataset_id_patterns": [
+          "CMIP6.DCPP.*.dcppA-hindcast.*"
+        ],
         "attrs": {
           "project_id": "CMIP6",
           "activity_id": "DCPP",

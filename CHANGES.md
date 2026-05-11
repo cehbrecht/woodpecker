@@ -15,6 +15,9 @@
 - Added a generated MkDocs fix-plan catalog from the integration-test plans.
 - Added notebook examples for direct fixes and fix-plan workflows.
 - Added a DuckDB fix-plan store notebook showing how to load and query plan documents.
+- Added design notes for fixes, fix plans, plan documents, stores, and catalogs.
+- Added dataset id wildcard patterns to fix-plan matching.
+- Added an integration guard that shared fix plans resolve registered core and plugin fixes.
 - Render notebook examples as executed pages in the MkDocs documentation.
 - Added a docs examples overview with links to rendered notebooks and nbviewer.
 

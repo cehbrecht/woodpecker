@@ -188,6 +188,25 @@ def test_load_fix_plan_document_json(tmp_path: Path):
     assert document.plans[0].steps[0].id == "cmip6.cmip6_0001"
 
 
+def test_load_fix_plan_document_dataset_id_patterns(tmp_path: Path):
+    plan_path = tmp_path / "plan.json"
+    document = _load_document(
+        plan_path,
+        {
+            "plans": [
+                {
+                    "id": "cmip6.dataset_id_match",
+                    "match": {"dataset_id_patterns": ["CMIP6.CMIP.*.Amon.tas.*"]},
+                    "steps": [{"id": "woodpecker.normalize_tas_units_to_kelvin"}],
+                }
+            ]
+        },
+    )
+
+    assert document.plans[0].match is not None
+    assert document.plans[0].match.dataset_id_patterns == ["CMIP6.CMIP.*.Amon.tas.*"]
+
+
 def test_load_fix_plan_document_single_plan_shorthand(tmp_path: Path):
     plan_path = tmp_path / "plan.json"
     document = _load_document(

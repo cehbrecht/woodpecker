@@ -119,6 +119,24 @@ def test_plan_matcher_path_only():
     assert plan_matches_dataset(plan, ds, path=None) is False
 
 
+def test_plan_matcher_dataset_id_patterns():
+    plan = FixPlan(
+        id="tests.plan_dataset_id",
+        match=DatasetMatcher(dataset_id_patterns=["CMIP6.CMIP.*.Amon.tas.*"]),
+        steps=[FixRef(id="woodpecker.normalize_tas_units_to_kelvin")],
+    )
+
+    assert plan_matches_dataset(plan, make_cmip6()) is True
+    assert (
+        plan_matches_dataset(
+            plan,
+            xr.Dataset(attrs={"dataset_id": "CMIP6.DCPP.Model.dcppA-hindcast.s1960.Amon.tas.gn"}),
+        )
+        is False
+    )
+    assert plan_matches_dataset(plan, xr.Dataset()) is False
+
+
 @pytest.mark.parametrize(
     ("filename", "schema_marker"),
     [

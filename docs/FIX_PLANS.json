@@ -5,6 +5,7 @@
     "description": "Concrete Atlas plan for atlas*.nc files",
     "match": {
       "attrs": {},
+      "dataset_id_patterns": [],
       "path_patterns": [
         "*atlas*.nc"
       ]
@@ -48,6 +49,9 @@
         "project_id": "CMIP6",
         "activity_id": "CMIP"
       },
+      "dataset_id_patterns": [
+        "CMIP6.CMIP.*.Amon.tas.*"
+      ],
       "path_patterns": []
     },
     "steps": [
@@ -84,6 +88,9 @@
         "activity_id": "DCPP",
         "experiment_id": "dcppA-hindcast"
       },
+      "dataset_id_patterns": [
+        "CMIP6.DCPP.*.dcppA-hindcast.*"
+      ],
       "path_patterns": []
     },
     "steps": [
@@ -200,6 +207,7 @@
     "description": "CMIP7/ESA CCI dot-name inputs",
     "match": {
       "attrs": {},
+      "dataset_id_patterns": [],
       "path_patterns": [
         "esacci.WATERVAPOUR.*"
       ]
@@ -258,6 +266,7 @@
     "description": "CMIP7/ESA CCI zarr-style inputs",
     "match": {
       "attrs": {},
+      "dataset_id_patterns": [],
       "path_patterns": [
         "*ESACCI-WATERVAPOUR-*.zarr"
       ]
