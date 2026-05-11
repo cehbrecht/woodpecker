@@ -21,6 +21,8 @@ def _format_match(plan: FixPlan) -> str:
         return ""
 
     parts: list[str] = []
+    if plan.match.dataset_id_patterns:
+        parts.append(f"dataset ids: {', '.join(plan.match.dataset_id_patterns)}")
     if plan.match.attrs:
         attrs = ", ".join(f"{key}={value}" for key, value in sorted(plan.match.attrs.items()))
         parts.append(f"attrs: {attrs}")

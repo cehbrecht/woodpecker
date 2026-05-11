@@ -95,12 +95,18 @@ class DatasetMatcher(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     attrs: dict[str, Any] = Field(default_factory=dict)
+    dataset_id_patterns: list[str] = Field(default_factory=list)
     path_patterns: list[str] = Field(default_factory=list)
 
     @field_validator("attrs", mode="before")
     @classmethod
     def _coerce_attrs(cls, v: object) -> dict[str, Any]:
         return _dict_or_empty(v, label="DatasetMatcher.attrs")
+
+    @field_validator("dataset_id_patterns", mode="before")
+    @classmethod
+    def _coerce_dataset_id_patterns(cls, v: object) -> list[str]:
+        return [str(item) for item in _list_or_empty(v, label="DatasetMatcher.dataset_id_patterns")]
 
     @field_validator("path_patterns", mode="before")
     @classmethod

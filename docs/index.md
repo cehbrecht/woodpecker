@@ -6,4 +6,5 @@ Woodpecker is a lightweight, code-driven fix catalog for climate datasets.
 - The catalog can be exported as **Markdown** (`FIXES.md`) and **JSON** (`FIXES.json`), and rendered as a small interactive web page (`fixes.html`).
 - **Fix plans** are documented in `FIX_PLANS.md` to help users choose a recipe for matching datasets.
 - Catalog entries include a **Source** value: `core` for built-in fixes, and `plugin:<package>` for plugin-discovered fixes.
+- The **Design Notes** page defines the vocabulary for fixes, fix plans, documents, stores, and catalogs.
 - Executed notebook examples are available under **Examples**.

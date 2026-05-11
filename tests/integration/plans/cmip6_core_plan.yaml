@@ -5,6 +5,8 @@ plans:
         href: https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/cmip6_core_plan.yaml
         title: Source plan document
     match:
+      dataset_id_patterns:
+        - CMIP6.CMIP.*.Amon.tas.*
       attrs:
         project_id: CMIP6
         activity_id: CMIP
