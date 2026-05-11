@@ -23,10 +23,11 @@ class RunFixKwargs(TypedDict, total=False):
 
 def _resolve_plan_api_selection(
     *,
-    plan_path: str | Path,
+    plan_path: str | Path | None,
     inputs: Any | None,
     identifiers: Sequence[str],
     plan_id: str | None,
+    store_type: str,
 ) -> tuple[list[DataInput], tuple[str, ...], tuple[str, ...], dict[str, dict[str, Any]]]:
     from woodpecker.plans.resolver import resolve_plan_source, resolve_selection_inputs
 
@@ -34,8 +35,8 @@ def _resolve_plan_api_selection(
     normalized = normalize_inputs(resolved_inputs)
     _, _, source_identifiers, source_fix_options = resolve_plan_source(
         inputs=normalized,
-        store_type="json",
-        plan_location=Path(plan_path),
+        store_type=store_type,
+        plan_location=Path(plan_path) if plan_path is not None else None,
         plan_id=plan_id,
     )
     resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options = (
@@ -93,13 +94,14 @@ def execute_fix(
 
 
 def execute_check_plan(
-    plan_path: str | Path,
+    plan_path: str | Path | None,
     *,
     inputs: Any | None = None,
     dataset: str | None = None,
     categories: Sequence[str] = (),
     identifiers: Sequence[str] = (),
     plan_id: str | None = None,
+    store_type: str = "json",
 ) -> list[dict[str, str]]:
     normalized, resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options = (
         _resolve_plan_api_selection(
@@ -107,6 +109,7 @@ def execute_check_plan(
             inputs=inputs,
             identifiers=identifiers,
             plan_id=plan_id,
+            store_type=store_type,
         )
     )
 
@@ -121,7 +124,7 @@ def execute_check_plan(
 
 
 def execute_fix_plan(
-    plan_path: str | Path,
+    plan_path: str | Path | None,
     *,
     inputs: Any | None = None,
     dataset: str | None = None,
@@ -130,6 +133,7 @@ def execute_fix_plan(
     write: bool = False,
     output_format: str = "auto",
     plan_id: str | None = None,
+    store_type: str = "json",
 ) -> dict[str, int]:
     normalized, resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options = (
         _resolve_plan_api_selection(
@@ -137,6 +141,7 @@ def execute_fix_plan(
             inputs=inputs,
             identifiers=identifiers,
             plan_id=plan_id,
+            store_type=store_type,
         )
     )
 
@@ -207,7 +212,7 @@ def execute_fix_context(
 def execute_load_plans(
     store_type: str,
     plan_location: Path,
-    from_plan: Path,
+    from_plan: Path | None,
     from_store: str,
     plan_id: str | None = None,
 ) -> dict:

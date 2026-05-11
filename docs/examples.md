@@ -24,6 +24,11 @@ fix-plan notebook loads a shared YAML plan fixture from
 examples load JSON fixtures. This exercises JSON, YAML, and DuckDB-backed plan
 workflows in documentation builds.
 
+When no explicit plan document exists, registered fixes can also be exposed as
+single-step auto plans. Use the `auto` store to list or query those generated
+plans, for example `woodpecker list-plans --store auto` or the Python API with
+`woodpecker.check_plan(None, inputs=dataset, store_type="auto", plan_id="...")`.
+
 The notebooks use `woodpecker.testing` factories such as `make_cmip6()` and
 `make_atlas()` so they can run in CI and in the documentation build. The
 fix-plan documents are shared with integration tests and live in

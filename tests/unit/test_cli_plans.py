@@ -89,6 +89,10 @@ def test_check_plan_store_plan_id_selects_specific_plan(
         _ = (args, kwargs)
         return [_finding("selected plan")]
 
+    monkeypatch.setattr(
+        "woodpecker.plans.resolver._iter_store_matches",
+        lambda inputs, store: store.list_plans(),
+    )
     monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
 
     result = runner.invoke(
@@ -188,7 +192,47 @@ def test_list_plans_requires_store_options(
     result = runner.invoke(cli, ["list-plans"])
 
     assert result.exit_code != 0
-    assert "Missing option '--plan'" in result.output
+    assert "--plan is required" in result.output
+
+
+def test_list_plans_auto_store_does_not_require_plan_location(
+    isolated_cli_workspace: CliWorkspace,
+):
+    runner, _ = isolated_cli_workspace
+
+    result = runner.invoke(cli, ["list-plans", "--store", "auto"])
+
+    assert result.exit_code == 0
+    assert "woodpecker.normalize_tas_units_to_kelvin: 1 step" in result.output
+
+
+def test_check_auto_store_uses_matching_registered_fix(
+    isolated_cli_workspace: CliWorkspace,
+    monkeypatch,
+):
+    runner, make_placeholder_netcdf_path = isolated_cli_workspace
+    make_placeholder_netcdf_path("cmip6_bad.nc")
+
+    def _fake_run_check(context):
+        assert context.selected_plans[0].id == "woodpecker.normalize_tas_units_to_kelvin"
+        return [_finding("selected auto plan")]
+
+    monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
+
+    result = runner.invoke(
+        cli,
+        [
+            "check",
+            ".",
+            "--store",
+            "auto",
+            "--plan-id",
+            "woodpecker.normalize_tas_units_to_kelvin",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "selected auto plan" in result.output
 
 
 def test_load_plans_from_plan_document_into_json_store(
@@ -270,6 +314,29 @@ def test_load_plans_from_store_with_plan_id_filter(
     assert [item["id"] for item in payload["plans"]] == ["test.beta"]
 
 
+def test_load_plans_from_auto_store_without_source_plan(
+    isolated_cli_workspace: CliWorkspace,
+):
+    runner, _ = isolated_cli_workspace
+
+    result = runner.invoke(
+        cli,
+        [
+            "load-plans",
+            "--plan",
+            "target.json",
+            "--from-store",
+            "auto",
+            "--plan-id",
+            "woodpecker.tas_units_to_kelvin",
+        ],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(Path("target.json").read_text(encoding="utf-8"))
+    assert [item["id"] for item in payload["plans"]] == ["woodpecker.normalize_tas_units_to_kelvin"]
+
+
 def test_load_plans_requires_source_plan_location(
     isolated_cli_workspace: CliWorkspace,
 ):
@@ -285,4 +352,4 @@ def test_load_plans_requires_source_plan_location(
     )
 
     assert result.exit_code != 0
-    assert "Missing option '--from-plan'" in result.output
+    assert "Provide --from-plan as the source store location" in result.output

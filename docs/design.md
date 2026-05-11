@@ -20,7 +20,7 @@ A fix-plan document is JSON or YAML that serializes one or more fix plans. Docum
 
 **Fix-plan store**
 
-A fix-plan store is a query backend for plan definitions. A store can list plans, load/save plans, look up a plan by id or alias, and return plans matching a dataset. Current stores include JSON/YAML files and DuckDB.
+A fix-plan store is a query backend for plan definitions. A store can list plans, load/save plans, look up a plan by id or alias, and return plans matching a dataset. Current stores include JSON/YAML files, DuckDB, and the read-only auto store.
 
 **Fix-plan catalog**
 
@@ -51,6 +51,6 @@ More match rule types can be added without changing the overall plan model.
 
 Explicit fix plans are preferred because they provide better matching, options, links, and multi-step workflows.
 
-Later, Woodpecker can generate implicit one-step plans from registered fixes. That would give developers a simple path: implement a fix first, and add an explicit plan when the user-facing recipe needs better guidance.
+Woodpecker can also expose implicit one-step plans from registered fixes through the auto store. That gives developers a simple path: implement a fix first, and add an explicit plan when the user-facing recipe needs better guidance.
 
 Plugins should remain able to ship only fixes. If a plugin also ships fix plans later, those plans should be loaded into a `FixPlanStore` and should reference the plugin fixes by their normal `prefix.suffix` ids.

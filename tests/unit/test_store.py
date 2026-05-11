@@ -7,7 +7,7 @@ import xarray as xr
 
 from woodpecker.plans.matcher import plan_matches_dataset
 from woodpecker.plans.models import DatasetMatcher, FixPlan, FixRef
-from woodpecker.stores import DuckDBFixPlanStore, JsonFixPlanStore
+from woodpecker.stores import AutoFixPlanStore, DuckDBFixPlanStore, JsonFixPlanStore
 from woodpecker.testing import make_atlas, make_cmip6
 
 UNKNOWN_PLAN_ID_ERROR = "Unknown plan identifier"
@@ -135,6 +135,33 @@ def test_plan_matcher_dataset_id_patterns():
         is False
     )
     assert plan_matches_dataset(plan, xr.Dataset()) is False
+
+
+def test_auto_store_lists_registered_fixes_as_single_step_plans():
+    store = AutoFixPlanStore()
+
+    plans = store.list_plans()
+    plan = store.get_plan("woodpecker.tas_units_to_kelvin")
+
+    assert "woodpecker.normalize_tas_units_to_kelvin" in {item.id for item in plans}
+    assert plan.id == "woodpecker.normalize_tas_units_to_kelvin"
+    assert plan.steps[0].id == "woodpecker.normalize_tas_units_to_kelvin"
+
+
+def test_auto_store_lookup_uses_fix_matches_and_dataset_type():
+    store = AutoFixPlanStore()
+    dataset = make_cmip6(overrides={"units": "degC"})
+
+    matched = store.lookup(dataset)
+
+    assert [plan.id for plan in matched] == ["woodpecker.normalize_tas_units_to_kelvin"]
+
+
+def test_auto_store_is_read_only():
+    store = AutoFixPlanStore()
+
+    with pytest.raises(NotImplementedError, match="read-only"):
+        store.save_plan(_single_step_plan("tests.plan"))
 
 
 @pytest.mark.parametrize(

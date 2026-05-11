@@ -134,6 +134,21 @@ def resolve_plan_source(
     Returns source marker, selected plans, resolved identifiers, and resolved fix options.
     """
 
+    if store_type == "auto":
+        store = create_fix_plan_store(store_type, plan_location)
+        if plan_id:
+            selected = store.get_plan(plan_id.strip())
+            identifiers, fix_options = selected.step_identifiers_and_options()
+            return "store", [selected], identifiers, fix_options
+
+        plans = select_matching_store_plans(store=store, inputs=inputs, plan_id=plan_id)
+        if not plans:
+            raise ValueError("No matching auto fix plans found for selected inputs.")
+
+        selected = plans[0]
+        identifiers, fix_options = selected.step_identifiers_and_options()
+        return "store", [selected], identifiers, fix_options
+
     if plan_location is None:
         if plan_id:
             raise ValueError("--plan-id requires --plan.")
@@ -245,7 +260,8 @@ def resolve_load_source_plans(
     """Resolve source plans for load-plans command."""
 
     if from_plan is None:
-        raise ValueError("Provide --from-plan as the source store location.")
+        if from_store_type != "auto":
+            raise ValueError("Provide --from-plan as the source store location.")
 
     source_store_type = from_store_type or "json"
     source_store = create_fix_plan_store(source_store_type, from_plan)

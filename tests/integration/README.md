@@ -14,11 +14,13 @@ The integration suite covers two public API styles:
 - direct fix selection with `woodpecker.check(...)` and `woodpecker.fix(...)`,
 - plan-driven selection with `woodpecker.check_plan(...)` and
   `woodpecker.fix_plan(...)`.
+- auto plan selection with the read-only `auto` store when a fix has no
+  curated plan document yet.
 
 Files are grouped by dataset family or example role:
 
 - `test_api_usage_examples.py`: minimal, plain public API examples for direct
-  fixes and fix plans.
+  fixes, fix plans, and auto plans.
 - `test_api_fixes_*.py`: family-specific fix behavior against synthetic data.
 - `test_api_plans_*.py`: family-specific fix-plan behavior against synthetic
   data.

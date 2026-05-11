@@ -10,23 +10,34 @@ from woodpecker.testing import make_cmip6
 
 
 @pytest.mark.parametrize(
-    ("context", "expected"),
+    ("context", "store_type", "plan_location", "expected"),
     [
         (
             SimpleNamespace(
                 source="store",
                 selected_plans=[SimpleNamespace(id="alpha"), SimpleNamespace(id="beta")],
             ),
+            "auto",
+            None,
+            "store type=auto plans=alpha, beta",
+        ),
+        (
+            SimpleNamespace(
+                source="store",
+                selected_plans=[SimpleNamespace(id="alpha"), SimpleNamespace(id="beta")],
+            ),
+            "json",
+            Path("plans.json"),
             "store type=json location=plans.json plans=alpha, beta",
         ),
-        (SimpleNamespace(source="direct", selected_plans=[]), None),
+        (SimpleNamespace(source="direct", selected_plans=[]), "json", Path("plans.json"), None),
     ],
 )
-def test_format_provenance_source(context, expected):
+def test_format_provenance_source(context, store_type, plan_location, expected):
     output = format_provenance_source(
         context,
-        store_type="json",
-        plan_location=Path("plans.json"),
+        store_type=store_type,
+        plan_location=plan_location,
     )
 
     assert output == expected

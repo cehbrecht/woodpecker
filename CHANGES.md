@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added a read-only auto fix-plan store that exposes registered fixes as single-step plans.
+- Added API, CLI, and integration examples for auto plans.
+
 ## 0.3.0 (2026-05-11)
 
 - Introduced `prefix.suffix` identifiers for fixes and fix plans with alias support. Simplified plan lookup and shared identifier handling across the codebase.

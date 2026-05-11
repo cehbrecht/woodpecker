@@ -21,6 +21,8 @@ from woodpecker.stores.helpers import create_fix_plan_store
 from woodpecker.ui.formatting import format_findings, format_fix_stats, format_fixes, format_plans
 
 T = TypeVar("T")
+STORE_CHOICES = ["json", "duckdb", "auto"]
+WRITABLE_STORE_CHOICES = ["json", "duckdb"]
 
 
 def _with_click_errors(func: Callable[[], T]) -> T:
@@ -60,7 +62,7 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
 @click.option(
     "--store",
     "store_type",
-    type=click.Choice(["json", "duckdb"]),
+    type=click.Choice(STORE_CHOICES),
     default="json",
     show_default=True,
     help="FixPlanStore backend.",
@@ -69,13 +71,14 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
     "--plan",
     "plan_location",
     type=click.Path(path_type=Path),
-    required=True,
+    required=False,
     help=(
-        "Path or location used by selected store backend (JSON: local file, DuckDB: database file)."
+        "Path or location used by selected store backend "
+        "(JSON: local file, DuckDB: database file; not needed for auto)."
     ),
 )
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
-def list_plans(store_type: str, plan_location: Path, fmt: str):
+def list_plans(store_type: str, plan_location: Path | None, fmt: str):
     """List FixPlan entries from a configured store backend.
 
     All plan access goes through a FixPlanStore backend selected by `--store`
@@ -92,7 +95,7 @@ def list_plans(store_type: str, plan_location: Path, fmt: str):
 @click.option(
     "--store",
     "store_type",
-    type=click.Choice(["json", "duckdb"]),
+    type=click.Choice(WRITABLE_STORE_CHOICES),
     default="json",
     show_default=True,
     help="Target FixPlanStore backend.",
@@ -111,16 +114,16 @@ def list_plans(store_type: str, plan_location: Path, fmt: str):
     "--from-plan",
     "from_plan",
     type=click.Path(path_type=Path),
-    required=True,
+    required=False,
     help=(
         "Source plan location interpreted by --from-store "
-        "(JSON: local file, DuckDB: database file)."
+        "(JSON: local file, DuckDB: database file; not needed for auto)."
     ),
 )
 @click.option(
     "--from-store",
     "from_store",
-    type=click.Choice(["json", "duckdb"]),
+    type=click.Choice(STORE_CHOICES),
     default="json",
     show_default=True,
     help="Source FixPlanStore backend for --from-plan location.",
@@ -130,7 +133,7 @@ def list_plans(store_type: str, plan_location: Path, fmt: str):
 def load_plans(
     store_type: str,
     plan_location: Path,
-    from_plan: Path,
+    from_plan: Path | None,
     from_store: str,
     plan_id: str | None,
     fmt: str,
@@ -159,7 +162,7 @@ def load_plans(
 @click.option(
     "--store",
     "store_type",
-    type=click.Choice(["json", "duckdb"]),
+    type=click.Choice(STORE_CHOICES),
     default="json",
     show_default=True,
     help="FixPlanStore backend (default: json).",
@@ -171,7 +174,7 @@ def load_plans(
     default=None,
     help=(
         "Path or location used by selected store backend "
-        "(JSON: local file, DuckDB: database file; future backends may differ)."
+        "(JSON: local file, DuckDB: database file; not needed for auto)."
     ),
 )
 @click.option("--plan-id", "plan_id", default=None, help="Select a specific stored plan id.")
@@ -241,7 +244,7 @@ def io_status(fmt: str):
 @click.option(
     "--store",
     "store_type",
-    type=click.Choice(["json", "duckdb"]),
+    type=click.Choice(STORE_CHOICES),
     default="json",
     show_default=True,
     help="FixPlanStore backend (default: json).",
@@ -253,7 +256,7 @@ def io_status(fmt: str):
     default=None,
     help=(
         "Path or location used by selected store backend "
-        "(JSON: local file, DuckDB: database file; future backends may differ)."
+        "(JSON: local file, DuckDB: database file; not needed for auto)."
     ),
 )
 @click.option("--plan-id", "plan_id", default=None, help="Select a specific stored plan id.")
