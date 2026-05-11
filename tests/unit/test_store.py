@@ -7,7 +7,12 @@ import xarray as xr
 
 from woodpecker.plans.matcher import plan_matches_dataset
 from woodpecker.plans.models import DatasetMatcher, FixPlan, FixRef
-from woodpecker.stores import AutoFixPlanStore, DuckDBFixPlanStore, JsonFixPlanStore
+from woodpecker.stores import (
+    AutoFixPlanStore,
+    DuckDBFixPlanStore,
+    FixPlanCatalog,
+    JsonFixPlanStore,
+)
 from woodpecker.testing import make_atlas, make_cmip6
 
 UNKNOWN_PLAN_ID_ERROR = "Unknown plan identifier"
@@ -162,6 +167,52 @@ def test_auto_store_is_read_only():
 
     with pytest.raises(NotImplementedError, match="read-only"):
         store.save_plan(_single_step_plan("tests.plan"))
+
+
+def test_fix_plan_catalog_lists_sources_and_deduplicates_by_id(tmp_path):
+    explicit_store = JsonFixPlanStore(tmp_path / "fix-plans.json")
+    explicit_store.save_plan(
+        _single_step_plan(
+            "woodpecker.normalize_tas_units_to_kelvin",
+            description="curated plan wins",
+        )
+    )
+    explicit_store.save_plan(_single_step_plan("tests.extra"))
+    catalog = FixPlanCatalog([explicit_store, AutoFixPlanStore()])
+
+    plans = catalog.list_plans()
+    plan_ids = [plan.id for plan in plans]
+
+    assert plan_ids.count("woodpecker.normalize_tas_units_to_kelvin") == 1
+    assert "tests.extra" in plan_ids
+    assert catalog.get_plan("woodpecker.tas_units_to_kelvin").description == "curated plan wins"
+
+
+def test_fix_plan_catalog_lookup_queries_all_sources(tmp_path):
+    explicit_store = JsonFixPlanStore(tmp_path / "fix-plans.json")
+    explicit_store.save_plan(
+        _single_step_plan(
+            "cmip6.curated_units",
+            "woodpecker.normalize_tas_units_to_kelvin",
+            match=DatasetMatcher(attrs={"project_id": "CMIP6"}),
+        )
+    )
+    catalog = FixPlanCatalog([explicit_store, AutoFixPlanStore()])
+    dataset = make_cmip6(overrides={"units": "degC"})
+
+    matched = catalog.lookup(dataset)
+
+    assert [plan.id for plan in matched] == [
+        "cmip6.curated_units",
+        "woodpecker.normalize_tas_units_to_kelvin",
+    ]
+
+
+def test_fix_plan_catalog_is_read_only():
+    catalog = FixPlanCatalog([])
+
+    with pytest.raises(NotImplementedError, match="read-only"):
+        catalog.save_plan(_single_step_plan("tests.plan"))
 
 
 @pytest.mark.parametrize(

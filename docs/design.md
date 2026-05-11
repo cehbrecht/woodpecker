@@ -24,7 +24,7 @@ A fix-plan store is a query backend for plan definitions. A store can list plans
 
 **Fix-plan catalog**
 
-A catalog is the conceptual collection of available plans. It is not a separate runtime class yet. Today the catalog can be represented by plan documents, generated documentation, or plans loaded into a `FixPlanStore`.
+A catalog is an aggregate view over one or more plan sources. It can query JSON/YAML stores, DuckDB stores, the auto store, or later plugin/remote sources through one surface. The prototype `FixPlanCatalog` lists plans, looks up matching plans for a dataset, resolves ids and aliases, and deduplicates by plan id using source order.
 
 ## Identifiers
 

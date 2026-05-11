@@ -29,6 +29,11 @@ single-step auto plans. Use the `auto` store to list or query those generated
 plans, for example `woodpecker list-plans --store auto` or the Python API with
 `woodpecker.check_plan(None, inputs=dataset, store_type="auto", plan_id="...")`.
 
+For exploratory workflows, `FixPlanCatalog` can combine multiple plan sources:
+for example a local JSON/YAML plan store plus `AutoFixPlanStore`. Query the
+catalog when you want to see curated plans and generated one-step plans through
+one result list.
+
 The notebooks use `woodpecker.testing` factories such as `make_cmip6()` and
 `make_atlas()` so they can run in CI and in the documentation build. The
 fix-plan documents are shared with integration tests and live in

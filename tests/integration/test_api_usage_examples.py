@@ -10,6 +10,8 @@ example shows the same flow through ``woodpecker.check_plan()`` and
 import numpy as np
 
 import woodpecker
+from woodpecker.plans import DatasetMatcher, FixPlan, FixRef
+from woodpecker.stores import AutoFixPlanStore, FixPlanCatalog, JsonFixPlanStore
 from woodpecker.testing import integration_plan_path, make_cmip6
 
 
@@ -125,3 +127,24 @@ def test_usage_example_check_and_fix_synthetic_cmip6_dataset_with_auto_plan():
     assert write.changed == 1
     assert dataset["tas"].attrs["units"] == "K"
     np.testing.assert_allclose(dataset["tas"].values, original_values + 273.15)
+
+
+def test_usage_example_query_fix_plan_catalog(tmp_path):
+    dataset = make_cmip6(overrides={"units": "degC"})
+    store = JsonFixPlanStore(tmp_path / "plans.yaml")
+    store.save_plan(
+        FixPlan(
+            id="cmip6.curated_units",
+            description="Curated CMIP6 units plan",
+            match=DatasetMatcher(dataset_id_patterns=["CMIP6.CMIP.*.Amon.tas.*"]),
+            steps=[FixRef(id="woodpecker.normalize_tas_units_to_kelvin")],
+        )
+    )
+    catalog = FixPlanCatalog([store, AutoFixPlanStore()])
+
+    matched_plans = catalog.lookup(dataset)
+
+    assert [plan.id for plan in matched_plans] == [
+        "cmip6.curated_units",
+        "woodpecker.normalize_tas_units_to_kelvin",
+    ]
