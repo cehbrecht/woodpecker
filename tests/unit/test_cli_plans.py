@@ -6,7 +6,7 @@ import pytest
 from click.testing import CliRunner
 
 from woodpecker.cli import cli
-from woodpecker.testing import make_cmip6, write_json, write_plan_document
+from woodpecker.testing import write_json, write_plan_document
 
 pytestmark = pytest.mark.filterwarnings("ignore:.*Failed to read NetCDF input.*")
 CliWorkspace = tuple[CliRunner, Callable[[str], Path]]
@@ -81,14 +81,18 @@ def test_check_plan_store_plan_id_selects_specific_plan(
     with_path_filters,
     command_prefix,
 ):
-    runner, _ = isolated_cli_workspace
-    make_cmip6(overrides={"units": "degC"}).to_netcdf("cmip6_bad.nc")
+    runner, make_placeholder_netcdf_path = isolated_cli_workspace
+    make_placeholder_netcdf_path("cmip6_bad.nc")
     _write_multiple_matching_plans(plan_path, with_path_filters=with_path_filters)
 
     def _fake_run_check(*args, **kwargs):
         _ = (args, kwargs)
         return [_finding("selected plan")]
 
+    monkeypatch.setattr(
+        "woodpecker.plans.resolver._iter_store_matches",
+        lambda inputs, store: store.list_plans(),
+    )
     monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
 
     result = runner.invoke(
@@ -206,8 +210,8 @@ def test_check_auto_store_uses_matching_registered_fix(
     isolated_cli_workspace: CliWorkspace,
     monkeypatch,
 ):
-    runner, _ = isolated_cli_workspace
-    make_cmip6(overrides={"units": "degC"}).to_netcdf("cmip6_bad.nc")
+    runner, make_placeholder_netcdf_path = isolated_cli_workspace
+    make_placeholder_netcdf_path("cmip6_bad.nc")
 
     def _fake_run_check(context):
         assert context.selected_plans[0].id == "woodpecker.normalize_tas_units_to_kelvin"
