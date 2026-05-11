@@ -22,6 +22,8 @@ def format_provenance_source(
     if context.source == "store":
         plan_ids = [selected.id for selected in context.selected_plans if selected.id]
         selected_text = ", ".join(plan_ids) if plan_ids else "<unnamed>"
+        if plan_location is None:
+            return f"store type={store_type} plans={selected_text}"
         return f"store type={store_type} location={plan_location} plans={selected_text}"
 
     return None

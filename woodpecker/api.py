@@ -58,12 +58,13 @@ def fix(
 
 
 def check_plan(
-    plan_path: str | Path,
+    plan_path: str | Path | None,
     inputs: Any | None = None,
     dataset: str | None = None,
     categories: Sequence[str] = (),
     identifiers: Sequence[str] = (),
     plan_id: str | None = None,
+    store_type: str = "json",
 ) -> CheckResult:
     """Check inputs using a fix plan and return structured findings."""
     return CheckResult(
@@ -75,13 +76,14 @@ def check_plan(
                 categories=categories,
                 identifiers=identifiers,
                 plan_id=plan_id,
+                store_type=store_type,
             )
         )
     )
 
 
 def fix_plan(
-    plan_path: str | Path,
+    plan_path: str | Path | None,
     inputs: Any | None = None,
     dataset: str | None = None,
     categories: Sequence[str] = (),
@@ -89,6 +91,7 @@ def fix_plan(
     write: bool = False,
     output_format: str = "auto",
     plan_id: str | None = None,
+    store_type: str = "json",
 ) -> FixResult:
     """Apply a fix plan and return structured stats."""
     return FixResult(
@@ -101,5 +104,6 @@ def fix_plan(
             output_format=output_format,
             identifiers=identifiers,
             plan_id=plan_id,
+            store_type=store_type,
         )
     )
