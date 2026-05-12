@@ -53,12 +53,15 @@ woodpecker check . --select cmip6_decadal.time_metadata
 woodpecker fix . --select cmip6_decadal.time_metadata
 woodpecker fix . --select cmip6_decadal.time_metadata --dry-run
 woodpecker fix . --select cmip6_decadal.time_metadata --force-apply
+woodpecker check . --select woodpecker.normalize_tas_units_to_kelvin --strict-io
+woodpecker fix . --select woodpecker.normalize_tas_units_to_kelvin --strict-io
 woodpecker fix --plan plan.json
 ```
 
 Notes:
 - In write mode, JSON output exits with status 1 if any persistence operation fails.
 - `--force-apply` bypasses `matches()` prefiltering and requires explicit fix selection (`--select` or plan-provided identifiers).
+- `--strict-io` changes input loading to fail fast instead of warning and falling back when a backend is unavailable or a read fails.
 
 ## Core Concepts
 
@@ -282,6 +285,10 @@ assert findings.fix_ids
 
 result = woodpecker.fix(ds, identifiers=["atlas.encoding_cleanup"], write=True)
 assert result.changed >= 0
+
+# Optional fail-fast I/O behavior
+strict_findings = woodpecker.check(ds, identifiers=["atlas.encoding_cleanup"], strict_io=True)
+strict_result = woodpecker.fix(ds, identifiers=["atlas.encoding_cleanup"], write=True, strict_io=True)
 
 # Fix plan helpers
 findings_plan = woodpecker.check_plan("plan.json", inputs=["./data"])
