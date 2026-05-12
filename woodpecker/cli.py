@@ -32,7 +32,7 @@ def _with_click_errors(func: Callable[[], T]) -> T:
         return func()
     except click.ClickException:
         raise
-    except (TypeError, ValueError) as exc:
+    except (TypeError, ValueError, RuntimeError) as exc:
         raise click.ClickException(str(exc)) from exc
 
 
@@ -188,6 +188,12 @@ def load_plans(
     multiple=True,
     help="Run only selected fix identifiers (repeatable)",
 )
+@click.option(
+    "--strict-io/--no-strict-io",
+    default=False,
+    show_default=True,
+    help="Fail if dataset loading falls back due to unavailable/failed I/O backend.",
+)
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def check_cmd(
     paths: tuple[Path, ...],
@@ -197,6 +203,7 @@ def check_cmd(
     dataset: str | None,
     categories: tuple[str, ...],
     identifiers: tuple[str, ...],
+    strict_io: bool,
     fmt: str,
 ):
     """Check NetCDF files and report findings grouped by fix identifier."""
@@ -213,7 +220,7 @@ def check_cmd(
         )
     )
 
-    findings = execute_check_context(context)
+    findings = _with_click_errors(lambda: execute_check_context(context, strict_io=strict_io))
     output = format_findings(findings, fmt)
     if output:
         click.echo(output)
@@ -271,6 +278,12 @@ def io_status(fmt: str):
     help="Run only selected fix identifiers (repeatable)",
 )
 @click.option(
+    "--strict-io/--no-strict-io",
+    default=False,
+    show_default=True,
+    help="Fail if dataset loading falls back due to unavailable/failed I/O backend.",
+)
+@click.option(
     "--dry-run",
     is_flag=True,
     default=False,
@@ -317,6 +330,7 @@ def fix_cmd(
     dataset: str | None,
     categories: tuple[str, ...],
     identifiers: tuple[str, ...],
+    strict_io: bool,
     dry_run: bool,
     force_apply: bool,
     output_format: str,
@@ -347,6 +361,7 @@ def fix_cmd(
             force_apply=force_apply,
             embed_provenance_metadata=embed_provenance_metadata,
             provenance_run_id=run_id,
+            strict_io=strict_io,
         )
         return context, stats
 

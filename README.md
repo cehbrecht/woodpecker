@@ -116,6 +116,24 @@ woodpecker fix . --select cmip6_decadal.time_metadata --dry-run
 woodpecker fix . --select cmip6_decadal.time_metadata
 ```
 
+Strict I/O mode (fail fast on input backend/read fallback):
+
+```bash
+woodpecker check . --select woodpecker.normalize_tas_units_to_kelvin --strict-io
+woodpecker fix . --select woodpecker.normalize_tas_units_to_kelvin --strict-io
+```
+
+By default, Woodpecker warns and continues when an input backend is unavailable
+or a dataset read fails. Enable `--strict-io` to treat those conditions as
+errors.
+
+Python API equivalent:
+
+```python
+findings = woodpecker.check(dataset, strict_io=True)
+result = woodpecker.fix(dataset, identifiers=findings.fix_ids, write=True, strict_io=True)
+```
+
 ## Built-In And Bundled Fixes
 
 Core Woodpecker provides fixes that apply across dataset families.

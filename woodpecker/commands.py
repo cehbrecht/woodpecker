@@ -19,6 +19,7 @@ class RunFixKwargs(TypedDict, total=False):
     force_apply: bool
     embed_provenance_metadata: bool
     provenance_run_id: str
+    strict_io: bool
 
 
 def _resolve_plan_api_selection(
@@ -57,6 +58,7 @@ def execute_check(
     identifiers: Sequence[str] = (),
     fix_options: dict[str, dict[str, Any]] | None = None,
     ordered_identifiers: Sequence[str] = (),
+    strict_io: bool = False,
 ) -> list[dict[str, str]]:
     normalized = normalize_inputs(inputs)
     fixes = select_fixes(
@@ -67,7 +69,7 @@ def execute_check(
         fix_options=fix_options,
         ordered_identifiers=ordered_identifiers,
     )
-    return run_check(normalized, fixes)
+    return run_check(normalized, fixes, strict_io=strict_io)
 
 
 def execute_fix(
@@ -80,6 +82,7 @@ def execute_fix(
     output_format: str = "auto",
     fix_options: dict[str, dict[str, Any]] | None = None,
     ordered_identifiers: Sequence[str] = (),
+    strict_io: bool = False,
 ) -> dict[str, int]:
     normalized = normalize_inputs(inputs)
     fixes = select_fixes(
@@ -90,7 +93,13 @@ def execute_fix(
         fix_options=fix_options,
         ordered_identifiers=ordered_identifiers,
     )
-    return run_fix(normalized, fixes, dry_run=not write, output_format=output_format)
+    return run_fix(
+        normalized,
+        fixes,
+        dry_run=not write,
+        output_format=output_format,
+        strict_io=strict_io,
+    )
 
 
 def execute_check_plan(
@@ -102,6 +111,7 @@ def execute_check_plan(
     identifiers: Sequence[str] = (),
     plan_id: str | None = None,
     store_type: str = "json",
+    strict_io: bool = False,
 ) -> list[dict[str, str]]:
     normalized, resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options = (
         _resolve_plan_api_selection(
@@ -120,6 +130,7 @@ def execute_check_plan(
         identifiers=resolved_identifiers,
         fix_options=resolved_fix_options,
         ordered_identifiers=resolved_ordered_identifiers,
+        strict_io=strict_io,
     )
 
 
@@ -134,6 +145,7 @@ def execute_fix_plan(
     output_format: str = "auto",
     plan_id: str | None = None,
     store_type: str = "json",
+    strict_io: bool = False,
 ) -> dict[str, int]:
     normalized, resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options = (
         _resolve_plan_api_selection(
@@ -154,13 +166,18 @@ def execute_fix_plan(
         output_format=output_format,
         fix_options=resolved_fix_options,
         ordered_identifiers=resolved_ordered_identifiers,
+        strict_io=strict_io,
     )
 
 
-def execute_check_context(context: "RunContext") -> list[dict[str, str]]:
+def execute_check_context(
+    context: "RunContext",
+    *,
+    strict_io: bool = False,
+) -> list[dict[str, str]]:
     """Run check execution from a pre-resolved run context."""
 
-    return run_check(context.inputs, context.fixes)
+    return run_check(context.inputs, context.fixes, strict_io=strict_io)
 
 
 def build_run_fix_kwargs(
@@ -170,12 +187,14 @@ def build_run_fix_kwargs(
     force_apply: bool,
     embed_provenance_metadata: bool,
     provenance_run_id: str | None,
+    strict_io: bool,
 ) -> RunFixKwargs:
     """Build run_fix kwargs from command-level execution flags."""
 
     run_fix_kwargs: RunFixKwargs = {
         "dry_run": dry_run,
         "output_format": output_format,
+        "strict_io": strict_io,
     }
     if force_apply:
         run_fix_kwargs["force_apply"] = True
@@ -192,6 +211,7 @@ def execute_fix_context(
     force_apply: bool,
     embed_provenance_metadata: bool,
     provenance_run_id: str | None,
+    strict_io: bool = False,
 ) -> dict[str, int]:
     """Run fix execution from a pre-resolved run context."""
 
@@ -205,6 +225,7 @@ def execute_fix_context(
         force_apply=force_apply,
         embed_provenance_metadata=embed_provenance_metadata,
         provenance_run_id=provenance_run_id,
+        strict_io=strict_io,
     )
     return run_fix(context.inputs, context.fixes, **run_fix_kwargs)
 

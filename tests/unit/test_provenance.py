@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from woodpecker.io import NetCDFInput
 from woodpecker.io.backends.xr import XarrayInput
 from woodpecker.provenance import format_provenance_source, write_fix_provenance
 from woodpecker.testing import make_cmip6
@@ -79,3 +80,47 @@ def test_write_fix_provenance_writes_run_document(tmp_path: Path):
     assert activity["plan"] == "store type=json location=plans.json plans=woodpecker.plan"
     assert json.loads(activity["selected_fix_ids"]) == ["woodpecker.example"]
     assert json.loads(activity["stats"]) == stats
+
+
+def test_write_fix_provenance_warns_and_falls_back_on_invalid_target_reference(
+    tmp_path: Path,
+    monkeypatch,
+):
+    class BadAdapter:
+        def target_path(self, data_input):
+            _ = data_input
+            raise ValueError("bad output target")
+
+    monkeypatch.setattr("woodpecker.provenance.get_output_adapter", lambda output_format: BadAdapter())
+
+    fix = SimpleNamespace(id="woodpecker.example")
+    context = SimpleNamespace(
+        source="store",
+        inputs=[NetCDFInput(source_path=Path("cmip6_case.nc"), name="cmip6_case.nc")],
+        fixes=[fix],
+        selected_plans=[],
+        resolved_output_format="netcdf",
+    )
+    stats = {
+        "attempted": 1,
+        "changed": 0,
+        "persist_attempted": 0,
+        "persisted": 0,
+        "persist_failed": 0,
+    }
+    output_path = tmp_path / "woodpecker.prov.json"
+
+    with pytest.warns(UserWarning, match="Failed to resolve output target reference"):
+        write_fix_provenance(
+            context,
+            stats,
+            dry_run=True,
+            store_type="json",
+            plan_location=None,
+            provenance_path=output_path,
+        )
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    entity = next(iter(payload["entity"].values()))
+    assert entity["reference"] == "cmip6_case.nc"
+    assert entity["target_reference"] == "cmip6_case.nc"

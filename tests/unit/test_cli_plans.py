@@ -213,7 +213,8 @@ def test_check_auto_store_uses_matching_registered_fix(
     runner, make_placeholder_netcdf_path = isolated_cli_workspace
     make_placeholder_netcdf_path("cmip6_bad.nc")
 
-    def _fake_run_check(context):
+    def _fake_run_check(context, **kwargs):
+        _ = kwargs
         assert context.selected_plans[0].id == "woodpecker.normalize_tas_units_to_kelvin"
         return [_finding("selected auto plan")]
 

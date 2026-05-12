@@ -8,7 +8,7 @@ from typing import Any
 import xarray as xr
 
 from ..base import DataInput, OutputAdapter
-from ..runtime import module_available, warn_once
+from ..runtime import module_available, warn_once, warn_or_raise
 
 _NETCDF_SUFFIXES = {".nc", ".nc4", ".cdf"}
 
@@ -48,7 +48,7 @@ class NetCDFInput(DataInput):
 
     def load(self) -> xr.Dataset:
         if not self.is_available:
-            warn_once(
+            warn_or_raise(
                 f"NetCDF input backend unavailable for '{self.reference}'. Falling back to empty dataset."
             )
             return _fallback_dataset(self.source_name)
@@ -59,7 +59,7 @@ class NetCDFInput(DataInput):
             if callable(close):
                 close()
         except Exception as exc:
-            warn_once(
+            warn_or_raise(
                 f"Failed to read NetCDF input '{self.reference}': {exc}. Falling back to empty dataset."
             )
             dataset = _fallback_dataset(self.source_name)

@@ -16,6 +16,7 @@ def check(
     identifiers: Sequence[str] = (),
     fix_options: dict[str, dict[str, Any]] | None = None,
     ordered_identifiers: Sequence[str] = (),
+    strict_io: bool = False,
 ) -> CheckResult:
     """Check inputs and return structured findings."""
     return CheckResult(
@@ -27,6 +28,7 @@ def check(
                 identifiers=identifiers,
                 fix_options=fix_options,
                 ordered_identifiers=ordered_identifiers,
+                strict_io=strict_io,
             )
         )
     )
@@ -41,6 +43,7 @@ def fix(
     output_format: str = "auto",
     fix_options: dict[str, dict[str, Any]] | None = None,
     ordered_identifiers: Sequence[str] = (),
+    strict_io: bool = False,
 ) -> FixResult:
     """Apply selected fixes and return structured stats."""
     return FixResult(
@@ -53,6 +56,7 @@ def fix(
             output_format=output_format,
             fix_options=fix_options,
             ordered_identifiers=ordered_identifiers,
+            strict_io=strict_io,
         )
     )
 
@@ -65,6 +69,7 @@ def check_plan(
     identifiers: Sequence[str] = (),
     plan_id: str | None = None,
     store_type: str = "json",
+    strict_io: bool = False,
 ) -> CheckResult:
     """Check inputs using a fix plan and return structured findings."""
     return CheckResult(
@@ -77,6 +82,7 @@ def check_plan(
                 identifiers=identifiers,
                 plan_id=plan_id,
                 store_type=store_type,
+                strict_io=strict_io,
             )
         )
     )
@@ -92,6 +98,7 @@ def fix_plan(
     output_format: str = "auto",
     plan_id: str | None = None,
     store_type: str = "json",
+    strict_io: bool = False,
 ) -> FixResult:
     """Apply a fix plan and return structured stats."""
     return FixResult(
@@ -105,5 +112,6 @@ def fix_plan(
             identifiers=identifiers,
             plan_id=plan_id,
             store_type=store_type,
+            strict_io=strict_io,
         )
     )

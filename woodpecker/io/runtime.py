@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import warnings
+from contextlib import contextmanager
 
 _WARNED_MESSAGES: set[str] = set()
 _STRICT_IO = False
@@ -21,6 +22,16 @@ def set_strict_io(strict: bool) -> None:
 
 def is_strict_io() -> bool:
     return _STRICT_IO
+
+
+@contextmanager
+def strict_io_mode(strict: bool):
+    previous = is_strict_io()
+    set_strict_io(strict)
+    try:
+        yield
+    finally:
+        set_strict_io(previous)
 
 
 def warn_or_raise(message: str, exc_type: type[Exception] = RuntimeError) -> None:
