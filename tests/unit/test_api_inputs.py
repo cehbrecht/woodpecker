@@ -94,3 +94,11 @@ def test_api_check_raises_on_unknown_fix_code(make_placeholder_netcdf_path):
 
     with pytest.raises(ValueError, match=r"Unknown fix identifier\(s\): DOESNOTEXIST"):
         check([source], identifiers=["DOESNOTEXIST"])
+
+
+def test_api_check_strict_io_raises_on_load_fallback(monkeypatch, make_placeholder_netcdf_path):
+    source = make_placeholder_netcdf_path("cmip6_bad.nc")
+    monkeypatch.setattr("woodpecker.io.backends.nc.netcdf_backend_available", lambda: False)
+
+    with pytest.raises(RuntimeError, match="NetCDF input backend unavailable"):
+        check([source], strict_io=True)

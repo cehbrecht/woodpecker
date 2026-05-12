@@ -6,35 +6,42 @@ from typing import TYPE_CHECKING, Any, Iterable
 
 from woodpecker.identity import dataset_type_matches_declared, resolve_dataset_identity
 from woodpecker.io import DataInput, get_output_adapter
+from woodpecker.io.runtime import strict_io_mode
 
 if TYPE_CHECKING:
     from woodpecker.plans.models import FixPlan
 
 
-def run_check(inputs: Iterable[DataInput], fixes: Iterable[Any]) -> list[dict[str, str]]:
+def run_check(
+    inputs: Iterable[DataInput],
+    fixes: Iterable[Any],
+    *,
+    strict_io: bool = False,
+) -> list[dict[str, str]]:
     findings: list[dict[str, str]] = []
-    for data_input in inputs:
-        dataset = data_input.load()
-        identity = resolve_dataset_identity(dataset)
-        for fix in fixes:
-            if not dataset_type_matches_declared(
-                getattr(fix, "dataset", None), identity.dataset_type
-            ):
-                continue
-            if not fix.matches(dataset):
-                continue
-            for message in fix.check(dataset):
-                findings.append(
-                    {
-                        "path": data_input.reference,
-                        "fix_id": getattr(fix, "id", ""),
-                        "name": fix.name,
-                        "message": message,
-                    }
-                )
-        close = getattr(dataset, "close", None)
-        if callable(close):
-            close()
+    with strict_io_mode(strict_io):
+        for data_input in inputs:
+            dataset = data_input.load()
+            identity = resolve_dataset_identity(dataset)
+            for fix in fixes:
+                if not dataset_type_matches_declared(
+                    getattr(fix, "dataset", None), identity.dataset_type
+                ):
+                    continue
+                if not fix.matches(dataset):
+                    continue
+                for message in fix.check(dataset):
+                    findings.append(
+                        {
+                            "path": data_input.reference,
+                            "fix_id": getattr(fix, "id", ""),
+                            "name": fix.name,
+                            "message": message,
+                        }
+                    )
+            close = getattr(dataset, "close", None)
+            if callable(close):
+                close()
     return findings
 
 
@@ -46,6 +53,7 @@ def run_fix(
     output_format: str = "auto",
     embed_provenance_metadata: bool = False,
     provenance_run_id: str | None = None,
+    strict_io: bool = False,
 ) -> dict[str, int]:
     changed = 0
     attempted = 0
@@ -53,46 +61,47 @@ def run_fix(
     persisted = 0
     persist_failed = 0
     output_adapter = get_output_adapter(output_format)
-    for data_input in inputs:
-        dataset = data_input.load()
-        identity = resolve_dataset_identity(dataset)
-        dataset_changed = False
-        applied_fix_ids: list[str] = []
-        for fix in fixes:
-            fix_id = getattr(fix, "id", "")
-            attempted_fix, changed_fix = apply_configured_fix(
-                dataset,
-                fix,
-                dataset_type=identity.dataset_type,
-                dry_run=dry_run,
-                force_apply=force_apply,
-                fix_id=fix_id,
-            )
-            if attempted_fix:
-                attempted += 1
-            if changed_fix:
-                changed += 1
-                dataset_changed = True
-                applied_fix_ids.append(fix_id)
-        if dataset_changed and not dry_run:
-            if embed_provenance_metadata:
-                dataset.attrs["woodpecker_provenance"] = json.dumps(
-                    {
-                        "run_id": provenance_run_id or "",
-                        "generated_at": datetime.now(timezone.utc).isoformat(),
-                        "source": data_input.reference,
-                        "applied_fix_ids": applied_fix_ids,
-                    },
-                    sort_keys=True,
+    with strict_io_mode(strict_io):
+        for data_input in inputs:
+            dataset = data_input.load()
+            identity = resolve_dataset_identity(dataset)
+            dataset_changed = False
+            applied_fix_ids: list[str] = []
+            for fix in fixes:
+                fix_id = getattr(fix, "id", "")
+                attempted_fix, changed_fix = apply_configured_fix(
+                    dataset,
+                    fix,
+                    dataset_type=identity.dataset_type,
+                    dry_run=dry_run,
+                    force_apply=force_apply,
+                    fix_id=fix_id,
                 )
-            persist_attempted += 1
-            if data_input.save(dataset, dry_run=False, output_adapter=output_adapter):
-                persisted += 1
-            else:
-                persist_failed += 1
-        close = getattr(dataset, "close", None)
-        if callable(close):
-            close()
+                if attempted_fix:
+                    attempted += 1
+                if changed_fix:
+                    changed += 1
+                    dataset_changed = True
+                    applied_fix_ids.append(fix_id)
+            if dataset_changed and not dry_run:
+                if embed_provenance_metadata:
+                    dataset.attrs["woodpecker_provenance"] = json.dumps(
+                        {
+                            "run_id": provenance_run_id or "",
+                            "generated_at": datetime.now(timezone.utc).isoformat(),
+                            "source": data_input.reference,
+                            "applied_fix_ids": applied_fix_ids,
+                        },
+                        sort_keys=True,
+                    )
+                persist_attempted += 1
+                if data_input.save(dataset, dry_run=False, output_adapter=output_adapter):
+                    persisted += 1
+                else:
+                    persist_failed += 1
+            close = getattr(dataset, "close", None)
+            if callable(close):
+                close()
     return {
         "attempted": attempted,
         "changed": changed,

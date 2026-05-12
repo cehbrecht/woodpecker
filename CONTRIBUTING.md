@@ -53,12 +53,15 @@ woodpecker check . --select cmip6_decadal.time_metadata
 woodpecker fix . --select cmip6_decadal.time_metadata
 woodpecker fix . --select cmip6_decadal.time_metadata --dry-run
 woodpecker fix . --select cmip6_decadal.time_metadata --force-apply
+woodpecker check . --select woodpecker.normalize_tas_units_to_kelvin --strict-io
+woodpecker fix . --select woodpecker.normalize_tas_units_to_kelvin --strict-io
 woodpecker fix --plan plan.json
 ```
 
 Notes:
 - In write mode, JSON output exits with status 1 if any persistence operation fails.
 - `--force-apply` bypasses `matches()` prefiltering and requires explicit fix selection (`--select` or plan-provided identifiers).
+- `--strict-io` changes input loading to fail fast instead of warning and falling back when a backend is unavailable or a read fails.
 
 ## Core Concepts
 
@@ -67,6 +70,47 @@ Notes:
 A fix is an executable rule that checks and optionally repairs a dataset issue.
 Fixes are registered in the `FixRegistry` and discovered at runtime, including
 through plugin entry points.
+
+### Design Overview
+
+Woodpecker separates executable fixes from user-facing fix plans.
+
+- A **fix** is implementation code and can be selected directly via API/CLI.
+- A **fix plan** is a recipe for users: ordered steps, options, matching rules, and links.
+- A **fix-plan document** serializes one or more plans in JSON or YAML.
+- A **fix-plan store** is a query backend for plans (list/load/save/get-by-id/match).
+- `AutoFixPlanStore` is the read-only store that exposes registered fixes as implicit one-step plans.
+- A **fix-plan catalog** aggregates one or more plan sources behind one surface.
+
+The current `FixPlanCatalog` prototype can list plans, find matching plans,
+resolve ids and aliases, and deduplicate by plan id using source order.
+
+Default plugin prefix behavior:
+
+- plugin fix prefixes are derived from package name by removing `woodpecker_`
+  and `_plugin` when applicable.
+
+Identifier spaces are intentionally separate:
+
+- fix lookup uses `fix_id`
+- plan lookup uses `plan_id`
+
+Use these labels consistently in APIs and docs to avoid ambiguity.
+
+Plan matching is extensible and currently AND-based across available rule types:
+
+- `attrs`: exact metadata key/value constraints
+- `dataset_id_patterns`: wildcard patterns matched against dataset identity metadata
+- `path_patterns`: wildcard patterns matched against input path
+
+Discovery direction:
+
+- Prefer explicit fix plans for user workflows because they carry matching,
+  options, links, and step ordering.
+- Auto-store one-step plans from registered fixes remain useful for lightweight
+  discovery and early development.
+- Plugins may ship only fixes; if they later ship plans, those plans should be
+  loaded into a store and reference plugin fixes by normal `prefix.suffix` ids.
 
 ## Adding or Updating Fixes
 
@@ -192,18 +236,23 @@ Current backends:
 
 - JSON
 - DuckDB
+- Auto (`AutoFixPlanStore`, read-only)
 
 Plans are accessed through the CLI:
 
-- `--store`: backend type (`json` or `duckdb`, default: `json`)
+- `--store`: backend type (`json`, `duckdb`, or `auto`; default: `json`)
 - `--plan`: store location
 - `--plan-id`: optionally select a specific plan by id
+
+When `--store auto` is used, `--plan` is not required because plans are
+discovered from the registered fix set.
 
 Examples:
 
 ```bash
 woodpecker check --store json --plan plans.json
 woodpecker check --store duckdb --plan plans.duckdb
+woodpecker check --store auto --plan-id woodpecker.normalize_tas_units_to_kelvin
 woodpecker fix --plan plans.json --plan-id atlas.encoding_cleanup_suite
 woodpecker list-plans --store duckdb --plan plans.duckdb --format json
 ```
@@ -282,6 +331,10 @@ assert findings.fix_ids
 
 result = woodpecker.fix(ds, identifiers=["atlas.encoding_cleanup"], write=True)
 assert result.changed >= 0
+
+# Optional fail-fast I/O behavior
+strict_findings = woodpecker.check(ds, identifiers=["atlas.encoding_cleanup"], strict_io=True)
+strict_result = woodpecker.fix(ds, identifiers=["atlas.encoding_cleanup"], write=True, strict_io=True)
 
 # Fix plan helpers
 findings_plan = woodpecker.check_plan("plan.json", inputs=["./data"])

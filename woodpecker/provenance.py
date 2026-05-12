@@ -10,6 +10,7 @@ from typing import Any, Iterable
 from prov.model import ProvDocument
 
 from woodpecker.io import DataInput, get_output_adapter
+from woodpecker.io.runtime import warn_once
 
 
 def format_provenance_source(
@@ -120,7 +121,10 @@ def build_prov_document(
         if output_adapter is not None and data_input.source_path is not None:
             try:
                 target_reference = str(output_adapter.target_path(data_input))
-            except Exception:
+            except (TypeError, ValueError) as exc:
+                warn_once(
+                    f"Failed to resolve output target reference for '{data_input.reference}': {exc}."
+                )
                 target_reference = data_input.reference
 
         doc.entity(

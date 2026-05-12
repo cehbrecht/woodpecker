@@ -9,7 +9,8 @@ plugins:
       kernel_name: python3
 nav:
   - Home: index.md
-  - Design Notes: design.md
+  - Overview (README): OVERVIEW.md
+  - Contributing (Details): CONTRIBUTING_GUIDE.md
   - Fixes Catalog: FIXES.md
   - Fix Plans: FIX_PLANS.md
   - Interactive Fixes: fixes.html

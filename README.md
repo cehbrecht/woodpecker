@@ -34,7 +34,9 @@ Woodpecker is intentionally small:
 - fixes are executable Python rules,
 - fixes have stable identifiers such as `woodpecker.ensure_latitude_is_increasing`,
 - fix plans describe ordered fix workflows,
-- plan stores look up plans for datasets,
+- fix-plan stores query plan definitions from JSON/YAML, DuckDB, or auto sources,
+- `AutoFixPlanStore` provides read-only, auto-generated one-step plans from registered fixes,
+- `FixPlanCatalog` aggregates one or more plan sources behind one lookup surface,
 - plugins provide dataset-specific fixes for families such as Atlas, CMIP6, and
   CMIP6-decadal.
 
@@ -46,6 +48,10 @@ Vocabulary:
   options, for a dataset family or workflow.
 - **FixPlanStore**: a lookup layer that finds matching plans from a source such
   as JSON or DuckDB.
+- **AutoFixPlanStore**: a read-only store that exposes registered fixes as
+  implicit one-step plans.
+- **FixPlanCatalog**: an aggregate view over one or more plan sources that can
+  list plans, resolve ids/aliases, and find matching plans.
 
 Identifier idea (short version):
 
@@ -112,6 +118,7 @@ Direct fix selection:
 ```bash
 woodpecker list-fixes
 woodpecker check . --select cmip6_decadal.time_metadata
+woodpecker check . --store auto --plan-id woodpecker.normalize_tas_units_to_kelvin
 woodpecker fix . --select cmip6_decadal.time_metadata --dry-run
 woodpecker fix . --select cmip6_decadal.time_metadata
 ```

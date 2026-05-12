@@ -8,7 +8,7 @@ from typing import Any
 import xarray as xr
 
 from ..base import DataInput, OutputAdapter
-from ..runtime import module_available, warn_once
+from ..runtime import module_available, warn_once, warn_or_raise
 
 
 def zarr_backend_available() -> bool:
@@ -46,7 +46,7 @@ class ZarrInput(DataInput):
 
     def load(self) -> xr.Dataset:
         if not self.is_available:
-            warn_once(
+            warn_or_raise(
                 f"Zarr input backend unavailable for '{self.reference}'. Falling back to empty dataset."
             )
             return _fallback_dataset(self.source_name)
@@ -57,7 +57,7 @@ class ZarrInput(DataInput):
             if callable(close):
                 close()
         except Exception as exc:
-            warn_once(
+            warn_or_raise(
                 f"Failed to read Zarr input '{self.reference}': {exc}. Falling back to empty dataset."
             )
             dataset = _fallback_dataset(self.source_name)

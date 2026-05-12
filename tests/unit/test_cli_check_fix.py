@@ -157,3 +157,65 @@ def test_fix_force_apply_requires_selected_codes(
 
     assert result.exit_code != 0
     assert "--force-apply requires explicit fix selection" in result.output
+
+
+def test_check_strict_io_flag_is_forwarded(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    monkeypatch,
+):
+    runner, make_placeholder_netcdf_path = isolated_cli_workspace
+    make_placeholder_netcdf_path("cmip6_case.nc")
+
+    captured = {}
+
+    def _fake_run_check(*args, **kwargs):
+        captured.update(kwargs)
+        return []
+
+    monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)
+
+    result = runner.invoke(
+        cli,
+        [
+            "check",
+            ".",
+            "--select",
+            "woodpecker.normalize_tas_units_to_kelvin",
+            "--strict-io",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert captured.get("strict_io") is True
+
+
+def test_fix_strict_io_flag_is_forwarded(
+    isolated_cli_workspace: tuple[CliRunner, Callable[[str], Path]],
+    monkeypatch,
+):
+    runner, make_placeholder_netcdf_path = isolated_cli_workspace
+    make_placeholder_netcdf_path("cmip6_case.nc")
+
+    captured = {}
+
+    def _fake_run_fix(*args, **kwargs):
+        captured.update(kwargs)
+        return _fix_stats()
+
+    monkeypatch.setattr("woodpecker.cli.execute_fix_context", _fake_run_fix)
+
+    result = runner.invoke(
+        cli,
+        [
+            "fix",
+            ".",
+            "--select",
+            "woodpecker.normalize_tas_units_to_kelvin",
+            "--strict-io",
+            "--format",
+            "json",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert captured.get("strict_io") is True

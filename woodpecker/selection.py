@@ -114,9 +114,11 @@ def select_fixes(
         selected = [fix for fix in fixes if getattr(fix, "id", "") in resolved_selected_identifiers]
 
     if normalized_fix_options:
-        for fix in selected:
+        for index, fix in enumerate(selected):
             options = normalized_fix_options.get(getattr(fix, "id", ""))
             if options and hasattr(fix, "configure"):
-                fix.configure(options)
+                configured_fix = fix.configure(options)
+                if configured_fix is not None:
+                    selected[index] = configured_fix
 
     return selected
