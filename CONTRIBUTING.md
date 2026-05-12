@@ -79,6 +79,7 @@ Woodpecker separates executable fixes from user-facing fix plans.
 - A **fix plan** is a recipe for users: ordered steps, options, matching rules, and links.
 - A **fix-plan document** serializes one or more plans in JSON or YAML.
 - A **fix-plan store** is a query backend for plans (list/load/save/get-by-id/match).
+- `AutoFixPlanStore` is the read-only store that exposes registered fixes as implicit one-step plans.
 - A **fix-plan catalog** aggregates one or more plan sources behind one surface.
 
 The current `FixPlanCatalog` prototype can list plans, find matching plans,
@@ -235,18 +236,23 @@ Current backends:
 
 - JSON
 - DuckDB
+- Auto (`AutoFixPlanStore`, read-only)
 
 Plans are accessed through the CLI:
 
-- `--store`: backend type (`json` or `duckdb`, default: `json`)
+- `--store`: backend type (`json`, `duckdb`, or `auto`; default: `json`)
 - `--plan`: store location
 - `--plan-id`: optionally select a specific plan by id
+
+When `--store auto` is used, `--plan` is not required because plans are
+discovered from the registered fix set.
 
 Examples:
 
 ```bash
 woodpecker check --store json --plan plans.json
 woodpecker check --store duckdb --plan plans.duckdb
+woodpecker check --store auto --plan-id woodpecker.normalize_tas_units_to_kelvin
 woodpecker fix --plan plans.json --plan-id atlas.encoding_cleanup_suite
 woodpecker list-plans --store duckdb --plan plans.duckdb --format json
 ```
