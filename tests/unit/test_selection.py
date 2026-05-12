@@ -30,7 +30,9 @@ def test_select_fixes_uses_configure_return_value(monkeypatch):
             _ = options
             return ReplacementFix()
 
-    monkeypatch.setattr("woodpecker.selection.FixRegistry.discover", lambda filters=None: [ConfigurableFix()])
+    monkeypatch.setattr(
+        "woodpecker.selection.FixRegistry.discover", lambda filters=None: [ConfigurableFix()]
+    )
     monkeypatch.setattr(
         "woodpecker.selection.FixRegistry.resolve_identifier", lambda identifier: identifier
     )

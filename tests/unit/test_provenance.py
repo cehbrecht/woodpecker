@@ -91,7 +91,9 @@ def test_write_fix_provenance_warns_and_falls_back_on_invalid_target_reference(
             _ = data_input
             raise ValueError("bad output target")
 
-    monkeypatch.setattr("woodpecker.provenance.get_output_adapter", lambda output_format: BadAdapter())
+    monkeypatch.setattr(
+        "woodpecker.provenance.get_output_adapter", lambda output_format: BadAdapter()
+    )
 
     fix = SimpleNamespace(id="woodpecker.example")
     context = SimpleNamespace(
