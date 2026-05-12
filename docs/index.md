@@ -8,5 +8,4 @@ Woodpecker is a lightweight, code-driven fix catalog for climate datasets.
 - **Auto plans** expose registered fixes as single-step plans when no curated plan document exists yet.
 - **FixPlanCatalog** can combine multiple plan sources, such as local plan files and auto-generated plans.
 - Catalog entries include a **Source** value: `core` for built-in fixes, and `plugin:<package>` for plugin-discovered fixes.
-- The **Design Notes** page defines the vocabulary for fixes, fix plans, documents, stores, and catalogs.
 - Executed notebook examples are available under **Examples**.

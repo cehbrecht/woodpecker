@@ -71,6 +71,46 @@ A fix is an executable rule that checks and optionally repairs a dataset issue.
 Fixes are registered in the `FixRegistry` and discovered at runtime, including
 through plugin entry points.
 
+### Design Overview
+
+Woodpecker separates executable fixes from user-facing fix plans.
+
+- A **fix** is implementation code and can be selected directly via API/CLI.
+- A **fix plan** is a recipe for users: ordered steps, options, matching rules, and links.
+- A **fix-plan document** serializes one or more plans in JSON or YAML.
+- A **fix-plan store** is a query backend for plans (list/load/save/get-by-id/match).
+- A **fix-plan catalog** aggregates one or more plan sources behind one surface.
+
+The current `FixPlanCatalog` prototype can list plans, find matching plans,
+resolve ids and aliases, and deduplicate by plan id using source order.
+
+Default plugin prefix behavior:
+
+- plugin fix prefixes are derived from package name by removing `woodpecker_`
+  and `_plugin` when applicable.
+
+Identifier spaces are intentionally separate:
+
+- fix lookup uses `fix_id`
+- plan lookup uses `plan_id`
+
+Use these labels consistently in APIs and docs to avoid ambiguity.
+
+Plan matching is extensible and currently AND-based across available rule types:
+
+- `attrs`: exact metadata key/value constraints
+- `dataset_id_patterns`: wildcard patterns matched against dataset identity metadata
+- `path_patterns`: wildcard patterns matched against input path
+
+Discovery direction:
+
+- Prefer explicit fix plans for user workflows because they carry matching,
+  options, links, and step ordering.
+- Auto-store one-step plans from registered fixes remain useful for lightweight
+  discovery and early development.
+- Plugins may ship only fixes; if they later ship plans, those plans should be
+  loaded into a store and reference plugin fixes by normal `prefix.suffix` ids.
+
 ## Adding or Updating Fixes
 
 Fix author contract (minimal):
