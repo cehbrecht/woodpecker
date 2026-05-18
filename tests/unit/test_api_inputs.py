@@ -17,17 +17,20 @@ from woodpecker.testing import make_cmip6
 def test_check_exposes_findings_as_properties():
     ds = make_cmip6(overrides={"units": "degC"})
 
-    result = check(ds, identifiers=["woodpecker.normalize_tas_units_to_kelvin"])
+    result = check(ds, fixes="woodpecker.normalize_tas_units_to_kelvin")
 
-    assert result.has_findings is True
+    assert result
+    assert len(result) == 1
+    assert result.count == 1
     assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
     assert result.findings[0]["message"]
+    assert str(result) == ("1 finding from 1 fix: woodpecker.normalize_tas_units_to_kelvin")
 
 
 def test_check_accepts_fix_alias():
     ds = make_cmip6(overrides={"units": "degC"})
 
-    result = check(ds, identifiers=["woodpecker.tas_units_to_kelvin"])
+    result = check(ds, fixes="woodpecker.tas_units_to_kelvin")
 
     assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
 
@@ -37,17 +40,37 @@ def test_fix_exposes_stats_as_properties():
 
     result = fix(
         ds,
-        identifiers=["woodpecker.normalize_tas_units_to_kelvin"],
-        write=True,
+        fixes="woodpecker.normalize_tas_units_to_kelvin",
+        dry_run=False,
     )
 
     assert result.attempted == 1
     assert result.changed == 1
-    assert result.has_changes is True
+    assert result
+    assert len(result) == 1
+    assert result.count == 1
     assert result.persist_attempted == 1
     assert result.persisted == 1
-    assert result.persist_failed == 0
+    assert result.failed == 0
+    assert str(result) == "1 change, 1 attempt, 1 persisted"
     assert ds["tas"].attrs["units"] == "K"
+
+
+def test_empty_results_are_falsey_and_readable():
+    ds = make_cmip6(overrides={"units": "K"})
+
+    findings = check(ds, fixes="woodpecker.normalize_tas_units_to_kelvin")
+    result = fix(ds, fixes="woodpecker.normalize_tas_units_to_kelvin")
+
+    assert not findings
+    assert len(findings) == 0
+    assert findings.count == 0
+    assert str(findings) == "No findings."
+
+    assert not result
+    assert len(result) == 0
+    assert result.count == 0
+    assert str(result) == "0 changes, 0 attempts, 0 persisted"
 
 
 def test_output_adapter_target_paths_for_path_inputs():
@@ -93,7 +116,7 @@ def test_api_check_raises_on_unknown_fix_code(make_placeholder_netcdf_path):
     source = make_placeholder_netcdf_path("cmip6_bad.nc")
 
     with pytest.raises(ValueError, match=r"Unknown fix identifier\(s\): DOESNOTEXIST"):
-        check([source], identifiers=["DOESNOTEXIST"])
+        check([source], fixes="DOESNOTEXIST")
 
 
 def test_api_check_strict_io_raises_on_load_fallback(monkeypatch, make_placeholder_netcdf_path):

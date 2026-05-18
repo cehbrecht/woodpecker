@@ -3,15 +3,15 @@ from pathlib import Path
 import pytest
 import xarray as xr
 
-from woodpecker.fixes.registry import Fix, FixRegistry, register_fix
-from woodpecker.plans.matcher import plan_matches_dataset
-from woodpecker.plans.models import (
+from woodpecker.fix_plans.matcher import plan_matches_dataset
+from woodpecker.fix_plans.models import (
     FixPlan,
     FixPlanDocument,
     FixPlanRuntimeMetadata,
     FixRef,
     ProviderMetadata,
 )
+from woodpecker.fixes.registry import Fix, FixRegistry, register_fix
 from woodpecker.runner import apply_fix_plan
 from woodpecker.stores.json_store import JsonFixPlanStore
 from woodpecker.testing import make_cmip6, write_json

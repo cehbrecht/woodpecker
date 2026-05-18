@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
+from woodpecker.fix_plans import SUPPORTED_EXTENSIONS, load_fix_plan_document
 from woodpecker.fixes.registry import FixRegistry
-from woodpecker.plans import SUPPORTED_EXTENSIONS, load_fix_plan_document
 from woodpecker.testing import integration_root_dir
 
 pytest.importorskip("woodpecker_atlas_plugin")

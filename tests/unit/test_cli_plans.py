@@ -90,7 +90,7 @@ def test_check_plan_store_plan_id_selects_specific_plan(
         return [_finding("selected plan")]
 
     monkeypatch.setattr(
-        "woodpecker.plans.resolver._iter_store_matches",
+        "woodpecker.fix_plans.resolver._iter_store_matches",
         lambda inputs, store: store.list_plans(),
     )
     monkeypatch.setattr("woodpecker.cli.execute_check_context", _fake_run_check)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
-from ..plans.models import FixPlan
+from ..fix_plans.models import FixPlan
 from .base import FixPlanStore
 from .index import FixPlanIndex
 

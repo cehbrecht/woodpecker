@@ -5,8 +5,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
-from ..plans.matcher import plan_matches_dataset
-from ..plans.models import DatasetMatcher, FixPlan, FixRef
+from ..fix_plans.matcher import plan_matches_dataset
+from ..fix_plans.models import DatasetMatcher, FixPlan, FixRef
 from .base import FixPlanStore
 from .index import FixPlanIndex
 

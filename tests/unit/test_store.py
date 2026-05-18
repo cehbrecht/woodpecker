@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 import xarray as xr
 
-from woodpecker.plans.matcher import plan_matches_dataset
-from woodpecker.plans.models import DatasetMatcher, FixPlan, FixRef
+from woodpecker.fix_plans.matcher import plan_matches_dataset
+from woodpecker.fix_plans.models import DatasetMatcher, FixPlan, FixRef
 from woodpecker.stores import (
     AutoFixPlanStore,
     DuckDBFixPlanStore,

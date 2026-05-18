@@ -8,7 +8,7 @@ from woodpecker.runner import run_check, run_fix
 from woodpecker.selection import select_fixes
 
 if TYPE_CHECKING:
-    from woodpecker.plans.resolver import RunContext
+    from woodpecker.fix_plans.resolver import RunContext
 
 
 class RunFixKwargs(TypedDict, total=False):
@@ -30,7 +30,7 @@ def _resolve_plan_api_selection(
     plan_id: str | None,
     store_type: str,
 ) -> tuple[list[DataInput], tuple[str, ...], tuple[str, ...], dict[str, dict[str, Any]]]:
-    from woodpecker.plans.resolver import resolve_plan_source, resolve_selection_inputs
+    from woodpecker.fix_plans.resolver import resolve_plan_source, resolve_selection_inputs
 
     resolved_inputs = inputs if inputs is not None else [Path.cwd()]
     normalized = normalize_inputs(resolved_inputs)
@@ -78,7 +78,7 @@ def execute_fix(
     dataset: str | None = None,
     categories: Sequence[str] = (),
     identifiers: Sequence[str] = (),
-    write: bool = False,
+    dry_run: bool = True,
     output_format: str = "auto",
     fix_options: dict[str, dict[str, Any]] | None = None,
     ordered_identifiers: Sequence[str] = (),
@@ -96,7 +96,7 @@ def execute_fix(
     return run_fix(
         normalized,
         fixes,
-        dry_run=not write,
+        dry_run=dry_run,
         output_format=output_format,
         strict_io=strict_io,
     )
@@ -141,7 +141,7 @@ def execute_fix_plan(
     dataset: str | None = None,
     categories: Sequence[str] = (),
     identifiers: Sequence[str] = (),
-    write: bool = False,
+    dry_run: bool = True,
     output_format: str = "auto",
     plan_id: str | None = None,
     store_type: str = "json",
@@ -162,7 +162,7 @@ def execute_fix_plan(
         dataset=dataset,
         categories=categories,
         identifiers=resolved_identifiers,
-        write=write,
+        dry_run=dry_run,
         output_format=output_format,
         fix_options=resolved_fix_options,
         ordered_identifiers=resolved_ordered_identifiers,
@@ -238,7 +238,7 @@ def execute_load_plans(
     plan_id: str | None = None,
 ) -> dict:
     """Load plans into a target store from a source store location."""
-    from woodpecker.plans.resolver import resolve_load_source_plans
+    from woodpecker.fix_plans.resolver import resolve_load_source_plans
     from woodpecker.stores.helpers import create_fix_plan_store
 
     target_store = create_fix_plan_store(store_type, plan_location)
