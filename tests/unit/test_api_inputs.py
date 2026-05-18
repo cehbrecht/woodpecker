@@ -38,7 +38,7 @@ def test_fix_exposes_stats_as_properties():
     result = fix(
         ds,
         fixes="woodpecker.normalize_tas_units_to_kelvin",
-        write=True,
+        dry_run=False,
     )
 
     assert result.attempted == 1

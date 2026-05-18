@@ -80,7 +80,7 @@ if findings.has_findings:
     result = woodpecker.fix(
         dataset,
         fixes=findings.fix_ids,
-        write=True,
+        dry_run=False,
     )
     assert result.has_changes
 ```

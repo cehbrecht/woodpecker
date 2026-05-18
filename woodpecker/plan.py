@@ -88,7 +88,7 @@ def fix(
     dataset: str | None = None,
     categories: Sequence[str] = (),
     fixes: str | Sequence[str] | None = None,
-    write: bool = False,
+    dry_run: bool = True,
     output_format: str = "auto",
     strict_io: bool = False,
 ) -> FixResult:
@@ -105,7 +105,7 @@ def fix(
             dataset=dataset,
             categories=categories,
             identifiers=_normalize_fixes(fixes),
-            write=write,
+            write=not dry_run,
             output_format=output_format,
             plan_id=resolved_plan_id,
             store_type=resolved_store_type,

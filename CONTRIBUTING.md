@@ -329,16 +329,16 @@ ds = xr.Dataset(attrs={"source_name": "atlas_bad.nc"})
 findings = woodpecker.check(ds, fixes="atlas.encoding_cleanup")
 assert findings.fix_ids
 
-result = woodpecker.fix(ds, fixes="atlas.encoding_cleanup", write=True)
+result = woodpecker.fix(ds, fixes="atlas.encoding_cleanup", dry_run=False)
 assert result.changed >= 0
 
 # Optional fail-fast I/O behavior
 strict_findings = woodpecker.check(ds, fixes="atlas.encoding_cleanup", strict_io=True)
-strict_result = woodpecker.fix(ds, fixes="atlas.encoding_cleanup", write=True, strict_io=True)
+strict_result = woodpecker.fix(ds, fixes="atlas.encoding_cleanup", dry_run=False, strict_io=True)
 
 # Fix plan helpers
 findings_plan = woodpecker.plan.check(["./data"], "plan.json")
-result_plan = woodpecker.plan.fix(ds, "plan.json", write=True)
+result_plan = woodpecker.plan.fix(ds, "plan.json", dry_run=False)
 
 # Path input works as well
 findings_from_paths = woodpecker.check(

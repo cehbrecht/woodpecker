@@ -2,7 +2,7 @@
 
 This file is intentionally light on test helpers. It shows the shape user code
 should normally take: build or open a dataset, run ``woodpecker.check()``, run a
-dry-run ``woodpecker.fix()``, apply with ``write=True``, and re-check. The plan
+dry-run ``woodpecker.fix()``, apply with ``dry_run=False``, and re-check. The plan
 example shows the same flow through ``woodpecker.plan.check()`` and
 ``woodpecker.plan.fix()``.
 """
@@ -29,7 +29,7 @@ def test_usage_example_check_and_fix_synthetic_cmip6_dataset():
     dry_run = woodpecker.fix(
         dataset,
         fixes="woodpecker.normalize_tas_units_to_kelvin",
-        write=False,
+        dry_run=True,
     )
 
     assert dry_run.changed == 1
@@ -39,7 +39,7 @@ def test_usage_example_check_and_fix_synthetic_cmip6_dataset():
     write = woodpecker.fix(
         dataset,
         fixes="woodpecker.normalize_tas_units_to_kelvin",
-        write=True,
+        dry_run=False,
     )
 
     assert write.changed == 1
@@ -65,13 +65,13 @@ def test_usage_example_check_and_fix_synthetic_cmip6_dataset_with_plan():
 
     assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
 
-    dry_run = woodpecker.plan.fix(dataset, plan_path, write=False)
+    dry_run = woodpecker.plan.fix(dataset, plan_path, dry_run=True)
 
     assert dry_run.changed == 1
     assert dataset["tas"].attrs["units"] == "degC"
     np.testing.assert_allclose(dataset["tas"].values, original_values)
 
-    write = woodpecker.plan.fix(dataset, plan_path, write=True)
+    write = woodpecker.plan.fix(dataset, plan_path, dry_run=False)
 
     assert write.changed == 1
     assert dataset["tas"].attrs["units"] == "K"
@@ -90,13 +90,13 @@ def test_usage_example_check_and_fix_synthetic_cmip6_dataset_with_auto_plan():
 
     assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
 
-    dry_run = woodpecker.plan.fix(dataset, auto_plan, write=False)
+    dry_run = woodpecker.plan.fix(dataset, auto_plan, dry_run=True)
 
     assert dry_run.changed == 1
     assert dataset["tas"].attrs["units"] == "degC"
     np.testing.assert_allclose(dataset["tas"].values, original_values)
 
-    write = woodpecker.plan.fix(dataset, auto_plan, write=True)
+    write = woodpecker.plan.fix(dataset, auto_plan, dry_run=False)
 
     assert write.changed == 1
     assert dataset["tas"].attrs["units"] == "K"
