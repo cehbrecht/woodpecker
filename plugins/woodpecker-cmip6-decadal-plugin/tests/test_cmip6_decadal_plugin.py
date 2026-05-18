@@ -257,9 +257,7 @@ def test_plugin_registers_expected_fixes():
 def test_plugin_fixes_work_with_public_api():
     import woodpecker
 
-    dataset = make_cmip6_decadal(
-        overrides={"source_name": "c3s-cmip6-decadal.member.tos.nc"}
-    )
+    dataset = make_cmip6_decadal(overrides={"source_name": "c3s-cmip6-decadal.member.tos.nc"})
     dataset["time"].attrs.pop("long_name", None)
     findings = woodpecker.check(dataset, fixes=sorted(EXPECTED_FIX_IDS))
 

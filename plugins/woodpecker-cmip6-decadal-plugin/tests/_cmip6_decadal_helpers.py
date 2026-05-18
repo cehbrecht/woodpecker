@@ -59,7 +59,9 @@ def assert_plan_check_fix_cycle(
         assert_unchanged(dataset)
 
     write = plan.fix(dataset, plan_path, dry_run=False)
-    assert write.changed == (expected_changed if expected_write_changed is None else expected_write_changed)
+    assert write.changed == (
+        expected_changed if expected_write_changed is None else expected_write_changed
+    )
     assert write.persisted == 1
     assert_fixed(dataset)
 
