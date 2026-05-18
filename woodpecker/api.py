@@ -59,7 +59,7 @@ def fix(
             dataset=dataset,
             categories=categories,
             identifiers=identifiers,
-            write=not dry_run,
+            dry_run=dry_run,
             output_format=output_format,
             fix_options=options,
             ordered_identifiers=identifiers,

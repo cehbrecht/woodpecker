@@ -105,7 +105,7 @@ def fix(
             dataset=dataset,
             categories=categories,
             identifiers=_normalize_fixes(fixes),
-            write=not dry_run,
+            dry_run=dry_run,
             output_format=output_format,
             plan_id=resolved_plan_id,
             store_type=resolved_store_type,
