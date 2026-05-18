@@ -7,6 +7,7 @@ def test_public_import_surfaces_are_available():
     assert callable(apply_fix_plan)
     assert callable(check)
     assert callable(fix)
+    assert callable(plan.auto)
     assert callable(plan.check)
     assert callable(plan.fix)
     assert FixPlan.__name__ == "FixPlan"
