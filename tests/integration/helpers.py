@@ -97,9 +97,9 @@ def assert_plan_check_fix_cycle(
 
     assert unique_in_order(findings.fix_ids) == expected_fix_ids
 
-    dry_run = plan.fix(dataset, plan_path, dry_run=True, plan_id=plan_id)
-    assert dry_run.changed == expected_changed
-    assert dry_run.persisted == 0
+    preview = plan.fix(dataset, plan_path, dry_run=True, plan_id=plan_id)
+    assert preview.changed == expected_changed
+    assert preview.persisted == 0
     if assert_unchanged is not None:
         assert_unchanged(dataset)
 

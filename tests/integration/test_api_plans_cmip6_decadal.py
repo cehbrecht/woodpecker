@@ -74,9 +74,9 @@ def test_cmip6_decadal_full_plan_checks_and_fixes_synthetic_dataset():
     findings = woodpecker.plan.check(dataset, plan_path)
     assert findings.fix_ids == DECADAL_FULL_FIX_IDS
 
-    dry_run = woodpecker.plan.fix(dataset, plan_path, dry_run=True)
-    assert dry_run.changed == len(DECADAL_FULL_FIX_IDS)
-    assert dry_run.persisted == 0
+    preview = woodpecker.plan.fix(dataset, plan_path, dry_run=True)
+    assert preview.changed == len(DECADAL_FULL_FIX_IDS)
+    assert preview.persisted == 0
     assert_unchanged(dataset)
 
     write = woodpecker.plan.fix(dataset, plan_path, dry_run=False)

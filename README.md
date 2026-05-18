@@ -63,7 +63,10 @@ Identifier idea (short version):
 
 See `CONTRIBUTING.md` for full identifier rules and authoring details.
 
-The public Python API returns structured result objects:
+## Public Python API
+
+Use `woodpecker.check()` and `woodpecker.fix()` when selecting executable fixes
+directly:
 
 ```python
 import woodpecker
@@ -83,6 +86,26 @@ if findings:
         dry_run=False,
     )
     assert result
+```
+
+Use `woodpecker.plan.check()` and `woodpecker.plan.fix()` when selecting fixes
+from a fix plan:
+
+```python
+import woodpecker
+
+findings = woodpecker.plan.check(dataset, "plans.yaml")
+
+if findings:
+    preview = woodpecker.plan.fix(dataset, "plans.yaml")
+    result = woodpecker.plan.fix(dataset, "plans.yaml", dry_run=False)
+    assert result
+```
+
+Plan authoring models are available from `woodpecker.fix_plans`:
+
+```python
+from woodpecker.fix_plans import DatasetMatcher, FixPlan, FixRef
 ```
 
 ## Quick Start

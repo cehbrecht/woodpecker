@@ -26,13 +26,13 @@ def test_usage_example_check_and_fix_synthetic_cmip6_dataset():
 
     assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
 
-    dry_run = woodpecker.fix(
+    preview = woodpecker.fix(
         dataset,
         fixes="woodpecker.normalize_tas_units_to_kelvin",
         dry_run=True,
     )
 
-    assert dry_run.changed == 1
+    assert preview.changed == 1
     assert dataset["tas"].attrs["units"] == "degC"
     np.testing.assert_allclose(dataset["tas"].values, original_values)
 
@@ -65,9 +65,9 @@ def test_usage_example_check_and_fix_synthetic_cmip6_dataset_with_plan():
 
     assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
 
-    dry_run = woodpecker.plan.fix(dataset, plan_path, dry_run=True)
+    preview = woodpecker.plan.fix(dataset, plan_path, dry_run=True)
 
-    assert dry_run.changed == 1
+    assert preview.changed == 1
     assert dataset["tas"].attrs["units"] == "degC"
     np.testing.assert_allclose(dataset["tas"].values, original_values)
 
@@ -90,9 +90,9 @@ def test_usage_example_check_and_fix_synthetic_cmip6_dataset_with_auto_plan():
 
     assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
 
-    dry_run = woodpecker.plan.fix(dataset, auto_plan, dry_run=True)
+    preview = woodpecker.plan.fix(dataset, auto_plan, dry_run=True)
 
-    assert dry_run.changed == 1
+    assert preview.changed == 1
     assert dataset["tas"].attrs["units"] == "degC"
     np.testing.assert_allclose(dataset["tas"].values, original_values)
 
