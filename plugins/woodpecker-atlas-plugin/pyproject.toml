@@ -6,10 +6,16 @@ build-backend = "setuptools.build_meta"
 name = "woodpecker-atlas-plugin"
 version = "0.3.0"
 description = "External plugin providing ATLAS fixes for Woodpecker"
+readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
   "woodpecker>=0.3.0",
   "xarray>=2024.1.0",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8.0",
 ]
 
 [project.entry-points."woodpecker.plugins"]
@@ -18,3 +24,6 @@ atlas = "woodpecker_atlas_plugin"
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["woodpecker_atlas_plugin*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
