@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 import xarray as xr
 
+from woodpecker import Fixes
 from woodpecker.api import check, fix
 from woodpecker.io import (
     NetCDFInput,
@@ -17,7 +18,7 @@ from woodpecker.testing import make_cmip6
 def test_check_exposes_findings_as_properties():
     ds = make_cmip6(overrides={"units": "degC"})
 
-    result = check(ds, identifiers=["woodpecker.normalize_tas_units_to_kelvin"])
+    result = check(ds, source=Fixes("woodpecker.normalize_tas_units_to_kelvin"))
 
     assert result.has_findings is True
     assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
@@ -27,7 +28,7 @@ def test_check_exposes_findings_as_properties():
 def test_check_accepts_fix_alias():
     ds = make_cmip6(overrides={"units": "degC"})
 
-    result = check(ds, identifiers=["woodpecker.tas_units_to_kelvin"])
+    result = check(ds, source=Fixes("woodpecker.tas_units_to_kelvin"))
 
     assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
 
@@ -37,7 +38,7 @@ def test_fix_exposes_stats_as_properties():
 
     result = fix(
         ds,
-        identifiers=["woodpecker.normalize_tas_units_to_kelvin"],
+        source=Fixes("woodpecker.normalize_tas_units_to_kelvin"),
         write=True,
     )
 
@@ -93,7 +94,7 @@ def test_api_check_raises_on_unknown_fix_code(make_placeholder_netcdf_path):
     source = make_placeholder_netcdf_path("cmip6_bad.nc")
 
     with pytest.raises(ValueError, match=r"Unknown fix identifier\(s\): DOESNOTEXIST"):
-        check([source], identifiers=["DOESNOTEXIST"])
+        check([source], source=Fixes("DOESNOTEXIST"))
 
 
 def test_api_check_strict_io_raises_on_load_fallback(monkeypatch, make_placeholder_netcdf_path):

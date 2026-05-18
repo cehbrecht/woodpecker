@@ -1,60 +1,33 @@
 from __future__ import annotations
 
-from typing import Any, Sequence
+from typing import Any
 
 # Importing woodpecker.fixes registers built-in fixes before API selection runs.
 import woodpecker.fixes  # noqa: F401
-from woodpecker.commands import execute_check, execute_fix
 from woodpecker.results import CheckResult, FixResult
+from woodpecker.sources import Fixes, Source
 
 
 def check(
     inputs: Any,
-    dataset: str | None = None,
-    categories: Sequence[str] = (),
-    identifiers: Sequence[str] = (),
-    fix_options: dict[str, dict[str, Any]] | None = None,
-    ordered_identifiers: Sequence[str] = (),
+    source: Source | None = None,
     strict_io: bool = False,
 ) -> CheckResult:
     """Check inputs and return structured findings."""
-    return CheckResult(
-        findings=tuple(
-            execute_check(
-                inputs,
-                dataset=dataset,
-                categories=categories,
-                identifiers=identifiers,
-                fix_options=fix_options,
-                ordered_identifiers=ordered_identifiers,
-                strict_io=strict_io,
-            )
-        )
-    )
+    return (source or Fixes()).check(inputs, strict_io=strict_io)
 
 
 def fix(
     inputs: Any,
-    dataset: str | None = None,
-    categories: Sequence[str] = (),
-    identifiers: Sequence[str] = (),
+    source: Source | None = None,
     write: bool = False,
     output_format: str = "auto",
-    fix_options: dict[str, dict[str, Any]] | None = None,
-    ordered_identifiers: Sequence[str] = (),
     strict_io: bool = False,
 ) -> FixResult:
     """Apply selected fixes and return structured stats."""
-    return FixResult(
-        stats=execute_fix(
-            inputs,
-            dataset=dataset,
-            categories=categories,
-            identifiers=identifiers,
-            write=write,
-            output_format=output_format,
-            fix_options=fix_options,
-            ordered_identifiers=ordered_identifiers,
-            strict_io=strict_io,
-        )
+    return (source or Fixes()).fix(
+        inputs,
+        write=write,
+        output_format=output_format,
+        strict_io=strict_io,
     )

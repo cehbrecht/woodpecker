@@ -11,9 +11,8 @@ like real climate files.
 
 The integration suite covers two public API styles:
 
-- direct fix selection with `woodpecker.check(...)` and `woodpecker.fix(...)`,
-- plan-driven selection with `woodpecker.plan.check(...)` and
-  `woodpecker.plan.fix(...)`.
+- direct fix selection with `source=woodpecker.Fixes(...)`,
+- plan-driven selection with `source=woodpecker.FixPlan(...)`.
 - auto plan selection with the read-only `auto` store when a fix has no
   curated plan document yet.
 
@@ -33,9 +32,9 @@ The integration tests should read like executable examples:
 
 1. create a realistic synthetic dataset,
 2. corrupt it in a realistic way,
-3. call `woodpecker.check(...)` or `woodpecker.plan.check(...)`,
-4. call `woodpecker.fix(..., write=False)` or `woodpecker.plan.fix(..., write=False)` for a dry run,
-5. call `woodpecker.fix(..., write=True)` or `woodpecker.plan.fix(..., write=True)` to apply the fix,
+3. call `woodpecker.check(..., source=...)`,
+4. call `woodpecker.fix(..., source=..., write=False)` for a dry run,
+5. call `woodpecker.fix(..., source=..., write=True)` to apply the fix,
 6. check that the dataset is corrected and the finding is gone.
 
 Prefer the public API here. Avoid reaching into registries, runners, stores, or

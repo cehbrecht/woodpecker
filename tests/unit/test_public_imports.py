@@ -1,5 +1,5 @@
 def test_public_import_surfaces_are_available():
-    from woodpecker import CheckResult, FixResult, apply_fix_plan, check, fix, plan
+    from woodpecker import CheckResult, Fixes, FixPlan, FixResult, apply_fix_plan, check, fix
     from woodpecker.fix_plans import load_fix_plan
     from woodpecker.runner import run_fix
     from woodpecker.selection import select_fixes
@@ -7,8 +7,8 @@ def test_public_import_surfaces_are_available():
     assert callable(apply_fix_plan)
     assert callable(check)
     assert callable(fix)
-    assert callable(plan.check)
-    assert callable(plan.fix)
+    assert Fixes.__name__ == "Fixes"
+    assert FixPlan.__name__ == "FixPlan"
     assert CheckResult.__name__ == "CheckResult"
     assert FixResult.__name__ == "FixResult"
     assert callable(load_fix_plan)

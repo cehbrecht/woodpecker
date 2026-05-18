@@ -73,13 +73,13 @@ dataset = make_cmip6(overrides={"units": "degC"})
 
 findings = woodpecker.check(
     dataset,
-    identifiers=["woodpecker.normalize_tas_units_to_kelvin"],
+    source=woodpecker.Fixes("woodpecker.normalize_tas_units_to_kelvin"),
 )
 
 if findings.has_findings:
     result = woodpecker.fix(
         dataset,
-        identifiers=findings.fix_ids,
+        source=woodpecker.Fixes(findings.fix_ids),
         write=True,
     )
     assert result.has_changes

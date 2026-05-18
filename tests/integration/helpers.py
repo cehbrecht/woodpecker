@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from woodpecker import check, fix, plan
+from woodpecker import Fixes, FixPlan, check, fix
 
 CORE_FIX_IDS = {
     "woodpecker.normalize_tas_units_to_kelvin",
@@ -27,18 +27,17 @@ def unique_in_order(values) -> tuple[str, ...]:
 def check_finding_ids(dataset, fix_id: str, *, fix_options=None) -> set[str]:
     result = check(
         dataset,
-        identifiers=[fix_id],
-        fix_options=fix_options,
+        source=Fixes(fix_id, options=fix_options),
     )
     return set(result.fix_ids)
 
 
 def assert_no_core_fixes_reported(dataset) -> None:
-    assert not check(dataset, identifiers=sorted(CORE_FIX_IDS)).has_findings
+    assert not check(dataset, source=Fixes(sorted(CORE_FIX_IDS))).has_findings
 
 
 def assert_fix_dry_run_reports_change(dataset, fix_id: str, *, fix_options=None) -> None:
-    result = fix(dataset, identifiers=[fix_id], fix_options=fix_options, write=False)
+    result = fix(dataset, source=Fixes(fix_id, options=fix_options), write=False)
 
     assert result.stats == {
         "attempted": 1,
@@ -50,7 +49,7 @@ def assert_fix_dry_run_reports_change(dataset, fix_id: str, *, fix_options=None)
 
 
 def assert_fix_write_reports_change(dataset, fix_id: str, *, fix_options=None) -> None:
-    result = fix(dataset, identifiers=[fix_id], fix_options=fix_options, write=True)
+    result = fix(dataset, source=Fixes(fix_id, options=fix_options), write=True)
 
     assert result.stats == {
         "attempted": 1,
@@ -93,19 +92,20 @@ def assert_plan_check_fix_cycle(
     plan_id: str | None = None,
 ) -> None:
     """Exercise the plan API from finding through dry-run, write, and re-check."""
-    findings = plan.check(plan_path, inputs=dataset, plan_id=plan_id)
+    source = FixPlan(plan_path, plan_id=plan_id)
+    findings = check(dataset, source=source)
 
     assert unique_in_order(findings.fix_ids) == expected_fix_ids
 
-    dry_run = plan.fix(plan_path, inputs=dataset, write=False, plan_id=plan_id)
+    dry_run = fix(dataset, source=source, write=False)
     assert dry_run.changed == expected_changed
     assert dry_run.persisted == 0
     if assert_unchanged is not None:
         assert_unchanged(dataset)
 
-    write = plan.fix(plan_path, inputs=dataset, write=True, plan_id=plan_id)
+    write = fix(dataset, source=source, write=True)
     assert write.changed == expected_changed
     assert write.persisted == 1
     assert_fixed(dataset)
 
-    assert not plan.check(plan_path, inputs=dataset, plan_id=plan_id).has_findings
+    assert not check(dataset, source=source).has_findings
