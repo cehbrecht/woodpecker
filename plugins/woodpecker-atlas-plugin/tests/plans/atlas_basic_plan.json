@@ -1,0 +1,28 @@
+{
+  "plans": [
+    {
+      "id": "atlas.basic",
+      "description": "Concrete Atlas plan for atlas*.nc files",
+      "links": [
+        {
+          "rel": "self",
+          "href": "https://github.com/cehbrecht/woodpecker/blob/main/plugins/woodpecker-atlas-plugin/tests/plans/atlas_basic_plan.json",
+          "title": "Source plan document"
+        }
+      ],
+      "match": {
+        "path_patterns": [
+          "*atlas*.nc"
+        ]
+      },
+      "steps": [
+        {
+          "id": "atlas.encoding_cleanup"
+        },
+        {
+          "id": "atlas.project_id_normalization"
+        }
+      ]
+    }
+  ]
+}
