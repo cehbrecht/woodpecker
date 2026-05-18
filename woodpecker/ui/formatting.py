@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Sequence
 
-from ..plans.models import FixPlan
+from ..fix_plans.models import FixPlan
 
 
 def _fix_json_payload(fix: object) -> dict[str, object]:

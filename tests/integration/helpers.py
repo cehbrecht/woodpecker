@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from woodpecker import check, check_plan, fix, fix_plan
+from woodpecker import check, fix, plan
 
 CORE_FIX_IDS = {
     "woodpecker.normalize_tas_units_to_kelvin",
@@ -93,19 +93,19 @@ def assert_plan_check_fix_cycle(
     plan_id: str | None = None,
 ) -> None:
     """Exercise the plan API from finding through dry-run, write, and re-check."""
-    findings = check_plan(plan_path, inputs=dataset, plan_id=plan_id)
+    findings = plan.check(plan_path, inputs=dataset, plan_id=plan_id)
 
     assert unique_in_order(findings.fix_ids) == expected_fix_ids
 
-    dry_run = fix_plan(plan_path, inputs=dataset, write=False, plan_id=plan_id)
+    dry_run = plan.fix(plan_path, inputs=dataset, write=False, plan_id=plan_id)
     assert dry_run.changed == expected_changed
     assert dry_run.persisted == 0
     if assert_unchanged is not None:
         assert_unchanged(dataset)
 
-    write = fix_plan(plan_path, inputs=dataset, write=True, plan_id=plan_id)
+    write = plan.fix(plan_path, inputs=dataset, write=True, plan_id=plan_id)
     assert write.changed == expected_changed
     assert write.persisted == 1
     assert_fixed(dataset)
 
-    assert not check_plan(plan_path, inputs=dataset, plan_id=plan_id).has_findings
+    assert not plan.check(plan_path, inputs=dataset, plan_id=plan_id).has_findings

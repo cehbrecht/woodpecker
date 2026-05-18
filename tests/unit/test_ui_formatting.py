@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from woodpecker.plans.models import FixPlan, FixRef
+from woodpecker.fix_plans.models import FixPlan, FixRef
 from woodpecker.ui.formatting import format_fix_stats, format_plans
 
 

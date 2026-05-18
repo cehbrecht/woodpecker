@@ -9,7 +9,7 @@ from woodpecker.io import DataInput, get_output_adapter
 from woodpecker.io.runtime import strict_io_mode
 
 if TYPE_CHECKING:
-    from woodpecker.plans.models import FixPlan
+    from woodpecker.fix_plans.models import FixPlan
 
 
 def run_check(

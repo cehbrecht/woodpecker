@@ -31,7 +31,7 @@ workflows in documentation builds.
 When no explicit plan document exists, registered fixes can also be exposed as
 single-step auto plans. Use the `auto` store to list or query those generated
 plans, for example `woodpecker list-plans --store auto` or the Python API with
-`woodpecker.check_plan(None, inputs=dataset, store_type="auto", plan_id="...")`.
+`woodpecker.plan.check(None, inputs=dataset, store_type="auto", plan_id="...")`.
 
 For exploratory workflows, `FixPlanCatalog` can combine multiple plan sources:
 for example a local JSON/YAML plan store plus `AutoFixPlanStore`. Query the

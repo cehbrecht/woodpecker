@@ -13,9 +13,9 @@ from woodpecker.commands import (
     execute_fix_context,
     execute_load_plans,
 )
+from woodpecker.fix_plans.resolver import RunContext, resolve_run_context
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.io import get_io_availability
-from woodpecker.plans.resolver import RunContext, resolve_run_context
 from woodpecker.provenance import write_fix_provenance
 from woodpecker.stores.helpers import create_fix_plan_store
 from woodpecker.ui.formatting import format_findings, format_fix_stats, format_fixes, format_plans

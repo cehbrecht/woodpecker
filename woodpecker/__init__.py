@@ -1,7 +1,8 @@
 """Woodpecker: lightweight fix catalog + scaffolding for climate dataset fixes."""
 
-from .api import check, check_plan, fix, fix_plan
-from .plans import (
+from . import plan as plan
+from .api import check, fix
+from .fix_plans import (
     FixPlan,
     FixPlanDocument,
     FixRef,
@@ -14,10 +15,9 @@ from .stores import AutoFixPlanStore, FixPlanCatalog, JsonFixPlanStore
 
 __all__ = [
     "fixes",
+    "plan",
     "check",
     "fix",
-    "check_plan",
-    "fix_plan",
     "CheckResult",
     "FixResult",
     "FixRef",

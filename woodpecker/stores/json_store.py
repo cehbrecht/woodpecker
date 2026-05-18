@@ -6,8 +6,8 @@ from typing import Any
 
 import yaml
 
-from ..plans.matcher import plan_matches_dataset
-from ..plans.models import FixPlan
+from ..fix_plans.matcher import plan_matches_dataset
+from ..fix_plans.models import FixPlan
 from .base import FixPlanStore
 from .index import FixPlanIndex
 

@@ -71,17 +71,17 @@ def test_cmip6_decadal_full_plan_checks_and_fixes_synthetic_dataset():
         assert "reftime" in ds.coords
         assert "leadtime" in ds.coords
 
-    findings = woodpecker.check_plan(plan_path, inputs=dataset)
+    findings = woodpecker.plan.check(plan_path, inputs=dataset)
     assert findings.fix_ids == DECADAL_FULL_FIX_IDS
 
-    dry_run = woodpecker.fix_plan(plan_path, inputs=dataset, write=False)
+    dry_run = woodpecker.plan.fix(plan_path, inputs=dataset, write=False)
     assert dry_run.changed == len(DECADAL_FULL_FIX_IDS)
     assert dry_run.persisted == 0
     assert_unchanged(dataset)
 
-    write = woodpecker.fix_plan(plan_path, inputs=dataset, write=True)
+    write = woodpecker.plan.fix(plan_path, inputs=dataset, write=True)
     assert write.changed == len(DECADAL_FULL_FIX_IDS) + 1
     assert write.persisted == 1
     assert_fixed(dataset)
 
-    assert not woodpecker.check_plan(plan_path, inputs=dataset).has_findings
+    assert not woodpecker.plan.check(plan_path, inputs=dataset).has_findings

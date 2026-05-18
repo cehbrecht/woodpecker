@@ -5,8 +5,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Literal, Sequence
 
+from woodpecker.fix_plans.models import FixPlan
 from woodpecker.io import DataInput, normalize_inputs
-from woodpecker.plans.models import FixPlan
 from woodpecker.selection import select_fixes
 from woodpecker.stores.base import FixPlanStore
 from woodpecker.stores.helpers import create_fix_plan_store

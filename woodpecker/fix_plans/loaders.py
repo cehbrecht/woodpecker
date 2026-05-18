@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from woodpecker.plans.models import FixPlan, FixPlanDocument
+from woodpecker.fix_plans.models import FixPlan, FixPlanDocument
 from woodpecker.stores.json_store import JsonFixPlanStore
 
 SUPPORTED_EXTENSIONS = {".json", ".yaml", ".yml"}

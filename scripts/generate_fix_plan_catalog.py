@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from woodpecker.plans.models import FixPlan
+from woodpecker.fix_plans.models import FixPlan
 from woodpecker.stores.json_store import JsonFixPlanStore
 
 DEFAULT_PLAN_DIR = Path("tests/integration/plans")

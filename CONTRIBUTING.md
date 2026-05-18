@@ -337,8 +337,8 @@ strict_findings = woodpecker.check(ds, identifiers=["atlas.encoding_cleanup"], s
 strict_result = woodpecker.fix(ds, identifiers=["atlas.encoding_cleanup"], write=True, strict_io=True)
 
 # Fix plan helpers
-findings_plan = woodpecker.check_plan("plan.json", inputs=["./data"])
-result_plan = woodpecker.fix_plan("plan.json", inputs=ds, write=True)
+findings_plan = woodpecker.plan.check("plan.json", inputs=["./data"])
+result_plan = woodpecker.plan.fix("plan.json", inputs=ds, write=True)
 
 # Path input works as well
 findings_from_paths = woodpecker.check(["./data"], identifiers=["atlas.encoding_cleanup"])

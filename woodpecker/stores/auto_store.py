@@ -5,7 +5,7 @@ from typing import Any
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.identity import dataset_type_matches_declared, resolve_dataset_identity
 
-from ..plans.models import FixPlan, FixRef
+from ..fix_plans.models import FixPlan, FixRef
 from .base import FixPlanStore
 
 
