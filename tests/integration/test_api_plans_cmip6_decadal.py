@@ -84,4 +84,4 @@ def test_cmip6_decadal_full_plan_checks_and_fixes_synthetic_dataset():
     assert write.persisted == 1
     assert_fixed(dataset)
 
-    assert not woodpecker.plan.check(dataset, plan_path).has_findings
+    assert not woodpecker.plan.check(dataset, plan_path)

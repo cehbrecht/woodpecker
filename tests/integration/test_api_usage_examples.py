@@ -48,12 +48,12 @@ def test_usage_example_check_and_fix_synthetic_cmip6_dataset():
 
     auto_plan = woodpecker.plan.auto("woodpecker.normalize_tas_units_to_kelvin")
 
-    assert not woodpecker.plan.check(dataset, auto_plan).has_findings
+    assert not woodpecker.plan.check(dataset, auto_plan)
 
     assert not woodpecker.check(
         dataset,
         fixes="woodpecker.normalize_tas_units_to_kelvin",
-    ).has_findings
+    )
 
 
 def test_usage_example_check_and_fix_synthetic_cmip6_dataset_with_plan():
@@ -77,7 +77,7 @@ def test_usage_example_check_and_fix_synthetic_cmip6_dataset_with_plan():
     assert dataset["tas"].attrs["units"] == "K"
     np.testing.assert_allclose(dataset["tas"].values, original_values + 273.15)
 
-    assert not woodpecker.plan.check(dataset, plan_path).has_findings
+    assert not woodpecker.plan.check(dataset, plan_path)
 
 
 def test_usage_example_check_and_fix_synthetic_cmip6_dataset_with_auto_plan():

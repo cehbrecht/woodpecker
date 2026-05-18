@@ -34,7 +34,7 @@ def check_finding_ids(dataset, fix_id: str, *, fix_options=None) -> set[str]:
 
 
 def assert_no_core_fixes_reported(dataset) -> None:
-    assert not check(dataset, fixes=sorted(CORE_FIX_IDS)).has_findings
+    assert not check(dataset, fixes=sorted(CORE_FIX_IDS))
 
 
 def assert_fix_dry_run_reports_change(dataset, fix_id: str, *, fix_options=None) -> None:
@@ -108,4 +108,4 @@ def assert_plan_check_fix_cycle(
     assert write.persisted == 1
     assert_fixed(dataset)
 
-    assert not plan.check(dataset, plan_path, plan_id=plan_id).has_findings
+    assert not plan.check(dataset, plan_path, plan_id=plan_id)

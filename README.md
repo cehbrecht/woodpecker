@@ -76,13 +76,13 @@ findings = woodpecker.check(
     fixes="woodpecker.normalize_tas_units_to_kelvin",
 )
 
-if findings.has_findings:
+if findings:
     result = woodpecker.fix(
         dataset,
         fixes=findings.fix_ids,
         dry_run=False,
     )
-    assert result.has_changes
+    assert result
 ```
 
 ## Quick Start

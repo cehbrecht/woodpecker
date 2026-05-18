@@ -19,9 +19,14 @@ def test_check_exposes_findings_as_properties():
 
     result = check(ds, fixes="woodpecker.normalize_tas_units_to_kelvin")
 
-    assert result.has_findings is True
+    assert result
+    assert len(result) == 1
+    assert result.count == 1
     assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
     assert result.findings[0]["message"]
+    assert str(result) == (
+        "1 finding from 1 fix: woodpecker.normalize_tas_units_to_kelvin"
+    )
 
 
 def test_check_accepts_fix_alias():
@@ -43,11 +48,31 @@ def test_fix_exposes_stats_as_properties():
 
     assert result.attempted == 1
     assert result.changed == 1
-    assert result.has_changes is True
+    assert result
+    assert len(result) == 1
+    assert result.count == 1
     assert result.persist_attempted == 1
     assert result.persisted == 1
-    assert result.persist_failed == 0
+    assert result.failed == 0
+    assert str(result) == "1 change, 1 attempt, 1 persisted"
     assert ds["tas"].attrs["units"] == "K"
+
+
+def test_empty_results_are_falsey_and_readable():
+    ds = make_cmip6(overrides={"units": "K"})
+
+    findings = check(ds, fixes="woodpecker.normalize_tas_units_to_kelvin")
+    result = fix(ds, fixes="woodpecker.normalize_tas_units_to_kelvin")
+
+    assert not findings
+    assert len(findings) == 0
+    assert findings.count == 0
+    assert str(findings) == "No findings."
+
+    assert not result
+    assert len(result) == 0
+    assert result.count == 0
+    assert str(result) == "0 changes, 0 attempts, 0 persisted"
 
 
 def test_output_adapter_target_paths_for_path_inputs():
