@@ -89,11 +89,8 @@ def test_plan_id_selects_one_plan_when_multiple_plans_match(tmp_path: Path):
     )
 
     with pytest.raises(ValueError, match="Multiple matching fix plans found"):
-        woodpecker.check(dataset, source=woodpecker.FixPlan(plan_path))
+        woodpecker.plan.check(dataset, plan_path)
 
-    findings = woodpecker.check(
-        dataset,
-        source=woodpecker.FixPlan(plan_path, plan_id="cmip6.units"),
-    )
+    findings = woodpecker.plan.check(dataset, plan_path, plan_id="cmip6.units")
 
     assert findings.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)

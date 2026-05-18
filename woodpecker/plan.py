@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Sequence
 
 # Importing woodpecker.fixes registers built-in fixes before API selection runs.
 import woodpecker.fixes  # noqa: F401
-from woodpecker.commands import execute_check, execute_fix
+from woodpecker.commands import execute_check_plan, execute_fix_plan
 from woodpecker.results import CheckResult, FixResult
 
 
@@ -18,23 +19,26 @@ def _normalize_fixes(fixes: str | Sequence[str] | None) -> tuple[str, ...]:
 
 def check(
     inputs: Any,
-    fixes: str | Sequence[str] | None = None,
+    plan: str | Path | None,
+    *,
+    plan_id: str | None = None,
+    store_type: str = "json",
     dataset: str | None = None,
     categories: Sequence[str] = (),
-    options: dict[str, dict[str, Any]] | None = None,
+    fixes: str | Sequence[str] | None = None,
     strict_io: bool = False,
 ) -> CheckResult:
-    """Check inputs using directly selected fixes."""
-    identifiers = _normalize_fixes(fixes)
+    """Check inputs using fixes selected from a fix plan."""
     return CheckResult(
         findings=tuple(
-            execute_check(
-                inputs,
+            execute_check_plan(
+                plan,
+                inputs=inputs,
                 dataset=dataset,
                 categories=categories,
-                identifiers=identifiers,
-                fix_options=options,
-                ordered_identifiers=identifiers,
+                identifiers=_normalize_fixes(fixes),
+                plan_id=plan_id,
+                store_type=store_type,
                 strict_io=strict_io,
             )
         )
@@ -43,26 +47,29 @@ def check(
 
 def fix(
     inputs: Any,
-    fixes: str | Sequence[str] | None = None,
+    plan: str | Path | None,
+    *,
+    plan_id: str | None = None,
+    store_type: str = "json",
     dataset: str | None = None,
     categories: Sequence[str] = (),
+    fixes: str | Sequence[str] | None = None,
     write: bool = False,
     output_format: str = "auto",
-    options: dict[str, dict[str, Any]] | None = None,
     strict_io: bool = False,
 ) -> FixResult:
-    """Apply directly selected fixes and return structured stats."""
-    identifiers = _normalize_fixes(fixes)
+    """Apply fixes selected from a fix plan."""
     return FixResult(
-        stats=execute_fix(
-            inputs,
+        stats=execute_fix_plan(
+            plan,
+            inputs=inputs,
             dataset=dataset,
             categories=categories,
-            identifiers=identifiers,
+            identifiers=_normalize_fixes(fixes),
             write=write,
             output_format=output_format,
-            fix_options=options,
-            ordered_identifiers=identifiers,
+            plan_id=plan_id,
+            store_type=store_type,
             strict_io=strict_io,
         )
     )

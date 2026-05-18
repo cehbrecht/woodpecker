@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Renamed the internal `woodpecker.plans` package to `woodpecker.fix_plans`.
-- Replaced the split public Python API with `woodpecker.check(inputs, source=...)` and `woodpecker.fix(inputs, source=...)`.
+- Simplified the public Python API to direct `woodpecker.check/fix(..., fixes=...)` and plan-backed `woodpecker.plan.check/fix(...)`.
 - Added a read-only auto fix-plan store that exposes registered fixes as single-step plans.
 - Added API, CLI, and integration examples for auto plans.
 - Added a prototype `FixPlanCatalog` for querying multiple fix-plan sources together.
