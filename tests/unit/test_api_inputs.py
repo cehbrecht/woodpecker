@@ -24,9 +24,7 @@ def test_check_exposes_findings_as_properties():
     assert result.count == 1
     assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
     assert result.findings[0]["message"]
-    assert str(result) == (
-        "1 finding from 1 fix: woodpecker.normalize_tas_units_to_kelvin"
-    )
+    assert str(result) == ("1 finding from 1 fix: woodpecker.normalize_tas_units_to_kelvin")
 
 
 def test_check_accepts_fix_alias():
