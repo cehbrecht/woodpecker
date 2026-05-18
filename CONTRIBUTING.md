@@ -352,6 +352,16 @@ findings_from_paths = woodpecker.check(
 Prefer public API integration tests for end-to-end behavior. They should read
 like executable examples and use synthetic climate datasets where possible.
 
+Interim plugin-testing policy (current state):
+
+- Keep cross-plugin integration tests in core under `tests/integration` until
+  plugin interfaces and plan contracts are stable.
+- Keep plugin-local unit tests in each plugin package under
+  `plugins/*/tests`.
+- Revisit moving integration coverage into plugin repositories when plugin
+  APIs are versioned, compatibility guarantees are documented, and CI can run
+  shared contract suites across repositories.
+
 Useful references:
 
 - `tests/integration/README.md`: integration test intent and style.
