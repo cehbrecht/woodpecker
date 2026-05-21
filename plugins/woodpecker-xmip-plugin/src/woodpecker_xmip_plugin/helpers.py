@@ -283,20 +283,6 @@ def fix_metadata(dataset: xr.Dataset):
     return dataset
 
 
-def xmip_cmip6_preprocessing(dataset: xr.Dataset):
-    dataset = rename_cmip6(dataset)
-    dataset = promote_empty_dims(dataset)
-    dataset = correct_coordinates(dataset)
-    dataset = broadcast_lonlat(dataset)
-    dataset = correct_lon(dataset)
-    dataset = parse_lon_lat_bounds(dataset)
-    dataset = sort_vertex_order(dataset)
-    dataset = maybe_convert_bounds_to_vertex(dataset)
-    dataset = maybe_convert_vertex_to_bounds(dataset)
-    dataset = fix_metadata(dataset)
-    return dataset.drop_vars(DROP_COORDS, errors="ignore")
-
-
 def overwrite_dataset_in_place(target: xr.Dataset, source: xr.Dataset) -> None:
     replace = getattr(target, "_replace", None)
     if callable(replace):

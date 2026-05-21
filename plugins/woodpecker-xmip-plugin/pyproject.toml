@@ -26,5 +26,8 @@ xmip = "woodpecker_xmip_plugin"
 where = ["src"]
 include = ["woodpecker_xmip_plugin*"]
 
+[tool.setuptools.package-data]
+woodpecker_xmip_plugin = ["plans/*.yaml"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

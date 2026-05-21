@@ -1,3 +1,15 @@
 """xMIP-derived fix namespace for Woodpecker."""
 
-from .xmip_0001 import XmipCmip6PreprocessingFix  # noqa: F401
+from .xmip_0001 import (  # noqa: F401
+    BroadcastLonLatFix,
+    ConvertBoundsToVerticesFix,
+    ConvertVerticesToBoundsFix,
+    DropHelperGridCoordsFix,
+    FixKnownCmip6MetadataFix,
+    MarkSpatialCoordsFix,
+    NormalizeLongitudeConventionFix,
+    NormalizeLonLatBoundsFix,
+    PromoteMissingDimensionCoordsFix,
+    RenameCmip6AxesFix,
+    SortVertexOrderFix,
+)
