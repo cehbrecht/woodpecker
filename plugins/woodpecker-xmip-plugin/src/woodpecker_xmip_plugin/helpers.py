@@ -226,7 +226,9 @@ def correct_lon(dataset: xr.Dataset):
     dataset = dataset.copy()
     dataset["lon"] = dataset["lon"].where(abs(dataset["lon"]) <= 1000)
     dataset["lat"] = dataset["lat"].where(abs(dataset["lat"]) <= 1000)
-    dataset = dataset.assign_coords(lon=dataset["lon"].where(dataset["lon"] > 0, 360 + dataset["lon"]))
+    dataset = dataset.assign_coords(
+        lon=dataset["lon"].where(dataset["lon"] > 0, 360 + dataset["lon"])
+    )
 
     if "lon_bounds" in dataset.variables:
         lon_bounds = dataset["lon_bounds"].where(

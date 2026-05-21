@@ -124,7 +124,9 @@ class NormalizeLongitudeConventionFix(XmipCmip6TransformFix):
 class NormalizeCoordinateUnitsFix(XmipCmip6TransformFix):
     suffix = "normalize_coordinate_units"
     name = "Normalize coordinate units"
-    description = "Converts supported CMIP6 coordinate units to xMIP target units, currently lev to meters."
+    description = (
+        "Converts supported CMIP6 coordinate units to xMIP target units, currently lev to meters."
+    )
     categories = ["metadata", "coordinates"]
     message = "supported coordinate units can be normalized"
 
@@ -184,7 +186,9 @@ class ConvertBoundsToVerticesFix(XmipCmip6TransformFix):
 class ConvertVerticesToBoundsFix(XmipCmip6TransformFix):
     suffix = "convert_vertices_to_bounds"
     name = "Convert vertices to bounds"
-    description = "Creates lon/lat bounds from vertex-style lon/lat coordinates when bounds are missing."
+    description = (
+        "Creates lon/lat bounds from vertex-style lon/lat coordinates when bounds are missing."
+    )
     categories = ["structure", "coordinates"]
     message = "lon/lat bounds can be derived from vertices"
 
