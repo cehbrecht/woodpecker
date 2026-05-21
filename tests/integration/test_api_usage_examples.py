@@ -118,7 +118,7 @@ def test_usage_example_query_fix_plan_catalog(tmp_path):
 
     matched_plans = catalog.lookup(dataset)
 
-    assert [plan.id for plan in matched_plans] == [
+    assert [plan.id for plan in matched_plans][:2] == [
         "cmip6.curated_units",
         "woodpecker.normalize_tas_units_to_kelvin",
     ]

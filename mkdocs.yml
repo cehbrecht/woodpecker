@@ -23,3 +23,4 @@ nav:
       - DuckDB Plan Store: notebooks/duckdb_fix_plan_store_example.ipynb
       - Atlas Fix Plan: notebooks/atlas_fix_plan_example.ipynb
       - ESA CCI Fix Plan: notebooks/esa_cci_fix_plan_example.ipynb
+      - xMIP Plugin Demo: notebooks/xmip_plugin_demo.ipynb

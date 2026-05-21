@@ -17,6 +17,7 @@ from a plan document:
 - [DuckDB Plan Store](notebooks/duckdb_fix_plan_store_example.ipynb)
 - [Atlas Fix Plan](notebooks/atlas_fix_plan_example.ipynb)
 - [ESA CCI Fix Plan](notebooks/esa_cci_fix_plan_example.ipynb)
+- [xMIP Plugin Demo](notebooks/xmip_plugin_demo.ipynb)
 
 The auto store and catalog notebooks show exploratory plan discovery from
 registered fixes and multiple plan sources. The fix-plan notebooks also show
@@ -25,8 +26,9 @@ store example loads all shared plan fixtures into a temporary DuckDB database
 and queries matching plans for representative synthetic dataset IDs. The CMIP6
 fix-plan notebook loads a shared YAML plan fixture from
 `tests/integration/plans/cmip6_core_plan.yaml`, while the Atlas and ESA CCI
-examples load JSON fixtures. This exercises JSON, YAML, and DuckDB-backed plan
-workflows in documentation builds.
+examples load JSON fixtures. The xMIP demo loads the plan bundled with the
+`woodpecker-xmip-plugin` package. This exercises JSON, YAML, package-resource,
+and DuckDB-backed plan workflows in documentation builds.
 
 When no explicit plan document exists, registered fixes can also be exposed as
 single-step auto plans. Use the `auto` store to list or query those generated
