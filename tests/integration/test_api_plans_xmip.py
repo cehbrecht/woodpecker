@@ -4,9 +4,9 @@ from importlib.resources import as_file, files
 
 import numpy as np
 import pytest
-import xarray as xr
 
 import woodpecker
+from woodpecker.testing import make_cmip6
 
 pytest.importorskip("woodpecker_xmip_plugin")
 
@@ -18,40 +18,31 @@ def _xmip_plan_path():
     return as_file(plan_ref)
 
 
-def _raw_cmip6_grid_dataset() -> xr.Dataset:
-    longitude = xr.DataArray(
-        np.array([[-10.0, 0.0, 10.0], [-10.0, 0.0, 10.0]]),
-        dims=("j", "i"),
-    )
-    latitude = xr.DataArray(
-        np.array([[-1.0, -1.0, -1.0], [1.0, 1.0, 1.0]]),
-        dims=("j", "i"),
-    )
-    return xr.Dataset(
-        data_vars={
-            "tas": (("j", "i", "lev"), np.ones((2, 3, 2))),
-            "longitude": longitude,
-            "latitude": latitude,
-        },
-        coords={
-            "i": [-10.0, 0.0, 10.0],
-            "j": [-1.0, 1.0],
-            "lev": ("lev", [0.0, 100.0], {"units": "centimeters"}),
-        },
-        attrs={
-            "project_id": "CMIP6",
+def _xmip_corrupted_cmip6_dataset():
+    dataset = make_cmip6(
+        overrides={
             "source_id": "GFDL-CM4",
             "experiment_id": "historical",
-            "variable_id": "tas",
-            "table_id": "Amon",
-            "grid_label": "gn",
-            "variant_label": "r1i1p1f1",
         },
+        seed=7,
     )
+    dataset = dataset.isel(time=slice(0, 2), lat=slice(0, 2), lon=slice(0, 3))
+    dataset = dataset.rename({"lat": "j", "lon": "i"})
+    dataset = dataset.expand_dims({"lev": [0.0, 100.0]})
+    dataset["lev"].attrs["units"] = "centimeters"
+
+    longitude = np.broadcast_to(np.array([-10.0, 0.0, 10.0]), (dataset.sizes["j"], 3))
+    latitude = np.broadcast_to(
+        np.asarray(dataset["j"].values)[:, None],
+        (dataset.sizes["j"], dataset.sizes["i"]),
+    )
+    dataset["longitude"] = (("j", "i"), longitude)
+    dataset["latitude"] = (("j", "i"), latitude)
+    return dataset
 
 
 def test_xmip_cmip6_preprocessing_plan_checks_and_fixes_synthetic_dataset():
-    dataset = _raw_cmip6_grid_dataset()
+    dataset = _xmip_corrupted_cmip6_dataset()
 
     with _xmip_plan_path() as plan_path:
         findings = woodpecker.plan.check(
