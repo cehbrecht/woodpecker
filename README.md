@@ -189,6 +189,7 @@ jupyter notebook notebooks/cmip6_core_api_example.ipynb
 jupyter notebook notebooks/cmip6_core_fix_plan_example.ipynb
 jupyter notebook notebooks/atlas_fix_plan_example.ipynb
 jupyter notebook notebooks/esa_cci_fix_plan_example.ipynb
+jupyter notebook notebooks/xmip_plugin_demo.ipynb
 ```
 
 The fix-plan documents used by the plan notebooks are covered by integration
