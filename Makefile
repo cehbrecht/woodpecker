@@ -5,7 +5,8 @@ PYTHON ?= $(shell python -c 'import sys; print(sys.executable)')
 PLUGIN_PATHS := plugins/woodpecker-atlas-plugin \
 	plugins/woodpecker-cmip6-plugin \
 	plugins/woodpecker-cmip6-decadal-plugin \
-	plugins/woodpecker-cmip7-plugin
+	plugins/woodpecker-cmip7-plugin \
+	plugins/woodpecker-xmip-plugin
 PLUGIN_INSTALL_ARGS := $(foreach p,$(PLUGIN_PATHS),-e $(p))
 
 help:

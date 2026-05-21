@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "woodpecker-xmip-plugin"
+version = "0.3.0"
+description = "External plugin providing xMIP-derived CMIP6 preprocessing fixes for Woodpecker"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "woodpecker>=0.3,<0.4",
+  "numpy>=1.24",
+  "xarray>=2024.1.0",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8.0",
+]
+
+[project.entry-points."woodpecker.plugins"]
+xmip = "woodpecker_xmip_plugin"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["woodpecker_xmip_plugin*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
