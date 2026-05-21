@@ -7,9 +7,11 @@ from .xmip_0001 import (  # noqa: F401
     DropHelperGridCoordsFix,
     FixKnownCmip6MetadataFix,
     MarkSpatialCoordsFix,
+    NormalizeCoordinateUnitsFix,
     NormalizeLongitudeConventionFix,
     NormalizeLonLatBoundsFix,
     PromoteMissingDimensionCoordsFix,
     RenameCmip6AxesFix,
+    ReplaceXYWithNominalLonLatFix,
     SortVertexOrderFix,
 )

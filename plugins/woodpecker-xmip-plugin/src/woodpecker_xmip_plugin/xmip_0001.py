@@ -11,6 +11,7 @@ from .helpers import (
     broadcast_lonlat,
     correct_coordinates,
     correct_lon,
+    correct_units,
     dataset_changed,
     fix_metadata,
     is_cmip6_dataset,
@@ -20,6 +21,7 @@ from .helpers import (
     parse_lon_lat_bounds,
     promote_empty_dims,
     rename_cmip6,
+    replace_x_y_nominal_lat_lon,
     sort_vertex_order,
 )
 
@@ -116,6 +118,30 @@ class NormalizeLongitudeConventionFix(XmipCmip6TransformFix):
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
         return correct_lon(dataset)
+
+
+@register_fix
+class NormalizeCoordinateUnitsFix(XmipCmip6TransformFix):
+    suffix = "normalize_coordinate_units"
+    name = "Normalize coordinate units"
+    description = "Converts supported CMIP6 coordinate units to xMIP target units, currently lev to meters."
+    categories = ["metadata", "coordinates"]
+    message = "supported coordinate units can be normalized"
+
+    def transform(self, dataset: xr.Dataset) -> xr.Dataset:
+        return correct_units(dataset)
+
+
+@register_fix
+class ReplaceXYWithNominalLonLatFix(XmipCmip6TransformFix):
+    suffix = "replace_xy_with_nominal_lon_lat"
+    name = "Replace x/y with nominal lon/lat"
+    description = "Approximates x and y coordinate values from representative lon/lat slices and sorts the grid."
+    categories = ["coordinates"]
+    message = "x/y coordinates can be replaced with nominal lon/lat values"
+
+    def transform(self, dataset: xr.Dataset) -> xr.Dataset:
+        return replace_x_y_nominal_lat_lon(dataset)
 
 
 @register_fix

@@ -14,9 +14,11 @@ EXPECTED_FIX_IDS = {
     "xmip.drop_helper_grid_coords",
     "xmip.fix_known_cmip6_metadata",
     "xmip.mark_spatial_coords",
+    "xmip.normalize_coordinate_units",
     "xmip.normalize_lon_lat_bounds",
     "xmip.normalize_longitude_convention",
     "xmip.promote_missing_dimension_coords",
+    "xmip.replace_xy_with_nominal_lon_lat",
     "xmip.rename_cmip6_axes",
     "xmip.sort_vertex_order",
 }
@@ -139,6 +141,80 @@ def test_xmip_normalize_longitude_convention_is_detected_and_applied_after_renam
     )
 
 
+def test_xmip_normalize_coordinate_units_is_detected_and_applied():
+    dataset = xr.Dataset(
+        data_vars={"thetao": ("lev", np.ones(3))},
+        coords={"lev": ("lev", np.array([0.0, 50.0, 100.0]), {"units": "centimeters"})},
+        attrs={
+            "project_id": "CMIP6",
+            "source_id": "Example",
+            "experiment_id": "historical",
+            "table_id": "Omon",
+            "grid_label": "gn",
+            "variant_label": "r1i1p1f1",
+        },
+    )
+
+    def assert_fixed(ds):
+        np.testing.assert_allclose(ds["lev"].values, np.array([0.0, 0.5, 1.0]))
+        assert ds["lev"].attrs["units"] == "m"
+
+    assert_check_fix_cycle(
+        dataset,
+        "xmip.normalize_coordinate_units",
+        assert_fixed=assert_fixed,
+    )
+
+
+def test_xmip_replace_xy_with_nominal_lon_lat_is_detected_and_applied():
+    x = np.array([0.0, 10.0, 20.0, 30.0])
+    y = np.array([-200.0, 0.0, 140.0])
+    lon = xr.DataArray(
+        np.array(
+            [
+                [0.0, 50.0, 100.0, 150.0],
+                [0.0, 50.0, 100.0, 150.0],
+                [0.0, 50.0, 100.0, 150.0],
+            ]
+        ),
+        dims=("y", "x"),
+    )
+    lat = xr.DataArray(
+        np.array(
+            [
+                [0.0, 0.0, 10.0, 0.0],
+                [10.0, 0.0, 0.0, 0.0],
+                [20.0, 20.0, 20.0, 20.0],
+            ]
+        ),
+        dims=("y", "x"),
+    )
+    dataset = xr.Dataset(
+        data_vars={"thetao": (("y", "x"), np.ones((3, 4)))},
+        coords={"x": x, "y": y, "lon": lon, "lat": lat},
+        attrs={
+            "project_id": "CMIP6",
+            "source_id": "Example",
+            "experiment_id": "historical",
+            "table_id": "Omon",
+            "grid_label": "gn",
+            "variant_label": "r1i1p1f1",
+        },
+    )
+
+    def assert_fixed(ds):
+        assert len(ds.x) == len(np.unique(ds.x))
+        assert len(ds.y) == len(np.unique(ds.y))
+        assert bool((ds.x.diff("x") > 0).all())
+        assert bool((ds.y.diff("y") > 0).all())
+
+    assert_check_fix_cycle(
+        dataset,
+        "xmip.replace_xy_with_nominal_lon_lat",
+        assert_fixed=assert_fixed,
+    )
+
+
 def test_xmip_metadata_fix_ignores_non_cmip6():
     dataset = _raw_cmip6_dataset()
     dataset.attrs["project_id"] = "CMIP5"
@@ -156,18 +232,28 @@ def test_xmip_cmip6_preprocessing_plan_checks_and_fixes_dataset():
 
     dataset = _raw_cmip6_dataset()
 
-    findings = woodpecker.plan.check(dataset, PLAN_PATH)
+    findings = woodpecker.plan.check(dataset, PLAN_PATH, plan_id="xmip.cmip6_preprocessing")
     assert set(findings.fix_ids) == {
         "xmip.rename_cmip6_axes",
         "xmip.fix_known_cmip6_metadata",
     }
 
-    preview = woodpecker.plan.fix(dataset, PLAN_PATH, dry_run=True)
+    preview = woodpecker.plan.fix(
+        dataset,
+        PLAN_PATH,
+        plan_id="xmip.cmip6_preprocessing",
+        dry_run=True,
+    )
     assert preview.changed == 2
     assert "i" in dataset.dims
     assert "branch_time_in_parent" not in dataset.attrs
 
-    write = woodpecker.plan.fix(dataset, PLAN_PATH, dry_run=False)
+    write = woodpecker.plan.fix(
+        dataset,
+        PLAN_PATH,
+        plan_id="xmip.cmip6_preprocessing",
+        dry_run=False,
+    )
     assert write.changed == 4
     assert "x" in dataset.dims
     assert "y" in dataset.dims
@@ -175,4 +261,17 @@ def test_xmip_cmip6_preprocessing_plan_checks_and_fixes_dataset():
     assert "lat" in dataset.coords
     assert float(dataset["lon"].min()) >= 0
     assert dataset.attrs["branch_time_in_parent"] == 91250
-    assert not woodpecker.plan.check(dataset, PLAN_PATH)
+    assert not woodpecker.plan.check(dataset, PLAN_PATH, plan_id="xmip.cmip6_preprocessing")
+
+
+def test_xmip_nominal_xy_plan_includes_nominal_coordinate_replacement():
+    from woodpecker.fix_plans.loaders import load_fix_plan_document
+
+    document = load_fix_plan_document(PLAN_PATH)
+    plan = next(plan for plan in document.plans if plan.id == "xmip.cmip6_preprocessing_nominal_xy")
+    step_ids = [step.id for step in plan.steps]
+
+    assert "xmip.replace_xy_with_nominal_lon_lat" in step_ids
+    assert step_ids.index("xmip.replace_xy_with_nominal_lon_lat") > step_ids.index(
+        "xmip.normalize_longitude_convention"
+    )

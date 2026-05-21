@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import warnings
 from collections.abc import Mapping
 
 import numpy as np
 import xarray as xr
 
 DROP_COORDS = ("bnds", "vertex")
+DESIRED_UNITS = {"lev": "m"}
+UNIT_OVERRIDES = {"so": None}
 
 
 def is_cmip6_dataset(dataset: xr.Dataset) -> bool:
@@ -155,6 +158,67 @@ def broadcast_lonlat(dataset: xr.Dataset):
     return dataset
 
 
+def _interp_nominal_lon(lon_1d: np.ndarray) -> np.ndarray:
+    x = np.arange(len(lon_1d))
+    idx = np.isnan(lon_1d)
+    return np.interp(x, x[~idx], lon_1d[~idx], period=len(lon_1d))
+
+
+def _fix_non_unique(values: np.ndarray, *, pad: bool = False) -> np.ndarray:
+    values = np.array(values, copy=True)
+    if len(values) == len(np.unique(values)):
+        return values
+
+    if pad:
+        if len(np.unique(values[0:2])) < 2:
+            values[0] = -90
+        if len(np.unique(values[-2:])) < 2:
+            values[-1] = 90
+
+    index_range = np.arange(len(values))
+    _, unique_indices = np.unique(values, return_index=True)
+    duplicate_index = np.array([index not in unique_indices for index in index_range])
+    values[duplicate_index] = np.interp(
+        index_range[duplicate_index],
+        index_range[~duplicate_index],
+        values[~duplicate_index],
+    )
+    return values
+
+
+def replace_x_y_nominal_lat_lon(dataset: xr.Dataset):
+    """Approximate x/y coordinate values from representative lon/lat slices."""
+
+    required = {"x", "y"}
+    if not required.issubset(dataset.dims):
+        return dataset
+    if "lon" not in dataset.variables or "lat" not in dataset.variables:
+        return dataset
+    if "x" not in dataset["lon"].dims or "y" not in dataset["lat"].dims:
+        return dataset
+
+    dataset = dataset.copy()
+    eq_idx = len(dataset.y) // 2
+
+    nominal_x = dataset.isel(y=eq_idx).lon.load()
+    nominal_y = dataset.lat.max("x").load()
+
+    nominal_x_values = _interp_nominal_lon(np.asarray(nominal_x.data, dtype=float))
+    nominal_y_values = nominal_y.interpolate_na("y").data
+
+    dataset = dataset.assign_coords(
+        x=_fix_non_unique(nominal_x_values),
+        y=_fix_non_unique(nominal_y_values),
+    )
+    dataset = dataset.sortby("x")
+    dataset = dataset.sortby("y")
+
+    return dataset.assign_coords(
+        x=_fix_non_unique(dataset.x.load().data),
+        y=_fix_non_unique(dataset.y.load().data, pad=True),
+    )
+
+
 def correct_lon(dataset: xr.Dataset):
     if "lon" not in dataset.variables or "lat" not in dataset.variables:
         return dataset
@@ -170,6 +234,67 @@ def correct_lon(dataset: xr.Dataset):
         )
         dataset = dataset.assign_coords(lon_bounds=lon_bounds)
     return dataset
+
+
+def _normalize_unit_name(unit: object) -> str:
+    return str(unit or "").strip().lower().replace(" ", "_")
+
+
+def _convert_data_array_to_meters(data_array: xr.DataArray) -> xr.DataArray | None:
+    unit = _normalize_unit_name(data_array.attrs.get("units"))
+    if unit in {"m", "meter", "meters", "metre", "metres"}:
+        if data_array.attrs.get("units") == "m":
+            return None
+        converted = data_array.copy()
+        converted.attrs = dict(data_array.attrs)
+        converted.attrs["units"] = "m"
+        return converted
+    if unit in {"cm", "centimeter", "centimeters", "centimetre", "centimetres"}:
+        converted = data_array / 100.0
+        converted.attrs = dict(data_array.attrs)
+        converted.attrs["units"] = "m"
+        return converted
+    return None
+
+
+def _correct_units_with_pint(dataset: xr.Dataset) -> xr.Dataset:
+    import cf_xarray.units  # noqa: F401
+    import pint  # noqa: F401
+    import pint_xarray  # noqa: F401
+
+    quantified = dataset.pint.quantify(UNIT_OVERRIDES)
+    target_units = {
+        variable: target_unit
+        for variable, target_unit in DESIRED_UNITS.items()
+        if variable in quantified
+    }
+    converted = quantified.pint.to(target_units)
+    return converted.pint.dequantify(format="~P")
+
+
+def correct_units(dataset: xr.Dataset):
+    if not any(variable in dataset.variables for variable in DESIRED_UNITS):
+        return dataset
+
+    try:
+        return _correct_units_with_pint(dataset)
+    except ImportError:
+        pass
+    except ValueError as exc:
+        warnings.warn(f"Unit correction failed with: {exc}", UserWarning, stacklevel=2)
+        return dataset
+
+    converted = dataset.copy()
+    changed = False
+    for variable, target_unit in DESIRED_UNITS.items():
+        if target_unit != "m" or variable not in converted.variables:
+            continue
+        converted_variable = _convert_data_array_to_meters(converted[variable])
+        if converted_variable is None:
+            continue
+        converted[variable] = converted_variable
+        changed = True
+    return converted if changed else dataset
 
 
 def parse_lon_lat_bounds(dataset: xr.Dataset):

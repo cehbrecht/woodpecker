@@ -20,6 +20,29 @@ plans:
       - id: xmip.mark_spatial_coords
       - id: xmip.broadcast_lon_lat
       - id: xmip.normalize_longitude_convention
+      - id: xmip.normalize_coordinate_units
+      - id: xmip.normalize_lon_lat_bounds
+      - id: xmip.sort_vertex_order
+      - id: xmip.convert_bounds_to_vertices
+      - id: xmip.convert_vertices_to_bounds
+      - id: xmip.fix_known_cmip6_metadata
+      - id: xmip.drop_helper_grid_coords
+
+  - id: xmip.cmip6_preprocessing_nominal_xy
+    description: >-
+      Extended CMIP6 preprocessing that also replaces x/y coordinate values
+      with nominal longitude/latitude values derived from the grid.
+    match:
+      attrs:
+        project_id: CMIP6
+    steps:
+      - id: xmip.rename_cmip6_axes
+      - id: xmip.promote_missing_dimension_coords
+      - id: xmip.mark_spatial_coords
+      - id: xmip.broadcast_lon_lat
+      - id: xmip.normalize_longitude_convention
+      - id: xmip.replace_xy_with_nominal_lon_lat
+      - id: xmip.normalize_coordinate_units
       - id: xmip.normalize_lon_lat_bounds
       - id: xmip.sort_vertex_order
       - id: xmip.convert_bounds_to_vertices
