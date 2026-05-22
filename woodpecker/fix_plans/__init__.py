@@ -1,6 +1,13 @@
 """Fix plan models, matching, and resolution helpers."""
 
-from .loaders import SUPPORTED_EXTENSIONS, load_fix_plan, load_fix_plan_document
+from .loaders import (
+    FIX_PLAN_PATH_ENV,
+    SUPPORTED_EXTENSIONS,
+    FixPlanDocumentSource,
+    FixPlanLoader,
+    load_fix_plan,
+    load_fix_plan_document,
+)
 from .matcher import plan_matches_dataset
 from .models import DatasetMatcher, FixPlan, FixPlanDocument, FixRef, Link, parse_fix_ref
 
@@ -12,6 +19,9 @@ __all__ = [
     "FixPlanDocument",
     "parse_fix_ref",
     "SUPPORTED_EXTENSIONS",
+    "FIX_PLAN_PATH_ENV",
+    "FixPlanDocumentSource",
+    "FixPlanLoader",
     "load_fix_plan",
     "load_fix_plan_document",
     "plan_matches_dataset",

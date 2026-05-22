@@ -84,11 +84,23 @@ def test_generate_fix_plan_catalog_rejects_duplicate_plan_ids(tmp_path):
         generator.load_integration_plans(plan_dir)
 
 
-def test_generate_fix_plan_catalog_can_load_plugin_plan_sources():
+def test_generate_fix_plan_catalog_can_load_discovered_plan_sources():
     generator = _load_generator_module()
 
-    plans = generator.load_plugin_plans()
+    plans = generator.load_discovered_plans()
     plan_by_id = {plan.id: (plan, source_files, source) for plan, source_files, source in plans}
+
+    assert "cmip6.core_units" in plan_by_id
+    _, source_files, source = plan_by_id["cmip6.core_units"]
+    assert source == "core"
+    assert source_files == ["woodpecker/fix_plans/plans/cmip6_core_plan.yaml"]
+
+    assert "atlas.basic" in plan_by_id
+    _, source_files, source = plan_by_id["atlas.basic"]
+    assert source == "plugin:woodpecker_atlas_plugin"
+    assert source_files == [
+        "plugins/woodpecker-atlas-plugin/src/woodpecker_atlas_plugin/plans/atlas_basic_plan.json"
+    ]
 
     assert "xmip.cmip6_preprocessing" in plan_by_id
     plan, source_files, source = plan_by_id["xmip.cmip6_preprocessing"]

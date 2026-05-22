@@ -48,6 +48,9 @@ woodpecker = "woodpecker.cli:cli"
 [tool.setuptools.packages.find]
 include = ["woodpecker*"]
 
+[tool.setuptools.package-data]
+woodpecker = ["fix_plans/plans/*.yaml", "fix_plans/plans/*.yml", "fix_plans/plans/*.json"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests/unit", "tests/integration"]
 markers = [

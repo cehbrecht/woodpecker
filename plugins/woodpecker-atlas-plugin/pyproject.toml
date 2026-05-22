@@ -25,5 +25,8 @@ atlas = "woodpecker_atlas_plugin"
 where = ["src"]
 include = ["woodpecker_atlas_plugin*"]
 
+[tool.setuptools.package-data]
+woodpecker_atlas_plugin = ["plans/*.json", "plans/*.yaml", "plans/*.yml"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

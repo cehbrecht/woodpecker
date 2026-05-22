@@ -25,15 +25,15 @@
     "links": [
       {
         "rel": "self",
-        "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/atlas_basic_plan.json",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/plugins/woodpecker-atlas-plugin/src/woodpecker_atlas_plugin/plans/atlas_basic_plan.json",
         "title": "Source plan document"
       }
     ],
     "prefix": "atlas",
     "suffix": "basic",
-    "source": "integration-tests",
+    "source": "plugin:woodpecker_atlas_plugin",
     "source_files": [
-      "tests/integration/plans/atlas_basic_plan.json"
+      "plugins/woodpecker-atlas-plugin/src/woodpecker_atlas_plugin/plans/atlas_basic_plan.json"
     ],
     "step_ids": [
       "atlas.encoding_cleanup",
@@ -64,15 +64,15 @@
     "links": [
       {
         "rel": "self",
-        "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/cmip6_core_plan.yaml",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/woodpecker/fix_plans/plans/cmip6_core_plan.yaml",
         "title": "Source plan document"
       }
     ],
     "prefix": "cmip6",
     "suffix": "core_units",
-    "source": "integration-tests",
+    "source": "core",
     "source_files": [
-      "tests/integration/plans/cmip6_core_plan.yaml"
+      "woodpecker/fix_plans/plans/cmip6_core_plan.yaml"
     ],
     "step_ids": [
       "woodpecker.normalize_tas_units_to_kelvin"
@@ -173,15 +173,15 @@
     "links": [
       {
         "rel": "self",
-        "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/cmip6_decadal_full_plan.json",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/plugins/woodpecker-cmip6-decadal-plugin/src/woodpecker_cmip6_decadal_plugin/plans/cmip6_decadal_full_plan.json",
         "title": "Source plan document"
       }
     ],
     "prefix": "cmip6_decadal",
     "suffix": "full",
-    "source": "integration-tests",
+    "source": "plugin:woodpecker_cmip6_decadal_plugin",
     "source_files": [
-      "tests/integration/plans/cmip6_decadal_full_plan.json"
+      "plugins/woodpecker-cmip6-decadal-plugin/src/woodpecker_cmip6_decadal_plugin/plans/cmip6_decadal_full_plan.json"
     ],
     "step_ids": [
       "cmip6_decadal.time_metadata",
@@ -244,15 +244,15 @@
     "links": [
       {
         "rel": "self",
-        "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/esa_cci_water_vapour_plan.json",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/plugins/woodpecker-cmip7-plugin/src/woodpecker_cmip7_plugin/plans/esa_cci_water_vapour_plan.json",
         "title": "Source plan document"
       }
     ],
     "prefix": "cmip7",
     "suffix": "esa_cci_water_vapour_dotname",
-    "source": "integration-tests",
+    "source": "plugin:woodpecker_cmip7_plugin",
     "source_files": [
-      "tests/integration/plans/esa_cci_water_vapour_plan.json"
+      "plugins/woodpecker-cmip7-plugin/src/woodpecker_cmip7_plugin/plans/esa_cci_water_vapour_plan.json"
     ],
     "step_ids": [
       "woodpecker.merge_equivalent_dimensions",
@@ -296,7 +296,7 @@
     "links": [
       {
         "rel": "self",
-        "href": "https://github.com/cehbrecht/woodpecker/blob/main/tests/integration/plans/esa_cci_water_vapour_plan.json",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/plugins/woodpecker-cmip7-plugin/src/woodpecker_cmip7_plugin/plans/esa_cci_water_vapour_plan.json",
         "title": "Source plan document"
       },
       {
@@ -307,9 +307,9 @@
     ],
     "prefix": "cmip7",
     "suffix": "esa_cci_water_vapour_zarr",
-    "source": "integration-tests",
+    "source": "plugin:woodpecker_cmip7_plugin",
     "source_files": [
-      "tests/integration/plans/esa_cci_water_vapour_plan.json"
+      "plugins/woodpecker-cmip7-plugin/src/woodpecker_cmip7_plugin/plans/esa_cci_water_vapour_plan.json"
     ],
     "step_ids": [
       "cmip7.configurable_reformat_bridge",

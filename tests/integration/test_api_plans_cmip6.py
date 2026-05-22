@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 import woodpecker
-from woodpecker.testing import integration_plan_path, make_cmip6
+from woodpecker.testing import make_cmip6
 
 from .helpers import assert_plan_check_fix_cycle, write_plan_document
 
@@ -14,7 +14,6 @@ from .helpers import assert_plan_check_fix_cycle, write_plan_document
 def test_plan_checks_and_fixes_synthetic_cmip6_dataset():
     dataset = make_cmip6(overrides={"units": "degC"})
     original_values = dataset["tas"].values.copy()
-    plan_path = integration_plan_path("cmip6_core_plan.yaml")
 
     def assert_unchanged(ds):
         assert ds["tas"].attrs["units"] == "degC"
@@ -25,12 +24,13 @@ def test_plan_checks_and_fixes_synthetic_cmip6_dataset():
         np.testing.assert_allclose(ds["tas"].values, original_values + 273.15)
 
     assert_plan_check_fix_cycle(
-        plan_path,
+        None,
         dataset,
         expected_fix_ids=("woodpecker.normalize_tas_units_to_kelvin",),
         expected_changed=1,
         assert_unchanged=assert_unchanged,
         assert_fixed=assert_fixed,
+        plan_id="cmip6.core_units",
     )
 
 

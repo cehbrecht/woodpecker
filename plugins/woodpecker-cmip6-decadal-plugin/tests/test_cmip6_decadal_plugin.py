@@ -1,11 +1,10 @@
-from pathlib import Path
-
 import numpy as np
 import pytest
 import woodpecker_cmip6_decadal_plugin  # noqa: F401
 import xarray as xr
 from _cmip6_decadal_helpers import assert_check_fix_cycle, assert_plan_check_fix_cycle
 
+import woodpecker
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.testing import make_cmip6_decadal
 
@@ -43,7 +42,7 @@ DECADAL_FULL_FIX_IDS = (
     "cmip6_decadal.model_global_attributes",
     "cmip6_decadal.reftime_coordinate",
 )
-PLAN_PATH = Path(__file__).parent / "plans" / "cmip6_decadal_full_plan.json"
+PLAN = woodpecker.plan.get("cmip6_decadal.full")
 
 
 def _decadal_dataset(**overrides):
@@ -317,7 +316,7 @@ def test_cmip6_decadal_full_plan_checks_and_fixes_synthetic_dataset():
         assert "leadtime" in ds.coords
 
     assert_plan_check_fix_cycle(
-        PLAN_PATH,
+        PLAN,
         dataset,
         expected_fix_ids=DECADAL_FULL_FIX_IDS,
         expected_changed=len(DECADAL_FULL_FIX_IDS),

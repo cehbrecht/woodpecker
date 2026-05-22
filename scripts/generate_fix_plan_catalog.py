@@ -1,22 +1,16 @@
 from __future__ import annotations
 
 import json
-from importlib.resources import as_file, files
 from pathlib import Path
 from typing import Any
 
+from woodpecker.fix_plans import FixPlanLoader
 from woodpecker.fix_plans.models import FixPlan
 from woodpecker.stores.json_store import JsonFixPlanStore
 
 DEFAULT_PLAN_DIR = Path("tests/integration/plans")
 GITHUB_BLOB_BASE_URL = "https://github.com/cehbrecht/woodpecker/blob/main"
-PLUGIN_PLAN_SOURCES = (
-    (
-        "woodpecker_xmip_plugin",
-        "plans",
-        "plugins/woodpecker-xmip-plugin/src/woodpecker_xmip_plugin/plans",
-    ),
-)
+DOCS_FIX_PLAN_ENV = "_WOODPECKER_DOCS_FIX_PLAN_PATH"
 
 
 def _markdown_cell(value: object) -> str:
@@ -108,31 +102,44 @@ def load_integration_plans(
 def load_plugin_plans() -> list[tuple[FixPlan, list[str], str]]:
     """Load plan documents bundled as package resources by local plugins."""
 
+    return load_discovered_plans(include_core=False)
+
+
+def _package_source_file(label: str) -> tuple[str, str]:
+    package_resource = label.removeprefix("package:")
+    package, resource_path = package_resource.split("/", 1)
+    if package == "woodpecker.fix_plans":
+        return "core", f"woodpecker/fix_plans/{resource_path}"
+    if package.startswith("woodpecker_") and package.endswith("_plugin"):
+        distribution = package.replace("_", "-")
+        return "plugin:" + package, f"plugins/{distribution}/src/{package}/{resource_path}"
+    return "package:" + package, package.replace(".", "/") + "/" + resource_path
+
+
+def load_discovered_plans(include_core: bool = True) -> list[tuple[FixPlan, list[str], str]]:
+    """Load package-bundled plans through the same loader used at runtime."""
+
+    loader = FixPlanLoader(
+        env_var=DOCS_FIX_PLAN_ENV,
+        user_dirs=(),
+        system_dirs=(),
+        core_packages=("woodpecker.fix_plans",) if include_core else (),
+    )
     plans_by_id: dict[str, FixPlan] = {}
     source_files_by_id: dict[str, list[str]] = {}
     source_by_id: dict[str, str] = {}
 
-    for package, resource_dir, source_base in PLUGIN_PLAN_SOURCES:
-        try:
-            plan_refs = files(package).joinpath(resource_dir).iterdir()
-        except ModuleNotFoundError:
-            continue
-
-        for plan_ref in sorted(plan_refs, key=lambda ref: ref.name):
-            if not plan_ref.name.lower().endswith((".json", ".yaml", ".yml")):
-                continue
-
-            source_label = f"{source_base}/{plan_ref.name}"
-            with as_file(plan_ref) as plan_path:
-                for plan in JsonFixPlanStore(plan_path).list_plans():
-                    _add_plan(
-                        plan,
-                        [source_label],
-                        f"plugin:{package}",
-                        plans_by_id,
-                        source_files_by_id,
-                        source_by_id,
-                    )
+    for document in loader.load_documents():
+        source, source_file = _package_source_file(document.label)
+        for plan in document.plans:
+            _add_plan(
+                plan,
+                [source_file],
+                source,
+                plans_by_id,
+                source_files_by_id,
+                source_by_id,
+            )
 
     return [
         (plans_by_id[plan_id], source_files_by_id[plan_id], source_by_id[plan_id])
@@ -146,14 +153,16 @@ def generate_fix_plan_catalog(
     plan_dir: str = str(DEFAULT_PLAN_DIR),
     include_plugin_plans: bool = True,
 ) -> None:
-    plans = load_integration_plans(Path(plan_dir))
-    if include_plugin_plans:
-        plans += load_plugin_plans()
+    plans = (
+        load_integration_plans(Path(plan_dir))
+        if not include_plugin_plans
+        else load_discovered_plans(include_core=True)
+    )
 
     md_lines = [
         "Fix plans are curated recipes for selecting and applying fixes to matching datasets.",
         "",
-        "Source values point to integration-test plans or package-bundled plugin plans.",
+        "Source values point to core or package-bundled plugin plans discovered by FixPlanLoader.",
         "",
         "| ID | Description | Match | Steps | Source | Source Files |",
         "|----|-------------|-------|-------|--------|--------------|",

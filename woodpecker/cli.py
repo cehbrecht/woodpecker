@@ -21,7 +21,7 @@ from woodpecker.stores.helpers import create_fix_plan_store
 from woodpecker.ui.formatting import format_findings, format_fix_stats, format_fixes, format_plans
 
 T = TypeVar("T")
-STORE_CHOICES = ["json", "duckdb", "auto"]
+STORE_CHOICES = ["catalog", "json", "duckdb", "auto"]
 WRITABLE_STORE_CHOICES = ["json", "duckdb"]
 
 
@@ -63,7 +63,7 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
     "--store",
     "store_type",
     type=click.Choice(STORE_CHOICES),
-    default="json",
+    default="catalog",
     show_default=True,
     help="FixPlanStore backend.",
 )
@@ -74,15 +74,15 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
     required=False,
     help=(
         "Path or location used by selected store backend "
-        "(JSON: local file, DuckDB: database file; not needed for auto)."
+        "(catalog: extra file/directory, JSON: local file, DuckDB: database file; not needed for auto)."
     ),
 )
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def list_plans(store_type: str, plan_location: Path | None, fmt: str):
     """List FixPlan entries from a configured store backend.
 
-    All plan access goes through a FixPlanStore backend selected by `--store`
-    and sourced from `--plan` location.
+    Catalog mode discovers plans from package resources, user config, system
+    locations, and optional `--plan` paths.
     """
 
     store = _with_click_errors(lambda: create_fix_plan_store(store_type, plan_location))
@@ -117,7 +117,7 @@ def list_plans(store_type: str, plan_location: Path | None, fmt: str):
     required=False,
     help=(
         "Source plan location interpreted by --from-store "
-        "(JSON: local file, DuckDB: database file; not needed for auto)."
+        "(catalog: extra file/directory, JSON: local file, DuckDB: database file; not needed for auto)."
     ),
 )
 @click.option(
@@ -174,7 +174,7 @@ def load_plans(
     default=None,
     help=(
         "Path or location used by selected store backend "
-        "(JSON: local file, DuckDB: database file; not needed for auto)."
+        "(catalog: extra file/directory, JSON: local file, DuckDB: database file; not needed for auto)."
     ),
 )
 @click.option("--plan-id", "plan_id", default=None, help="Select a specific stored plan id.")
@@ -263,7 +263,7 @@ def io_status(fmt: str):
     default=None,
     help=(
         "Path or location used by selected store backend "
-        "(JSON: local file, DuckDB: database file; not needed for auto)."
+        "(catalog: extra file/directory, JSON: local file, DuckDB: database file; not needed for auto)."
     ),
 )
 @click.option("--plan-id", "plan_id", default=None, help="Select a specific stored plan id.")

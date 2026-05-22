@@ -1,8 +1,7 @@
-from pathlib import Path
-
 import woodpecker_atlas_plugin  # noqa: F401
 from _atlas_helpers import assert_check_fix_cycle, assert_plan_check_fix_cycle
 
+import woodpecker
 from woodpecker.fixes.registry import FixRegistry
 from woodpecker.testing import make_atlas
 
@@ -10,7 +9,7 @@ EXPECTED_FIX_IDS = {
     "atlas.encoding_cleanup",
     "atlas.project_id_normalization",
 }
-PLAN_PATH = Path(__file__).parent / "plans" / "atlas_basic_plan.json"
+PLAN = woodpecker.plan.get("atlas.basic")
 
 
 def test_plugin_registers_expected_fixes():
@@ -81,7 +80,7 @@ def test_atlas_plan_checks_and_fixes_synthetic_dataset():
         assert ds["pr"].encoding["shuffle"] is True
 
     assert_plan_check_fix_cycle(
-        PLAN_PATH,
+        PLAN,
         dataset,
         expected_fix_ids=(
             "atlas.encoding_cleanup",
