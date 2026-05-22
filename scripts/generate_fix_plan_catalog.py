@@ -75,7 +75,9 @@ def _add_plan(
     source_by_id[plan.id] = source
 
 
-def load_integration_plans(plan_dir: Path = DEFAULT_PLAN_DIR) -> list[tuple[FixPlan, list[str], str]]:
+def load_integration_plans(
+    plan_dir: Path = DEFAULT_PLAN_DIR,
+) -> list[tuple[FixPlan, list[str], str]]:
     """Load integration-test plans, raising on duplicate plan ids."""
 
     plans_by_id: dict[str, FixPlan] = {}
