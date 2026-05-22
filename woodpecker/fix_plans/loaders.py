@@ -132,11 +132,14 @@ class FixPlanLoader:
         sources: list[FixPlanDocumentSource] = []
         for package in packages:
             try:
-                plan_refs = files(package).joinpath(self.resource_dir).iterdir()
+                plan_dir = files(package).joinpath(self.resource_dir)
+                if not plan_dir.is_dir():
+                    continue
+                plan_refs = sorted(plan_dir.iterdir(), key=lambda ref: ref.name)
             except (FileNotFoundError, ModuleNotFoundError):
                 continue
 
-            for plan_ref in sorted(plan_refs, key=lambda ref: ref.name):
+            for plan_ref in plan_refs:
                 if not plan_ref.name.lower().endswith(tuple(SUPPORTED_EXTENSIONS)):
                     continue
                 with as_file(plan_ref) as plan_path:

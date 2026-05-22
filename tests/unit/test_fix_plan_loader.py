@@ -53,6 +53,15 @@ def test_fix_plan_loader_includes_env_path(monkeypatch, tmp_path):
     assert "env.units" in plan_ids
 
 
+def test_fix_plan_loader_ignores_plugin_without_plan_directory():
+    sources = FixPlanLoader(
+        core_packages=(),
+        plugin_packages=("woodpecker_cmip6_plugin",),
+    ).load_documents()
+
+    assert sources == []
+
+
 def test_plan_api_resolves_discovered_plan_id_without_explicit_path():
     dataset = make_cmip6(overrides={"units": "degC"})
 
