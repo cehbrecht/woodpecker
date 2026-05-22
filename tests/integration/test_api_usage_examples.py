@@ -59,25 +59,25 @@ def test_usage_example_check_and_fix_synthetic_cmip6_dataset():
 def test_usage_example_check_and_fix_synthetic_cmip6_dataset_with_plan():
     dataset = make_cmip6(overrides={"units": "degC"})
     original_values = dataset["tas"].values.copy()
-    plan_source = woodpecker.plan.catalog("cmip6.core_units")
+    plan = woodpecker.plan.get("cmip6.core_units")
 
-    result = woodpecker.plan.check(dataset, plan_source)
+    result = woodpecker.plan.check(dataset, plan)
 
     assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
 
-    preview = woodpecker.plan.fix(dataset, plan_source, dry_run=True)
+    preview = woodpecker.plan.fix(dataset, plan, dry_run=True)
 
     assert preview.changed == 1
     assert dataset["tas"].attrs["units"] == "degC"
     np.testing.assert_allclose(dataset["tas"].values, original_values)
 
-    write = woodpecker.plan.fix(dataset, plan_source, dry_run=False)
+    write = woodpecker.plan.fix(dataset, plan, dry_run=False)
 
     assert write.changed == 1
     assert dataset["tas"].attrs["units"] == "K"
     np.testing.assert_allclose(dataset["tas"].values, original_values + 273.15)
 
-    assert not woodpecker.plan.check(dataset, plan_source)
+    assert not woodpecker.plan.check(dataset, plan)
 
 
 def test_usage_example_check_and_fix_synthetic_cmip6_dataset_with_auto_plan():

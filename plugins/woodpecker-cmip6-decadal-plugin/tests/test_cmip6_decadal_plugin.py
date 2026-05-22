@@ -42,7 +42,7 @@ DECADAL_FULL_FIX_IDS = (
     "cmip6_decadal.model_global_attributes",
     "cmip6_decadal.reftime_coordinate",
 )
-PLAN_SOURCE = woodpecker.plan.catalog("cmip6_decadal.full")
+PLAN = woodpecker.plan.get("cmip6_decadal.full")
 
 
 def _decadal_dataset(**overrides):
@@ -316,7 +316,7 @@ def test_cmip6_decadal_full_plan_checks_and_fixes_synthetic_dataset():
         assert "leadtime" in ds.coords
 
     assert_plan_check_fix_cycle(
-        PLAN_SOURCE,
+        PLAN,
         dataset,
         expected_fix_ids=DECADAL_FULL_FIX_IDS,
         expected_changed=len(DECADAL_FULL_FIX_IDS),

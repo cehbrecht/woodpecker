@@ -61,6 +61,25 @@ def test_plan_api_resolves_discovered_plan_id_without_explicit_path():
     assert findings.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
 
 
+def test_plan_api_get_returns_plan_usable_by_check_and_fix():
+    dataset = make_cmip6(overrides={"units": "degC"})
+    plan = woodpecker.plan.get("cmip6.core_units")
+
+    findings = woodpecker.plan.check(dataset, plan)
+    preview = woodpecker.plan.fix(dataset, plan, dry_run=True)
+
+    assert plan.id == "cmip6.core_units"
+    assert findings.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
+    assert preview.changed == 1
+
+
+def test_plan_api_lists_discovered_plans():
+    plan_ids = {plan.id for plan in woodpecker.plan.list_plans()}
+
+    assert "cmip6.core_units" in plan_ids
+    assert "xmip.cmip6_preprocessing" in plan_ids
+
+
 def test_plan_api_catalog_selector_resolves_plugin_plan():
     dataset = make_cmip6(
         overrides={

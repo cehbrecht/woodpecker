@@ -110,8 +110,8 @@ if findings:
 Fix plans can also be discovered without hard-coding a path:
 
 ```python
-findings = woodpecker.plan.check(dataset, None, plan_id="cmip6.core_units")
-findings = woodpecker.plan.check(dataset, woodpecker.plan.catalog("xmip.cmip6_preprocessing"))
+plan = woodpecker.plan.get("cmip6.core_units")
+findings = woodpecker.plan.check(dataset, plan)
 ```
 
 Plan authoring models are available from `woodpecker.fix_plans`:

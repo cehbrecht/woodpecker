@@ -37,8 +37,8 @@ def _xmip_corrupted_cmip6_dataset():
 def test_xmip_cmip6_preprocessing_plan_checks_and_fixes_synthetic_dataset():
     dataset = _xmip_corrupted_cmip6_dataset()
 
-    plan_source = woodpecker.plan.catalog("xmip.cmip6_preprocessing")
-    findings = woodpecker.plan.check(dataset, plan_source)
+    plan = woodpecker.plan.get("xmip.cmip6_preprocessing")
+    findings = woodpecker.plan.check(dataset, plan)
 
     assert unique_in_order(findings.fix_ids) == (
         "xmip.rename_cmip6_axes",
@@ -46,14 +46,14 @@ def test_xmip_cmip6_preprocessing_plan_checks_and_fixes_synthetic_dataset():
         "xmip.fix_known_cmip6_metadata",
     )
 
-    preview = woodpecker.plan.fix(dataset, plan_source, dry_run=True)
+    preview = woodpecker.plan.fix(dataset, plan, dry_run=True)
     assert preview.changed == 3
     assert "i" in dataset.dims
     assert "longitude" in dataset.data_vars
     assert dataset["lev"].attrs["units"] == "centimeters"
     assert "branch_time_in_parent" not in dataset.attrs
 
-    write = woodpecker.plan.fix(dataset, plan_source, dry_run=False)
+    write = woodpecker.plan.fix(dataset, plan, dry_run=False)
 
     assert write.changed == 5
     assert write.persisted == 1
@@ -68,4 +68,4 @@ def test_xmip_cmip6_preprocessing_plan_checks_and_fixes_synthetic_dataset():
     assert dataset["lev"].attrs["units"] == "m"
     assert dataset.attrs["branch_time_in_parent"] == 91250
 
-    assert not woodpecker.plan.check(dataset, plan_source)
+    assert not woodpecker.plan.check(dataset, plan)

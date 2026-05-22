@@ -9,7 +9,7 @@ EXPECTED_FIX_IDS = {
     "atlas.encoding_cleanup",
     "atlas.project_id_normalization",
 }
-PLAN_SOURCE = woodpecker.plan.catalog("atlas.basic")
+PLAN = woodpecker.plan.get("atlas.basic")
 
 
 def test_plugin_registers_expected_fixes():
@@ -80,7 +80,7 @@ def test_atlas_plan_checks_and_fixes_synthetic_dataset():
         assert ds["pr"].encoding["shuffle"] is True
 
     assert_plan_check_fix_cycle(
-        PLAN_SOURCE,
+        PLAN,
         dataset,
         expected_fix_ids=(
             "atlas.encoding_cleanup",
