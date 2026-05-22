@@ -1,15 +1,79 @@
 # Woodpecker
 
-Woodpecker is a lightweight, code-driven fix catalog for climate datasets.
+**Small, precise fixes for climate data.**
 
-This site contains generated catalogs, plan references, and runnable examples.
+[![CI](https://github.com/cehbrecht/woodpecker/actions/workflows/ci.yml/badge.svg)](https://github.com/cehbrecht/woodpecker/actions/workflows/ci.yml)
+[![Docs](https://github.com/cehbrecht/woodpecker/actions/workflows/docs.yml/badge.svg)](https://github.com/cehbrecht/woodpecker/actions/workflows/docs.yml)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://github.com/cehbrecht/woodpecker/blob/main/pyproject.toml)
+[![License](https://img.shields.io/github/license/cehbrecht/woodpecker)](https://github.com/cehbrecht/woodpecker/blob/main/LICENSE)
 
-For the short project introduction, use the repository README:
+Like the bird caring for a forest by finding hidden bugs, Woodpecker cares for
+climate data by finding known data bugs and applying focused fixes.
 
-- [README](OVERVIEW.md)
+It brings repair scripts, workarounds, plugins, and fix plans under one simple
+API for checking, applying, composing, and discovering climate data fixes.
 
-For architecture and contributor details, use:
+## Common Paths
 
-- [CONTRIBUTING](CONTRIBUTING_GUIDE.md)
+**Check a dataset**  
+Run known fixes directly when you already know the fix id. Start with the
+[Fixes Catalog](FIXES.md).
 
-Use the left navigation for fixes, plans, and notebook examples.
+**Run a discovered plan**  
+Load an ordered workflow from core, plugin, user, or system plan sources. Start
+with [Discovered Fix Plans](plans.md).
+
+**Browse plugins**  
+See bundled dataset-family plugins, prefixes, fixes, and plan coverage. Start
+with [Plugins](plugins.md).
+
+**Explore examples**  
+Open executed notebooks built from deterministic synthetic climate datasets.
+Start with [Examples](examples.md).
+
+## Start Here
+
+Use a discovered fix plan when you want Woodpecker to choose an ordered workflow
+by id:
+
+```python
+import woodpecker
+
+plan = woodpecker.plan.get("cmip6.core_units")
+findings = woodpecker.plan.check(dataset, plan)
+
+if findings:
+    woodpecker.plan.fix(dataset, plan, dry_run=False)
+```
+
+Use direct fix selection when you already know the exact fix id:
+
+```python
+findings = woodpecker.check(
+    dataset,
+    fixes="woodpecker.normalize_tas_units_to_kelvin",
+)
+```
+
+From the command line, list discovered plans and run one by id:
+
+```bash
+woodpecker list-plans
+woodpecker check ./data --plan-id cmip6.core_units
+```
+
+## What To Read
+
+- [Discovered Fix Plans](plans.md): how Woodpecker finds bundled, user, system,
+  and explicit plan documents.
+- [Plugins](plugins.md): bundled plugin status, prefixes, fixes, and plans.
+- [Examples](examples.md): runnable notebooks built from deterministic
+  synthetic datasets.
+- [Fixes Catalog](FIXES.md): generated reference for available fixes.
+- [Fix Plans](FIX_PLANS.md): generated reference for discovered plans.
+
+The xMIP plugin is currently a demo plugin that translates xMIP-style CMIP6
+preprocessing into small, inspectable Woodpecker fixes.
+
+For the short project introduction, use the [README](OVERVIEW.md). For
+architecture and contributor details, use [CONTRIBUTING](CONTRIBUTING_GUIDE.md).
