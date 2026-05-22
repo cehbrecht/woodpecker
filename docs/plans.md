@@ -34,6 +34,19 @@ woodpecker fix ./data --plan-id xmip.cmip6_preprocessing --dry-run
 
 Use `woodpecker list-plans` to inspect the discovered set.
 
+## How It Fits
+
+```mermaid
+flowchart LR
+  Dataset["Dataset"] --> Plan["FixPlan"]
+  Loader["FixPlanLoader"] --> Plan
+  Core["Core plans"] --> Loader
+  Plugins["Plugin plans"] --> Loader
+  Local["User/system/explicit plans"] --> Loader
+  Plan --> Fixes["Fixes"]
+  Fixes --> Result["Checked or repaired dataset"]
+```
+
 ## Direct Files
 
 Explicit files are still useful for local experiments, tests, and private

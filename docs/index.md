@@ -1,8 +1,41 @@
 # Woodpecker
 
+[![CI](https://github.com/cehbrecht/woodpecker/actions/workflows/ci.yml/badge.svg)](https://github.com/cehbrecht/woodpecker/actions/workflows/ci.yml)
+[![Docs](https://github.com/cehbrecht/woodpecker/actions/workflows/docs.yml/badge.svg)](https://github.com/cehbrecht/woodpecker/actions/workflows/docs.yml)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://github.com/cehbrecht/woodpecker/blob/main/pyproject.toml)
+[![License](https://img.shields.io/github/license/cehbrecht/woodpecker)](https://github.com/cehbrecht/woodpecker/blob/main/LICENSE)
+
 Woodpecker is a lightweight, code-driven fix catalog for climate datasets. It
 helps detect known dataset issues, apply small repair steps, and compose those
 steps into reusable fix plans.
+
+<div class="grid cards" markdown>
+
+- **Check a dataset**
+
+  Run known fixes directly when you already know the fix id.
+
+  [`Fixes Catalog`](FIXES.md)
+
+- **Run a discovered plan**
+
+  Load an ordered workflow from core, plugin, user, or system plan sources.
+
+  [`Discovered Fix Plans`](plans.md)
+
+- **Browse plugins**
+
+  See bundled dataset-family plugins, prefixes, fixes, and plan coverage.
+
+  [`Plugins`](plugins.md)
+
+- **Explore examples**
+
+  Open executed notebooks built from deterministic synthetic climate datasets.
+
+  [`Examples`](examples.md)
+
+</div>
 
 ## Start Here
 
@@ -44,6 +77,9 @@ woodpecker check ./data --plan-id cmip6.core_units
   synthetic datasets.
 - [Fixes Catalog](FIXES.md): generated reference for available fixes.
 - [Fix Plans](FIX_PLANS.md): generated reference for discovered plans.
+
+The xMIP plugin is currently a demo plugin that translates xMIP-style CMIP6
+preprocessing into small, inspectable Woodpecker fixes.
 
 For the short project introduction, use the [README](OVERVIEW.md). For
 architecture and contributor details, use [CONTRIBUTING](CONTRIBUTING_GUIDE.md).
