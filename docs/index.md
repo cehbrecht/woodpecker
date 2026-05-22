@@ -9,33 +9,23 @@ Woodpecker is a lightweight, code-driven fix catalog for climate datasets. It
 helps detect known dataset issues, apply small repair steps, and compose those
 steps into reusable fix plans.
 
-<div class="grid cards" markdown>
+## Common Paths
 
-- **Check a dataset**
+**Check a dataset**  
+Run known fixes directly when you already know the fix id. Start with the
+[Fixes Catalog](FIXES.md).
 
-  Run known fixes directly when you already know the fix id.
+**Run a discovered plan**  
+Load an ordered workflow from core, plugin, user, or system plan sources. Start
+with [Discovered Fix Plans](plans.md).
 
-  [`Fixes Catalog`](FIXES.md)
+**Browse plugins**  
+See bundled dataset-family plugins, prefixes, fixes, and plan coverage. Start
+with [Plugins](plugins.md).
 
-- **Run a discovered plan**
-
-  Load an ordered workflow from core, plugin, user, or system plan sources.
-
-  [`Discovered Fix Plans`](plans.md)
-
-- **Browse plugins**
-
-  See bundled dataset-family plugins, prefixes, fixes, and plan coverage.
-
-  [`Plugins`](plugins.md)
-
-- **Explore examples**
-
-  Open executed notebooks built from deterministic synthetic climate datasets.
-
-  [`Examples`](examples.md)
-
-</div>
+**Explore examples**  
+Open executed notebooks built from deterministic synthetic climate datasets.
+Start with [Examples](examples.md).
 
 ## Start Here
 
