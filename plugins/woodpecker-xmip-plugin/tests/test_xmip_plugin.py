@@ -1,10 +1,9 @@
-from pathlib import Path
-
 import numpy as np
 import woodpecker_xmip_plugin  # noqa: F401
 import xarray as xr
 from _xmip_helpers import assert_check_fix_cycle
 
+import woodpecker
 from woodpecker.fixes.registry import FixRegistry
 
 EXPECTED_FIX_IDS = {
@@ -22,13 +21,7 @@ EXPECTED_FIX_IDS = {
     "xmip.rename_cmip6_axes",
     "xmip.sort_vertex_order",
 }
-PLAN_PATH = (
-    Path(__file__).parents[1]
-    / "src"
-    / "woodpecker_xmip_plugin"
-    / "plans"
-    / "cmip6_preprocessing.yaml"
-)
+PLAN_SOURCE = woodpecker.plan.catalog("xmip.cmip6_preprocessing")
 
 
 def _raw_cmip6_dataset() -> xr.Dataset:
@@ -228,11 +221,9 @@ def test_xmip_metadata_fix_ignores_non_cmip6():
 
 
 def test_xmip_cmip6_preprocessing_plan_checks_and_fixes_dataset():
-    import woodpecker
-
     dataset = _raw_cmip6_dataset()
 
-    findings = woodpecker.plan.check(dataset, PLAN_PATH, plan_id="xmip.cmip6_preprocessing")
+    findings = woodpecker.plan.check(dataset, PLAN_SOURCE)
     assert set(findings.fix_ids) == {
         "xmip.rename_cmip6_axes",
         "xmip.fix_known_cmip6_metadata",
@@ -240,8 +231,7 @@ def test_xmip_cmip6_preprocessing_plan_checks_and_fixes_dataset():
 
     preview = woodpecker.plan.fix(
         dataset,
-        PLAN_PATH,
-        plan_id="xmip.cmip6_preprocessing",
+        PLAN_SOURCE,
         dry_run=True,
     )
     assert preview.changed == 2
@@ -250,8 +240,7 @@ def test_xmip_cmip6_preprocessing_plan_checks_and_fixes_dataset():
 
     write = woodpecker.plan.fix(
         dataset,
-        PLAN_PATH,
-        plan_id="xmip.cmip6_preprocessing",
+        PLAN_SOURCE,
         dry_run=False,
     )
     assert write.changed == 4
@@ -261,14 +250,13 @@ def test_xmip_cmip6_preprocessing_plan_checks_and_fixes_dataset():
     assert "lat" in dataset.coords
     assert float(dataset["lon"].min()) >= 0
     assert dataset.attrs["branch_time_in_parent"] == 91250
-    assert not woodpecker.plan.check(dataset, PLAN_PATH, plan_id="xmip.cmip6_preprocessing")
+    assert not woodpecker.plan.check(dataset, PLAN_SOURCE)
 
 
 def test_xmip_nominal_xy_plan_includes_nominal_coordinate_replacement():
-    from woodpecker.fix_plans.loaders import load_fix_plan_document
+    from woodpecker.fix_plans import FixPlanLoader
 
-    document = load_fix_plan_document(PLAN_PATH)
-    plan = next(plan for plan in document.plans if plan.id == "xmip.cmip6_preprocessing_nominal_xy")
+    plan = FixPlanLoader().catalog().get_plan("xmip.cmip6_preprocessing_nominal_xy")
     step_ids = [step.id for step in plan.steps]
 
     assert "xmip.replace_xy_with_nominal_lon_lat" in step_ids

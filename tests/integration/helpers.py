@@ -83,7 +83,7 @@ def assert_check_fix_cycle(
 
 
 def assert_plan_check_fix_cycle(
-    plan_path: Path,
+    plan_source,
     dataset,
     *,
     expected_fix_ids: tuple[str, ...],
@@ -93,19 +93,19 @@ def assert_plan_check_fix_cycle(
     plan_id: str | None = None,
 ) -> None:
     """Exercise the plan API from finding through dry-run, write, and re-check."""
-    findings = plan.check(dataset, plan_path, plan_id=plan_id)
+    findings = plan.check(dataset, plan_source, plan_id=plan_id)
 
     assert unique_in_order(findings.fix_ids) == expected_fix_ids
 
-    preview = plan.fix(dataset, plan_path, dry_run=True, plan_id=plan_id)
+    preview = plan.fix(dataset, plan_source, dry_run=True, plan_id=plan_id)
     assert preview.changed == expected_changed
     assert preview.persisted == 0
     if assert_unchanged is not None:
         assert_unchanged(dataset)
 
-    write = plan.fix(dataset, plan_path, dry_run=False, plan_id=plan_id)
+    write = plan.fix(dataset, plan_source, dry_run=False, plan_id=plan_id)
     assert write.changed == expected_changed
     assert write.persisted == 1
     assert_fixed(dataset)
 
-    assert not plan.check(dataset, plan_path, plan_id=plan_id)
+    assert not plan.check(dataset, plan_source, plan_id=plan_id)

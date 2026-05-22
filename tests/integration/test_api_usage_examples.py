@@ -12,7 +12,7 @@ import numpy as np
 import woodpecker
 from woodpecker.fix_plans import DatasetMatcher, FixPlan, FixRef
 from woodpecker.stores import AutoFixPlanStore, FixPlanCatalog, JsonFixPlanStore
-from woodpecker.testing import integration_plan_path, make_cmip6
+from woodpecker.testing import make_cmip6
 
 
 def test_usage_example_check_and_fix_synthetic_cmip6_dataset():
@@ -59,25 +59,25 @@ def test_usage_example_check_and_fix_synthetic_cmip6_dataset():
 def test_usage_example_check_and_fix_synthetic_cmip6_dataset_with_plan():
     dataset = make_cmip6(overrides={"units": "degC"})
     original_values = dataset["tas"].values.copy()
-    plan_path = integration_plan_path("cmip6_core_plan.yaml")
+    plan_source = woodpecker.plan.catalog("cmip6.core_units")
 
-    result = woodpecker.plan.check(dataset, plan_path)
+    result = woodpecker.plan.check(dataset, plan_source)
 
     assert result.fix_ids == ("woodpecker.normalize_tas_units_to_kelvin",)
 
-    preview = woodpecker.plan.fix(dataset, plan_path, dry_run=True)
+    preview = woodpecker.plan.fix(dataset, plan_source, dry_run=True)
 
     assert preview.changed == 1
     assert dataset["tas"].attrs["units"] == "degC"
     np.testing.assert_allclose(dataset["tas"].values, original_values)
 
-    write = woodpecker.plan.fix(dataset, plan_path, dry_run=False)
+    write = woodpecker.plan.fix(dataset, plan_source, dry_run=False)
 
     assert write.changed == 1
     assert dataset["tas"].attrs["units"] == "K"
     np.testing.assert_allclose(dataset["tas"].values, original_values + 273.15)
 
-    assert not woodpecker.plan.check(dataset, plan_path)
+    assert not woodpecker.plan.check(dataset, plan_source)
 
 
 def test_usage_example_check_and_fix_synthetic_cmip6_dataset_with_auto_plan():

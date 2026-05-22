@@ -204,8 +204,8 @@ jupyter notebook notebooks/esa_cci_fix_plan_example.ipynb
 jupyter notebook notebooks/xmip_plugin_demo.ipynb
 ```
 
-The fix-plan documents used by the plan notebooks are covered by integration
-tests and live in `tests/integration/plans/`.
+The fix-plan documents used by the plan notebooks are discovered from core and
+plugin package resources and are covered by integration tests.
 
 ## Development
 
