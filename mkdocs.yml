@@ -9,13 +9,16 @@ plugins:
       kernel_name: python3
 nav:
   - Home: index.md
-  - Overview (README): OVERVIEW.md
-  - Contributing (Details): CONTRIBUTING_GUIDE.md
-  - Fixes Catalog: FIXES.md
-  - Fix Plans: FIX_PLANS.md
-  - Interactive Fixes: fixes.html
+  - Getting Started:
+      - Overview: OVERVIEW.md
+      - Discovered Fix Plans: plans.md
+      - Plugins: plugins.md
+      - Examples: examples.md
+  - Reference:
+      - Fixes Catalog: FIXES.md
+      - Fix Plans: FIX_PLANS.md
+      - Interactive Fixes: fixes.html
   - Examples:
-      - Overview: examples.md
       - Direct CMIP6 API: notebooks/cmip6_core_api_example.ipynb
       - CMIP6 Fix Plan: notebooks/cmip6_core_fix_plan_example.ipynb
       - Auto Plan Store: notebooks/auto_fix_plan_store_example.ipynb
@@ -24,3 +27,4 @@ nav:
       - Atlas Fix Plan: notebooks/atlas_fix_plan_example.ipynb
       - ESA CCI Fix Plan: notebooks/esa_cci_fix_plan_example.ipynb
       - xMIP Plugin Demo: notebooks/xmip_plugin_demo.ipynb
+  - Contributing: CONTRIBUTING_GUIDE.md
