@@ -85,9 +85,13 @@ def test_common05_rename_variables_uses_configured_mapping():
 def test_common05_promote_missing_dimension_coords_can_limit_dims():
     dataset = xr.Dataset(data_vars={"tas": (("x", "y"), np.ones((2, 3)))})
 
-    changed = PromoteMissingDimensionCoordsFix().configure({"dims": ["x"]}).apply(
-        dataset,
-        dry_run=False,
+    changed = (
+        PromoteMissingDimensionCoordsFix()
+        .configure({"dims": ["x"]})
+        .apply(
+            dataset,
+            dry_run=False,
+        )
     )
 
     assert changed is True
@@ -104,9 +108,13 @@ def test_common05_set_coordinate_variables_moves_configured_variables_to_coords(
         coords={"x": [0, 1, 2], "y": [0, 1]},
     )
 
-    changed = SetCoordinateVariablesFix().configure({"coordinates": ["lon"]}).apply(
-        dataset,
-        dry_run=False,
+    changed = (
+        SetCoordinateVariablesFix()
+        .configure({"coordinates": ["lon"]})
+        .apply(
+            dataset,
+            dry_run=False,
+        )
     )
 
     assert changed is True
@@ -119,9 +127,13 @@ def test_common05_convert_units_uses_configured_targets():
         coords={"lev": ("lev", np.array([0.0, 50.0, 100.0]), {"units": "centimeters"})},
     )
 
-    changed = ConvertUnitsFix().configure({"units": {"lev": "m"}}).apply(
-        dataset,
-        dry_run=False,
+    changed = (
+        ConvertUnitsFix()
+        .configure({"units": {"lev": "m"}})
+        .apply(
+            dataset,
+            dry_run=False,
+        )
     )
 
     assert changed is True
@@ -154,9 +166,13 @@ def test_common05_drop_variables_uses_configured_names():
         coords={"time": [0, 1]},
     )
 
-    changed = DropVariablesFix().configure({"variables": ["helper"]}).apply(
-        dataset,
-        dry_run=False,
+    changed = (
+        DropVariablesFix()
+        .configure({"variables": ["helper"]})
+        .apply(
+            dataset,
+            dry_run=False,
+        )
     )
 
     assert changed is True

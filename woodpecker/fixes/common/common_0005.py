@@ -261,7 +261,10 @@ class ConvertUnitsFix(DatasetTransformFix):
         }
         if not target_units:
             return dataset
-        if all(dataset[variable].attrs.get("units") == target_unit for variable, target_unit in target_units.items()):
+        if all(
+            dataset[variable].attrs.get("units") == target_unit
+            for variable, target_unit in target_units.items()
+        ):
             return dataset
 
         pint_error: ValueError | None = None
