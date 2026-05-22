@@ -79,6 +79,9 @@ Woodpecker separates executable fixes from user-facing fix plans.
 - A **fix plan** is a recipe for users: ordered steps, options, matching rules, and links.
 - A **fix-plan document** serializes one or more plans in JSON or YAML.
 - A **fix-plan store** is a query backend for plans (list/load/save/get-by-id/match).
+- `FixPlanLoader` coordinates fix-plan documents from explicit paths,
+  `WOODPECKER_FIX_PLAN_PATH`, user config directories, system directories,
+  core package resources, and installed plugin `plans/` resources.
 - `AutoFixPlanStore` is the read-only store that exposes registered fixes as implicit one-step plans.
 - A **fix-plan catalog** aggregates one or more plan sources behind one surface.
 
@@ -110,7 +113,8 @@ Discovery direction:
 - Auto-store one-step plans from registered fixes remain useful for lightweight
   discovery and early development.
 - Plugins may ship only fixes; if they later ship plans, those plans should be
-  loaded into a store and reference plugin fixes by normal `prefix.suffix` ids.
+  placed in the package `plans/` resource directory and reference plugin fixes
+  by normal `prefix.suffix` ids.
 
 ## Adding or Updating Fixes
 
@@ -234,23 +238,27 @@ dataset. Plans can be retrieved by id or alias.
 
 Current backends:
 
+- Catalog (`FixPlanLoader` discovery, read-only)
 - JSON
 - DuckDB
 - Auto (`AutoFixPlanStore`, read-only)
 
 Plans are accessed through the CLI:
 
-- `--store`: backend type (`json`, `duckdb`, or `auto`; default: `json`)
-- `--plan`: store location
+- `--store`: backend type (`catalog`, `json`, `duckdb`, or `auto`; default: `json` for check/fix)
+- `--plan`: store location or an extra catalog file/directory
 - `--plan-id`: optionally select a specific plan by id
 
-When `--store auto` is used, `--plan` is not required because plans are
-discovered from the registered fix set.
+When `--store catalog` or `--store auto` is used, `--plan` is not required.
+`woodpecker check . --plan-id ...` also uses the discovered catalog when no
+explicit `--plan` is provided.
 
 Examples:
 
 ```bash
 woodpecker check --store json --plan plans.json
+woodpecker check --plan-id cmip6.core_units
+woodpecker list-plans
 woodpecker check --store duckdb --plan plans.duckdb
 woodpecker check --store auto --plan-id woodpecker.normalize_tas_units_to_kelvin
 woodpecker fix --plan plans.json --plan-id atlas.encoding_cleanup_suite

@@ -25,5 +25,8 @@ cmip6_decadal = "woodpecker_cmip6_decadal_plugin"
 where = ["src"]
 include = ["woodpecker_cmip6_decadal_plugin*"]
 
+[tool.setuptools.package-data]
+woodpecker_cmip6_decadal_plugin = ["plans/*.json", "plans/*.yaml", "plans/*.yml"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

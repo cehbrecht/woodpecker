@@ -149,9 +149,23 @@ def resolve_plan_source(
         identifiers, fix_options = selected.step_identifiers_and_options()
         return "store", [selected], identifiers, fix_options
 
-    if plan_location is None:
+    use_catalog = store_type == "catalog" or (plan_location is None and plan_id is not None)
+    if use_catalog:
+        store = create_fix_plan_store("catalog", plan_location)
         if plan_id:
-            raise ValueError("--plan-id requires --plan.")
+            selected = store.get_plan(plan_id.strip())
+            identifiers, fix_options = selected.step_identifiers_and_options()
+            return "store", [selected], identifiers, fix_options
+
+        plans = select_matching_store_plans(store=store, inputs=inputs, plan_id=plan_id)
+        if not plans:
+            raise ValueError("No matching discovered fix plans found for selected inputs.")
+
+        selected = plans[0]
+        identifiers, fix_options = selected.step_identifiers_and_options()
+        return "store", [selected], identifiers, fix_options
+
+    if plan_location is None:
         return "direct", [], (), {}
 
     store = create_fix_plan_store(store_type, plan_location)
@@ -260,7 +274,7 @@ def resolve_load_source_plans(
     """Resolve source plans for load-plans command."""
 
     if from_plan is None:
-        if from_store_type != "auto":
+        if from_store_type not in {"auto", "catalog"}:
             raise ValueError("Provide --from-plan as the source store location.")
 
     source_store_type = from_store_type or "json"

@@ -27,6 +27,14 @@ def auto(plan_id: str | None = None) -> PlanSelector:
     return PlanSelector(plan=None, plan_id=plan_id, store_type="auto")
 
 
+def catalog(plan_id: str | None = None, plan: str | Path | None = None) -> PlanSelector:
+    """Select plans from discovered package, user, system, and optional explicit locations."""
+    return PlanSelector(plan=plan, plan_id=plan_id, store_type="catalog")
+
+
+discovered = catalog
+
+
 def _normalize_fixes(fixes: str | Sequence[str] | None) -> tuple[str, ...]:
     if fixes is None:
         return ()

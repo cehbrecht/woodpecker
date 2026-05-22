@@ -6,6 +6,7 @@ from .catalog import FixPlanCatalog
 from .duckdb_store import DuckDBFixPlanStore
 from .index import FixPlanIndex
 from .json_store import JsonFixPlanStore
+from .static_store import StaticFixPlanStore
 
 __all__ = [
     "AutoFixPlanStore",
@@ -13,5 +14,6 @@ __all__ = [
     "FixPlanStore",
     "FixPlanIndex",
     "JsonFixPlanStore",
+    "StaticFixPlanStore",
     "DuckDBFixPlanStore",
 ]

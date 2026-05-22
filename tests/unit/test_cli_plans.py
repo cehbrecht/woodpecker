@@ -111,7 +111,7 @@ def test_check_plan_store_plan_id_selects_specific_plan(
     assert "woodpecker.normalize_tas_units_to_kelvin" in result.output
 
 
-def test_check_plan_id_without_plan_errors(
+def test_check_plan_id_without_plan_uses_discovered_catalog(
     isolated_cli_workspace: CliWorkspace,
 ):
     runner, _ = isolated_cli_workspace
@@ -119,7 +119,7 @@ def test_check_plan_id_without_plan_errors(
     result = runner.invoke(cli, ["check", ".", "--plan-id", "test.alpha"])
 
     assert result.exit_code != 0
-    assert "--plan-id requires --plan" in result.output
+    assert "Unknown plan identifier: test.alpha" in result.output
 
 
 def test_list_plans_text_output(
@@ -184,15 +184,16 @@ def test_list_plans_json_output(
     assert payload[0]["id"] == "test.alpha"
 
 
-def test_list_plans_requires_store_options(
+def test_list_plans_defaults_to_discovered_catalog(
     isolated_cli_workspace: CliWorkspace,
 ):
     runner, _ = isolated_cli_workspace
 
     result = runner.invoke(cli, ["list-plans"])
 
-    assert result.exit_code != 0
-    assert "--plan is required" in result.output
+    assert result.exit_code == 0
+    assert "cmip6.core_units: 1 step" in result.output
+    assert "xmip.cmip6_preprocessing:" in result.output
 
 
 def test_list_plans_auto_store_does_not_require_plan_location(

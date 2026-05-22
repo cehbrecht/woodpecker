@@ -34,6 +34,8 @@ Woodpecker is intentionally small:
 - fixes are executable Python rules,
 - fixes have stable identifiers such as `woodpecker.ensure_latitude_is_increasing`,
 - fix plans describe ordered fix workflows,
+- `FixPlanLoader` coordinates discovered plan documents from core, plugins,
+  user/system locations, and explicit paths,
 - fix-plan stores query plan definitions from JSON/YAML, DuckDB, or auto sources,
 - `AutoFixPlanStore` provides read-only, auto-generated one-step plans from registered fixes,
 - `FixPlanCatalog` aggregates one or more plan sources behind one lookup surface,
@@ -48,6 +50,9 @@ Vocabulary:
   options, for a dataset family or workflow.
 - **FixPlanStore**: a lookup layer that finds matching plans from a source such
   as JSON or DuckDB.
+- **FixPlanLoader**: a discovery layer that collects plan documents from
+  explicit paths, `WOODPECKER_FIX_PLAN_PATH`, user config directories, system
+  directories, core package resources, and installed plugin `plans/` resources.
 - **AutoFixPlanStore**: a read-only store that exposes registered fixes as
   implicit one-step plans.
 - **FixPlanCatalog**: an aggregate view over one or more plan sources that can
@@ -102,10 +107,17 @@ if findings:
     assert result
 ```
 
+Fix plans can also be discovered without hard-coding a path:
+
+```python
+findings = woodpecker.plan.check(dataset, None, plan_id="cmip6.core_units")
+findings = woodpecker.plan.check(dataset, woodpecker.plan.catalog("xmip.cmip6_preprocessing"))
+```
+
 Plan authoring models are available from `woodpecker.fix_plans`:
 
 ```python
-from woodpecker.fix_plans import DatasetMatcher, FixPlan, FixRef
+from woodpecker.fix_plans import DatasetMatcher, FixPlan, FixPlanLoader, FixRef
 ```
 
 ## Quick Start
