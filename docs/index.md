@@ -7,15 +7,11 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://github.com/cehbrecht/woodpecker/blob/main/pyproject.toml)
 [![License](https://img.shields.io/github/license/cehbrecht/woodpecker)](https://github.com/cehbrecht/woodpecker/blob/main/LICENSE)
 
-Woodpecker is a lightweight, code-driven fix catalog for climate datasets.
-Many projects already have small repair scripts, known workarounds, and plugin
-ideas. Woodpecker brings those attempts under one umbrella with a common,
-simple API for checking, applying, composing, and discovering fixes.
+Like the bird caring for a forest by finding hidden bugs, Woodpecker cares for
+climate data by finding known data bugs and applying focused fixes.
 
-The name follows the bird: a woodpecker helps care for a forest by finding
-hidden bugs and working on them one spot at a time. This Woodpecker is a
-caretaker for climate data: it finds known data bugs, applies focused fixes,
-and combines those fixes into repeatable cleanup workflows.
+It brings repair scripts, workarounds, plugins, and fix plans under one simple
+API for checking, applying, composing, and discovering climate data fixes.
 
 ## Common Paths
 
