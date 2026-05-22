@@ -1,5 +1,7 @@
 # Woodpecker
 
+**Small, precise fixes for climate data.**
+
 [![CI](https://github.com/cehbrecht/woodpecker/actions/workflows/ci.yml/badge.svg)](https://github.com/cehbrecht/woodpecker/actions/workflows/ci.yml)
 [![Docs](https://github.com/cehbrecht/woodpecker/actions/workflows/docs.yml/badge.svg)](https://github.com/cehbrecht/woodpecker/actions/workflows/docs.yml)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://github.com/cehbrecht/woodpecker/blob/main/pyproject.toml)
@@ -8,6 +10,11 @@
 Woodpecker is a lightweight, code-driven fix catalog for climate datasets. It
 helps detect known dataset issues, apply small repair steps, and compose those
 steps into reusable fix plans.
+
+The name follows the bird analogy: a woodpecker works with small, precise taps
+instead of one blunt strike. Woodpecker does the same for datasets: each fix
+targets one known issue, and fix plans compose those focused steps into
+repeatable cleanup workflows.
 
 ## Common Paths
 
