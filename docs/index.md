@@ -47,9 +47,3 @@ woodpecker check ./data --plan-id cmip6.core_units
 
 For the short project introduction, use the [README](OVERVIEW.md). For
 architecture and contributor details, use [CONTRIBUTING](CONTRIBUTING_GUIDE.md).
-
-For architecture and contributor details, use:
-
-- [CONTRIBUTING](CONTRIBUTING_GUIDE.md)
-
-Use the left navigation for fixes, plans, and notebook examples.
