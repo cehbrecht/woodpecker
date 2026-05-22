@@ -315,5 +315,210 @@
       "cmip7.configurable_reformat_bridge",
       "woodpecker.ensure_latitude_is_increasing"
     ]
+  },
+  {
+    "id": "xmip.cmip6_preprocessing",
+    "aliases": [
+      "xmip.combined_preprocessing",
+      "xmip.cmip6_combined_preprocessing_compat"
+    ],
+    "description": "Woodpecker-native xMIP-style CMIP6 preprocessing. This plan composes small, inspectable fixes instead of hiding the workflow in one monolithic preprocessing function.",
+    "match": {
+      "attrs": {
+        "project_id": "CMIP6"
+      },
+      "dataset_id_patterns": [],
+      "path_patterns": []
+    },
+    "steps": [
+      {
+        "id": "xmip.rename_cmip6_axes",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.promote_missing_dimension_coords",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.mark_spatial_coords",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.broadcast_lon_lat",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.normalize_longitude_convention",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.normalize_coordinate_units",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.normalize_lon_lat_bounds",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.sort_vertex_order",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.convert_bounds_to_vertices",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.convert_vertices_to_bounds",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.fix_known_cmip6_metadata",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.drop_helper_grid_coords",
+        "options": {},
+        "links": []
+      }
+    ],
+    "links": [
+      {
+        "rel": "source",
+        "href": "https://github.com/jbusecke/xMIP",
+        "title": "Original xMIP project"
+      }
+    ],
+    "prefix": "xmip",
+    "suffix": "cmip6_preprocessing",
+    "source": "plugin:woodpecker_xmip_plugin",
+    "source_files": [
+      "plugins/woodpecker-xmip-plugin/src/woodpecker_xmip_plugin/plans/cmip6_preprocessing.yaml"
+    ],
+    "step_ids": [
+      "xmip.rename_cmip6_axes",
+      "xmip.promote_missing_dimension_coords",
+      "xmip.mark_spatial_coords",
+      "xmip.broadcast_lon_lat",
+      "xmip.normalize_longitude_convention",
+      "xmip.normalize_coordinate_units",
+      "xmip.normalize_lon_lat_bounds",
+      "xmip.sort_vertex_order",
+      "xmip.convert_bounds_to_vertices",
+      "xmip.convert_vertices_to_bounds",
+      "xmip.fix_known_cmip6_metadata",
+      "xmip.drop_helper_grid_coords"
+    ]
+  },
+  {
+    "id": "xmip.cmip6_preprocessing_nominal_xy",
+    "aliases": [],
+    "description": "Extended CMIP6 preprocessing that also replaces x/y coordinate values with nominal longitude/latitude values derived from the grid.",
+    "match": {
+      "attrs": {
+        "project_id": "CMIP6"
+      },
+      "dataset_id_patterns": [],
+      "path_patterns": []
+    },
+    "steps": [
+      {
+        "id": "xmip.rename_cmip6_axes",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.promote_missing_dimension_coords",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.mark_spatial_coords",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.broadcast_lon_lat",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.normalize_longitude_convention",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.replace_xy_with_nominal_lon_lat",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.normalize_coordinate_units",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.normalize_lon_lat_bounds",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.sort_vertex_order",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.convert_bounds_to_vertices",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.convert_vertices_to_bounds",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.fix_known_cmip6_metadata",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.drop_helper_grid_coords",
+        "options": {},
+        "links": []
+      }
+    ],
+    "links": [],
+    "prefix": "xmip",
+    "suffix": "cmip6_preprocessing_nominal_xy",
+    "source": "plugin:woodpecker_xmip_plugin",
+    "source_files": [
+      "plugins/woodpecker-xmip-plugin/src/woodpecker_xmip_plugin/plans/cmip6_preprocessing.yaml"
+    ],
+    "step_ids": [
+      "xmip.rename_cmip6_axes",
+      "xmip.promote_missing_dimension_coords",
+      "xmip.mark_spatial_coords",
+      "xmip.broadcast_lon_lat",
+      "xmip.normalize_longitude_convention",
+      "xmip.replace_xy_with_nominal_lon_lat",
+      "xmip.normalize_coordinate_units",
+      "xmip.normalize_lon_lat_bounds",
+      "xmip.sort_vertex_order",
+      "xmip.convert_bounds_to_vertices",
+      "xmip.convert_vertices_to_bounds",
+      "xmip.fix_known_cmip6_metadata",
+      "xmip.drop_helper_grid_coords"
+    ]
   }
 ]

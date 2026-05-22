@@ -37,12 +37,14 @@ def test_generate_fix_plan_catalog_loads_single_yaml_plan_source(tmp_path):
         md_path=str(md_path),
         json_path=str(json_path),
         plan_dir=str(plan_dir),
+        include_plugin_plans=False,
     )
 
     catalog = json.loads(json_path.read_text(encoding="utf-8"))
     markdown = md_path.read_text(encoding="utf-8")
 
     assert [item["id"] for item in catalog] == ["cmip6.core_units"]
+    assert catalog[0]["source"] == "integration-tests"
     assert catalog[0]["source_files"] == [(plan_dir / "cmip6_core_plan.yaml").as_posix()]
     assert (
         f"[{(plan_dir / 'cmip6_core_plan.yaml').as_posix()}]"
@@ -80,3 +82,18 @@ def test_generate_fix_plan_catalog_rejects_duplicate_plan_ids(tmp_path):
 
     with pytest.raises(ValueError, match="Duplicate definition for plan id 'cmip6.core_units'"):
         generator.load_integration_plans(plan_dir)
+
+
+def test_generate_fix_plan_catalog_can_load_plugin_plan_sources():
+    generator = _load_generator_module()
+
+    plans = generator.load_plugin_plans()
+    plan_by_id = {plan.id: (plan, source_files, source) for plan, source_files, source in plans}
+
+    assert "xmip.cmip6_preprocessing" in plan_by_id
+    plan, source_files, source = plan_by_id["xmip.cmip6_preprocessing"]
+    assert source == "plugin:woodpecker_xmip_plugin"
+    assert source_files == [
+        "plugins/woodpecker-xmip-plugin/src/woodpecker_xmip_plugin/plans/cmip6_preprocessing.yaml"
+    ]
+    assert "xmip.normalize_coordinate_units" in [step.id for step in plan.steps]
