@@ -225,7 +225,7 @@ def test_xmip_cmip6_preprocessing_plan_checks_and_fixes_dataset():
 
     findings = woodpecker.plan.check(dataset, PLAN)
     assert set(findings.fix_ids) == {
-        "xmip.rename_cmip6_axes",
+        "woodpecker.rename_variables",
         "xmip.fix_known_cmip6_metadata",
     }
 
@@ -259,5 +259,5 @@ def test_xmip_nominal_xy_plan_includes_nominal_coordinate_replacement():
 
     assert "xmip.replace_xy_with_nominal_lon_lat" in step_ids
     assert step_ids.index("xmip.replace_xy_with_nominal_lon_lat") > step_ids.index(
-        "xmip.normalize_longitude_convention"
+        "woodpecker.normalize_longitude_convention"
     )

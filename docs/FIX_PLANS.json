@@ -332,18 +332,99 @@
     },
     "steps": [
       {
-        "id": "xmip.rename_cmip6_axes",
+        "id": "woodpecker.rename_variables",
+        "options": {
+          "mapping": {
+            "x": [
+              "i",
+              "ni",
+              "xh",
+              "nlon"
+            ],
+            "y": [
+              "j",
+              "nj",
+              "yh",
+              "nlat"
+            ],
+            "lev": [
+              "deptht",
+              "olevel",
+              "zlev",
+              "olev",
+              "depth"
+            ],
+            "bnds": [
+              "bnds",
+              "axis_nbounds",
+              "d2"
+            ],
+            "vertex": [
+              "vertex",
+              "nvertex",
+              "vertices",
+              "nvertices"
+            ],
+            "lon": [
+              "longitude",
+              "nav_lon"
+            ],
+            "lat": [
+              "latitude",
+              "nav_lat"
+            ],
+            "lev_bounds": [
+              "deptht_bounds",
+              "lev_bnds",
+              "olevel_bounds",
+              "zlev_bnds"
+            ],
+            "lon_bounds": [
+              "bounds_lon",
+              "bounds_nav_lon",
+              "lon_bnds",
+              "x_bnds",
+              "vertices_longitude",
+              "longitude_bnds"
+            ],
+            "lat_bounds": [
+              "bounds_lat",
+              "bounds_nav_lat",
+              "lat_bnds",
+              "y_bnds",
+              "vertices_latitude",
+              "latitude_bnds"
+            ],
+            "time_bounds": [
+              "time_bnds"
+            ]
+          }
+        },
+        "links": []
+      },
+      {
+        "id": "woodpecker.promote_missing_dimension_coords",
         "options": {},
         "links": []
       },
       {
-        "id": "xmip.promote_missing_dimension_coords",
-        "options": {},
-        "links": []
-      },
-      {
-        "id": "xmip.mark_spatial_coords",
-        "options": {},
+        "id": "woodpecker.set_coordinate_variables",
+        "options": {
+          "coordinates": [
+            "x",
+            "y",
+            "lon",
+            "lat",
+            "lev",
+            "bnds",
+            "lev_bounds",
+            "lon_bounds",
+            "lat_bounds",
+            "time_bounds",
+            "lat_verticies",
+            "lon_verticies"
+          ]
+        },
         "links": []
       },
       {
@@ -352,13 +433,27 @@
         "links": []
       },
       {
-        "id": "xmip.normalize_longitude_convention",
-        "options": {},
+        "id": "woodpecker.normalize_longitude_convention",
+        "options": {
+          "coordinate": "lon",
+          "target": "0_360",
+          "bounds": [
+            "lon_bounds"
+          ],
+          "mask_abs_gt": 1000
+        },
         "links": []
       },
       {
-        "id": "xmip.normalize_coordinate_units",
-        "options": {},
+        "id": "woodpecker.convert_units",
+        "options": {
+          "units": {
+            "lev": "m"
+          },
+          "overrides": {
+            "so": null
+          }
+        },
         "links": []
       },
       {
@@ -387,8 +482,14 @@
         "links": []
       },
       {
-        "id": "xmip.drop_helper_grid_coords",
-        "options": {},
+        "id": "woodpecker.drop_variables",
+        "options": {
+          "variables": [
+            "bnds",
+            "vertex"
+          ],
+          "errors": "ignore"
+        },
         "links": []
       }
     ],
@@ -406,18 +507,18 @@
       "plugins/woodpecker-xmip-plugin/src/woodpecker_xmip_plugin/plans/cmip6_preprocessing.yaml"
     ],
     "step_ids": [
-      "xmip.rename_cmip6_axes",
-      "xmip.promote_missing_dimension_coords",
-      "xmip.mark_spatial_coords",
+      "woodpecker.rename_variables",
+      "woodpecker.promote_missing_dimension_coords",
+      "woodpecker.set_coordinate_variables",
       "xmip.broadcast_lon_lat",
-      "xmip.normalize_longitude_convention",
-      "xmip.normalize_coordinate_units",
+      "woodpecker.normalize_longitude_convention",
+      "woodpecker.convert_units",
       "xmip.normalize_lon_lat_bounds",
       "xmip.sort_vertex_order",
       "xmip.convert_bounds_to_vertices",
       "xmip.convert_vertices_to_bounds",
       "xmip.fix_known_cmip6_metadata",
-      "xmip.drop_helper_grid_coords"
+      "woodpecker.drop_variables"
     ]
   },
   {
@@ -433,18 +534,99 @@
     },
     "steps": [
       {
-        "id": "xmip.rename_cmip6_axes",
+        "id": "woodpecker.rename_variables",
+        "options": {
+          "mapping": {
+            "x": [
+              "i",
+              "ni",
+              "xh",
+              "nlon"
+            ],
+            "y": [
+              "j",
+              "nj",
+              "yh",
+              "nlat"
+            ],
+            "lev": [
+              "deptht",
+              "olevel",
+              "zlev",
+              "olev",
+              "depth"
+            ],
+            "bnds": [
+              "bnds",
+              "axis_nbounds",
+              "d2"
+            ],
+            "vertex": [
+              "vertex",
+              "nvertex",
+              "vertices",
+              "nvertices"
+            ],
+            "lon": [
+              "longitude",
+              "nav_lon"
+            ],
+            "lat": [
+              "latitude",
+              "nav_lat"
+            ],
+            "lev_bounds": [
+              "deptht_bounds",
+              "lev_bnds",
+              "olevel_bounds",
+              "zlev_bnds"
+            ],
+            "lon_bounds": [
+              "bounds_lon",
+              "bounds_nav_lon",
+              "lon_bnds",
+              "x_bnds",
+              "vertices_longitude",
+              "longitude_bnds"
+            ],
+            "lat_bounds": [
+              "bounds_lat",
+              "bounds_nav_lat",
+              "lat_bnds",
+              "y_bnds",
+              "vertices_latitude",
+              "latitude_bnds"
+            ],
+            "time_bounds": [
+              "time_bnds"
+            ]
+          }
+        },
+        "links": []
+      },
+      {
+        "id": "woodpecker.promote_missing_dimension_coords",
         "options": {},
         "links": []
       },
       {
-        "id": "xmip.promote_missing_dimension_coords",
-        "options": {},
-        "links": []
-      },
-      {
-        "id": "xmip.mark_spatial_coords",
-        "options": {},
+        "id": "woodpecker.set_coordinate_variables",
+        "options": {
+          "coordinates": [
+            "x",
+            "y",
+            "lon",
+            "lat",
+            "lev",
+            "bnds",
+            "lev_bounds",
+            "lon_bounds",
+            "lat_bounds",
+            "time_bounds",
+            "lat_verticies",
+            "lon_verticies"
+          ]
+        },
         "links": []
       },
       {
@@ -453,8 +635,15 @@
         "links": []
       },
       {
-        "id": "xmip.normalize_longitude_convention",
-        "options": {},
+        "id": "woodpecker.normalize_longitude_convention",
+        "options": {
+          "coordinate": "lon",
+          "target": "0_360",
+          "bounds": [
+            "lon_bounds"
+          ],
+          "mask_abs_gt": 1000
+        },
         "links": []
       },
       {
@@ -463,8 +652,15 @@
         "links": []
       },
       {
-        "id": "xmip.normalize_coordinate_units",
-        "options": {},
+        "id": "woodpecker.convert_units",
+        "options": {
+          "units": {
+            "lev": "m"
+          },
+          "overrides": {
+            "so": null
+          }
+        },
         "links": []
       },
       {
@@ -493,8 +689,14 @@
         "links": []
       },
       {
-        "id": "xmip.drop_helper_grid_coords",
-        "options": {},
+        "id": "woodpecker.drop_variables",
+        "options": {
+          "variables": [
+            "bnds",
+            "vertex"
+          ],
+          "errors": "ignore"
+        },
         "links": []
       }
     ],
@@ -506,19 +708,19 @@
       "plugins/woodpecker-xmip-plugin/src/woodpecker_xmip_plugin/plans/cmip6_preprocessing.yaml"
     ],
     "step_ids": [
-      "xmip.rename_cmip6_axes",
-      "xmip.promote_missing_dimension_coords",
-      "xmip.mark_spatial_coords",
+      "woodpecker.rename_variables",
+      "woodpecker.promote_missing_dimension_coords",
+      "woodpecker.set_coordinate_variables",
       "xmip.broadcast_lon_lat",
-      "xmip.normalize_longitude_convention",
+      "woodpecker.normalize_longitude_convention",
       "xmip.replace_xy_with_nominal_lon_lat",
-      "xmip.normalize_coordinate_units",
+      "woodpecker.convert_units",
       "xmip.normalize_lon_lat_bounds",
       "xmip.sort_vertex_order",
       "xmip.convert_bounds_to_vertices",
       "xmip.convert_vertices_to_bounds",
       "xmip.fix_known_cmip6_metadata",
-      "xmip.drop_helper_grid_coords"
+      "woodpecker.drop_variables"
     ]
   }
 ]

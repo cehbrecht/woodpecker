@@ -289,6 +289,20 @@
     "source": "core"
   },
   {
+    "id": "woodpecker.rename_variables",
+    "suffix": "rename_variables",
+    "prefix": "woodpecker",
+    "aliases": [],
+    "name": "Rename variables and dimensions",
+    "description": "Renames variables, coordinates, and dimensions from configured candidate names.",
+    "categories": [
+      "structure"
+    ],
+    "dataset": null,
+    "priority": 33,
+    "source": "core"
+  },
+  {
     "id": "woodpecker.remove_coordinate_fill_value_encodings",
     "suffix": "remove_coordinate_fill_value_encodings",
     "prefix": "woodpecker",
@@ -301,6 +315,78 @@
     ],
     "dataset": null,
     "priority": 34,
+    "source": "core"
+  },
+  {
+    "id": "woodpecker.promote_missing_dimension_coords",
+    "suffix": "promote_missing_dimension_coords",
+    "prefix": "woodpecker",
+    "aliases": [],
+    "name": "Promote missing dimension coordinates",
+    "description": "Creates coordinate variables for dimensions that have no coordinate.",
+    "categories": [
+      "structure"
+    ],
+    "dataset": null,
+    "priority": 34,
+    "source": "core"
+  },
+  {
+    "id": "woodpecker.set_coordinate_variables",
+    "suffix": "set_coordinate_variables",
+    "prefix": "woodpecker",
+    "aliases": [],
+    "name": "Set coordinate variables",
+    "description": "Moves configured variables into the coordinate set.",
+    "categories": [
+      "structure",
+      "metadata"
+    ],
+    "dataset": null,
+    "priority": 35,
+    "source": "core"
+  },
+  {
+    "id": "woodpecker.convert_units",
+    "suffix": "convert_units",
+    "prefix": "woodpecker",
+    "aliases": [],
+    "name": "Convert variable units",
+    "description": "Converts configured variables or coordinates to target units.",
+    "categories": [
+      "metadata",
+      "units"
+    ],
+    "dataset": null,
+    "priority": 36,
+    "source": "core"
+  },
+  {
+    "id": "woodpecker.normalize_longitude_convention",
+    "suffix": "normalize_longitude_convention",
+    "prefix": "woodpecker",
+    "aliases": [],
+    "name": "Normalize longitude convention",
+    "description": "Wraps configured longitude coordinates to a target convention.",
+    "categories": [
+      "coordinates"
+    ],
+    "dataset": null,
+    "priority": 37,
+    "source": "core"
+  },
+  {
+    "id": "woodpecker.drop_variables",
+    "suffix": "drop_variables",
+    "prefix": "woodpecker",
+    "aliases": [],
+    "name": "Drop variables",
+    "description": "Drops configured variables or coordinates.",
+    "categories": [
+      "structure"
+    ],
+    "dataset": null,
+    "priority": 38,
     "source": "core"
   },
   {

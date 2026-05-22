@@ -41,8 +41,8 @@ def test_xmip_cmip6_preprocessing_plan_checks_and_fixes_synthetic_dataset():
     findings = woodpecker.plan.check(dataset, plan)
 
     assert unique_in_order(findings.fix_ids) == (
-        "xmip.rename_cmip6_axes",
-        "xmip.normalize_coordinate_units",
+        "woodpecker.rename_variables",
+        "woodpecker.convert_units",
         "xmip.fix_known_cmip6_metadata",
     )
 

@@ -7,7 +7,13 @@ Source values: core (built-in) or plugin:<package> (discovered plugin fix).
 | woodpecker.normalize_tas_units_to_kelvin | Normalize tas-like units to Kelvin | Converts tas/temp from Celsius-like units to Kelvin. | metadata, units |  | 30 | core |
 | woodpecker.merge_equivalent_dimensions | Merge equivalent dimensions | Merges two or more same-sized dimensions into the first configured dimension. | structure |  | 32 | core |
 | woodpecker.ensure_latitude_is_increasing | Ensure latitude is increasing | Flips datasets with decreasing latitude coordinates to increasing order. | structure |  | 33 | core |
+| woodpecker.rename_variables | Rename variables and dimensions | Renames variables, coordinates, and dimensions from configured candidate names. | structure |  | 33 | core |
 | woodpecker.remove_coordinate_fill_value_encodings | Remove coordinate FillValue encodings | Removes _FillValue encoding entries from common coordinate variables. | metadata, structure |  | 34 | core |
+| woodpecker.promote_missing_dimension_coords | Promote missing dimension coordinates | Creates coordinate variables for dimensions that have no coordinate. | structure |  | 34 | core |
+| woodpecker.set_coordinate_variables | Set coordinate variables | Moves configured variables into the coordinate set. | structure, metadata |  | 35 | core |
+| woodpecker.convert_units | Convert variable units | Converts configured variables or coordinates to target units. | metadata, units |  | 36 | core |
+| woodpecker.normalize_longitude_convention | Normalize longitude convention | Wraps configured longitude coordinates to a target convention. | coordinates |  | 37 | core |
+| woodpecker.drop_variables | Drop variables | Drops configured variables or coordinates. | structure |  | 38 | core |
 
 ## Plugin: woodpecker_atlas_plugin
 
