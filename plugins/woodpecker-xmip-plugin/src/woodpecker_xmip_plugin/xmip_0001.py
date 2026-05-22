@@ -10,7 +10,6 @@ from .helpers import (
     DROP_COORDS,
     broadcast_lonlat,
     correct_coordinates,
-    correct_lon,
     correct_units,
     dataset_changed,
     fix_metadata,
@@ -19,7 +18,6 @@ from .helpers import (
     maybe_convert_vertex_to_bounds,
     overwrite_dataset_in_place,
     parse_lon_lat_bounds,
-    promote_empty_dims,
     rename_cmip6,
     replace_x_y_nominal_lat_lon,
     sort_vertex_order,
@@ -73,18 +71,6 @@ class RenameCmip6AxesFix(XmipCmip6TransformFix):
 
 
 @register_fix
-class PromoteMissingDimensionCoordsFix(XmipCmip6TransformFix):
-    suffix = "promote_missing_dimension_coords"
-    name = "Promote missing dimension coordinates"
-    description = "Creates coordinate variables for dimensions that have no coordinate."
-    categories = ["structure"]
-    message = "dimensions without coordinate variables can be promoted"
-
-    def transform(self, dataset: xr.Dataset) -> xr.Dataset:
-        return promote_empty_dims(dataset)
-
-
-@register_fix
 class MarkSpatialCoordsFix(XmipCmip6TransformFix):
     suffix = "mark_spatial_coords"
     name = "Mark spatial coordinates"
@@ -106,18 +92,6 @@ class BroadcastLonLatFix(XmipCmip6TransformFix):
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
         return broadcast_lonlat(dataset)
-
-
-@register_fix
-class NormalizeLongitudeConventionFix(XmipCmip6TransformFix):
-    suffix = "normalize_longitude_convention"
-    name = "Normalize longitude convention"
-    description = "Wraps negative longitudes to the 0-360 longitude convention and masks extreme placeholder values."
-    categories = ["coordinates"]
-    message = "longitudes can be wrapped to the 0-360 convention"
-
-    def transform(self, dataset: xr.Dataset) -> xr.Dataset:
-        return correct_lon(dataset)
 
 
 @register_fix

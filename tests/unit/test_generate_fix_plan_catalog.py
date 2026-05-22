@@ -108,4 +108,4 @@ def test_generate_fix_plan_catalog_can_load_discovered_plan_sources():
     assert source_files == [
         "plugins/woodpecker-xmip-plugin/src/woodpecker_xmip_plugin/plans/cmip6_preprocessing.yaml"
     ]
-    assert "xmip.normalize_coordinate_units" in [step.id for step in plan.steps]
+    assert "woodpecker.convert_units" in [step.id for step in plan.steps]

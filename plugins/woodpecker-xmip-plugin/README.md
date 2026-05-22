@@ -5,10 +5,8 @@ xMIP-derived CMIP6 preprocessing fixes for Woodpecker.
 This plugin registers small, composable fixes:
 
 - `xmip.rename_cmip6_axes`
-- `xmip.promote_missing_dimension_coords`
 - `xmip.mark_spatial_coords`
 - `xmip.broadcast_lon_lat`
-- `xmip.normalize_longitude_convention`
 - `xmip.normalize_coordinate_units`
 - `xmip.replace_xy_with_nominal_lon_lat`
 - `xmip.normalize_lon_lat_bounds`
@@ -20,8 +18,13 @@ This plugin registers small, composable fixes:
 
 It also ships a plan:
 
-- `xmip.cmip6_preprocessing` with alias `xmip.combined_preprocessing`
+- `xmip.cmip6_preprocessing`
 - `xmip.cmip6_preprocessing_nominal_xy`
+
+Core-owned replacements used by the plan:
+
+- `woodpecker.promote_missing_dimension_coords`
+- `woodpecker.normalize_longitude_convention`
 
 The implementation is adapted from the original xMIP `combined_preprocessing`
 pipeline at `/Users/pingu/Documents/GitHub/misc/xMIP`, but expressed in a more

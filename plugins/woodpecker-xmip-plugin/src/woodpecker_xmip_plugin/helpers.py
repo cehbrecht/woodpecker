@@ -219,25 +219,6 @@ def replace_x_y_nominal_lat_lon(dataset: xr.Dataset):
     )
 
 
-def correct_lon(dataset: xr.Dataset):
-    if "lon" not in dataset.variables or "lat" not in dataset.variables:
-        return dataset
-
-    dataset = dataset.copy()
-    dataset["lon"] = dataset["lon"].where(abs(dataset["lon"]) <= 1000)
-    dataset["lat"] = dataset["lat"].where(abs(dataset["lat"]) <= 1000)
-    dataset = dataset.assign_coords(
-        lon=dataset["lon"].where(dataset["lon"] > 0, 360 + dataset["lon"])
-    )
-
-    if "lon_bounds" in dataset.variables:
-        lon_bounds = dataset["lon_bounds"].where(
-            dataset["lon_bounds"] > 0, 360 + dataset["lon_bounds"]
-        )
-        dataset = dataset.assign_coords(lon_bounds=lon_bounds)
-    return dataset
-
-
 def _normalize_unit_name(unit: object) -> str:
     return str(unit or "").strip().lower().replace(" ", "_")
 
@@ -446,31 +427,3 @@ def overwrite_dataset_in_place(target: xr.Dataset, source: xr.Dataset) -> None:
 
 def dataset_changed(before: xr.Dataset, after: xr.Dataset) -> bool:
     return not before.identical(after)
-
-
-def finding_messages(before: xr.Dataset, after: xr.Dataset) -> list[str]:
-    messages: list[str] = []
-    renamed_dims = sorted(set(before.dims) - set(after.dims))
-    if renamed_dims:
-        messages.append(f"CMIP6 dimensions can be normalized: {', '.join(renamed_dims)}")
-
-    renamed_vars = sorted((set(before.variables) - set(after.variables)) - set(DROP_COORDS))
-    if renamed_vars:
-        messages.append(f"CMIP6 variables/coordinates can be normalized: {', '.join(renamed_vars)}")
-
-    if "lon" in before.variables and "lon" in after.variables:
-        try:
-            before_min = float(before["lon"].min())
-            after_min = float(after["lon"].min())
-        except Exception:
-            before_min = after_min = 0.0
-        if before_min < 0 <= after_min:
-            messages.append("longitudes can be wrapped to the 0-360 convention")
-
-    for attr_name in ("branch_time_in_parent", "branch_time_in_child"):
-        if before.attrs.get(attr_name) != after.attrs.get(attr_name):
-            messages.append(f"global attribute {attr_name} can be corrected")
-
-    if dataset_changed(before, after) and not messages:
-        messages.append("dataset can be normalized with xMIP CMIP6 preprocessing")
-    return messages
