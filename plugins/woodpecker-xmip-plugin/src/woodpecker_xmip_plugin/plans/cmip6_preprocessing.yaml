@@ -1,8 +1,5 @@
 plans:
   - id: xmip.cmip6_preprocessing
-    aliases:
-      - xmip.combined_preprocessing
-      - xmip.cmip6_combined_preprocessing_compat
     description: >-
       Woodpecker-native xMIP-style CMIP6 preprocessing. This plan composes
       small, inspectable fixes instead of hiding the workflow in one monolithic

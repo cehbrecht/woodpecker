@@ -447,20 +447,6 @@
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
-    "id": "xmip.promote_missing_dimension_coords",
-    "suffix": "promote_missing_dimension_coords",
-    "prefix": "xmip",
-    "aliases": [],
-    "name": "Promote missing dimension coordinates",
-    "description": "Creates coordinate variables for dimensions that have no coordinate.",
-    "categories": [
-      "structure"
-    ],
-    "dataset": "CMIP6",
-    "priority": 42,
-    "source": "plugin:woodpecker_xmip_plugin"
-  },
-  {
     "id": "xmip.mark_spatial_coords",
     "suffix": "mark_spatial_coords",
     "prefix": "xmip",
@@ -484,20 +470,6 @@
     "description": "Ensures lon and lat coordinates are available as two-dimensional grid coordinates when possible.",
     "categories": [
       "structure"
-    ],
-    "dataset": "CMIP6",
-    "priority": 42,
-    "source": "plugin:woodpecker_xmip_plugin"
-  },
-  {
-    "id": "xmip.normalize_longitude_convention",
-    "suffix": "normalize_longitude_convention",
-    "prefix": "xmip",
-    "aliases": [],
-    "name": "Normalize longitude convention",
-    "description": "Wraps negative longitudes to the 0-360 longitude convention and masks extreme placeholder values.",
-    "categories": [
-      "coordinates"
     ],
     "dataset": "CMIP6",
     "priority": 42,

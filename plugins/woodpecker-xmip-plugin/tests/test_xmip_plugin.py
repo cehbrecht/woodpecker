@@ -15,8 +15,6 @@ EXPECTED_FIX_IDS = {
     "xmip.mark_spatial_coords",
     "xmip.normalize_coordinate_units",
     "xmip.normalize_lon_lat_bounds",
-    "xmip.normalize_longitude_convention",
-    "xmip.promote_missing_dimension_coords",
     "xmip.replace_xy_with_nominal_lon_lat",
     "xmip.rename_cmip6_axes",
     "xmip.sort_vertex_order",
@@ -129,7 +127,7 @@ def test_xmip_normalize_longitude_convention_is_detected_and_applied_after_renam
 
     assert_check_fix_cycle(
         dataset,
-        "xmip.normalize_longitude_convention",
+        "woodpecker.normalize_longitude_convention",
         assert_fixed=assert_fixed,
     )
 

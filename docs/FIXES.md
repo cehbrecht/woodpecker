@@ -61,10 +61,8 @@ Source values: core (built-in) or plugin:<package> (discovered plugin fix).
 | ID | Name | Description | Categories | Dataset | Priority | Source |
 |----|------|-------------|------------|---------|---------|--------|
 | xmip.rename_cmip6_axes | Rename CMIP6 axes | Normalizes common CMIP6 dimension and coordinate names to x, y, lev, lon, lat, and bounds names. | structure | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
-| xmip.promote_missing_dimension_coords | Promote missing dimension coordinates | Creates coordinate variables for dimensions that have no coordinate. | structure | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
 | xmip.mark_spatial_coords | Mark spatial coordinates | Moves known spatial, vertical, and bounds variables into the coordinate set. | structure, metadata | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
 | xmip.broadcast_lon_lat | Broadcast lon/lat coordinates | Ensures lon and lat coordinates are available as two-dimensional grid coordinates when possible. | structure | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
-| xmip.normalize_longitude_convention | Normalize longitude convention | Wraps negative longitudes to the 0-360 longitude convention and masks extreme placeholder values. | coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
 | xmip.normalize_coordinate_units | Normalize coordinate units | Converts supported CMIP6 coordinate units to xMIP target units, currently lev to meters. | metadata, coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
 | xmip.replace_xy_with_nominal_lon_lat | Replace x/y with nominal lon/lat | Approximates x and y coordinate values from representative lon/lat slices and sorts the grid. | coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
 | xmip.normalize_lon_lat_bounds | Normalize lon/lat bounds | Normalizes lon/lat bounds shape and naming, including vertex-style bounds. | structure, coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
