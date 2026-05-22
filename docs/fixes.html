@@ -34,10 +34,10 @@
 <p class="hint">Search and click a code to get a stable anchor (useful for errata links). Source labels show whether each fix is built in or provided by an entry point plugin.</p>
 
 <div class="summary">
-  <span class="pill"><strong>Total</strong>: 25</span>
+  <span class="pill"><strong>Total</strong>: 38</span>
   <span class="pill"><strong>Core</strong>: 4</span>
-  <span class="pill"><strong>Plugin</strong>: 21</span>
-  <span class="pill"><strong>Plugin Packages</strong>: 4</span>
+  <span class="pill"><strong>Plugin</strong>: 34</span>
+  <span class="pill"><strong>Plugin Packages</strong>: 5</span>
 </div>
 
 <div class="controls">
@@ -511,6 +511,221 @@
           
             <span class="source-badge source-plugin">plugin</span>
             <div class="source-package"><code>woodpecker_cmip7_plugin</code></div>
+          
+        </td>
+      </tr>
+    
+    </tbody>
+  </table>
+</section>
+
+<section class="group-section" data-group-kind="plugin">
+  <h2 class="group-title">Plugin: woodpecker_xmip_plugin (13)</h2>
+  <table class="fixes-table">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Categories</th>
+        <th>Dataset</th>
+        <th>Priority</th>
+        <th>Source</th>
+      </tr>
+    </thead>
+    <tbody>
+    
+      <tr class="fix-row" data-source-kind="plugin">
+        <td id="xmip.rename_cmip6_axes"><a href="#xmip.rename_cmip6_axes"><code>xmip.rename_cmip6_axes</code></a></td>
+        <td>Rename CMIP6 axes</td>
+        <td>Normalizes common CMIP6 dimension and coordinate names to x, y, lev, lon, lat, and bounds names.</td>
+        <td>structure</td>
+        <td>CMIP6</td>
+        <td>42</td>
+        <td>
+          
+            <span class="source-badge source-plugin">plugin</span>
+            <div class="source-package"><code>woodpecker_xmip_plugin</code></div>
+          
+        </td>
+      </tr>
+    
+      <tr class="fix-row" data-source-kind="plugin">
+        <td id="xmip.promote_missing_dimension_coords"><a href="#xmip.promote_missing_dimension_coords"><code>xmip.promote_missing_dimension_coords</code></a></td>
+        <td>Promote missing dimension coordinates</td>
+        <td>Creates coordinate variables for dimensions that have no coordinate.</td>
+        <td>structure</td>
+        <td>CMIP6</td>
+        <td>42</td>
+        <td>
+          
+            <span class="source-badge source-plugin">plugin</span>
+            <div class="source-package"><code>woodpecker_xmip_plugin</code></div>
+          
+        </td>
+      </tr>
+    
+      <tr class="fix-row" data-source-kind="plugin">
+        <td id="xmip.mark_spatial_coords"><a href="#xmip.mark_spatial_coords"><code>xmip.mark_spatial_coords</code></a></td>
+        <td>Mark spatial coordinates</td>
+        <td>Moves known spatial, vertical, and bounds variables into the coordinate set.</td>
+        <td>structure, metadata</td>
+        <td>CMIP6</td>
+        <td>42</td>
+        <td>
+          
+            <span class="source-badge source-plugin">plugin</span>
+            <div class="source-package"><code>woodpecker_xmip_plugin</code></div>
+          
+        </td>
+      </tr>
+    
+      <tr class="fix-row" data-source-kind="plugin">
+        <td id="xmip.broadcast_lon_lat"><a href="#xmip.broadcast_lon_lat"><code>xmip.broadcast_lon_lat</code></a></td>
+        <td>Broadcast lon/lat coordinates</td>
+        <td>Ensures lon and lat coordinates are available as two-dimensional grid coordinates when possible.</td>
+        <td>structure</td>
+        <td>CMIP6</td>
+        <td>42</td>
+        <td>
+          
+            <span class="source-badge source-plugin">plugin</span>
+            <div class="source-package"><code>woodpecker_xmip_plugin</code></div>
+          
+        </td>
+      </tr>
+    
+      <tr class="fix-row" data-source-kind="plugin">
+        <td id="xmip.normalize_longitude_convention"><a href="#xmip.normalize_longitude_convention"><code>xmip.normalize_longitude_convention</code></a></td>
+        <td>Normalize longitude convention</td>
+        <td>Wraps negative longitudes to the 0-360 longitude convention and masks extreme placeholder values.</td>
+        <td>coordinates</td>
+        <td>CMIP6</td>
+        <td>42</td>
+        <td>
+          
+            <span class="source-badge source-plugin">plugin</span>
+            <div class="source-package"><code>woodpecker_xmip_plugin</code></div>
+          
+        </td>
+      </tr>
+    
+      <tr class="fix-row" data-source-kind="plugin">
+        <td id="xmip.normalize_coordinate_units"><a href="#xmip.normalize_coordinate_units"><code>xmip.normalize_coordinate_units</code></a></td>
+        <td>Normalize coordinate units</td>
+        <td>Converts supported CMIP6 coordinate units to xMIP target units, currently lev to meters.</td>
+        <td>metadata, coordinates</td>
+        <td>CMIP6</td>
+        <td>42</td>
+        <td>
+          
+            <span class="source-badge source-plugin">plugin</span>
+            <div class="source-package"><code>woodpecker_xmip_plugin</code></div>
+          
+        </td>
+      </tr>
+    
+      <tr class="fix-row" data-source-kind="plugin">
+        <td id="xmip.replace_xy_with_nominal_lon_lat"><a href="#xmip.replace_xy_with_nominal_lon_lat"><code>xmip.replace_xy_with_nominal_lon_lat</code></a></td>
+        <td>Replace x/y with nominal lon/lat</td>
+        <td>Approximates x and y coordinate values from representative lon/lat slices and sorts the grid.</td>
+        <td>coordinates</td>
+        <td>CMIP6</td>
+        <td>42</td>
+        <td>
+          
+            <span class="source-badge source-plugin">plugin</span>
+            <div class="source-package"><code>woodpecker_xmip_plugin</code></div>
+          
+        </td>
+      </tr>
+    
+      <tr class="fix-row" data-source-kind="plugin">
+        <td id="xmip.normalize_lon_lat_bounds"><a href="#xmip.normalize_lon_lat_bounds"><code>xmip.normalize_lon_lat_bounds</code></a></td>
+        <td>Normalize lon/lat bounds</td>
+        <td>Normalizes lon/lat bounds shape and naming, including vertex-style bounds.</td>
+        <td>structure, coordinates</td>
+        <td>CMIP6</td>
+        <td>42</td>
+        <td>
+          
+            <span class="source-badge source-plugin">plugin</span>
+            <div class="source-package"><code>woodpecker_xmip_plugin</code></div>
+          
+        </td>
+      </tr>
+    
+      <tr class="fix-row" data-source-kind="plugin">
+        <td id="xmip.sort_vertex_order"><a href="#xmip.sort_vertex_order"><code>xmip.sort_vertex_order</code></a></td>
+        <td>Sort vertex order</td>
+        <td>Sorts grid-cell vertices into a consistent lower-left, upper-left, upper-right, lower-right order.</td>
+        <td>coordinates</td>
+        <td>CMIP6</td>
+        <td>42</td>
+        <td>
+          
+            <span class="source-badge source-plugin">plugin</span>
+            <div class="source-package"><code>woodpecker_xmip_plugin</code></div>
+          
+        </td>
+      </tr>
+    
+      <tr class="fix-row" data-source-kind="plugin">
+        <td id="xmip.convert_bounds_to_vertices"><a href="#xmip.convert_bounds_to_vertices"><code>xmip.convert_bounds_to_vertices</code></a></td>
+        <td>Convert bounds to vertices</td>
+        <td>Creates rectangular lon/lat vertex coordinates from lon/lat bounds when vertices are missing.</td>
+        <td>structure, coordinates</td>
+        <td>CMIP6</td>
+        <td>42</td>
+        <td>
+          
+            <span class="source-badge source-plugin">plugin</span>
+            <div class="source-package"><code>woodpecker_xmip_plugin</code></div>
+          
+        </td>
+      </tr>
+    
+      <tr class="fix-row" data-source-kind="plugin">
+        <td id="xmip.convert_vertices_to_bounds"><a href="#xmip.convert_vertices_to_bounds"><code>xmip.convert_vertices_to_bounds</code></a></td>
+        <td>Convert vertices to bounds</td>
+        <td>Creates lon/lat bounds from vertex-style lon/lat coordinates when bounds are missing.</td>
+        <td>structure, coordinates</td>
+        <td>CMIP6</td>
+        <td>42</td>
+        <td>
+          
+            <span class="source-badge source-plugin">plugin</span>
+            <div class="source-package"><code>woodpecker_xmip_plugin</code></div>
+          
+        </td>
+      </tr>
+    
+      <tr class="fix-row" data-source-kind="plugin">
+        <td id="xmip.fix_known_cmip6_metadata"><a href="#xmip.fix_known_cmip6_metadata"><code>xmip.fix_known_cmip6_metadata</code></a></td>
+        <td>Fix known CMIP6 metadata</td>
+        <td>Applies selected known CMIP6 metadata corrections from xMIP preprocessing.</td>
+        <td>metadata</td>
+        <td>CMIP6</td>
+        <td>42</td>
+        <td>
+          
+            <span class="source-badge source-plugin">plugin</span>
+            <div class="source-package"><code>woodpecker_xmip_plugin</code></div>
+          
+        </td>
+      </tr>
+    
+      <tr class="fix-row" data-source-kind="plugin">
+        <td id="xmip.drop_helper_grid_coords"><a href="#xmip.drop_helper_grid_coords"><code>xmip.drop_helper_grid_coords</code></a></td>
+        <td>Drop helper grid coordinates</td>
+        <td>Drops helper bnds and vertex coordinate variables after bounds and vertices are normalized.</td>
+        <td>structure</td>
+        <td>CMIP6</td>
+        <td>42</td>
+        <td>
+          
+            <span class="source-badge source-plugin">plugin</span>
+            <div class="source-package"><code>woodpecker_xmip_plugin</code></div>
           
         </td>
       </tr>

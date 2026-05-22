@@ -144,20 +144,6 @@
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
-    "id": "cmip6_decadal.realization_index_normalization",
-    "suffix": "realization_index_normalization",
-    "prefix": "cmip6_decadal",
-    "aliases": [],
-    "name": "Decadal realization_index normalization",
-    "description": "Normalizes CMIP6-decadal realization_index global attribute to integer type.",
-    "categories": [
-      "metadata"
-    ],
-    "dataset": "CMIP6-decadal",
-    "priority": 20,
-    "source": "plugin:woodpecker_cmip6_decadal_plugin"
-  },
-  {
     "id": "atlas.encoding_cleanup",
     "suffix": "encoding_cleanup",
     "prefix": "atlas",
@@ -172,17 +158,17 @@
     "source": "plugin:woodpecker_atlas_plugin"
   },
   {
-    "id": "cmip6_decadal.leadtime_metadata_normalization",
-    "suffix": "leadtime_metadata_normalization",
+    "id": "cmip6_decadal.realization_index_normalization",
+    "suffix": "realization_index_normalization",
     "prefix": "cmip6_decadal",
     "aliases": [],
-    "name": "Decadal leadtime metadata normalization",
-    "description": "Normalizes CMIP6-decadal leadtime metadata (units, long_name, standard_name).",
+    "name": "Decadal realization_index normalization",
+    "description": "Normalizes CMIP6-decadal realization_index global attribute to integer type.",
     "categories": [
       "metadata"
     ],
     "dataset": "CMIP6-decadal",
-    "priority": 21,
+    "priority": 20,
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -198,6 +184,20 @@
     "dataset": "ATLAS",
     "priority": 21,
     "source": "plugin:woodpecker_atlas_plugin"
+  },
+  {
+    "id": "cmip6_decadal.leadtime_metadata_normalization",
+    "suffix": "leadtime_metadata_normalization",
+    "prefix": "cmip6_decadal",
+    "aliases": [],
+    "name": "Decadal leadtime metadata normalization",
+    "description": "Normalizes CMIP6-decadal leadtime metadata (units, long_name, standard_name).",
+    "categories": [
+      "metadata"
+    ],
+    "dataset": "CMIP6-decadal",
+    "priority": 21,
+    "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
     "id": "cmip6_decadal.model_global_attributes",
@@ -345,6 +345,193 @@
     "dataset": "CMIP7",
     "priority": 42,
     "source": "plugin:woodpecker_cmip7_plugin"
+  },
+  {
+    "id": "xmip.rename_cmip6_axes",
+    "suffix": "rename_cmip6_axes",
+    "prefix": "xmip",
+    "aliases": [],
+    "name": "Rename CMIP6 axes",
+    "description": "Normalizes common CMIP6 dimension and coordinate names to x, y, lev, lon, lat, and bounds names.",
+    "categories": [
+      "structure"
+    ],
+    "dataset": "CMIP6",
+    "priority": 42,
+    "source": "plugin:woodpecker_xmip_plugin"
+  },
+  {
+    "id": "xmip.promote_missing_dimension_coords",
+    "suffix": "promote_missing_dimension_coords",
+    "prefix": "xmip",
+    "aliases": [],
+    "name": "Promote missing dimension coordinates",
+    "description": "Creates coordinate variables for dimensions that have no coordinate.",
+    "categories": [
+      "structure"
+    ],
+    "dataset": "CMIP6",
+    "priority": 42,
+    "source": "plugin:woodpecker_xmip_plugin"
+  },
+  {
+    "id": "xmip.mark_spatial_coords",
+    "suffix": "mark_spatial_coords",
+    "prefix": "xmip",
+    "aliases": [],
+    "name": "Mark spatial coordinates",
+    "description": "Moves known spatial, vertical, and bounds variables into the coordinate set.",
+    "categories": [
+      "structure",
+      "metadata"
+    ],
+    "dataset": "CMIP6",
+    "priority": 42,
+    "source": "plugin:woodpecker_xmip_plugin"
+  },
+  {
+    "id": "xmip.broadcast_lon_lat",
+    "suffix": "broadcast_lon_lat",
+    "prefix": "xmip",
+    "aliases": [],
+    "name": "Broadcast lon/lat coordinates",
+    "description": "Ensures lon and lat coordinates are available as two-dimensional grid coordinates when possible.",
+    "categories": [
+      "structure"
+    ],
+    "dataset": "CMIP6",
+    "priority": 42,
+    "source": "plugin:woodpecker_xmip_plugin"
+  },
+  {
+    "id": "xmip.normalize_longitude_convention",
+    "suffix": "normalize_longitude_convention",
+    "prefix": "xmip",
+    "aliases": [],
+    "name": "Normalize longitude convention",
+    "description": "Wraps negative longitudes to the 0-360 longitude convention and masks extreme placeholder values.",
+    "categories": [
+      "coordinates"
+    ],
+    "dataset": "CMIP6",
+    "priority": 42,
+    "source": "plugin:woodpecker_xmip_plugin"
+  },
+  {
+    "id": "xmip.normalize_coordinate_units",
+    "suffix": "normalize_coordinate_units",
+    "prefix": "xmip",
+    "aliases": [],
+    "name": "Normalize coordinate units",
+    "description": "Converts supported CMIP6 coordinate units to xMIP target units, currently lev to meters.",
+    "categories": [
+      "metadata",
+      "coordinates"
+    ],
+    "dataset": "CMIP6",
+    "priority": 42,
+    "source": "plugin:woodpecker_xmip_plugin"
+  },
+  {
+    "id": "xmip.replace_xy_with_nominal_lon_lat",
+    "suffix": "replace_xy_with_nominal_lon_lat",
+    "prefix": "xmip",
+    "aliases": [],
+    "name": "Replace x/y with nominal lon/lat",
+    "description": "Approximates x and y coordinate values from representative lon/lat slices and sorts the grid.",
+    "categories": [
+      "coordinates"
+    ],
+    "dataset": "CMIP6",
+    "priority": 42,
+    "source": "plugin:woodpecker_xmip_plugin"
+  },
+  {
+    "id": "xmip.normalize_lon_lat_bounds",
+    "suffix": "normalize_lon_lat_bounds",
+    "prefix": "xmip",
+    "aliases": [],
+    "name": "Normalize lon/lat bounds",
+    "description": "Normalizes lon/lat bounds shape and naming, including vertex-style bounds.",
+    "categories": [
+      "structure",
+      "coordinates"
+    ],
+    "dataset": "CMIP6",
+    "priority": 42,
+    "source": "plugin:woodpecker_xmip_plugin"
+  },
+  {
+    "id": "xmip.sort_vertex_order",
+    "suffix": "sort_vertex_order",
+    "prefix": "xmip",
+    "aliases": [],
+    "name": "Sort vertex order",
+    "description": "Sorts grid-cell vertices into a consistent lower-left, upper-left, upper-right, lower-right order.",
+    "categories": [
+      "coordinates"
+    ],
+    "dataset": "CMIP6",
+    "priority": 42,
+    "source": "plugin:woodpecker_xmip_plugin"
+  },
+  {
+    "id": "xmip.convert_bounds_to_vertices",
+    "suffix": "convert_bounds_to_vertices",
+    "prefix": "xmip",
+    "aliases": [],
+    "name": "Convert bounds to vertices",
+    "description": "Creates rectangular lon/lat vertex coordinates from lon/lat bounds when vertices are missing.",
+    "categories": [
+      "structure",
+      "coordinates"
+    ],
+    "dataset": "CMIP6",
+    "priority": 42,
+    "source": "plugin:woodpecker_xmip_plugin"
+  },
+  {
+    "id": "xmip.convert_vertices_to_bounds",
+    "suffix": "convert_vertices_to_bounds",
+    "prefix": "xmip",
+    "aliases": [],
+    "name": "Convert vertices to bounds",
+    "description": "Creates lon/lat bounds from vertex-style lon/lat coordinates when bounds are missing.",
+    "categories": [
+      "structure",
+      "coordinates"
+    ],
+    "dataset": "CMIP6",
+    "priority": 42,
+    "source": "plugin:woodpecker_xmip_plugin"
+  },
+  {
+    "id": "xmip.fix_known_cmip6_metadata",
+    "suffix": "fix_known_cmip6_metadata",
+    "prefix": "xmip",
+    "aliases": [],
+    "name": "Fix known CMIP6 metadata",
+    "description": "Applies selected known CMIP6 metadata corrections from xMIP preprocessing.",
+    "categories": [
+      "metadata"
+    ],
+    "dataset": "CMIP6",
+    "priority": 42,
+    "source": "plugin:woodpecker_xmip_plugin"
+  },
+  {
+    "id": "xmip.drop_helper_grid_coords",
+    "suffix": "drop_helper_grid_coords",
+    "prefix": "xmip",
+    "aliases": [],
+    "name": "Drop helper grid coordinates",
+    "description": "Drops helper bnds and vertex coordinate variables after bounds and vertices are normalized.",
+    "categories": [
+      "structure"
+    ],
+    "dataset": "CMIP6",
+    "priority": 42,
+    "source": "plugin:woodpecker_xmip_plugin"
   },
   {
     "id": "cmip7.configurable_reformat_bridge",

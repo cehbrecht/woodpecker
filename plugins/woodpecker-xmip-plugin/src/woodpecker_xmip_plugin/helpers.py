@@ -277,14 +277,19 @@ def _correct_units_with_pint(dataset: xr.Dataset) -> xr.Dataset:
 def correct_units(dataset: xr.Dataset):
     if not any(variable in dataset.variables for variable in DESIRED_UNITS):
         return dataset
+    if all(
+        variable not in dataset.variables or dataset[variable].attrs.get("units") == target_unit
+        for variable, target_unit in DESIRED_UNITS.items()
+    ):
+        return dataset
 
+    pint_error: ValueError | None = None
     try:
         return _correct_units_with_pint(dataset)
     except ImportError:
         pass
     except ValueError as exc:
-        warnings.warn(f"Unit correction failed with: {exc}", UserWarning, stacklevel=2)
-        return dataset
+        pint_error = exc
 
     converted = dataset.copy()
     changed = False
@@ -296,7 +301,12 @@ def correct_units(dataset: xr.Dataset):
             continue
         converted[variable] = converted_variable
         changed = True
-    return converted if changed else dataset
+    if changed:
+        return converted
+
+    if pint_error is not None:
+        warnings.warn(f"Unit correction failed with: {pint_error}", UserWarning, stacklevel=2)
+    return dataset
 
 
 def parse_lon_lat_bounds(dataset: xr.Dataset):

@@ -49,3 +49,21 @@ Source values: core (built-in) or plugin:<package> (discovered plugin fix).
 | cmip7.ensure_project_id_present | Ensure project_id is present (plugin) | Sets project_id from dataset identifier metadata when missing. | metadata | CMIP7 | 41 | plugin:woodpecker_cmip7_plugin |
 | cmip7.rename_temp_variable_to_tas | Rename temp variable to tas (plugin) | Renames data variable temp to tas when tas is missing. | structure, metadata | CMIP7 | 42 | plugin:woodpecker_cmip7_plugin |
 | cmip7.configurable_reformat_bridge | Configurable CMIP7 reformat bridge (plugin) | Applies workflow-driven variable/dimension remapping and selected metadata updates. | structure, metadata | CMIP7 | 43 | plugin:woodpecker_cmip7_plugin |
+
+## Plugin: woodpecker_xmip_plugin
+
+| ID | Name | Description | Categories | Dataset | Priority | Source |
+|----|------|-------------|------------|---------|---------|--------|
+| xmip.rename_cmip6_axes | Rename CMIP6 axes | Normalizes common CMIP6 dimension and coordinate names to x, y, lev, lon, lat, and bounds names. | structure | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.promote_missing_dimension_coords | Promote missing dimension coordinates | Creates coordinate variables for dimensions that have no coordinate. | structure | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.mark_spatial_coords | Mark spatial coordinates | Moves known spatial, vertical, and bounds variables into the coordinate set. | structure, metadata | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.broadcast_lon_lat | Broadcast lon/lat coordinates | Ensures lon and lat coordinates are available as two-dimensional grid coordinates when possible. | structure | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.normalize_longitude_convention | Normalize longitude convention | Wraps negative longitudes to the 0-360 longitude convention and masks extreme placeholder values. | coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.normalize_coordinate_units | Normalize coordinate units | Converts supported CMIP6 coordinate units to xMIP target units, currently lev to meters. | metadata, coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.replace_xy_with_nominal_lon_lat | Replace x/y with nominal lon/lat | Approximates x and y coordinate values from representative lon/lat slices and sorts the grid. | coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.normalize_lon_lat_bounds | Normalize lon/lat bounds | Normalizes lon/lat bounds shape and naming, including vertex-style bounds. | structure, coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.sort_vertex_order | Sort vertex order | Sorts grid-cell vertices into a consistent lower-left, upper-left, upper-right, lower-right order. | coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.convert_bounds_to_vertices | Convert bounds to vertices | Creates rectangular lon/lat vertex coordinates from lon/lat bounds when vertices are missing. | structure, coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.convert_vertices_to_bounds | Convert vertices to bounds | Creates lon/lat bounds from vertex-style lon/lat coordinates when bounds are missing. | structure, coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.fix_known_cmip6_metadata | Fix known CMIP6 metadata | Applies selected known CMIP6 metadata corrections from xMIP preprocessing. | metadata | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.drop_helper_grid_coords | Drop helper grid coordinates | Drops helper bnds and vertex coordinate variables after bounds and vertices are normalized. | structure | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
