@@ -75,5 +75,6 @@ woodpecker check ./data --plan-id cmip6.core_units
 The xMIP plugin is currently a demo plugin that translates xMIP-style CMIP6
 preprocessing into small, inspectable Woodpecker fixes.
 
-For the short project introduction, use the [README](OVERVIEW.md). For
-architecture and contributor details, use [CONTRIBUTING](CONTRIBUTING_GUIDE.md).
+For the longer project overview, read [Overview](OVERVIEW.md). For
+architecture and contributor details, read the
+[Contributing Guide](CONTRIBUTING_GUIDE.md).
