@@ -68,6 +68,8 @@ catalog APIs as core plans.
 
 Use the [Contributing Guide](CONTRIBUTING_GUIDE.md) for local setup, fix
 authoring, plan-file schema details, plugin guidance, and testing conventions.
+Use [Docs Development](docs-development.md) when you are editing or regenerating
+the documentation site.
 
 Useful local commands:
 

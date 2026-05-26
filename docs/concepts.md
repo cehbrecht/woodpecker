@@ -3,6 +3,27 @@
 Woodpecker separates executable repair logic from the user-facing workflows
 that select and order that logic.
 
+## How The Pieces Fit
+
+```mermaid
+flowchart LR
+  Dataset["Dataset or path"] --> Selection["Fix selection"]
+  Selection --> Direct["Direct fix ids"]
+  Selection --> Catalog["FixPlanCatalog"]
+  Loader["FixPlanLoader"] --> Catalog
+  Core["Core plans"] --> Loader
+  Local["User/system/explicit plans"] --> Loader
+  Plugins["Installed plugin plans"] --> Loader
+  Catalog --> Plan["FixPlan"]
+  Direct --> Fixes["Fixes"]
+  Plan --> Fixes
+  Fixes --> Result["Findings or repaired dataset"]
+```
+
+Direct fix ids are useful when you already know exactly what to run. Fix plans
+are useful when a workflow should carry ordered steps, options, matching rules,
+and links to background material.
+
 ## Fix
 
 A fix is an executable Python rule for one known dataset issue. It can check
