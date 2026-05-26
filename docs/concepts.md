@@ -25,7 +25,7 @@ findings = woodpecker.check(
 )
 ```
 
-The generated [Fixes Catalog](FIXES.md) lists registered fixes.
+The [Generated Fixes Reference](FIXES.md) lists registered fixes.
 
 ## Fix Plan
 
@@ -40,7 +40,7 @@ plan = woodpecker.plan.get("cmip6.core_units")
 findings = woodpecker.plan.check(dataset, plan)
 ```
 
-The generated [Fix Plans Reference](FIX_PLANS.md) lists discovered plans.
+The [Generated Fix Plans Reference](FIX_PLANS.md) lists discovered plans.
 
 ## Matching
 

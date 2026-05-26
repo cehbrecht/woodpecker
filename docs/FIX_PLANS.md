@@ -1,3 +1,7 @@
+# Generated Fix Plans Reference
+
+This page is generated from plan documents discovered by `FixPlanLoader`.
+
 Fix plans are curated recipes for selecting and applying fixes to matching datasets.
 
 Source values point to core or package-bundled plugin plans discovered by FixPlanLoader.

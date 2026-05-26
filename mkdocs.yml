@@ -37,9 +37,9 @@ nav:
       - Plugins: plugins.md
       - Examples: examples.md
   - Reference:
-      - Fixes Catalog: FIXES.md
-      - Fix Plans: FIX_PLANS.md
-      - Interactive Fixes: fixes.html
+      - Generated Fixes Reference: FIXES.md
+      - Generated Fix Plans Reference: FIX_PLANS.md
+      - Interactive Fix Browser: fixes.html
   - Examples:
       - Direct CMIP6 API: notebooks/cmip6_core_api_example.ipynb
       - CMIP6 Fix Plan: notebooks/cmip6_core_fix_plan_example.ipynb

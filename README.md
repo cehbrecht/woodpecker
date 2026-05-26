@@ -26,8 +26,9 @@ The MkDocs site is the main documentation entry point:
 - [Discovered Fix Plans](https://cehbrecht.github.io/woodpecker/plans/)
 - [Plugins](https://cehbrecht.github.io/woodpecker/plugins/)
 - [Examples](https://cehbrecht.github.io/woodpecker/examples/)
-- [Fixes Catalog](https://cehbrecht.github.io/woodpecker/FIXES/)
-- [Fix Plans Reference](https://cehbrecht.github.io/woodpecker/FIX_PLANS/)
+- [Generated Fixes Reference](https://cehbrecht.github.io/woodpecker/FIXES/)
+- [Generated Fix Plans Reference](https://cehbrecht.github.io/woodpecker/FIX_PLANS/)
+- [Interactive Fix Browser](https://cehbrecht.github.io/woodpecker/fixes/)
 - [Contributing Guide](https://cehbrecht.github.io/woodpecker/CONTRIBUTING_GUIDE/)
 
 The source pages live in `docs/` and are wired through `mkdocs.yml`.

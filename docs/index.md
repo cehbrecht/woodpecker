@@ -17,7 +17,7 @@ API for checking, applying, composing, and discovering climate data fixes.
 
 **Check a dataset**  
 Run known fixes directly when you already know the fix id. Start with the
-[Fixes Catalog](FIXES.md).
+[Generated Fixes Reference](FIXES.md).
 
 **Learn the model**  
 Read the core vocabulary for fixes, plans, stores, catalogs, plugins, and ids.
@@ -75,8 +75,11 @@ woodpecker check ./data --plan-id cmip6.core_units
 - [Plugins](plugins.md): bundled plugin status, prefixes, fixes, and plans.
 - [Examples](examples.md): runnable notebooks built from deterministic
   synthetic datasets.
-- [Fixes Catalog](FIXES.md): generated reference for available fixes.
-- [Fix Plans](FIX_PLANS.md): generated reference for discovered plans.
+- [Generated Fixes Reference](FIXES.md): generated table of registered fixes.
+- [Generated Fix Plans Reference](FIX_PLANS.md): generated table of discovered
+  plans.
+- [Interactive Fix Browser](fixes.html): searchable fix ids with stable
+  anchors.
 
 The xMIP plugin is currently a demo plugin that translates xMIP-style CMIP6
 preprocessing into small, inspectable Woodpecker fixes.

@@ -1,3 +1,7 @@
+# Generated Fixes Reference
+
+This page is generated from registered core and plugin fixes.
+
 Source values: core (built-in) or plugin:<package> (discovered plugin fix).
 
 ## Core

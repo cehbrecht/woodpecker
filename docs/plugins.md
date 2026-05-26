@@ -28,5 +28,5 @@ expressed as small Woodpecker fixes:
 plan = woodpecker.plan.get("xmip.cmip6_preprocessing")
 ```
 
-Use the generated [Fixes Catalog](FIXES.md) and [Fix Plans](FIX_PLANS.md) for
-the full registered reference.
+Use the [Generated Fixes Reference](FIXES.md) and
+[Generated Fix Plans Reference](FIX_PLANS.md) for the full registered reference.
