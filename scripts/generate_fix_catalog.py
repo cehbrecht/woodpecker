@@ -11,7 +11,14 @@ from woodpecker.fixes.registry import FixRegistry
 def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXES.json"):
     fixes = FixRegistry.discover()
 
-    md_lines = ["Source values: core (built-in) or plugin:<package> (discovered plugin fix).", ""]
+    md_lines = [
+        "# Generated Fixes Reference",
+        "",
+        "This page is generated from registered core and plugin fixes.",
+        "",
+        "Source values: core (built-in) or plugin:<package> (discovered plugin fix).",
+        "",
+    ]
     json_list = []
     grouped_rows: dict[str, list[tuple[str, str, str, str, str, int, str]]] = {"core": []}
 

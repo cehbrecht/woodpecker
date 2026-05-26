@@ -32,13 +32,15 @@ nav:
   - Home: index.md
   - Getting Started:
       - Overview: OVERVIEW.md
+      - Concepts: concepts.md
       - Discovered Fix Plans: plans.md
+      - CLI: cli.md
       - Plugins: plugins.md
       - Examples: examples.md
   - Reference:
-      - Fixes Catalog: FIXES.md
-      - Fix Plans: FIX_PLANS.md
-      - Interactive Fixes: fixes.html
+      - Generated Fixes Reference: FIXES.md
+      - Generated Fix Plans Reference: FIX_PLANS.md
+      - Interactive Fix Browser: fixes.html
   - Examples:
       - Direct CMIP6 API: notebooks/cmip6_core_api_example.ipynb
       - CMIP6 Fix Plan: notebooks/cmip6_core_fix_plan_example.ipynb
@@ -48,4 +50,6 @@ nav:
       - Atlas Fix Plan: notebooks/atlas_fix_plan_example.ipynb
       - ESA CCI Fix Plan: notebooks/esa_cci_fix_plan_example.ipynb
       - xMIP Plugin Demo: notebooks/xmip_plugin_demo.ipynb
-  - Contributing: CONTRIBUTING_GUIDE.md
+  - Contributing:
+      - Guide: CONTRIBUTING_GUIDE.md
+      - Docs Development: docs-development.md
