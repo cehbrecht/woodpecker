@@ -14,6 +14,9 @@ climate processing. It brings repair scripts, workarounds, plugins, and fix
 plans under one API for checking, applying, composing, and discovering climate
 data fixes.
 
+Like a woodpecker finding bugs in a tree, Woodpecker looks for known data
+issues and applies focused repairs before they spread through a workflow.
+
 Dataset-specific fix families are provided as plugins.
 
 ## Documentation
