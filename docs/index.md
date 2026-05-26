@@ -19,6 +19,10 @@ API for checking, applying, composing, and discovering climate data fixes.
 Run known fixes directly when you already know the fix id. Start with the
 [Fixes Catalog](FIXES.md).
 
+**Learn the model**  
+Read the core vocabulary for fixes, plans, stores, catalogs, plugins, and ids.
+Start with [Concepts](concepts.md).
+
 **Run a discovered plan**  
 Load an ordered workflow from core, plugin, user, or system plan sources. Start
 with [Discovered Fix Plans](plans.md).
@@ -64,6 +68,8 @@ woodpecker check ./data --plan-id cmip6.core_units
 
 ## What To Read
 
+- [Concepts](concepts.md): the core vocabulary for fixes, plans, stores,
+  catalogs, plugins, and identifiers.
 - [Discovered Fix Plans](plans.md): how Woodpecker finds bundled, user, system,
   and explicit plan documents.
 - [Plugins](plugins.md): bundled plugin status, prefixes, fixes, and plans.

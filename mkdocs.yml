@@ -32,6 +32,7 @@ nav:
   - Home: index.md
   - Getting Started:
       - Overview: OVERVIEW.md
+      - Concepts: concepts.md
       - Discovered Fix Plans: plans.md
       - Plugins: plugins.md
       - Examples: examples.md
