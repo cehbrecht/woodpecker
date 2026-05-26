@@ -2,12 +2,21 @@
 
 ## Unreleased
 
+## 0.4.0 (2026-05-26)
+
 - Renamed the internal `woodpecker.plans` package to `woodpecker.fix_plans`.
 - Simplified the public Python API to direct `woodpecker.check/fix(..., fixes=...)` and plan-backed `woodpecker.plan.check/fix(...)`.
 - Added a read-only auto fix-plan store that exposes registered fixes as single-step plans.
 - Added API, CLI, and integration examples for auto plans.
 - Added a prototype `FixPlanCatalog` for querying multiple fix-plan sources together.
 - Added notebook examples for the auto store and `FixPlanCatalog`.
+- Added `FixPlanLoader` discovery for core, plugin, user, system, environment, and explicit plan sources.
+- Added the bundled xMIP demo plugin for inspectable CMIP6 preprocessing fixes and plans.
+- Added generated MkDocs reference pages for registered fixes and discovered fix plans.
+- Added an interactive fix browser with searchable fix ids and stable anchors.
+- Added dedicated Concepts, CLI, and Docs Development pages.
+- Refined the README and MkDocs homepage so the README is a compact project entry point and the docs homepage is task-oriented.
+- Updated bundled plugin packages for the `0.4.x` core dependency range.
 
 ## 0.3.0 (2026-05-11)
 

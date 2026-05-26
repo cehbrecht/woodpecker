@@ -293,7 +293,7 @@ Minimal plugin entry point:
 [project]
 name = "woodpecker-example-plugin"
 version = "0.1.0"
-dependencies = ["woodpecker>=0.3,<0.4"]
+dependencies = ["woodpecker>=0.4,<0.5"]
 
 [project.entry-points."woodpecker.plugins"]
 example = "woodpecker_example_plugin"

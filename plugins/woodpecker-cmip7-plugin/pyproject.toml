@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "woodpecker-cmip7-plugin"
-version = "0.3.0"
+version = "0.4.0"
 description = "Reference external plugin providing CMIP7-style fixes for Woodpecker"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-  "woodpecker>=0.3,<0.4",
+  "woodpecker>=0.4,<0.5",
   "xarray>=2024.1.0",
 ]
 
