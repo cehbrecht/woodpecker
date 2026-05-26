@@ -1,44 +1,26 @@
-# Woodpecker
+# Woodpecker Documentation
 
-**Small, precise fixes for climate data.**
+Woodpecker helps climate-data workflows check, select, and apply known dataset
+fixes through a small Python API, a CLI, and discoverable fix plans.
 
-[![CI](https://github.com/cehbrecht/woodpecker/actions/workflows/ci.yml/badge.svg)](https://github.com/cehbrecht/woodpecker/actions/workflows/ci.yml)
-[![Docs](https://github.com/cehbrecht/woodpecker/actions/workflows/docs.yml/badge.svg)](https://github.com/cehbrecht/woodpecker/actions/workflows/docs.yml)
-[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://github.com/cehbrecht/woodpecker/blob/main/pyproject.toml)
-[![License](https://img.shields.io/github/license/cehbrecht/woodpecker)](https://github.com/cehbrecht/woodpecker/blob/main/LICENSE)
+Use this documentation site as a map. The [Overview](OVERVIEW.md) is the short
+project introduction; the pages below are organized by what you want to do next.
 
-Like the bird caring for a forest by finding hidden bugs, Woodpecker cares for
-climate data by finding known data bugs and applying focused fixes.
+## If You Are Running Fixes
 
-It brings repair scripts, workarounds, plugins, and fix plans under one simple
-API for checking, applying, composing, and discovering climate data fixes.
+Start here when you have a dataset and want to check or repair it.
 
-## Common Paths
+- [Concepts](concepts.md): learn the vocabulary for fixes, plans, stores,
+  catalogs, plugins, and identifiers.
+- [Discovered Fix Plans](plans.md): run an ordered workflow from core, plugin,
+  user, or system plan sources.
+- [Examples](examples.md): open executed notebooks using deterministic synthetic
+  datasets.
+- [Generated Fixes Reference](FIXES.md): find registered fix ids for direct
+  selection.
+- [Interactive Fix Browser](fixes.html): search fix ids and copy stable anchors.
 
-**Check a dataset**  
-Run known fixes directly when you already know the fix id. Start with the
-[Generated Fixes Reference](FIXES.md).
-
-**Learn the model**  
-Read the core vocabulary for fixes, plans, stores, catalogs, plugins, and ids.
-Start with [Concepts](concepts.md).
-
-**Run a discovered plan**  
-Load an ordered workflow from core, plugin, user, or system plan sources. Start
-with [Discovered Fix Plans](plans.md).
-
-**Browse plugins**  
-See bundled dataset-family plugins, prefixes, fixes, and plan coverage. Start
-with [Plugins](plugins.md).
-
-**Explore examples**  
-Open executed notebooks built from deterministic synthetic climate datasets.
-Start with [Examples](examples.md).
-
-## Start Here
-
-Use a discovered fix plan when you want Woodpecker to choose an ordered workflow
-by id:
+Typical plan-based usage:
 
 ```python
 import woodpecker
@@ -50,40 +32,53 @@ if findings:
     woodpecker.plan.fix(dataset, plan, dry_run=False)
 ```
 
-Use direct fix selection when you already know the exact fix id:
-
-```python
-findings = woodpecker.check(
-    dataset,
-    fixes="woodpecker.normalize_tas_units_to_kelvin",
-)
-```
-
-From the command line, list discovered plans and run one by id:
+Typical CLI usage:
 
 ```bash
 woodpecker list-plans
 woodpecker check ./data --plan-id cmip6.core_units
 ```
 
-## What To Read
+## If You Are Choosing A Workflow
 
-- [Concepts](concepts.md): the core vocabulary for fixes, plans, stores,
-  catalogs, plugins, and identifiers.
-- [Discovered Fix Plans](plans.md): how Woodpecker finds bundled, user, system,
-  and explicit plan documents.
-- [Plugins](plugins.md): bundled plugin status, prefixes, fixes, and plans.
-- [Examples](examples.md): runnable notebooks built from deterministic
-  synthetic datasets.
+Start with [Discovered Fix Plans](plans.md) when you want Woodpecker to select a
+curated recipe by id or matching rules.
+
+Use the [Generated Fix Plans Reference](FIX_PLANS.md) when you want a generated
+table of currently discovered plans, their match rules, steps, and source files.
+
+Use the [Generated Fixes Reference](FIXES.md) when you already know you need a
+single fix id or want to inspect all registered fixes.
+
+## If You Are Working With Plugins
+
+Start with [Plugins](plugins.md) for bundled plugin status, namespace prefixes,
+fix counts, and plan coverage.
+
+Plugins can register fixes and may bundle fix-plan documents in package
+`plans/` resources. Installed plugin plans are discovered through the same
+catalog APIs as core plans.
+
+## If You Are Contributing
+
+Use the [Contributing Guide](CONTRIBUTING_GUIDE.md) for local setup, fix
+authoring, plan-file schema details, plugin guidance, and testing conventions.
+
+Useful local commands:
+
+```bash
+make format
+make lint
+make test
+make docs
+```
+
+## Reference Pages
+
 - [Generated Fixes Reference](FIXES.md): generated table of registered fixes.
 - [Generated Fix Plans Reference](FIX_PLANS.md): generated table of discovered
   plans.
-- [Interactive Fix Browser](fixes.html): searchable fix ids with stable
-  anchors.
+- [Interactive Fix Browser](fixes.html): searchable fix ids with stable anchors.
 
 The xMIP plugin is currently a demo plugin that translates xMIP-style CMIP6
 preprocessing into small, inspectable Woodpecker fixes.
-
-For the longer project overview, read [Overview](OVERVIEW.md). For
-architecture and contributor details, read the
-[Contributing Guide](CONTRIBUTING_GUIDE.md).
