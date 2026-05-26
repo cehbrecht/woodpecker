@@ -27,6 +27,7 @@ The MkDocs site is the main documentation entry point:
 - [Overview](https://cehbrecht.github.io/woodpecker/OVERVIEW/)
 - [Concepts](https://cehbrecht.github.io/woodpecker/concepts/)
 - [Discovered Fix Plans](https://cehbrecht.github.io/woodpecker/plans/)
+- [CLI](https://cehbrecht.github.io/woodpecker/cli/)
 - [Plugins](https://cehbrecht.github.io/woodpecker/plugins/)
 - [Examples](https://cehbrecht.github.io/woodpecker/examples/)
 - [Generated Fixes Reference](https://cehbrecht.github.io/woodpecker/FIXES/)

@@ -14,6 +14,8 @@ Start here when you have a dataset and want to check or repair it.
   catalogs, plugins, and identifiers.
 - [Discovered Fix Plans](plans.md): run an ordered workflow from core, plugin,
   user, or system plan sources.
+- [CLI](cli.md): inspect fixes and plans, check datasets, apply fixes, and use
+  output or safety flags from the terminal.
 - [Examples](examples.md): open executed notebooks using deterministic synthetic
   datasets.
 - [Generated Fixes Reference](FIXES.md): find registered fix ids for direct
@@ -38,6 +40,9 @@ Typical CLI usage:
 woodpecker list-plans
 woodpecker check ./data --plan-id cmip6.core_units
 ```
+
+See [CLI](cli.md) for direct fix selection, store backends, dry runs,
+provenance, strict I/O, and output formats.
 
 ## If You Are Choosing A Workflow
 

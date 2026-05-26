@@ -34,6 +34,7 @@ nav:
       - Overview: OVERVIEW.md
       - Concepts: concepts.md
       - Discovered Fix Plans: plans.md
+      - CLI: cli.md
       - Plugins: plugins.md
       - Examples: examples.md
   - Reference:
