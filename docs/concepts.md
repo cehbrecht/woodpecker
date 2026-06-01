@@ -49,6 +49,10 @@ findings = woodpecker.check(
 In a fix plan, a fix is a fix function plus optional runtime options. The
 [Generated Fixes Reference](FIXES.md) lists registered fix functions.
 
+Fix functions may declare a non-negative `priority` for default discovery
+ordering. The default priority is `-1`, which means unprioritized. Explicit fix
+plans keep their own step order.
+
 ## Fix Plan
 
 A fix plan is a user-facing recipe. It contains an ordered list of fixes and may

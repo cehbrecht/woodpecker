@@ -40,6 +40,21 @@ def test_registry_rejects_missing_name():
         FixFunctionRegistry.register(_MissingName)
 
 
+def test_registry_rejects_priority_below_unprioritized_sentinel():
+    with pytest.raises(ValueError, match="priority.*>= -1"):
+
+        class _InvalidPriority(FixFunction):
+            prefix = "test"
+            suffix = "invalid_priority"
+            name = "Invalid priority"
+            description = ""
+            categories = ["metadata"]
+            priority = -2
+            dataset = None
+
+        FixFunctionRegistry.register(_InvalidPriority)
+
+
 def test_register_fix_function_decorator_registers_class():
     class _Alias(FixFunction):
         prefix = "test"
@@ -167,6 +182,56 @@ def test_registry_suffix_derivation_falls_back_to_class_name_snake_case():
 
     register_fix_function(FallbackFromClassName)
     assert FallbackFromClassName.id == "test.fallback_from_class_name"
+
+
+def test_registry_discovers_prioritized_before_unprioritized_then_by_id():
+    class _UnprioritizedBeta(FixFunction):
+        prefix = "test"
+        suffix = "unprioritized_beta"
+        name = "Unprioritized beta"
+        description = ""
+        categories = ["metadata"]
+        dataset = None
+
+    class _PriorityTwo(FixFunction):
+        prefix = "test"
+        suffix = "priority_two"
+        name = "Priority two"
+        description = ""
+        categories = ["metadata"]
+        priority = 2
+        dataset = None
+
+    class _UnprioritizedAlpha(FixFunction):
+        prefix = "test"
+        suffix = "unprioritized_alpha"
+        name = "Unprioritized alpha"
+        description = ""
+        categories = ["metadata"]
+        dataset = None
+
+    class _PriorityOne(FixFunction):
+        prefix = "test"
+        suffix = "priority_one"
+        name = "Priority one"
+        description = ""
+        categories = ["metadata"]
+        priority = 1
+        dataset = None
+
+    register_fix_function(_UnprioritizedBeta)
+    register_fix_function(_PriorityTwo)
+    register_fix_function(_UnprioritizedAlpha)
+    register_fix_function(_PriorityOne)
+
+    discovered_ids = [fix.id for fix in FixFunctionRegistry.discover() if fix.prefix == "test"]
+
+    assert discovered_ids == [
+        "test.priority_one",
+        "test.priority_two",
+        "test.unprioritized_alpha",
+        "test.unprioritized_beta",
+    ]
 
 
 def test_registry_resolves_ids_and_aliases_for_known_fixes():

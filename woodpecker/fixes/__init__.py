@@ -10,7 +10,12 @@ import woodpecker.identity  # noqa: F401
 # Import built-in core fixes.
 from . import common  # noqa: F401
 from .plugins import load_plugins
-from .registry import FixFunction, FixFunctionRegistry, register_fix_function  # noqa: F401
+from .registry import (  # noqa: F401
+    UNPRIORITIZED,
+    FixFunction,
+    FixFunctionRegistry,
+    register_fix_function,
+)
 
 # Discover and load third-party fix plugins via entry points.
 load_plugins()
