@@ -6,7 +6,7 @@ from typing import Any
 
 import xarray as xr
 
-from ..registry import Fix, FixRegistry
+from ..registry import FixFunction, FixFunctionRegistry
 
 
 def _as_string_tuple(value: Any) -> tuple[str, ...]:
@@ -69,7 +69,7 @@ def _dataset_changed(before: xr.Dataset, after: xr.Dataset) -> bool:
     return not before.identical(after)
 
 
-class DatasetTransformFix(Fix):
+class DatasetTransform(FixFunction):
     message = "dataset can be normalized"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -133,8 +133,8 @@ def _rename_variables(dataset: xr.Dataset, mapping: Mapping[str, tuple[str, ...]
     return renamed
 
 
-@FixRegistry.register
-class RenameVariablesFix(DatasetTransformFix):
+@FixFunctionRegistry.register
+class RenameVariables(DatasetTransform):
     name = "Rename variables and dimensions"
     description = "Renames variables, coordinates, and dimensions from configured candidate names."
     categories = ["structure"]
@@ -147,8 +147,8 @@ class RenameVariablesFix(DatasetTransformFix):
         return _rename_variables(dataset, mapping)
 
 
-@FixRegistry.register
-class PromoteMissingDimensionCoordsFix(DatasetTransformFix):
+@FixFunctionRegistry.register
+class PromoteMissingDimensionCoords(DatasetTransform):
     name = "Promote missing dimension coordinates"
     description = "Creates coordinate variables for dimensions that have no coordinate."
     categories = ["structure"]
@@ -168,8 +168,8 @@ class PromoteMissingDimensionCoordsFix(DatasetTransformFix):
         return transformed
 
 
-@FixRegistry.register
-class SetCoordinateVariablesFix(DatasetTransformFix):
+@FixFunctionRegistry.register
+class SetCoordinateVariables(DatasetTransform):
     name = "Set coordinate variables"
     description = "Moves configured variables into the coordinate set."
     categories = ["structure", "metadata"]
@@ -230,8 +230,8 @@ def _convert_units_with_pint(
     return converted.pint.dequantify(format="~P")
 
 
-@FixRegistry.register
-class ConvertUnitsFix(DatasetTransformFix):
+@FixFunctionRegistry.register
+class ConvertUnits(DatasetTransform):
     name = "Convert variable units"
     description = "Converts configured variables or coordinates to target units."
     categories = ["metadata", "units"]
@@ -304,8 +304,8 @@ def _normalize_longitude_values(data_array: xr.DataArray, target: str, mask_abs_
     return values
 
 
-@FixRegistry.register
-class NormalizeLongitudeConventionFix(DatasetTransformFix):
+@FixFunctionRegistry.register
+class NormalizeLongitudeConvention(DatasetTransform):
     name = "Normalize longitude convention"
     description = "Wraps configured longitude coordinates to a target convention."
     categories = ["coordinates"]
@@ -342,8 +342,8 @@ class NormalizeLongitudeConventionFix(DatasetTransformFix):
         return transformed
 
 
-@FixRegistry.register
-class DropVariablesFix(DatasetTransformFix):
+@FixFunctionRegistry.register
+class DropVariables(DatasetTransform):
     name = "Drop variables"
     description = "Drops configured variables or coordinates."
     categories = ["structure"]

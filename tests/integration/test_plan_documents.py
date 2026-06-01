@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from woodpecker.fix_plans import SUPPORTED_EXTENSIONS, load_fix_plan_document
-from woodpecker.fixes.registry import FixRegistry
+from woodpecker.fixes.registry import FixFunctionRegistry
 from woodpecker.testing import integration_root_dir
 
 pytest.importorskip("woodpecker_atlas_plugin")
@@ -32,9 +32,9 @@ def test_integration_plan_steps_resolve_registered_core_and_plugin_fixes():
         for plan in document.plans:
             for step in plan.steps:
                 step_ids.add(step.id)
-                assert FixRegistry.resolve_identifier(step.id) == step.id
+                assert FixFunctionRegistry.resolve_identifier(step.id) == step.id
 
-    registered_ids = set(FixRegistry.registered_ids())
+    registered_ids = set(FixFunctionRegistry.registered_ids())
 
     assert any(identifier.startswith("woodpecker.") for identifier in step_ids)
     assert any(identifier.startswith("atlas.") for identifier in step_ids)

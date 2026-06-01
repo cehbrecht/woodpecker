@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from ..registry import Fix, FixRegistry
+from ..registry import FixFunction, FixFunctionRegistry
 from .helpers import remove_encoding_key, vars_with_encoding_key
 
 _COORDS = ("time", "lat", "latitude", "lon", "longitude")
@@ -19,8 +19,8 @@ def _apply_coord_fillvalue_cleanup(dataset: xr.Dataset) -> bool:
     return remove_encoding_key(dataset, vars_to_fix, "_FillValue")
 
 
-@FixRegistry.register
-class RemoveCoordinateFillValueEncodingsFix(Fix):
+@FixFunctionRegistry.register
+class RemoveCoordinateFillValueEncodings(FixFunction):
     name = "Remove coordinate FillValue encodings"
     description = "Removes _FillValue encoding entries from common coordinate variables."
     categories = ["metadata", "structure"]

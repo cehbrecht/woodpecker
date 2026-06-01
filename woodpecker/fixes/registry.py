@@ -5,10 +5,10 @@ from typing import Any, Optional, Type
 
 from woodpecker.fixes.identifiers import IdentifierResolver, IdentifierRules
 
-from .base import Fix
+from .base import FixFunction
 
 
-class FixRegistry:
+class FixFunctionRegistry:
     """Simple in-memory registry with a pluggy-ready public API.
 
     - Simple today: decorator registration + in-memory discovery.
@@ -77,9 +77,9 @@ class FixRegistry:
             IdentifierRules.validate_id("fix id", explicit_id)
             parsed_prefix, parsed_suffix = explicit_id.split(".", 1)
             if explicit_prefix and prefix != parsed_prefix:
-                raise ValueError("Fix prefix does not match id prefix")
+                raise ValueError("Fix function prefix does not match id prefix")
             if explicit_suffix and suffix != parsed_suffix:
-                raise ValueError("Fix suffix does not match id suffix")
+                raise ValueError("Fix function suffix does not match id suffix")
             prefix = parsed_prefix
             suffix = parsed_suffix
 
@@ -94,8 +94,8 @@ class FixRegistry:
         return cls._resolver.resolve(identifier)
 
     @classmethod
-    def get_fix(cls, id: str) -> Type[Any]:
-        """Return the registered fix class for an id.
+    def get_fix_function(cls, id: str) -> Type[Any]:
+        """Return the registered fix function class for an id.
 
         The input must be an id in the form
         "<prefix>.<suffix>".
@@ -109,9 +109,9 @@ class FixRegistry:
 
     @classmethod
     def instantiate(cls, id: str) -> Any:
-        """Instantiate and return a fresh fix instance from an id."""
+        """Instantiate and return a fresh fix function instance from an id."""
 
-        return cls._instantiate_fix(cls.get_fix(id))
+        return cls._instantiate_fix(cls.get_fix_function(id))
 
     @staticmethod
     def _instantiate_fix(fix_cls: Type[Any]) -> Any:
@@ -119,7 +119,7 @@ class FixRegistry:
             fix = fix_cls()
         except Exception as exc:  # pragma: no cover - defensive guard
             raise ValueError(
-                f"Fix {fix_cls.__name__} could not be instantiated. "
+                f"Fix function {fix_cls.__name__} could not be instantiated. "
                 "Ensure default metadata values are provided on the class."
             ) from exc
         return fix
@@ -131,14 +131,17 @@ class FixRegistry:
         priority = getattr(fix, "priority", 10)
 
         if not name:
-            raise ValueError(f"Fix {fix_cls.__name__} must define a non-empty 'name'")
+            raise ValueError(f"Fix function {fix_cls.__name__} must define a non-empty 'name'")
         if not isinstance(priority, int):
-            raise ValueError(f"Fix {fix_cls.__name__} must define 'priority' as an integer")
+            raise ValueError(
+                f"Fix function {fix_cls.__name__} must define 'priority' as an integer"
+            )
         if not isinstance(categories, list) or any(
             (not isinstance(item, str) or not item.strip()) for item in categories
         ):
             raise ValueError(
-                f"Fix {fix_cls.__name__} must define 'categories' as a list of non-empty strings"
+                f"Fix function {fix_cls.__name__} must define "
+                "'categories' as a list of non-empty strings"
             )
 
     @classmethod
@@ -164,19 +167,19 @@ class FixRegistry:
         return fix_cls  # decorator-friendly
 
     @classmethod
-    def discover(cls, filters: Optional[dict[str, Any]] = None) -> list[Fix]:
-        """Return instantiated Fix objects, optionally filtered.
+    def discover(cls, filters: Optional[dict[str, Any]] = None) -> list[FixFunction]:
+        """Return instantiated fix function objects, optionally filtered.
 
         Example:
-            FixRegistry.discover(filters={"dataset": "CMIP6-decadal"})
-            FixRegistry.discover(filters={"categories": "metadata"})
+            FixFunctionRegistry.discover(filters={"dataset": "CMIP6-decadal"})
+            FixFunctionRegistry.discover(filters={"categories": "metadata"})
         """
         fixes = [cls._instantiate_fix(fix_cls) for fix_cls in cls._registry.values()]
 
         if not filters:
             return sorted(fixes, key=lambda f: getattr(f, "priority", 10))
 
-        def match(f: Fix) -> bool:
+        def match(f: FixFunction) -> bool:
             for key, val in filters.items():
                 attr = getattr(f, key, None)
                 if attr is None:
@@ -237,19 +240,19 @@ class FixRegistry:
             json.dump(data, fp, indent=2)
 
 
-def register_fix(fix_cls: Type[Any]) -> Type[Any]:
-    """Decorator alias for registering fixes.
+def register_fix_function(fix_cls: Type[Any]) -> Type[Any]:
+    """Decorator for registering fix functions.
 
     This keeps the plugin author API minimal:
 
-        from woodpecker.fixes.registry import Fix, register_fix
+        from woodpecker.fixes.registry import FixFunction, register_fix_function
 
-        @register_fix
-        class MY_FIX(Fix):
+        @register_fix_function
+        class MyRepair(FixFunction):
             ...
     """
 
-    return FixRegistry.register(fix_cls)
+    return FixFunctionRegistry.register(fix_cls)
 
 
-__all__ = ["Fix", "FixRegistry", "register_fix"]
+__all__ = ["FixFunction", "FixFunctionRegistry", "register_fix_function"]

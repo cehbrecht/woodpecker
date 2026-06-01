@@ -14,7 +14,7 @@ from woodpecker.commands import (
     execute_load_plans,
 )
 from woodpecker.fix_plans.resolver import RunContext, resolve_run_context
-from woodpecker.fixes.registry import FixRegistry
+from woodpecker.fixes.registry import FixFunctionRegistry
 from woodpecker.io import get_io_availability
 from woodpecker.provenance import write_fix_provenance
 from woodpecker.stores.helpers import create_fix_plan_store
@@ -54,7 +54,7 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
     if categories:
         filters["categories"] = list(categories) if len(categories) > 1 else categories[0]
 
-    fixes = FixRegistry.discover(filters=filters or None)
+    fixes = FixFunctionRegistry.discover(filters=filters or None)
     click.echo(format_fixes(fixes, fmt))
 
 

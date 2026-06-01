@@ -1,14 +1,14 @@
 """Common non-project-specific fix modules."""
 
-from .common_0001 import NormalizeTasUnitsToKelvinFix  # noqa: F401
-from .common_0002 import EnsureLatitudeIsIncreasingFix  # noqa: F401
-from .common_0003 import RemoveCoordinateFillValueEncodingsFix  # noqa: F401
-from .common_0004 import MergeEquivalentDimensionsFix  # noqa: F401
+from .common_0001 import NormalizeTasUnitsToKelvin  # noqa: F401
+from .common_0002 import EnsureLatitudeIsIncreasing  # noqa: F401
+from .common_0003 import RemoveCoordinateFillValueEncodings  # noqa: F401
+from .common_0004 import MergeEquivalentDimensions  # noqa: F401
 from .common_0005 import (  # noqa: F401
-    ConvertUnitsFix,
-    DropVariablesFix,
-    NormalizeLongitudeConventionFix,
-    PromoteMissingDimensionCoordsFix,
-    RenameVariablesFix,
-    SetCoordinateVariablesFix,
+    ConvertUnits,
+    DropVariables,
+    NormalizeLongitudeConvention,
+    PromoteMissingDimensionCoords,
+    RenameVariables,
+    SetCoordinateVariables,
 )

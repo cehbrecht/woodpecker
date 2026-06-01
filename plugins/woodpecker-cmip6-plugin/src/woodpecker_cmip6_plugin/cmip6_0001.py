@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from woodpecker.fixes.registry import Fix, FixRegistry
+from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 
 def _is_cmip6_non_decadal(dataset: xr.Dataset) -> bool:
@@ -10,8 +10,8 @@ def _is_cmip6_non_decadal(dataset: xr.Dataset) -> bool:
     return source.endswith(".nc") and "cmip6" in source and "decadal" not in source
 
 
-@FixRegistry.register
-class Cmip6DummyPlaceholderFix(Fix):
+@FixFunctionRegistry.register
+class Cmip6DummyPlaceholder(FixFunction):
     suffix = "dummy_placeholder"
     name = "CMIP6 dummy placeholder"
     description = "Dummy placeholder for future non-decadal CMIP6 fixes."

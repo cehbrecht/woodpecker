@@ -11,7 +11,7 @@ from woodpecker.fix_plans.models import (
     FixRef,
     ProviderMetadata,
 )
-from woodpecker.fixes.registry import Fix, FixRegistry, register_fix
+from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry, register_fix_function
 from woodpecker.runner import apply_fix_plan
 from woodpecker.stores.json_store import JsonFixPlanStore
 from woodpecker.testing import make_cmip6, write_json
@@ -22,7 +22,7 @@ def _load_document(path: Path, payload: dict) -> FixPlanDocument:
     return FixPlanDocument(plans=JsonFixPlanStore(path).list_plans())
 
 
-class _FixMethodFix(Fix):
+class _FixMethod(FixFunction):
     prefix = "plan_test"
     suffix = "fix_method"
     name = "Plan fix method"
@@ -46,7 +46,7 @@ class _FixMethodFix(Fix):
         return True
 
 
-class _ApplyMethodFix(Fix):
+class _ApplyMethod(FixFunction):
     prefix = "plan_test"
     suffix = "apply_method"
     name = "Plan apply method"
@@ -70,7 +70,7 @@ class _ApplyMethodFix(Fix):
         return True
 
 
-class _TypeErrorInsideMethodFix(Fix):
+class _TypeErrorInsideMethod(FixFunction):
     prefix = "plan_test"
     suffix = "type_error_inside_method"
     name = "Plan type error fix"
@@ -123,7 +123,7 @@ def test_load_fix_plan_from_yaml(tmp_path: Path):
 
 
 def test_apply_plan_calls_matches_then_apply_and_passes_options():
-    register_fix(_FixMethodFix)
+    register_fix_function(_FixMethod)
     ds = make_cmip6()
     plan = FixPlan.model_validate(
         {
@@ -132,13 +132,13 @@ def test_apply_plan_calls_matches_then_apply_and_passes_options():
         }
     )
 
-    apply_fix_plan(ds, plan, FixRegistry)
+    apply_fix_plan(ds, plan, FixFunctionRegistry)
 
     assert ds.attrs["trace"] == [("matches", {"alpha": 1}), ("apply", {"alpha": 1}, False)]
 
 
 def test_apply_plan_uses_apply_for_execution():
-    register_fix(_ApplyMethodFix)
+    register_fix_function(_ApplyMethod)
     ds = make_cmip6()
     plan = FixPlan.model_validate(
         {
@@ -147,13 +147,13 @@ def test_apply_plan_uses_apply_for_execution():
         }
     )
 
-    apply_fix_plan(ds, plan, FixRegistry)
+    apply_fix_plan(ds, plan, FixFunctionRegistry)
 
     assert ds.attrs["trace"] == [("matches", {"beta": 2}), ("apply", {"beta": 2}, False)]
 
 
 def test_apply_plan_does_not_call_check():
-    register_fix(_TypeErrorInsideMethodFix)
+    register_fix_function(_TypeErrorInsideMethod)
     ds = make_cmip6()
     plan = FixPlan.model_validate(
         {
@@ -162,7 +162,7 @@ def test_apply_plan_does_not_call_check():
         }
     )
 
-    apply_fix_plan(ds, plan, FixRegistry)
+    apply_fix_plan(ds, plan, FixFunctionRegistry)
 
 
 def test_load_fix_plan_document_json(tmp_path: Path):

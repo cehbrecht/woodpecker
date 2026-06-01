@@ -23,7 +23,7 @@ class DummyInput(DataInput):
         return self._save_ok
 
 
-class DummyFix:
+class DummyFunction:
     code = "DUMMY01"
     name = "Dummy fix"
 
@@ -37,7 +37,7 @@ class DummyFix:
         return True
 
 
-class DeclaredCmipFix:
+class DeclaredCmipFunction:
     code = "CMIPX"
     name = "Declared cmip fix"
     dataset = "cmip6"
@@ -52,7 +52,7 @@ class DeclaredCmipFix:
         return True
 
 
-class NonMatchingFix:
+class NonMatchingFunction:
     code = "DUMMY02"
     name = "Non matching fix"
 
@@ -70,7 +70,7 @@ def test_run_fix_reports_failed_persistence():
     ds = xr.Dataset(attrs={"source_name": "dummy.nc"})
     data_input = DummyInput(dataset=ds, save_ok=False)
 
-    stats = run_fix([data_input], [DummyFix()], dry_run=False, output_format="auto")
+    stats = run_fix([data_input], [DummyFunction()], dry_run=False, output_format="auto")
 
     assert stats["attempted"] == 1
     assert stats["changed"] == 1
@@ -83,7 +83,7 @@ def test_run_fix_skips_fixes_for_other_dataset_types():
     ds = make_atlas()
     data_input = DummyInput(dataset=ds, save_ok=True)
 
-    stats = run_fix([data_input], [DeclaredCmipFix()], dry_run=False, output_format="auto")
+    stats = run_fix([data_input], [DeclaredCmipFunction()], dry_run=False, output_format="auto")
 
     assert stats["attempted"] == 0
     assert stats["changed"] == 0
@@ -95,7 +95,7 @@ def test_run_fix_can_embed_provenance_metadata_on_write():
 
     stats = run_fix(
         [data_input],
-        [DummyFix()],
+        [DummyFunction()],
         dry_run=False,
         output_format="auto",
         embed_provenance_metadata=True,
@@ -122,7 +122,7 @@ def test_run_fix_force_apply_controls_non_matching_fixes(
 
     stats = run_fix(
         [data_input],
-        [NonMatchingFix()],
+        [NonMatchingFunction()],
         dry_run=False,
         force_apply=force_apply,
         output_format="auto",

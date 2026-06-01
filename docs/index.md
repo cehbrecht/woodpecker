@@ -53,14 +53,14 @@ Use the [Generated Fix Plans Reference](FIX_PLANS.md) when you want a generated
 table of currently discovered plans, their match rules, steps, and source files.
 
 Use the [Generated Fixes Reference](FIXES.md) when you already know you need a
-single fix id or want to inspect all registered fixes.
+single fix function id or want to inspect all registered fix functions.
 
 ## If You Are Working With Plugins
 
 Start with [Plugins](plugins.md) for bundled plugin status, namespace prefixes,
 fix counts, and plan coverage.
 
-Plugins can register fixes and may bundle fix-plan documents in package
+Plugins can register fix functions and may bundle fix-plan documents in package
 `plans/` resources. Installed plugin plans are discovered through the same
 catalog APIs as core plans.
 
@@ -82,10 +82,10 @@ make docs
 
 ## Reference Pages
 
-- [Generated Fixes Reference](FIXES.md): generated table of registered fixes.
+- [Generated Fixes Reference](FIXES.md): generated table of registered fix functions.
 - [Generated Fix Plans Reference](FIX_PLANS.md): generated table of discovered
   plans.
 - [Interactive Fix Browser](fixes.html): searchable fix ids with stable anchors.
 
 The xMIP plugin is currently a demo plugin that translates xMIP-style CMIP6
-preprocessing into small, inspectable Woodpecker fixes.
+preprocessing into small, inspectable Woodpecker fix functions.

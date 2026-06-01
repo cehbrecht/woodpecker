@@ -3,7 +3,7 @@ from __future__ import annotations
 import xarray as xr
 
 from woodpecker.fixes.common.helpers import remove_encoding_key, vars_with_encoding_key
-from woodpecker.fixes.registry import Fix, FixRegistry
+from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import is_cmip6_decadal_netcdf
 
@@ -21,8 +21,8 @@ def _apply_fillvalue_encoding_cleanup(dataset: xr.Dataset) -> bool:
     )
 
 
-@FixRegistry.register
-class DecadalFillValueEncodingCleanupFix(Fix):
+@FixFunctionRegistry.register
+class DecadalFillValueEncodingCleanup(FixFunction):
     suffix = "fillvalue_encoding_cleanup"
     name = "Decadal _FillValue encoding cleanup"
     description = (

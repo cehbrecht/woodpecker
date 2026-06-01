@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from woodpecker.fixes.registry import Fix, FixRegistry
+from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import is_cmip6_decadal_netcdf
 
@@ -34,8 +34,8 @@ def _apply_realization_index_fix(dataset: xr.Dataset) -> bool:
     return True
 
 
-@FixRegistry.register
-class DecadalRealizationIndexNormalizationFix(Fix):
+@FixFunctionRegistry.register
+class DecadalRealizationIndexNormalization(FixFunction):
     suffix = "realization_index_normalization"
     name = "Decadal realization_index normalization"
     description = "Normalizes CMIP6-decadal realization_index global attribute to integer type."

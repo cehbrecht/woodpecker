@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from ..registry import Fix, FixRegistry
+from ..registry import FixFunction, FixFunctionRegistry
 from .helpers import get_data_unit, is_celsius_unit, target_temperature_variable
 
 
@@ -29,8 +29,8 @@ def _apply_kelvin_conversion(dataset: xr.Dataset) -> bool:
     return True
 
 
-@FixRegistry.register
-class NormalizeTasUnitsToKelvinFix(Fix):
+@FixFunctionRegistry.register
+class NormalizeTasUnitsToKelvin(FixFunction):
     aliases = ["tas_units_to_kelvin"]
     name = "Normalize tas-like units to Kelvin"
     description = "Converts tas/temp from Celsius-like units to Kelvin."

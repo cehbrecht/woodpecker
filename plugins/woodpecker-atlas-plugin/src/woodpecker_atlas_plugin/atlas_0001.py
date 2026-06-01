@@ -8,7 +8,7 @@ from woodpecker.fixes.common.helpers import (
     vars_with_compression_above_level,
     vars_with_encoding_key,
 )
-from woodpecker.fixes.registry import Fix, FixRegistry
+from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 
 def _atlas_vars_to_check(dataset: xr.Dataset) -> list[str]:
@@ -76,8 +76,8 @@ def _apply_atlas_encoding_cleanup(dataset: xr.Dataset) -> bool:
     return changed
 
 
-@FixRegistry.register
-class AtlasEncodingCleanupFix(Fix):
+@FixFunctionRegistry.register
+class AtlasEncodingCleanup(FixFunction):
     suffix = "encoding_cleanup"
     name = "ATLAS encoding cleanup"
     description = "Applies rook-equivalent ATLAS deflation/encoding cleanup."

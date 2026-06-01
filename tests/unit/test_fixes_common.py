@@ -2,14 +2,14 @@ import numpy as np
 import xarray as xr
 
 from woodpecker.fixes.common import (
-    ConvertUnitsFix,
-    DropVariablesFix,
-    MergeEquivalentDimensionsFix,
-    NormalizeLongitudeConventionFix,
-    NormalizeTasUnitsToKelvinFix,
-    PromoteMissingDimensionCoordsFix,
-    RenameVariablesFix,
-    SetCoordinateVariablesFix,
+    ConvertUnits,
+    DropVariables,
+    MergeEquivalentDimensions,
+    NormalizeLongitudeConvention,
+    NormalizeTasUnitsToKelvin,
+    PromoteMissingDimensionCoords,
+    RenameVariables,
+    SetCoordinateVariables,
 )
 
 
@@ -20,7 +20,7 @@ def test_common01_apply_write_converts_temperature_units_to_kelvin():
     )
     dataset["temp"].attrs["units"] = "degC"
 
-    changed = NormalizeTasUnitsToKelvinFix().apply(dataset, dry_run=False)
+    changed = NormalizeTasUnitsToKelvin().apply(dataset, dry_run=False)
 
     assert changed is True
     assert dataset["temp"].attrs["units"] == "K"
@@ -38,7 +38,7 @@ def test_common04_apply_write_merges_equivalent_dims():
     )
 
     changed = (
-        MergeEquivalentDimensionsFix()
+        MergeEquivalentDimensions()
         .configure({"dims": ["bnds", "nv"]})
         .apply(dataset, dry_run=False)
     )
@@ -59,7 +59,7 @@ def test_common05_rename_variables_uses_configured_mapping():
     )
 
     changed = (
-        RenameVariablesFix()
+        RenameVariables()
         .configure(
             {
                 "mapping": {
@@ -86,7 +86,7 @@ def test_common05_promote_missing_dimension_coords_can_limit_dims():
     dataset = xr.Dataset(data_vars={"tas": (("x", "y"), np.ones((2, 3)))})
 
     changed = (
-        PromoteMissingDimensionCoordsFix()
+        PromoteMissingDimensionCoords()
         .configure({"dims": ["x"]})
         .apply(
             dataset,
@@ -109,7 +109,7 @@ def test_common05_set_coordinate_variables_moves_configured_variables_to_coords(
     )
 
     changed = (
-        SetCoordinateVariablesFix()
+        SetCoordinateVariables()
         .configure({"coordinates": ["lon"]})
         .apply(
             dataset,
@@ -128,7 +128,7 @@ def test_common05_convert_units_uses_configured_targets():
     )
 
     changed = (
-        ConvertUnitsFix()
+        ConvertUnits()
         .configure({"units": {"lev": "m"}})
         .apply(
             dataset,
@@ -150,7 +150,7 @@ def test_common05_normalize_longitude_convention_updates_bounds():
     )
 
     changed = (
-        NormalizeLongitudeConventionFix()
+        NormalizeLongitudeConvention()
         .configure({"coordinate": "lon", "target": "0_360", "bounds": ["lon_bounds"]})
         .apply(dataset, dry_run=False)
     )
@@ -167,7 +167,7 @@ def test_common05_drop_variables_uses_configured_names():
     )
 
     changed = (
-        DropVariablesFix()
+        DropVariables()
         .configure({"variables": ["helper"]})
         .apply(
             dataset,

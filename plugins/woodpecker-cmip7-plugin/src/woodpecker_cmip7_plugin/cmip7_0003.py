@@ -4,7 +4,7 @@ from typing import Any
 
 import xarray as xr
 
-from woodpecker.fixes.registry import Fix, register_fix
+from woodpecker.fixes.registry import FixFunction, register_fix_function
 
 
 def _config_map(config: dict[str, Any], key: str) -> dict[str, str]:
@@ -67,8 +67,8 @@ def _apply_dim_renames(dataset: xr.Dataset, dim_map: dict[str, str]) -> bool:
     return changed
 
 
-@register_fix
-class ConfigurableCmip7ReformatBridgeFix(Fix):
+@register_fix_function
+class ConfigurableCmip7ReformatBridge(FixFunction):
     suffix = "configurable_reformat_bridge"
     name = "Configurable CMIP7 reformat bridge (plugin)"
     description = (

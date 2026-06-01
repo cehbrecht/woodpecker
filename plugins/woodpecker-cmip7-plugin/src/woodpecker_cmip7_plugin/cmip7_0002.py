@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from woodpecker.fixes.registry import Fix, register_fix
+from woodpecker.fixes.registry import FixFunction, register_fix_function
 
 
 def _needs_temp_to_tas_rename(dataset: xr.Dataset) -> bool:
@@ -18,8 +18,8 @@ def _apply_temp_to_tas_rename(dataset: xr.Dataset) -> bool:
     return True
 
 
-@register_fix
-class RenameTempVariableToTasFix(Fix):
+@register_fix_function
+class RenameTempVariableToTas(FixFunction):
     suffix = "rename_temp_variable_to_tas"
     name = "Rename temp variable to tas (plugin)"
     description = "Renames data variable temp to tas when tas is missing."

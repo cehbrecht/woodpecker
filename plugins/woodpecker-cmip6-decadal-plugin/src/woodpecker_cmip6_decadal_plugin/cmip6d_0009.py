@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from woodpecker.fixes.registry import Fix, FixRegistry
+from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import is_cmip6_decadal_netcdf
 from .helpers import normalized_start_token as _normalized_start_token
@@ -33,8 +33,8 @@ def _apply_start_token_fix(dataset: xr.Dataset) -> bool:
     return changed
 
 
-@FixRegistry.register
-class DecadalStartTokenNormalizationFix(Fix):
+@FixFunctionRegistry.register
+class DecadalStartTokenNormalization(FixFunction):
     suffix = "start_token_normalization"
     name = "Decadal start token normalization"
     description = (

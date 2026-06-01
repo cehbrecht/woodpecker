@@ -65,24 +65,26 @@ Notes:
 
 ## Core Concepts
 
-### Fix
+### Fix Function
 
-A fix is an executable rule that checks and optionally repairs a dataset issue.
-Fixes are registered in the `FixRegistry` and discovered at runtime, including
-through plugin entry points.
+A fix function is an executable rule that checks and optionally repairs a
+dataset issue. Fix functions are registered in the `FixFunctionRegistry` and discovered
+at runtime, including through plugin entry points.
 
 ### Design Overview
 
-Woodpecker separates executable fixes from user-facing fix plans.
+Woodpecker separates executable fix functions from user-facing fixes and fix
+plans.
 
-- A **fix** is implementation code and can be selected directly via API/CLI.
+- A **fix function** is implementation code and can be selected directly via API/CLI.
+- A **fix** is a fix function plus optional runtime options.
 - A **fix plan** is a recipe for users: ordered steps, options, matching rules, and links.
 - A **fix-plan document** serializes one or more plans in JSON or YAML.
 - A **fix-plan store** is a query backend for plans (list/load/save/get-by-id/match).
 - `FixPlanLoader` coordinates fix-plan documents from explicit paths,
   `WOODPECKER_FIX_PLAN_PATH`, user config directories, system directories,
   core package resources, and installed plugin `plans/` resources.
-- `AutoFixPlanStore` is the read-only store that exposes registered fixes as implicit one-step plans.
+- `AutoFixPlanStore` is the read-only store that exposes registered fix functions as implicit one-step plans.
 - A **fix-plan catalog** aggregates one or more plan sources behind one surface.
 
 The current `FixPlanCatalog` prototype can list plans, find matching plans,
@@ -90,7 +92,7 @@ resolve ids and aliases, and deduplicate by plan id using source order.
 
 Default plugin prefix behavior:
 
-- plugin fix prefixes are derived from package name by removing `woodpecker_`
+- plugin fix function prefixes are derived from package name by removing `woodpecker_`
   and `_plugin` when applicable.
 
 Identifier spaces are intentionally separate:
@@ -110,15 +112,15 @@ Discovery direction:
 
 - Prefer explicit fix plans for user workflows because they carry matching,
   options, links, and step ordering.
-- Auto-store one-step plans from registered fixes remain useful for lightweight
+- Auto-store one-step plans from registered fix functions remain useful for lightweight
   discovery and early development.
-- Plugins may ship only fixes; if they later ship plans, those plans should be
+- Plugins may ship only fix functions; if they later ship plans, those plans should be
   placed in the package `plans/` resource directory and reference plugin fixes
   by normal `prefix.suffix` ids.
 
-## Adding or Updating Fixes
+## Adding or Updating Fix Functions
 
-Fix author contract (minimal):
+Fix function author contract (minimal):
 - metadata: `prefix`, `suffix`, `name`, `description`, `categories`, `priority`, `dataset`
 - methods: `matches(dataset)`, `check(dataset) -> list[str]`, `apply(dataset, dry_run=True) -> bool`
 
@@ -128,9 +130,9 @@ Performance guidance:
 
 Use existing fixes as examples and keep behavior deterministic.
 
-### Fix Identifiers
+### Fix Function Identifiers
 
-Every fix and plan has a stable, scoped identifier:
+Every fix function and plan has a stable, scoped identifier:
 
 - `prefix`: owning namespace, for example `cmip6_decadal`, `atlas`, `woodpecker`
 - `suffix`: snake_case identifier unique within that prefix
@@ -153,14 +155,14 @@ Identifier defaults are derived automatically:
 - `prefix` defaults to the plugin/package namespace (core fixes use `woodpecker`)
 - `suffix` defaults to a snake_case value derived from the fix class name
 
-Both values can be set explicitly on the fix class to override these defaults.
+Both values can be set explicitly on the fix function class to override these defaults.
 
-Fix classes declare identifiers as class attributes:
+Fix function classes declare identifiers as class attributes:
 
 ```python
-class TimeMetadataFix(Fix):
-  prefix = "cmip6_decadal"
-  suffix = "time_metadata"
+class TimeMetadata(FixFunction):
+    prefix = "cmip6_decadal"
+    suffix = "time_metadata"
 ```
 
 The registry validates these and derives:
@@ -299,15 +301,15 @@ dependencies = ["woodpecker>=0.4,<0.5"]
 example = "woodpecker_example_plugin"
 ```
 
-Minimal plugin fix:
+Minimal plugin fix function:
 
 ```python
-from woodpecker.fixes.registry import Fix, register_fix
+from woodpecker.fixes.registry import FixFunction, register_fix_function
 
-@register_fix
-class ExternalDemoFix(Fix):
-  prefix = "example"
-  suffix = "demo"
+@register_fix_function
+class ExternalDemo(FixFunction):
+    prefix = "example"
+    suffix = "demo"
     name = "External demo fix"
     description = "A minimal plugin-provided fix."
     categories = ["metadata"]

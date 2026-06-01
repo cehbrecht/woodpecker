@@ -2,7 +2,7 @@ import woodpecker_atlas_plugin  # noqa: F401
 from _atlas_helpers import assert_check_fix_cycle, assert_plan_check_fix_cycle
 
 import woodpecker
-from woodpecker.fixes.registry import FixRegistry
+from woodpecker.fixes.registry import FixFunctionRegistry
 from woodpecker.testing import make_atlas
 
 EXPECTED_FIX_IDS = {
@@ -13,7 +13,7 @@ PLAN = woodpecker.plan.get("atlas.basic")
 
 
 def test_plugin_registers_expected_fixes():
-    fix_ids = {fix.id for fix in FixRegistry.discover()}
+    fix_ids = {fix.id for fix in FixFunctionRegistry.discover()}
 
     assert EXPECTED_FIX_IDS.issubset(fix_ids)
 

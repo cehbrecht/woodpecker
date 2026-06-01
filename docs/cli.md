@@ -1,13 +1,13 @@
 # CLI
 
-The `woodpecker` command lets you inspect registered fixes and plans, check
-datasets, and apply selected fixes from a terminal workflow.
+The `woodpecker` command lets you inspect registered fix functions and plans,
+check datasets, and apply selected fixes from a terminal workflow.
 
 Use `--format json` on most commands when you need machine-readable output.
 
 ## Inspect Available Fixes
 
-List all registered fixes:
+List all registered fix functions:
 
 ```bash
 woodpecker list-fixes
@@ -133,7 +133,7 @@ Plan-backed commands accept these store backends:
 | `catalog` | Discovered package, user, system, environment, and explicit plan paths. |
 | `json` | Local JSON or YAML plan document. |
 | `duckdb` | DuckDB-backed plan catalog. |
-| `auto` | Read-only one-step plans generated from registered fixes. |
+| `auto` | Read-only one-step plans generated from registered fix functions. |
 
 Examples:
 

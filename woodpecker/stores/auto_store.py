@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from woodpecker.fixes.registry import FixRegistry
+from woodpecker.fixes.registry import FixFunctionRegistry
 from woodpecker.identity import dataset_type_matches_declared, resolve_dataset_identity
 
 from ..fix_plans.models import FixPlan, FixRef
@@ -27,14 +27,14 @@ class AutoFixPlanStore(FixPlanStore):
         )
 
     def list_plans(self) -> list[FixPlan]:
-        return [self._plan_from_fix(fix) for fix in FixRegistry.discover()]
+        return [self._plan_from_fix(fix) for fix in FixFunctionRegistry.discover()]
 
     def lookup(self, dataset: Any, path: str | None = None) -> list[FixPlan]:
         _ = path
         identity = resolve_dataset_identity(dataset)
         plans: list[FixPlan] = []
 
-        for fix in FixRegistry.discover():
+        for fix in FixFunctionRegistry.discover():
             if not dataset_type_matches_declared(
                 getattr(fix, "dataset", None), identity.dataset_type
             ):

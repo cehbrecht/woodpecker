@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from woodpecker.fixes.registry import Fix, register_fix
+from woodpecker.fixes.registry import FixFunction, register_fix_function
 
 from .helpers import project_id_from_dataset
 
@@ -22,8 +22,8 @@ def _apply_project_id(dataset: xr.Dataset) -> bool:
     return True
 
 
-@register_fix
-class EnsureProjectIdIsPresentFix(Fix):
+@register_fix_function
+class EnsureProjectIdIsPresent(FixFunction):
     suffix = "ensure_project_id_present"
     name = "Ensure project_id is present (plugin)"
     description = "Sets project_id from dataset identifier metadata when missing."

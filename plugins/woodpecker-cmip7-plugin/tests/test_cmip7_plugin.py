@@ -3,7 +3,7 @@ import woodpecker_cmip7_plugin  # noqa: F401
 from _cmip7_helpers import assert_check_fix_cycle, assert_plan_check_fix_cycle
 
 import woodpecker
-from woodpecker.fixes.registry import FixRegistry
+from woodpecker.fixes.registry import FixFunctionRegistry
 from woodpecker.testing import make_cmip7
 
 EXPECTED_FIX_IDS = {
@@ -16,7 +16,7 @@ PLAN = woodpecker.plan.get("cmip7.esa_cci_water_vapour_zarr")
 
 
 def test_plugin_registers_expected_fixes():
-    fix_ids = {fix.id for fix in FixRegistry.discover()}
+    fix_ids = {fix.id for fix in FixFunctionRegistry.discover()}
 
     assert EXPECTED_FIX_IDS.issubset(fix_ids)
 

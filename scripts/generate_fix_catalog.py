@@ -5,11 +5,11 @@ from pathlib import Path
 
 # Import fixes to ensure registration
 import woodpecker.fixes  # noqa: F401
-from woodpecker.fixes.registry import FixRegistry
+from woodpecker.fixes.registry import FixFunctionRegistry
 
 
 def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXES.json"):
-    fixes = FixRegistry.discover()
+    fixes = FixFunctionRegistry.discover()
 
     md_lines = [
         "# Generated Fixes Reference",
@@ -24,7 +24,7 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
 
     for f in fixes:
         cats = ", ".join(getattr(f, "categories", []) or [])
-        source = FixRegistry.source_label(f)
+        source = FixFunctionRegistry.source_label(f)
         fix_id = f.id
         row = (fix_id, f.name, f.description, cats, f.dataset or "", f.priority, source)
         if source == "core":

@@ -3,7 +3,7 @@ from __future__ import annotations
 import xarray as xr
 
 from woodpecker.fixes.common.helpers import lower_source_name
-from woodpecker.fixes.registry import Fix, FixRegistry
+from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import is_cmip6_decadal_netcdf
 
@@ -63,8 +63,8 @@ def _apply_model_global_attrs_fix(dataset: xr.Dataset) -> bool:
     return changed
 
 
-@FixRegistry.register
-class DecadalModelGlobalAttributesFix(Fix):
+@FixFunctionRegistry.register
+class DecadalModelGlobalAttributes(FixFunction):
     suffix = "model_global_attributes"
     name = "Decadal model global attributes"
     description = "Normalizes model-specific global metadata fields for CMIP6-decadal datasets."
