@@ -23,6 +23,13 @@ plan = woodpecker.plan.get("cmip6.core_units")
 findings = woodpecker.plan.check(dataset, plan)
 ```
 
+## Plan Authoring
+
+- [Pythonic Fix Plan Builder](notebooks/pythonic_fix_plan_builder_example.ipynb)
+
+Use this when you want to author plans in Python and generate the JSON/YAML plan
+document schema.
+
 ## Stores And Catalogs
 
 - [Auto Plan Store](notebooks/auto_fix_plan_store_example.ipynb)

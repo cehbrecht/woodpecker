@@ -1,6 +1,10 @@
 def test_public_import_surfaces_are_available():
     from woodpecker import CheckResult, FixResult, check, fix, plan
     from woodpecker.fix_plans import FixPlan, FixRef, load_fix_plan
+    from woodpecker.fix_plans import document as build_document
+    from woodpecker.fix_plans import fix as build_fix
+    from woodpecker.fix_plans import match as build_match
+    from woodpecker.fix_plans import plan as build_plan
     from woodpecker.fixes import (
         UNPRIORITIZED,
         FixFunction,
@@ -27,6 +31,10 @@ def test_public_import_surfaces_are_available():
     assert UNPRIORITIZED == -1
     assert callable(register_fix_function)
     assert callable(load_fix_plan)
+    assert callable(build_fix)
+    assert callable(build_match)
+    assert callable(build_plan)
+    assert callable(build_document)
     assert callable(run_fix)
     assert callable(select_fixes)
 
