@@ -224,6 +224,19 @@ Minimal `FixPlanDocument` example:
 }
 ```
 
+Python authoring helpers can generate the same document schema:
+
+```python
+from woodpecker.fix_plans import fix, plan
+
+atlas_basic = (
+    plan("atlas.basic", fix("atlas.encoding_cleanup"))
+    .match(path_patterns=["*atlas*.nc"])
+)
+
+atlas_basic.to_yaml("atlas_basic_plan.yaml")
+```
+
 Single-plan shorthand is also supported by the loader: a top-level object
 with `steps` is treated as a one-plan document.
 

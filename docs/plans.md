@@ -58,3 +58,30 @@ findings = woodpecker.plan.check(dataset, "my-plans.yaml")
 
 Use discovered plans for shared core and plugin workflows. Use explicit files
 when you are authoring or testing a new local plan document.
+
+## Python Authoring
+
+Plan documents can be authored in Python and serialized to the same JSON/YAML
+schema used by stores and the CLI:
+
+```python
+from woodpecker.fix_plans import fix, plan
+
+cmip6_core = (
+    plan(
+        "cmip6.core_units",
+        fix("woodpecker.normalize_tas_units_to_kelvin"),
+        description="Normalize CMIP6 tas units.",
+    )
+    .match(
+        dataset_id_patterns=["CMIP6.CMIP.*.Amon.tas.*"],
+        attrs={"project_id": "CMIP6", "activity_id": "CMIP"},
+    )
+)
+
+cmip6_core.to_yaml("cmip6_core_plan.yaml")
+cmip6_core.to_json("cmip6_core_plan.json")
+```
+
+Use `to_model()` when you want the in-memory `FixPlan`, or `to_document()` when
+you want a `FixPlanDocument`.
