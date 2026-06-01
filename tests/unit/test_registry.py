@@ -72,7 +72,10 @@ def test_registry_supports_fully_qualified_aliases_without_local_expansion():
         dataset = None
 
     register_fix_function(_QualifiedAlias)
-    assert FixFunctionRegistry.resolve_identifier("other.explicit_lookup") == "test.qualified_alias_fix"
+    assert (
+        FixFunctionRegistry.resolve_identifier("other.explicit_lookup")
+        == "test.qualified_alias_fix"
+    )
     with pytest.raises(KeyError):
         FixFunctionRegistry.resolve_identifier("explicit_lookup")
 

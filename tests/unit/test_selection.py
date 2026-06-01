@@ -31,7 +31,8 @@ def test_select_fixes_uses_configure_return_value(monkeypatch):
             return ReplacementFunction()
 
     monkeypatch.setattr(
-        "woodpecker.selection.FixFunctionRegistry.discover", lambda filters=None: [ConfigurableFunction()]
+        "woodpecker.selection.FixFunctionRegistry.discover",
+        lambda filters=None: [ConfigurableFunction()],
     )
     monkeypatch.setattr(
         "woodpecker.selection.FixFunctionRegistry.resolve_identifier", lambda identifier: identifier
