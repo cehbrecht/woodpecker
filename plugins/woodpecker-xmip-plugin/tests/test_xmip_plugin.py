@@ -7,6 +7,7 @@ from _xmip_helpers import assert_check_fix_cycle
 
 import woodpecker
 from woodpecker.fixes.registry import FixFunctionRegistry
+from woodpecker.testing import make_cmip6
 
 EXPECTED_FIX_IDS = {
     "xmip.broadcast_lon_lat",
@@ -24,53 +25,32 @@ EXPECTED_FIX_IDS = {
 PLAN = woodpecker.plan.get("xmip.cmip6_preprocessing")
 
 
-def _cmip6_attrs(**overrides) -> dict[str, object]:
-    attrs: dict[str, object] = {
-        "project_id": "CMIP6",
-        "source_id": "Example",
-        "experiment_id": "historical",
-        "variable_id": "tas",
-        "table_id": "Amon",
-        "grid_label": "gn",
-        "variant_label": "r1i1p1f1",
-    }
-    attrs.update(overrides)
-    return attrs
-
-
 def _raw_cmip6_dataset() -> xr.Dataset:
-    x = np.array([-10.0, 0.0, 10.0])
-    y = np.array([-1.0, 1.0])
-    longitude = xr.DataArray(
-        np.array([[-10.0, 0.0, 10.0], [-10.0, 0.0, 10.0]]),
-        dims=("j", "i"),
-    )
-    latitude = xr.DataArray(
-        np.array([[-1.0, -1.0, -1.0], [1.0, 1.0, 1.0]]),
-        dims=("j", "i"),
-    )
-    return xr.Dataset(
-        data_vars={
-            "tas": (("j", "i"), np.ones((2, 3))),
-            "longitude": longitude,
-            "latitude": latitude,
+    dataset = make_cmip6(
+        overrides={
+            "source_id": "GFDL-CM4",
+            "source_name": "GFDL-CM4",
+            "experiment_id": "historical",
+            "variant_label": "r1i1p1f1",
         },
-        coords={"i": x, "j": y},
-        attrs=_cmip6_attrs(source_id="GFDL-CM4"),
+        periods=1,
+        nlat=2,
+        nlon=3,
+        seed=1,
     )
+    dataset = dataset.isel(time=0, drop=True).rename({"lat": "j", "lon": "i"})
+    dataset = dataset.assign_coords(i=np.array([-10.0, 0.0, 10.0]), j=np.array([-1.0, 1.0]))
+    dataset["longitude"] = (("j", "i"), np.broadcast_to(dataset.i.values, (2, 3)))
+    dataset["latitude"] = (("j", "i"), np.broadcast_to(dataset.j.values[:, None], (2, 3)))
+    return dataset
 
 
-def _xy_dataset_with_2d_lon_lat() -> xr.Dataset:
-    x = np.arange(0, 10)
-    y = np.arange(20, 30)
-    dataset = xr.DataArray(
-        np.ones((len(x), len(y))),
-        dims=("x", "y"),
-        coords={"x": x, "y": y},
-    ).to_dataset(name="tas")
+def _xy_dataset_with_2d_lon_lat(*, nlat: int = 10, nlon: int = 10) -> xr.Dataset:
+    dataset = make_cmip6(periods=1, nlat=nlat, nlon=nlon, seed=2)
+    dataset = dataset.isel(time=0, drop=True).rename({"lat": "y", "lon": "x"})
+    dataset = dataset.assign_coords(x=np.arange(nlon), y=np.arange(20, 20 + nlat))
     dataset.coords["lon"] = dataset.x * xr.ones_like(dataset.y)
     dataset.coords["lat"] = xr.ones_like(dataset.x) * dataset.y
-    dataset.attrs.update(_cmip6_attrs())
     return dataset
 
 
@@ -88,11 +68,7 @@ def _dataset_with_vertices(order: tuple[int, int, int, int] = (0, 1, 2, 3)) -> x
     ordered_lon_lat = np.array([[1, 1], [1, 4], [2, 4], [2, 1]])
     scrambled = ordered_lon_lat[list(order), :]
 
-    dataset = xr.DataArray(
-        [[np.nan]],
-        dims=("x", "y"),
-        coords={"x": [0], "y": [0]},
-    ).to_dataset(name="tas")
+    dataset = _xy_dataset_with_2d_lon_lat(nlat=1, nlon=1)
     dataset.coords["lon_verticies"] = xr.DataArray(
         scrambled[:, 0],
         dims=("vertex",),
@@ -101,7 +77,6 @@ def _dataset_with_vertices(order: tuple[int, int, int, int] = (0, 1, 2, 3)) -> x
         scrambled[:, 1],
         dims=("vertex",),
     ).expand_dims(x=dataset.x, y=dataset.y)
-    dataset.attrs.update(_cmip6_attrs())
     return dataset
 
 
@@ -212,14 +187,12 @@ def test_xmip_mark_spatial_coords_is_detected_and_applied_after_rename():
 
 
 def test_xmip_broadcast_lon_lat_is_detected_and_applied():
-    x = np.arange(-180, 179, 5)
-    y = np.arange(-90, 90, 6)
-    dataset = xr.DataArray(
-        np.ones((len(x), len(y))),
-        dims=("x", "y"),
-        coords={"x": x, "y": y},
-    ).to_dataset(name="tas")
-    dataset.attrs.update(_cmip6_attrs())
+    dataset = make_cmip6(periods=1, nlat=30, nlon=72, seed=3)
+    dataset = dataset.isel(time=0, drop=True).rename({"lat": "y", "lon": "x"})
+    dataset = dataset.assign_coords(
+        x=np.arange(-180, 180, 5)[: dataset.sizes["x"]],
+        y=np.arange(-90, 90, 6)[: dataset.sizes["y"]],
+    )
 
     def assert_fixed(ds):
         expected_lon = ds.x * xr.ones_like(ds.y)
@@ -340,11 +313,16 @@ def test_xmip_drop_helper_grid_coords_is_detected_and_applied():
 
 
 def test_xmip_normalize_coordinate_units_is_detected_and_applied():
-    dataset = xr.Dataset(
-        data_vars={"thetao": ("lev", np.ones(3))},
-        coords={"lev": ("lev", np.array([0.0, 50.0, 100.0]), {"units": "centimeters"})},
-        attrs=_cmip6_attrs(table_id="Omon"),
+    dataset = make_cmip6(
+        "thetao",
+        overrides={"table_id": "Omon"},
+        periods=1,
+        nlat=1,
+        nlon=1,
     )
+    dataset = dataset.isel(time=0, lat=0, lon=0, drop=True)
+    dataset = dataset.expand_dims(lev=np.array([0.0, 50.0, 100.0]))
+    dataset["lev"].attrs["units"] = "centimeters"
 
     def assert_fixed(ds):
         np.testing.assert_allclose(ds["lev"].values, np.array([0.0, 0.5, 1.0]))
@@ -380,11 +358,16 @@ def test_xmip_replace_xy_with_nominal_lon_lat_is_detected_and_applied():
         ),
         dims=("y", "x"),
     )
-    dataset = xr.Dataset(
-        data_vars={"thetao": (("y", "x"), np.ones((3, 4)))},
-        coords={"x": x, "y": y, "lon": lon, "lat": lat},
-        attrs=_cmip6_attrs(table_id="Omon"),
+    dataset = make_cmip6(
+        "thetao",
+        overrides={"table_id": "Omon"},
+        periods=1,
+        nlat=3,
+        nlon=4,
+        seed=4,
     )
+    dataset = dataset.isel(time=0, drop=True).rename({"lat": "y", "lon": "x"})
+    dataset = dataset.assign_coords(x=x, y=y, lon=lon, lat=lat)
 
     def assert_fixed(ds):
         assert len(ds.x) == len(np.unique(ds.x))

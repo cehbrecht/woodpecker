@@ -71,6 +71,13 @@ def test_make_cmip6_supports_variable_specific_metadata():
     assert ds["pr"].attrs["units"] == "kg m-2 s-1"
 
 
+def test_make_cmip6_supports_compact_grid_sizes():
+    ds = make_cmip6(periods=1, nlat=2, nlon=3)
+
+    assert ds.sizes == {"time": 1, "lat": 2, "lon": 3}
+    assert ds["tas"].shape == (1, 2, 3)
+
+
 def test_make_cmip6_decadal_returns_realistic_dataset():
     ds = make_cmip6_decadal()
 
