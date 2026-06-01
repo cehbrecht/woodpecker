@@ -121,8 +121,13 @@ Discovery direction:
 ## Adding or Updating Fix Functions
 
 Fix function author contract (minimal):
-- metadata: `prefix`, `suffix`, `name`, `description`, `categories`, `priority`, `dataset`
+- metadata: `prefix`, `suffix`, `name`, `description`, `categories`, `dataset`
 - methods: `matches(dataset)`, `check(dataset) -> list[str]`, `apply(dataset, dry_run=True) -> bool`
+
+`priority` is optional. Use a non-negative integer when the fix function should
+participate in default discovery ordering. The default is `-1`, meaning
+unprioritized; unprioritized fix functions sort after explicitly prioritized
+fix functions.
 
 Performance guidance:
 - keep `matches()` fast and deterministic (metadata-only checks where possible)

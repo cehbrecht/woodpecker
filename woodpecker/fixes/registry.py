@@ -7,6 +7,8 @@ from woodpecker.fixes.identifiers import IdentifierResolver, IdentifierRules
 
 from .base import FixFunction
 
+UNPRIORITIZED = -1
+
 
 class FixFunctionRegistry:
     """Simple in-memory registry with a pluggy-ready public API.
@@ -128,13 +130,17 @@ class FixFunctionRegistry:
     def _validate_fix_definition(cls, fix: Any, fix_cls: Type[Any]) -> None:
         name = str(getattr(fix, "name", "") or "").strip()
         categories = getattr(fix, "categories", []) or []
-        priority = getattr(fix, "priority", 10)
+        priority = getattr(fix, "priority", UNPRIORITIZED)
 
         if not name:
             raise ValueError(f"Fix function {fix_cls.__name__} must define a non-empty 'name'")
         if not isinstance(priority, int):
             raise ValueError(
                 f"Fix function {fix_cls.__name__} must define 'priority' as an integer"
+            )
+        if priority < UNPRIORITIZED:
+            raise ValueError(
+                f"Fix function {fix_cls.__name__} must define 'priority' >= {UNPRIORITIZED}"
             )
         if not isinstance(categories, list) or any(
             (not isinstance(item, str) or not item.strip()) for item in categories
@@ -166,6 +172,12 @@ class FixFunctionRegistry:
         cls._resolver.register(identifier_set)
         return fix_cls  # decorator-friendly
 
+    @staticmethod
+    def _priority_sort_key(fix: FixFunction) -> tuple[bool, int, str]:
+        priority = int(getattr(fix, "priority", UNPRIORITIZED))
+        prioritized = priority >= 0
+        return (not prioritized, priority if prioritized else 0, getattr(fix, "id", ""))
+
     @classmethod
     def discover(cls, filters: Optional[dict[str, Any]] = None) -> list[FixFunction]:
         """Return instantiated fix function objects, optionally filtered.
@@ -177,7 +189,7 @@ class FixFunctionRegistry:
         fixes = [cls._instantiate_fix(fix_cls) for fix_cls in cls._registry.values()]
 
         if not filters:
-            return sorted(fixes, key=lambda f: getattr(f, "priority", 10))
+            return sorted(fixes, key=cls._priority_sort_key)
 
         def match(f: FixFunction) -> bool:
             for key, val in filters.items():
@@ -197,7 +209,7 @@ class FixFunctionRegistry:
             return True
 
         out = [f for f in fixes if match(f)]
-        return sorted(out, key=lambda f: getattr(f, "priority", 10))
+        return sorted(out, key=cls._priority_sort_key)
 
     @staticmethod
     def source_label(fix: Any) -> str:
@@ -232,7 +244,7 @@ class FixFunctionRegistry:
                     "description": getattr(f, "description", ""),
                     "categories": list(getattr(f, "categories", []) or []),
                     "dataset": getattr(f, "dataset", None),
-                    "priority": getattr(f, "priority", 10),
+                    "priority": getattr(f, "priority", UNPRIORITIZED),
                 }
             )
 
@@ -255,4 +267,4 @@ def register_fix_function(fix_cls: Type[Any]) -> Type[Any]:
     return FixFunctionRegistry.register(fix_cls)
 
 
-__all__ = ["FixFunction", "FixFunctionRegistry", "register_fix_function"]
+__all__ = ["FixFunction", "FixFunctionRegistry", "UNPRIORITIZED", "register_fix_function"]

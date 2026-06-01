@@ -43,3 +43,10 @@ def test_fix_function_suffix_derivation_uses_domain_class_name():
         pass
 
     assert ExampleMetadata.derived_suffix() == "example_metadata"
+
+
+def test_fix_function_default_priority_is_unprioritized():
+    class ExampleMetadata(FixFunction):
+        pass
+
+    assert ExampleMetadata.priority == -1

@@ -21,7 +21,7 @@ class FixFunction:
     name: ClassVar[str] = ""
     description: ClassVar[str] = ""
     categories: ClassVar[list[str]] = []
-    priority: ClassVar[int] = 10
+    priority: ClassVar[int] = -1
     dataset: ClassVar[Optional[str]] = None
     metadata_fields: ClassVar[tuple[str, ...]] = (
         "prefix",

@@ -5,6 +5,11 @@ from pathlib import Path
 from typing import Sequence
 
 from ..fix_plans.models import FixPlan
+from ..fixes.registry import UNPRIORITIZED
+
+
+def _priority_value(fix: object) -> int:
+    return int(getattr(fix, "priority", UNPRIORITIZED))
 
 
 def _fix_json_payload(fix: object) -> dict[str, object]:
@@ -36,7 +41,7 @@ def format_fixes(fixes: list[object], fmt: str) -> str:
                 f"{getattr(fix, 'description', '')} | "
                 f"{cats} | "
                 f"{getattr(fix, 'dataset', None) or ''} | "
-                f"{getattr(fix, 'priority', 10)} |"
+                f"{_priority_value(fix)} |"
             )
         return "\n".join(lines)
 
@@ -46,7 +51,7 @@ def format_fixes(fixes: list[object], fmt: str) -> str:
         lines.append(
             f"{getattr(fix, 'id', '')}: {getattr(fix, 'description', '')} "
             f"(cats: {cats}; dataset: {getattr(fix, 'dataset', None) or '-'}; "
-            f"priority: {getattr(fix, 'priority', 10)})"
+            f"priority: {_priority_value(fix)})"
         )
     return "\n".join(lines)
 
