@@ -15,6 +15,9 @@ def make_cmip6(
     overrides: Mapping[str, Any] | None = None,
     rename_vars: Mapping[str, str] | None = None,
     seed: int | None = None,
+    periods: int = 12,
+    nlat: int = 18,
+    nlon: int = 36,
 ) -> xr.Dataset:
     """Create a small synthetic CMIP6-like dataset.
 
@@ -30,6 +33,9 @@ def make_cmip6(
     >>> broken = make_cmip6(missing=["units"], rename_vars={"tas": "temperature"})
     >>> "units" in broken.attrs
     False
+    >>> small = make_cmip6(periods=1, nlat=2, nlon=3)
+    >>> small.sizes["lon"]
+    3
     """
     return make_dataset(
         variable=variable,
@@ -38,6 +44,9 @@ def make_cmip6(
         overrides=overrides,
         rename_vars=rename_vars,
         seed=seed,
+        periods=periods,
+        nlat=nlat,
+        nlon=nlon,
     )
 
 

@@ -125,9 +125,19 @@ def make_dataset(
     overrides: Mapping[str, Any] | None = None,
     rename_vars: Mapping[str, str] | None = None,
     seed: int | None = None,
+    periods: int = 12,
+    nlat: int = 18,
+    nlon: int = 36,
 ) -> xr.Dataset:
     """Build a family-specific synthetic dataset and apply optional corruption."""
-    dataset = dataset_with_attrs(variable, attrs=attrs_factory(variable), seed=seed)
+    dataset = dataset_with_attrs(
+        variable,
+        attrs=attrs_factory(variable),
+        seed=seed,
+        periods=periods,
+        nlat=nlat,
+        nlon=nlon,
+    )
     return apply_corruption(
         dataset,
         missing=missing,
