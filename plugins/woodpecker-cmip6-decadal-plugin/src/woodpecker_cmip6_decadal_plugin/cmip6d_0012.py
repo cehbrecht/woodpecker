@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from woodpecker.fixes.registry import Fix, FixRegistry
+from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import apply_leadtime_metadata, is_cmip6_decadal_netcdf, leadtime_metadata_invalid
 
@@ -20,8 +20,8 @@ def _apply_leadtime_metadata_fix(dataset: xr.Dataset) -> bool:
     return True
 
 
-@FixRegistry.register
-class DecadalLeadtimeMetadataNormalizationFix(Fix):
+@FixFunctionRegistry.register
+class DecadalLeadtimeMetadataNormalization(FixFunction):
     suffix = "leadtime_metadata_normalization"
     name = "Decadal leadtime metadata normalization"
     description = "Normalizes CMIP6-decadal leadtime metadata (units, long_name, standard_name)."

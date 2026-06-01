@@ -3,7 +3,7 @@ from __future__ import annotations
 import xarray as xr
 
 from woodpecker.fixes.common.helpers import lower_source_name
-from woodpecker.fixes.registry import Fix, FixRegistry
+from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 from woodpecker.identity import resolve_dataset_identity
 
 
@@ -26,8 +26,8 @@ def _apply_atlas_project_id(dataset: xr.Dataset) -> bool:
     return True
 
 
-@FixRegistry.register
-class AtlasProjectIdNormalizationFix(Fix):
+@FixFunctionRegistry.register
+class AtlasProjectIdNormalization(FixFunction):
     suffix = "project_id_normalization"
     name = "ATLAS project_id normalization"
     description = "Adds or normalizes ATLAS project_id from dataset identifier prefix."

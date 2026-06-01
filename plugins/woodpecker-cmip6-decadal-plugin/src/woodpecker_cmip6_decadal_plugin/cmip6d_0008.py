@@ -4,7 +4,7 @@ import re
 
 import xarray as xr
 
-from woodpecker.fixes.registry import Fix, FixRegistry
+from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import is_cmip6_decadal_netcdf
 
@@ -31,8 +31,8 @@ def _apply_further_info_url_fix(dataset: xr.Dataset) -> bool:
     return True
 
 
-@FixRegistry.register
-class DecadalFurtherInfoUrlNormalizationFix(Fix):
+@FixFunctionRegistry.register
+class DecadalFurtherInfoUrlNormalization(FixFunction):
     suffix = "further_info_url_normalization"
     name = "Decadal further_info_url normalization"
     description = (

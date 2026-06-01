@@ -2,33 +2,31 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from woodpecker.fixes.common import NormalizeTasUnitsToKelvinFix
+from woodpecker.fixes.common import NormalizeTasUnitsToKelvin
 from woodpecker.testing import make_atlas, make_cmip6, make_cmip6_decadal
 
 atlas_plugin = pytest.importorskip("woodpecker_atlas_plugin")
 cmip6d_plugin = pytest.importorskip("woodpecker_cmip6_decadal_plugin")
 cmip6_plugin = pytest.importorskip("woodpecker_cmip6_plugin")
 
-AtlasEncodingCleanupFix = atlas_plugin.AtlasEncodingCleanupFix
-AtlasProjectIdNormalizationFix = atlas_plugin.AtlasProjectIdNormalizationFix
-Cmip6DummyPlaceholderFix = cmip6_plugin.Cmip6DummyPlaceholderFix
-DecadalTimeMetadataFix = cmip6d_plugin.DecadalTimeMetadataFix
-DecadalCalendarNormalizationFix = cmip6d_plugin.DecadalCalendarNormalizationFix
-DecadalRealizationVariableFix = cmip6d_plugin.DecadalRealizationVariableFix
-DecadalCoordinatesEncodingCleanupFix = cmip6d_plugin.DecadalCoordinatesEncodingCleanupFix
-DecadalRealizationCommentNormalizationFix = cmip6d_plugin.DecadalRealizationCommentNormalizationFix
-DecadalRealizationDtypeNormalizationFix = cmip6d_plugin.DecadalRealizationDtypeNormalizationFix
-DecadalFillValueEncodingCleanupFix = cmip6d_plugin.DecadalFillValueEncodingCleanupFix
-DecadalFurtherInfoUrlNormalizationFix = cmip6d_plugin.DecadalFurtherInfoUrlNormalizationFix
-DecadalStartTokenNormalizationFix = cmip6d_plugin.DecadalStartTokenNormalizationFix
-DecadalRealizationLongNameNormalizationFix = (
-    cmip6d_plugin.DecadalRealizationLongNameNormalizationFix
-)
-DecadalRealizationIndexNormalizationFix = cmip6d_plugin.DecadalRealizationIndexNormalizationFix
-DecadalLeadtimeMetadataNormalizationFix = cmip6d_plugin.DecadalLeadtimeMetadataNormalizationFix
-DecadalModelGlobalAttributesFix = cmip6d_plugin.DecadalModelGlobalAttributesFix
-DecadalReftimeCoordinateFix = cmip6d_plugin.DecadalReftimeCoordinateFix
-DecadalLeadtimeCoordinateFix = cmip6d_plugin.DecadalLeadtimeCoordinateFix
+AtlasEncodingCleanup = atlas_plugin.AtlasEncodingCleanup
+AtlasProjectIdNormalization = atlas_plugin.AtlasProjectIdNormalization
+Cmip6DummyPlaceholder = cmip6_plugin.Cmip6DummyPlaceholder
+DecadalTimeMetadata = cmip6d_plugin.DecadalTimeMetadata
+DecadalCalendarNormalization = cmip6d_plugin.DecadalCalendarNormalization
+DecadalRealizationVariable = cmip6d_plugin.DecadalRealizationVariable
+DecadalCoordinatesEncodingCleanup = cmip6d_plugin.DecadalCoordinatesEncodingCleanup
+DecadalRealizationCommentNormalization = cmip6d_plugin.DecadalRealizationCommentNormalization
+DecadalRealizationDtypeNormalization = cmip6d_plugin.DecadalRealizationDtypeNormalization
+DecadalFillValueEncodingCleanup = cmip6d_plugin.DecadalFillValueEncodingCleanup
+DecadalFurtherInfoUrlNormalization = cmip6d_plugin.DecadalFurtherInfoUrlNormalization
+DecadalStartTokenNormalization = cmip6d_plugin.DecadalStartTokenNormalization
+DecadalRealizationLongNameNormalization = cmip6d_plugin.DecadalRealizationLongNameNormalization
+DecadalRealizationIndexNormalization = cmip6d_plugin.DecadalRealizationIndexNormalization
+DecadalLeadtimeMetadataNormalization = cmip6d_plugin.DecadalLeadtimeMetadataNormalization
+DecadalModelGlobalAttributes = cmip6d_plugin.DecadalModelGlobalAttributes
+DecadalReftimeCoordinate = cmip6d_plugin.DecadalReftimeCoordinate
+DecadalLeadtimeCoordinate = cmip6d_plugin.DecadalLeadtimeCoordinate
 
 CMIP6_SOURCE_NAME = "c3s-cmip6.member.tas.nc"
 DECADAL_SOURCE_NAME = "c3s-cmip6-decadal.member.tas.nc"
@@ -93,7 +91,7 @@ def test_cmip601_dummy_apply_write_sets_dummy_marker_attr():
         coords={"time": [0, 1]},
     )
 
-    fix = NormalizeTasUnitsToKelvinFix()
+    fix = NormalizeTasUnitsToKelvin()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -106,7 +104,7 @@ def test_cmip6d01_apply_dry_run_reports_change_without_writing_dataset_attrs():
         attrs=_decadal_attrs(realization_index=2),
     )
 
-    fix = DecadalTimeMetadataFix()
+    fix = DecadalTimeMetadata()
     changed = fix.apply(dataset, dry_run=True)
 
     assert changed is True
@@ -120,7 +118,7 @@ def test_cmip6d01_apply_write_sets_simple_decadal_metadata_fixes():
         attrs=_decadal_attrs(realization_index="2"),
     )
 
-    fix = DecadalTimeMetadataFix()
+    fix = DecadalTimeMetadata()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -134,7 +132,7 @@ def test_cmip6d02_apply_write_normalizes_proleptic_calendar():
     )
     dataset["time"].encoding["calendar"] = "proleptic_gregorian"
 
-    fix = DecadalCalendarNormalizationFix()
+    fix = DecadalCalendarNormalization()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -154,7 +152,7 @@ def test_cmip6d02_apply_write_converts_cftime_proleptic_values_when_available():
     )
     dataset["time"].encoding["calendar"] = "proleptic_gregorian"
 
-    fix = DecadalCalendarNormalizationFix()
+    fix = DecadalCalendarNormalization()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -168,7 +166,7 @@ def test_cmip6d03_apply_write_adds_realization_variable():
         attrs=_decadal_attrs(realization_index="2"),
     )
 
-    fix = DecadalRealizationVariableFix()
+    fix = DecadalRealizationVariable()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -179,21 +177,21 @@ def test_cmip6d03_apply_write_adds_realization_variable():
 @pytest.mark.parametrize(
     "fix_cls",
     [
-        DecadalTimeMetadataFix,
-        DecadalCalendarNormalizationFix,
-        DecadalRealizationVariableFix,
-        DecadalCoordinatesEncodingCleanupFix,
-        DecadalRealizationCommentNormalizationFix,
-        DecadalRealizationDtypeNormalizationFix,
-        DecadalFillValueEncodingCleanupFix,
-        DecadalFurtherInfoUrlNormalizationFix,
-        DecadalStartTokenNormalizationFix,
-        DecadalRealizationLongNameNormalizationFix,
-        DecadalRealizationIndexNormalizationFix,
-        DecadalLeadtimeMetadataNormalizationFix,
-        DecadalModelGlobalAttributesFix,
-        DecadalReftimeCoordinateFix,
-        DecadalLeadtimeCoordinateFix,
+        DecadalTimeMetadata,
+        DecadalCalendarNormalization,
+        DecadalRealizationVariable,
+        DecadalCoordinatesEncodingCleanup,
+        DecadalRealizationCommentNormalization,
+        DecadalRealizationDtypeNormalization,
+        DecadalFillValueEncodingCleanup,
+        DecadalFurtherInfoUrlNormalization,
+        DecadalStartTokenNormalization,
+        DecadalRealizationLongNameNormalization,
+        DecadalRealizationIndexNormalization,
+        DecadalLeadtimeMetadataNormalization,
+        DecadalModelGlobalAttributes,
+        DecadalReftimeCoordinate,
+        DecadalLeadtimeCoordinate,
     ],
 )
 def test_cmip6_decadal_fixes_do_not_match_non_decadal_cmip6(fix_cls):
@@ -215,7 +213,7 @@ def test_cmip6d04_apply_write_removes_coordinates_encoding_from_decadal_vars():
     dataset["lat_bnds"].encoding["coordinates"] = "lat lon"
     dataset["time_bnds"].encoding["coordinates"] = "time"
 
-    fix = DecadalCoordinatesEncodingCleanupFix()
+    fix = DecadalCoordinatesEncodingCleanup()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -234,7 +232,7 @@ def test_cmip6d05_apply_write_normalizes_realization_comment():
         "For more information on the ripf, refer to variant_label and global attributes."
     )
 
-    fix = DecadalRealizationCommentNormalizationFix()
+    fix = DecadalRealizationCommentNormalization()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -252,7 +250,7 @@ def test_cmip6d06_apply_write_normalizes_realization_dtype_to_int32():
     )
     dataset["realization"].encoding["coordinates"] = "time"
 
-    fix = DecadalRealizationDtypeNormalizationFix()
+    fix = DecadalRealizationDtypeNormalization()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -267,7 +265,7 @@ def test_cmip6d07_apply_write_removes_fillvalue_encoding_from_decadal_vars():
     dataset["lat_bnds"].encoding["_FillValue"] = -9999.0
     dataset["time_bnds"].encoding["_FillValue"] = -9999.0
 
-    fix = DecadalFillValueEncodingCleanupFix()
+    fix = DecadalFillValueEncodingCleanup()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -287,7 +285,7 @@ def test_cmip6d08_apply_write_normalizes_further_info_url_variant_separator():
         )
     )
 
-    fix = DecadalFurtherInfoUrlNormalizationFix()
+    fix = DecadalFurtherInfoUrlNormalization()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -302,7 +300,7 @@ def test_cmip6d09_apply_write_normalizes_startdate_and_sub_experiment_id():
         attrs=_ec_earth_decadal_attrs(startdate="s1960", sub_experiment_id="s1960")
     )
 
-    fix = DecadalStartTokenNormalizationFix()
+    fix = DecadalStartTokenNormalization()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -316,7 +314,7 @@ def test_cmip6d10_apply_write_normalizes_realization_long_name():
         attrs=_decadal_attrs(),
     )
 
-    fix = DecadalRealizationLongNameNormalizationFix()
+    fix = DecadalRealizationLongNameNormalization()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -326,7 +324,7 @@ def test_cmip6d10_apply_write_normalizes_realization_long_name():
 def test_cmip6d11_apply_write_normalizes_realization_index_type_to_int():
     dataset = xr.Dataset(attrs=_decadal_attrs(realization_index="2"))
 
-    fix = DecadalRealizationIndexNormalizationFix()
+    fix = DecadalRealizationIndexNormalization()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -342,7 +340,7 @@ def test_cmip6d12_apply_write_normalizes_leadtime_metadata_attrs():
     dataset["leadtime"].attrs["units"] = "hours"
     dataset["leadtime"].attrs["long_name"] = "lead"
 
-    fix = DecadalLeadtimeMetadataNormalizationFix()
+    fix = DecadalLeadtimeMetadataNormalization()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -354,7 +352,7 @@ def test_cmip6d12_apply_write_normalizes_leadtime_metadata_attrs():
 def test_cmip6d13_apply_write_sets_model_specific_global_attrs():
     dataset = xr.Dataset(attrs=_ec_earth_decadal_attrs(forcing_description="wrong"))
 
-    fix = DecadalModelGlobalAttributesFix()
+    fix = DecadalModelGlobalAttributes()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -372,7 +370,7 @@ def test_cmip6d14_apply_write_adds_reftime_coordinate():
     )
     dataset["time"].encoding["calendar"] = "standard"
 
-    fix = DecadalReftimeCoordinateFix()
+    fix = DecadalReftimeCoordinate()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -389,7 +387,7 @@ def test_cmip6d15_apply_write_derives_leadtime_values_from_time_and_reftime():
     )
     dataset.coords["reftime"] = xr.DataArray(np.datetime64("1960-11-01"))
 
-    fix = DecadalLeadtimeCoordinateFix()
+    fix = DecadalLeadtimeCoordinate()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -404,7 +402,7 @@ def test_atlas01_apply_dry_run_reports_change_without_mutating_dataset():
     dataset["time"].encoding["_FillValue"] = -9999
     dataset["member_id"].encoding["zlib"] = True
 
-    fix = AtlasEncodingCleanupFix()
+    fix = AtlasEncodingCleanup()
     changed = fix.apply(dataset, dry_run=True)
 
     assert changed is True
@@ -422,7 +420,7 @@ def test_atlas01_apply_write_performs_real_encoding_fixes_only():
     dataset["member_id"].encoding["shuffle"] = True
     dataset["member_id"].encoding["complevel"] = 5
 
-    fix = AtlasEncodingCleanupFix()
+    fix = AtlasEncodingCleanup()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -444,7 +442,7 @@ def test_atlas02_apply_write_sets_project_id_only():
     )
     dataset["tas"].encoding["complevel"] = 4
 
-    fix = AtlasProjectIdNormalizationFix()
+    fix = AtlasProjectIdNormalization()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True
@@ -459,7 +457,7 @@ def test_common01_apply_dry_run_reports_change_without_mutating_dataset():
     )
     dataset["tas"].attrs["units"] = "degreeC"
 
-    fix = NormalizeTasUnitsToKelvinFix()
+    fix = NormalizeTasUnitsToKelvin()
     changed = fix.apply(dataset, dry_run=True)
 
     assert changed is True
@@ -474,7 +472,7 @@ def test_common01_apply_write_converts_celsius_to_kelvin_for_tas_variable():
     )
     dataset["tas"].attrs["units"] = "degreeC"
 
-    fix = NormalizeTasUnitsToKelvinFix()
+    fix = NormalizeTasUnitsToKelvin()
     changed = fix.apply(dataset, dry_run=False)
 
     assert changed is True

@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import xarray as xr
 
-from woodpecker.fixes.registry import Fix, FixRegistry
+from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import apply_leadtime_metadata, is_cmip6_decadal_netcdf, leadtime_metadata_invalid
 
@@ -78,8 +78,8 @@ def _apply_leadtime_fix(dataset: xr.Dataset) -> bool:
     return True
 
 
-@FixRegistry.register
-class DecadalLeadtimeCoordinateFix(Fix):
+@FixFunctionRegistry.register
+class DecadalLeadtimeCoordinate(FixFunction):
     suffix = "leadtime_coordinate"
     name = "Decadal leadtime coordinate"
     description = (

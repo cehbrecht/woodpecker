@@ -1,6 +1,7 @@
 def test_public_import_surfaces_are_available():
     from woodpecker import CheckResult, FixResult, check, fix, plan
     from woodpecker.fix_plans import FixPlan, FixRef, load_fix_plan
+    from woodpecker.fixes import FixFunction, FixFunctionRegistry, register_fix_function
     from woodpecker.runner import apply_fix_plan, run_fix
     from woodpecker.selection import select_fixes
 
@@ -16,6 +17,9 @@ def test_public_import_surfaces_are_available():
     assert FixRef.__name__ == "FixRef"
     assert CheckResult.__name__ == "CheckResult"
     assert FixResult.__name__ == "FixResult"
+    assert FixFunction.__name__ == "FixFunction"
+    assert FixFunctionRegistry.__name__ == "FixFunctionRegistry"
+    assert callable(register_fix_function)
     assert callable(load_fix_plan)
     assert callable(run_fix)
     assert callable(select_fixes)

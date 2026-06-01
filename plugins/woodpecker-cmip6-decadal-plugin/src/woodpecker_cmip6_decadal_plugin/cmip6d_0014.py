@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import xarray as xr
 
-from woodpecker.fixes.registry import Fix, FixRegistry
+from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import extract_start_year as _extract_start_year
 from .helpers import is_cmip6_decadal_netcdf
@@ -94,8 +94,8 @@ def _apply_reftime_fix(dataset: xr.Dataset) -> bool:
     return True
 
 
-@FixRegistry.register
-class DecadalReftimeCoordinateFix(Fix):
+@FixFunctionRegistry.register
+class DecadalReftimeCoordinate(FixFunction):
     suffix = "reftime_coordinate"
     name = "Decadal reftime coordinate"
     description = "Adds or normalizes CMIP6-decadal scalar reftime coordinate and metadata."

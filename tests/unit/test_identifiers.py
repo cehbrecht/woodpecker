@@ -27,9 +27,9 @@ def test_identifier_rules_build_uses_suffix_field():
     assert identifiers.id == "cmip7.bridge"
 
 
-def test_identifier_rules_derive_suffix_from_name_strips_fix_and_plan_suffixes():
+def test_identifier_rules_derive_suffix_from_name_uses_domain_class_names():
     assert (
-        IdentifierRules.derive_suffix_from_name("NormalizeTasUnitsToKelvinFix")
+        IdentifierRules.derive_suffix_from_name("NormalizeTasUnitsToKelvin")
         == "normalize_tas_units_to_kelvin"
     )
     assert IdentifierRules.derive_suffix_from_name("AtlasMonitoringPlan") == "atlas_monitoring"

@@ -5,7 +5,7 @@ import xarray as xr
 from _cmip6_decadal_helpers import assert_check_fix_cycle, assert_plan_check_fix_cycle
 
 import woodpecker
-from woodpecker.fixes.registry import FixRegistry
+from woodpecker.fixes.registry import FixFunctionRegistry
 from woodpecker.testing import make_cmip6_decadal
 
 EXPECTED_FIX_IDS = {
@@ -248,7 +248,7 @@ def _cmip6_decadal_full_suite_dataset():
 
 
 def test_plugin_registers_expected_fixes():
-    fix_ids = {fix.id for fix in FixRegistry.discover()}
+    fix_ids = {fix.id for fix in FixFunctionRegistry.discover()}
 
     assert EXPECTED_FIX_IDS.issubset(fix_ids)
 

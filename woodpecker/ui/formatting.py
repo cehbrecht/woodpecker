@@ -12,7 +12,7 @@ def _fix_json_payload(fix: object) -> dict[str, object]:
         return dict(fix.model_dump())
     if hasattr(fix, "metadata") and callable(fix.metadata):
         return dict(fix.metadata())
-    raise TypeError("Fix instance does not support JSON metadata serialization")
+    raise TypeError("Fix function instance does not support JSON metadata serialization")
 
 
 def format_fixes(fixes: list[object], fmt: str) -> str:

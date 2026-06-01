@@ -3,7 +3,7 @@ from __future__ import annotations
 import xarray as xr
 
 from woodpecker.fixes.common.helpers import remove_encoding_key, vars_with_encoding_key
-from woodpecker.fixes.registry import Fix, FixRegistry
+from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import is_cmip6_decadal_netcdf
 
@@ -21,8 +21,8 @@ def _apply_coordinates_encoding_cleanup(dataset: xr.Dataset) -> bool:
     )
 
 
-@FixRegistry.register
-class DecadalCoordinatesEncodingCleanupFix(Fix):
+@FixFunctionRegistry.register
+class DecadalCoordinatesEncodingCleanup(FixFunction):
     suffix = "coordinates_encoding_cleanup"
     name = "Decadal coordinates encoding cleanup"
     description = (

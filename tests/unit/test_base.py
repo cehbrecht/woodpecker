@@ -1,7 +1,7 @@
-from woodpecker.fixes.base import Fix
+from woodpecker.fixes.base import FixFunction
 
 
-class _BaseMetadataFix(Fix):
+class _BaseMetadata(FixFunction):
     prefix = "test"
     suffix = "base_metadata"
     id = "test.base_metadata"
@@ -15,7 +15,7 @@ class _BaseMetadataFix(Fix):
 
 
 def test_fix_metadata_is_class_level_and_config_is_instance_runtime_state():
-    fix = _BaseMetadataFix()
+    fix = _BaseMetadata()
 
     assert fix.name == "Base metadata fix"
     assert fix.suffix == "base_metadata"
@@ -25,14 +25,21 @@ def test_fix_metadata_is_class_level_and_config_is_instance_runtime_state():
     fix.configure({"mode": "strict"})
 
     assert fix.config == {"mode": "strict"}
-    assert _BaseMetadataFix.categories == ["metadata"]
+    assert _BaseMetadata.categories == ["metadata"]
 
 
 def test_fix_metadata_accessor_returns_copied_mutable_fields():
-    meta = _BaseMetadataFix.class_metadata()
+    meta = _BaseMetadata.class_metadata()
 
     assert meta["id"] == "test.base_metadata"
     assert meta["aliases"] == ["base_metadata_alias"]
 
     meta["aliases"].append("new_alias")
-    assert _BaseMetadataFix.aliases == ["base_metadata_alias"]
+    assert _BaseMetadata.aliases == ["base_metadata_alias"]
+
+
+def test_fix_function_suffix_derivation_uses_domain_class_name():
+    class ExampleMetadata(FixFunction):
+        pass
+
+    assert ExampleMetadata.derived_suffix() == "example_metadata"

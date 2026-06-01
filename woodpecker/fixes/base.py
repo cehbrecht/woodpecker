@@ -6,10 +6,10 @@ from typing import Any, ClassVar, Optional
 import xarray as xr
 
 
-class Fix:
-    """Catalog metadata about a fix plus check/apply behavior hooks.
+class FixFunction:
+    """Catalog metadata about a fix function plus check/apply behavior hooks.
 
-    Fix definitions are class-based: metadata is declared on the class.
+    Fix function definitions are class-based: metadata is declared on the class.
     Runtime mutable state (such as config) lives on instances.
     """
 
@@ -42,8 +42,6 @@ class Fix:
     @classmethod
     def derived_suffix(cls) -> str:
         class_name = cls.__name__
-        if class_name.endswith("Fix"):
-            class_name = class_name[: -len("Fix")]
         first = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", class_name)
         second = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", first)
         return re.sub(r"__+", "_", second).strip("_").lower()
@@ -51,7 +49,7 @@ class Fix:
     def matches(self, dataset: xr.Dataset) -> bool:
         return isinstance(dataset, xr.Dataset)
 
-    def configure(self, config: dict[str, Any] | None = None) -> Fix:
+    def configure(self, config: dict[str, Any] | None = None) -> FixFunction:
         self.config = dict(config or {})
         return self
 

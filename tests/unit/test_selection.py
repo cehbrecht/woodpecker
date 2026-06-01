@@ -18,23 +18,24 @@ def test_select_fixes_respects_ordered_identifiers_sequence():
 
 
 def test_select_fixes_uses_configure_return_value(monkeypatch):
-    class ReplacementFix:
+    class ReplacementFunction:
         id = "woodpecker.test"
         configured = True
 
-    class ConfigurableFix:
+    class ConfigurableFunction:
         id = "woodpecker.test"
         configured = False
 
         def configure(self, options):
             _ = options
-            return ReplacementFix()
+            return ReplacementFunction()
 
     monkeypatch.setattr(
-        "woodpecker.selection.FixRegistry.discover", lambda filters=None: [ConfigurableFix()]
+        "woodpecker.selection.FixFunctionRegistry.discover",
+        lambda filters=None: [ConfigurableFunction()],
     )
     monkeypatch.setattr(
-        "woodpecker.selection.FixRegistry.resolve_identifier", lambda identifier: identifier
+        "woodpecker.selection.FixFunctionRegistry.resolve_identifier", lambda identifier: identifier
     )
 
     fixes = select_fixes(

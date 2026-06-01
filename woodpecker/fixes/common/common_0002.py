@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from ..registry import Fix, FixRegistry
+from ..registry import FixFunction, FixFunctionRegistry
 
 
 def _lat_coord_name(dataset: xr.Dataset) -> str | None:
@@ -51,8 +51,8 @@ def _apply_lat_flip(dataset: xr.Dataset) -> bool:
     return True
 
 
-@FixRegistry.register
-class EnsureLatitudeIsIncreasingFix(Fix):
+@FixFunctionRegistry.register
+class EnsureLatitudeIsIncreasing(FixFunction):
     name = "Ensure latitude is increasing"
     description = "Flips datasets with decreasing latitude coordinates to increasing order."
     categories = ["structure"]

@@ -4,7 +4,7 @@ from typing import ClassVar
 
 import xarray as xr
 
-from woodpecker.fixes.registry import Fix, register_fix
+from woodpecker.fixes.registry import FixFunction, register_fix_function
 
 from .helpers import (
     DROP_COORDS,
@@ -24,7 +24,7 @@ from .helpers import (
 )
 
 
-class XmipCmip6TransformFix(Fix):
+class XmipCmip6Transform(FixFunction):
     categories: ClassVar[list[str]] = ["structure"]
     priority = 42
     dataset = "CMIP6"
@@ -58,8 +58,8 @@ class XmipCmip6TransformFix(Fix):
         return True
 
 
-@register_fix
-class RenameCmip6AxesFix(XmipCmip6TransformFix):
+@register_fix_function
+class RenameCmip6Axes(XmipCmip6Transform):
     suffix = "rename_cmip6_axes"
     name = "Rename CMIP6 axes"
     description = "Normalizes common CMIP6 dimension and coordinate names to x, y, lev, lon, lat, and bounds names."
@@ -70,8 +70,8 @@ class RenameCmip6AxesFix(XmipCmip6TransformFix):
         return rename_cmip6(dataset)
 
 
-@register_fix
-class MarkSpatialCoordsFix(XmipCmip6TransformFix):
+@register_fix_function
+class MarkSpatialCoords(XmipCmip6Transform):
     suffix = "mark_spatial_coords"
     name = "Mark spatial coordinates"
     description = "Moves known spatial, vertical, and bounds variables into the coordinate set."
@@ -82,8 +82,8 @@ class MarkSpatialCoordsFix(XmipCmip6TransformFix):
         return correct_coordinates(dataset)
 
 
-@register_fix
-class BroadcastLonLatFix(XmipCmip6TransformFix):
+@register_fix_function
+class BroadcastLonLat(XmipCmip6Transform):
     suffix = "broadcast_lon_lat"
     name = "Broadcast lon/lat coordinates"
     description = "Ensures lon and lat coordinates are available as two-dimensional grid coordinates when possible."
@@ -94,8 +94,8 @@ class BroadcastLonLatFix(XmipCmip6TransformFix):
         return broadcast_lonlat(dataset)
 
 
-@register_fix
-class NormalizeCoordinateUnitsFix(XmipCmip6TransformFix):
+@register_fix_function
+class NormalizeCoordinateUnits(XmipCmip6Transform):
     suffix = "normalize_coordinate_units"
     name = "Normalize coordinate units"
     description = (
@@ -108,8 +108,8 @@ class NormalizeCoordinateUnitsFix(XmipCmip6TransformFix):
         return correct_units(dataset)
 
 
-@register_fix
-class ReplaceXYWithNominalLonLatFix(XmipCmip6TransformFix):
+@register_fix_function
+class ReplaceXYWithNominalLonLat(XmipCmip6Transform):
     suffix = "replace_xy_with_nominal_lon_lat"
     name = "Replace x/y with nominal lon/lat"
     description = "Approximates x and y coordinate values from representative lon/lat slices and sorts the grid."
@@ -120,8 +120,8 @@ class ReplaceXYWithNominalLonLatFix(XmipCmip6TransformFix):
         return replace_x_y_nominal_lat_lon(dataset)
 
 
-@register_fix
-class NormalizeLonLatBoundsFix(XmipCmip6TransformFix):
+@register_fix_function
+class NormalizeLonLatBounds(XmipCmip6Transform):
     suffix = "normalize_lon_lat_bounds"
     name = "Normalize lon/lat bounds"
     description = "Normalizes lon/lat bounds shape and naming, including vertex-style bounds."
@@ -132,8 +132,8 @@ class NormalizeLonLatBoundsFix(XmipCmip6TransformFix):
         return parse_lon_lat_bounds(dataset)
 
 
-@register_fix
-class SortVertexOrderFix(XmipCmip6TransformFix):
+@register_fix_function
+class SortVertexOrder(XmipCmip6Transform):
     suffix = "sort_vertex_order"
     name = "Sort vertex order"
     description = "Sorts grid-cell vertices into a consistent lower-left, upper-left, upper-right, lower-right order."
@@ -144,8 +144,8 @@ class SortVertexOrderFix(XmipCmip6TransformFix):
         return sort_vertex_order(dataset)
 
 
-@register_fix
-class ConvertBoundsToVerticesFix(XmipCmip6TransformFix):
+@register_fix_function
+class ConvertBoundsToVertices(XmipCmip6Transform):
     suffix = "convert_bounds_to_vertices"
     name = "Convert bounds to vertices"
     description = "Creates rectangular lon/lat vertex coordinates from lon/lat bounds when vertices are missing."
@@ -156,8 +156,8 @@ class ConvertBoundsToVerticesFix(XmipCmip6TransformFix):
         return maybe_convert_bounds_to_vertex(dataset)
 
 
-@register_fix
-class ConvertVerticesToBoundsFix(XmipCmip6TransformFix):
+@register_fix_function
+class ConvertVerticesToBounds(XmipCmip6Transform):
     suffix = "convert_vertices_to_bounds"
     name = "Convert vertices to bounds"
     description = (
@@ -170,8 +170,8 @@ class ConvertVerticesToBoundsFix(XmipCmip6TransformFix):
         return maybe_convert_vertex_to_bounds(dataset)
 
 
-@register_fix
-class FixKnownCmip6MetadataFix(XmipCmip6TransformFix):
+@register_fix_function
+class KnownCmip6Metadata(XmipCmip6Transform):
     suffix = "fix_known_cmip6_metadata"
     name = "Fix known CMIP6 metadata"
     description = "Applies selected known CMIP6 metadata corrections from xMIP preprocessing."
@@ -182,8 +182,8 @@ class FixKnownCmip6MetadataFix(XmipCmip6TransformFix):
         return fix_metadata(dataset)
 
 
-@register_fix
-class DropHelperGridCoordsFix(XmipCmip6TransformFix):
+@register_fix_function
+class DropHelperGridCoords(XmipCmip6Transform):
     suffix = "drop_helper_grid_coords"
     name = "Drop helper grid coordinates"
     description = "Drops helper bnds and vertex coordinate variables after bounds and vertices are normalized."

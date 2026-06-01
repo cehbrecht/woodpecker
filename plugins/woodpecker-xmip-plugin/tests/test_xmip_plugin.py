@@ -4,7 +4,7 @@ import xarray as xr
 from _xmip_helpers import assert_check_fix_cycle
 
 import woodpecker
-from woodpecker.fixes.registry import FixRegistry
+from woodpecker.fixes.registry import FixFunctionRegistry
 
 EXPECTED_FIX_IDS = {
     "xmip.broadcast_lon_lat",
@@ -53,7 +53,7 @@ def _raw_cmip6_dataset() -> xr.Dataset:
 
 
 def test_plugin_registers_expected_fixes():
-    fix_ids = {fix.id for fix in FixRegistry.discover()}
+    fix_ids = {fix.id for fix in FixFunctionRegistry.discover()}
 
     assert EXPECTED_FIX_IDS.issubset(fix_ids)
 
@@ -104,7 +104,7 @@ def test_xmip_rename_cmip6_axes_is_detected_and_applied():
 
 def test_xmip_mark_spatial_coords_is_detected_and_applied_after_rename():
     dataset = _raw_cmip6_dataset()
-    woodpecker_xmip_plugin.RenameCmip6AxesFix().apply(dataset, dry_run=False)
+    woodpecker_xmip_plugin.RenameCmip6Axes().apply(dataset, dry_run=False)
 
     def assert_fixed(ds):
         assert "lon" in ds.coords
@@ -119,8 +119,8 @@ def test_xmip_mark_spatial_coords_is_detected_and_applied_after_rename():
 
 def test_xmip_normalize_longitude_convention_is_detected_and_applied_after_rename():
     dataset = _raw_cmip6_dataset()
-    woodpecker_xmip_plugin.RenameCmip6AxesFix().apply(dataset, dry_run=False)
-    woodpecker_xmip_plugin.MarkSpatialCoordsFix().apply(dataset, dry_run=False)
+    woodpecker_xmip_plugin.RenameCmip6Axes().apply(dataset, dry_run=False)
+    woodpecker_xmip_plugin.MarkSpatialCoords().apply(dataset, dry_run=False)
 
     def assert_fixed(ds):
         assert float(ds["lon"].min()) >= 0
@@ -211,7 +211,7 @@ def test_xmip_metadata_fix_ignores_non_cmip6():
     dataset.attrs["project_id"] = "CMIP5"
     dataset.attrs["mip_era"] = "CMIP5"
 
-    fix = woodpecker_xmip_plugin.FixKnownCmip6MetadataFix()
+    fix = woodpecker_xmip_plugin.KnownCmip6Metadata()
 
     assert fix.matches(dataset) is False
     assert fix.check(dataset) == []

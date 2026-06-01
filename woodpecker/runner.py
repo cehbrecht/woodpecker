@@ -127,7 +127,7 @@ def apply_configured_fix(
         return False, False
 
     if not hasattr(fix, "apply"):
-        raise TypeError(f"Fix '{fix_id}' does not implement apply()")
+        raise TypeError(f"Fix function '{fix_id}' does not implement apply()")
 
     return True, bool(fix.apply(dataset, dry_run=dry_run))
 

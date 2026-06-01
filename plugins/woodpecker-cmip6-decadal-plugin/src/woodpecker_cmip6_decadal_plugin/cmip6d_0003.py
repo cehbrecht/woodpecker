@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from woodpecker.fixes.registry import Fix, FixRegistry
+from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import is_cmip6_decadal_netcdf
 
@@ -31,8 +31,8 @@ def _apply_realization_var_fix(dataset: xr.Dataset) -> bool:
     return True
 
 
-@FixRegistry.register
-class DecadalRealizationVariableFix(Fix):
+@FixFunctionRegistry.register
+class DecadalRealizationVariable(FixFunction):
     suffix = "realization_variable"
     name = "Decadal realization variable"
     description = (

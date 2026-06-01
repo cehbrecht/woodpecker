@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from woodpecker.fixes.registry import Fix, FixRegistry
+from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import is_cmip6_decadal_netcdf
 
@@ -20,8 +20,8 @@ def _apply_realization_long_name_fix(dataset: xr.Dataset) -> bool:
     return True
 
 
-@FixRegistry.register
-class DecadalRealizationLongNameNormalizationFix(Fix):
+@FixFunctionRegistry.register
+class DecadalRealizationLongNameNormalization(FixFunction):
     suffix = "realization_long_name_normalization"
     name = "Decadal realization long_name normalization"
     description = (

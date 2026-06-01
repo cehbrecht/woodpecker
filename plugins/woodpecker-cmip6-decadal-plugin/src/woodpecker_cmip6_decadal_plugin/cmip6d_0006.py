@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import xarray as xr
 
-from woodpecker.fixes.registry import Fix, FixRegistry
+from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import is_cmip6_decadal_netcdf
 
@@ -25,8 +25,8 @@ def _apply_realization_dtype_fix(dataset: xr.Dataset) -> bool:
     return True
 
 
-@FixRegistry.register
-class DecadalRealizationDtypeNormalizationFix(Fix):
+@FixFunctionRegistry.register
+class DecadalRealizationDtypeNormalization(FixFunction):
     suffix = "realization_dtype_normalization"
     name = "Decadal realization dtype normalization"
     description = "Normalizes realization data variable dtype to int32 for CMIP6-decadal datasets."

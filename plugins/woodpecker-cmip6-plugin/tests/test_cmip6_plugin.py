@@ -5,7 +5,7 @@ from _cmip6_helpers import (
     check_finding_ids,
 )
 
-from woodpecker.fixes.registry import FixRegistry
+from woodpecker.fixes.registry import FixFunctionRegistry
 from woodpecker.testing import make_cmip6
 
 EXPECTED_FIX_IDS = {
@@ -19,7 +19,7 @@ def _cmip6_dataset(**overrides):
 
 
 def test_plugin_registers_expected_fixes():
-    fix_ids = {fix.id for fix in FixRegistry.discover()}
+    fix_ids = {fix.id for fix in FixFunctionRegistry.discover()}
 
     assert EXPECTED_FIX_IDS.issubset(fix_ids)
 

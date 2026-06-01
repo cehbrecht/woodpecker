@@ -6,11 +6,11 @@ from jinja2 import Environment, FileSystemLoader
 
 # Import fixes to ensure registration
 import woodpecker.fixes  # noqa: F401
-from woodpecker.fixes.registry import FixRegistry
+from woodpecker.fixes.registry import FixFunctionRegistry
 
 
 def main():
-    fixes = FixRegistry.discover()
+    fixes = FixFunctionRegistry.discover()
     fix_dicts = []
     core_count = 0
     plugin_count = 0
@@ -18,7 +18,7 @@ def main():
 
     for fix in fixes:
         entry = fix.metadata() if hasattr(fix, "metadata") else dict(fix.__dict__)
-        source = FixRegistry.source_label(fix)
+        source = FixFunctionRegistry.source_label(fix)
         source_kind = "core"
         source_package = ""
         if source.startswith("plugin:"):

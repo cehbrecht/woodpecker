@@ -71,13 +71,11 @@ class IdentifierRules:
     def derive_suffix_from_name(name: str) -> str:
         """Convert a CamelCase class name to a snake_case suffix.
 
-        Strips trailing ``Fix`` or ``Plan`` suffixes before converting.
+        Strips trailing ``Plan`` suffixes before converting.
         """
         class_name = str(name or "")
-        for suffix in ("Fix", "Plan"):
-            if class_name.endswith(suffix):
-                class_name = class_name[: -len(suffix)]
-                break
+        if class_name.endswith("Plan"):
+            class_name = class_name[: -len("Plan")]
 
         first = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", class_name)
         second = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", first)

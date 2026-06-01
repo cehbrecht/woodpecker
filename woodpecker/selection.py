@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Optional, Sequence
 
-from woodpecker.fixes.registry import FixRegistry
+from woodpecker.fixes.registry import FixFunctionRegistry
 
 
 def _normalize_identifiers(identifiers: Sequence[str]) -> set[str]:
@@ -25,7 +25,7 @@ def _validate_selected_identifiers(selected_identifiers: set[str]) -> None:
     unknown: list[str] = []
     for identifier in sorted(selected_identifiers):
         try:
-            FixRegistry.resolve_identifier(identifier)
+            FixFunctionRegistry.resolve_identifier(identifier)
         except (KeyError, ValueError):
             unknown.append(identifier)
     if unknown:
@@ -40,7 +40,7 @@ def _resolve_identifiers(identifiers: Sequence[str], *, strict: bool = False) ->
         if not token:
             continue
         try:
-            resolved.append(FixRegistry.resolve_identifier(token))
+            resolved.append(FixFunctionRegistry.resolve_identifier(token))
         except (KeyError, ValueError):
             if strict:
                 raise
@@ -58,7 +58,7 @@ def _normalize_fix_options(
         if not key:
             continue
         try:
-            resolved = FixRegistry.resolve_identifier(key)
+            resolved = FixFunctionRegistry.resolve_identifier(key)
         except (KeyError, ValueError):
             resolved = key
         normalized[resolved] = dict(options or {})
@@ -79,7 +79,7 @@ def select_fixes(
     if categories:
         filters["categories"] = list(categories) if len(categories) > 1 else categories[0]
 
-    fixes = FixRegistry.discover(filters=filters or None)
+    fixes = FixFunctionRegistry.discover(filters=filters or None)
     selected_identifiers = _normalize_identifiers(identifiers)
     normalized_ordered_identifiers = _normalize_ordered_identifiers(ordered_identifiers)
     normalized_fix_options = _normalize_fix_options(fix_options)

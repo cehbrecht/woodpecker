@@ -8,28 +8,28 @@ that select and order that logic.
 ```mermaid
 flowchart LR
   Dataset["Dataset or path"] --> Selection["Fix selection"]
-  Selection --> Direct["Direct fix ids"]
+  Selection --> Direct["Direct fix function ids"]
   Selection --> Catalog["FixPlanCatalog"]
   Loader["FixPlanLoader"] --> Catalog
   Core["Core plans"] --> Loader
   Local["User/system/explicit plans"] --> Loader
   Plugins["Installed plugin plans"] --> Loader
   Catalog --> Plan["FixPlan"]
-  Direct --> Fixes["Fixes"]
-  Plan --> Fixes
-  Fixes --> Result["Findings or repaired dataset"]
+  Direct --> FixFunctions["Fix functions"]
+  Plan --> FixFunctions
+  FixFunctions --> Result["Findings or repaired dataset"]
 ```
 
-Direct fix ids are useful when you already know exactly what to run. Fix plans
-are useful when a workflow should carry ordered steps, options, matching rules,
-and links to background material.
+Direct fix function ids are useful when you already know exactly what to run.
+Fix plans are useful when a workflow should carry ordered steps, options,
+matching rules, and links to background material.
 
-## Fix
+## Fix Function
 
-A fix is an executable Python rule for one known dataset issue. It can check
-whether a dataset needs attention and can optionally apply a repair.
+A fix function is an executable Python rule for one known dataset issue. It can
+check whether a dataset needs attention and can optionally apply a repair.
 
-Fixes are registered with stable ids such as:
+Fix functions are registered with stable ids such as:
 
 ```text
 woodpecker.normalize_tas_units_to_kelvin
@@ -37,7 +37,7 @@ cmip6_decadal.time_metadata
 atlas.encoding_cleanup
 ```
 
-Use direct fix selection when you already know the exact fix id:
+Use direct fix function selection when you already know the exact id:
 
 ```python
 findings = woodpecker.check(
@@ -46,13 +46,13 @@ findings = woodpecker.check(
 )
 ```
 
-The [Generated Fixes Reference](FIXES.md) lists registered fixes.
+In a fix plan, a fix is a fix function plus optional runtime options. The
+[Generated Fixes Reference](FIXES.md) lists registered fix functions.
 
 ## Fix Plan
 
-A fix plan is a user-facing recipe. It contains an ordered list of fix steps and
-may also include matching rules, options, aliases, and links to background
-material.
+A fix plan is a user-facing recipe. It contains an ordered list of fixes and may
+also include matching rules, aliases, and links to background material.
 
 Use plans when you want Woodpecker to run a known workflow by id:
 
@@ -84,7 +84,7 @@ Woodpecker supports stores for:
 - discovered catalog sources,
 - JSON or YAML documents,
 - DuckDB-backed catalogs,
-- auto-generated one-step plans from registered fixes.
+- auto-generated one-step plans from registered fix functions.
 
 ## Fix Plan Loader
 
@@ -110,7 +110,8 @@ Catalog-backed lookup is the default path for shared core and plugin workflows.
 ## Plugins
 
 Plugins keep dataset-family behavior outside the core package. A plugin can
-register fixes and may bundle plan documents in a package `plans/` directory.
+register fix functions and may bundle plan documents in a package `plans/`
+directory.
 
 Each plugin owns a namespace prefix, for example:
 
