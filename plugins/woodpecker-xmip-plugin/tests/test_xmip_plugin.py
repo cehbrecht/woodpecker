@@ -1,3 +1,13 @@
+"""xMIP plugin tests.
+
+The parity-style tests below adapt cases from xMIP's preprocessing tests while
+running them through Woodpecker fix functions and plans:
+https://github.com/jbusecke/xMIP/blob/main/tests/test_preprocessing.py
+
+The corresponding original implementation lives in:
+https://github.com/jbusecke/xMIP/blob/main/xmip/preprocessing.py
+"""
+
 import itertools
 
 import numpy as np
@@ -147,6 +157,7 @@ def test_plugin_fixes_work_with_public_api():
 
 
 def test_xmip_rename_cmip6_axes_is_detected_and_applied():
+    """Adapted from xMIP's ``test_rename_cmip6``."""
     dataset = _raw_cmip6_dataset()
 
     def assert_unchanged(ds):
@@ -187,6 +198,7 @@ def test_xmip_mark_spatial_coords_is_detected_and_applied_after_rename():
 
 
 def test_xmip_broadcast_lon_lat_is_detected_and_applied():
+    """Adapted from xMIP's ``test_broadcast_lonlat``."""
     dataset = make_cmip6(periods=1, nlat=30, nlon=72, seed=3)
     dataset = dataset.isel(time=0, drop=True).rename({"lat": "y", "lon": "x"})
     dataset = dataset.assign_coords(
@@ -228,6 +240,7 @@ def test_xmip_normalize_longitude_convention_is_detected_and_applied_after_renam
 
 
 def test_xmip_normalize_lon_lat_bounds_renames_vertex_bounds_and_drops_time():
+    """Adapted from xMIP's ``test_parse_lon_lat_bounds``."""
     dataset = _xy_dataset_with_2d_lon_lat()
     dataset.coords["lon_bounds"] = (
         xr.DataArray([-0.1, -0.1, 0.1, 0.1], dims=("vertex",)) + dataset["lon"]
@@ -255,6 +268,7 @@ def test_xmip_normalize_lon_lat_bounds_renames_vertex_bounds_and_drops_time():
 
 
 def test_xmip_convert_bounds_to_vertices_is_detected_and_applied():
+    """Adapted from xMIP's ``test_maybe_convert_bounds_to_vertex``."""
     dataset = _dataset_with_bounds()
 
     assert_check_fix_cycle(
@@ -265,6 +279,7 @@ def test_xmip_convert_bounds_to_vertices_is_detected_and_applied():
 
 
 def test_xmip_convert_vertices_to_bounds_is_detected_and_applied():
+    """Adapted from xMIP's ``test_maybe_convert_vertex_to_bounds``."""
     dataset = _dataset_with_vertices()
 
     assert_check_fix_cycle(
@@ -275,6 +290,7 @@ def test_xmip_convert_vertices_to_bounds_is_detected_and_applied():
 
 
 def test_xmip_sort_vertex_order_matches_upstream_permutations():
+    """Adapted from xMIP's ``test_sort_vertex_order``."""
     expected_points = np.array([[1, 1], [1, 4], [2, 4], [2, 1]])
 
     for order in itertools.permutations(range(4)):
@@ -313,6 +329,7 @@ def test_xmip_drop_helper_grid_coords_is_detected_and_applied():
 
 
 def test_xmip_normalize_coordinate_units_is_detected_and_applied():
+    """Adapted from xMIP's ``test_correct_units``."""
     dataset = make_cmip6(
         "thetao",
         overrides={"table_id": "Omon"},
@@ -336,6 +353,7 @@ def test_xmip_normalize_coordinate_units_is_detected_and_applied():
 
 
 def test_xmip_replace_xy_with_nominal_lon_lat_is_detected_and_applied():
+    """Adapted from xMIP's ``test_replace_x_y_nominal_lat_lon``."""
     x = np.array([0.0, 10.0, 20.0, 30.0])
     y = np.array([-200.0, 0.0, 140.0])
     lon = xr.DataArray(
@@ -428,6 +446,7 @@ def test_xmip_cmip6_preprocessing_plan_checks_and_fixes_dataset():
 
 
 def test_xmip_cmip6_preprocessing_plan_drops_helper_coords():
+    """Adapted from xMIP's ``test_combined_preprocessing_dropped_coords``."""
     dataset = _xy_dataset_with_2d_lon_lat()
     dataset = dataset.assign_coords(
         x_bounds=xr.concat([dataset.x, dataset.x], "bnds"),
