@@ -37,6 +37,7 @@ nav:
       - CLI: cli.md
       - Plugins: plugins.md
       - Examples: examples.md
+      - User Friendliness Ideas: user-friendliness.md
   - Reference:
       - Generated Fixes Reference: FIXES.md
       - Generated Fix Plans Reference: FIX_PLANS.md

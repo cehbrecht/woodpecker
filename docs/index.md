@@ -18,6 +18,8 @@ Start here when you have a dataset and want to check or repair it.
   output or safety flags from the terminal.
 - [Examples](examples.md): open executed notebooks using deterministic synthetic
   datasets.
+- [User Friendliness Ideas](user-friendliness.md): collect future ideas for
+  clearer output, previews, recipes, and safer user workflows.
 - [Generated Fixes Reference](FIXES.md): find registered fix ids for direct
   selection.
 - [Interactive Fix Browser](fixes.html): search fix ids and copy stable anchors.
@@ -70,6 +72,10 @@ Use the [Contributing Guide](CONTRIBUTING_GUIDE.md) for local setup, fix
 authoring, plan-file schema details, plugin guidance, and testing conventions.
 Use [Docs Development](docs-development.md) when you are editing or regenerating
 the documentation site.
+
+Use [User Friendliness Ideas](user-friendliness.md) when you want a lightweight
+backlog of improvements that would make Woodpecker easier to understand and
+trust.
 
 Useful local commands:
 
