@@ -12,8 +12,8 @@ Source values: core (built-in) or plugin:<package> (discovered plugin fix).
 | woodpecker.merge_equivalent_dimensions | Merge equivalent dimensions | Merges two or more same-sized dimensions into the first configured dimension. | structure |  | 32 | core |
 | woodpecker.ensure_latitude_is_increasing | Ensure latitude is increasing | Flips datasets with decreasing latitude coordinates to increasing order. | structure |  | 33 | core |
 | woodpecker.rename_variables | Rename variables and dimensions | Renames variables, coordinates, and dimensions from configured candidate names. | structure |  | 33 | core |
-| woodpecker.remove_coordinate_fill_value_encodings | Remove coordinate FillValue encodings | Removes _FillValue encoding entries from common coordinate variables. | metadata, structure |  | 34 | core |
 | woodpecker.promote_missing_dimension_coords | Promote missing dimension coordinates | Creates coordinate variables for dimensions that have no coordinate. | structure |  | 34 | core |
+| woodpecker.remove_coordinate_fill_value_encodings | Remove coordinate FillValue encodings | Removes _FillValue encoding entries from common coordinate variables. | metadata, structure |  | 34 | core |
 | woodpecker.set_coordinate_variables | Set coordinate variables | Moves configured variables into the coordinate set. | structure, metadata |  | 35 | core |
 | woodpecker.convert_units | Convert variable units | Converts configured variables or coordinates to target units. | metadata, units |  | 36 | core |
 | woodpecker.normalize_longitude_convention | Normalize longitude convention | Wraps configured longitude coordinates to a target convention. | coordinates |  | 37 | core |
@@ -64,14 +64,14 @@ Source values: core (built-in) or plugin:<package> (discovered plugin fix).
 
 | ID | Name | Description | Categories | Dataset | Priority | Source |
 |----|------|-------------|------------|---------|---------|--------|
-| xmip.rename_cmip6_axes | Rename CMIP6 axes | Normalizes common CMIP6 dimension and coordinate names to x, y, lev, lon, lat, and bounds names. | structure | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
-| xmip.mark_spatial_coords | Mark spatial coordinates | Moves known spatial, vertical, and bounds variables into the coordinate set. | structure, metadata | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
 | xmip.broadcast_lon_lat | Broadcast lon/lat coordinates | Ensures lon and lat coordinates are available as two-dimensional grid coordinates when possible. | structure | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
-| xmip.normalize_coordinate_units | Normalize coordinate units | Converts supported CMIP6 coordinate units to xMIP target units, currently lev to meters. | metadata, coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
-| xmip.replace_xy_with_nominal_lon_lat | Replace x/y with nominal lon/lat | Approximates x and y coordinate values from representative lon/lat slices and sorts the grid. | coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
-| xmip.normalize_lon_lat_bounds | Normalize lon/lat bounds | Normalizes lon/lat bounds shape and naming, including vertex-style bounds. | structure, coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
-| xmip.sort_vertex_order | Sort vertex order | Sorts grid-cell vertices into a consistent lower-left, upper-left, upper-right, lower-right order. | coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
 | xmip.convert_bounds_to_vertices | Convert bounds to vertices | Creates rectangular lon/lat vertex coordinates from lon/lat bounds when vertices are missing. | structure, coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
 | xmip.convert_vertices_to_bounds | Convert vertices to bounds | Creates lon/lat bounds from vertex-style lon/lat coordinates when bounds are missing. | structure, coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
-| xmip.fix_known_cmip6_metadata | Fix known CMIP6 metadata | Applies selected known CMIP6 metadata corrections from xMIP preprocessing. | metadata | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
 | xmip.drop_helper_grid_coords | Drop helper grid coordinates | Drops helper bnds and vertex coordinate variables after bounds and vertices are normalized. | structure | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.fix_known_cmip6_metadata | Fix known CMIP6 metadata | Applies selected known CMIP6 metadata corrections from xMIP preprocessing. | metadata | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.mark_spatial_coords | Mark spatial coordinates | Moves known spatial, vertical, and bounds variables into the coordinate set. | structure, metadata | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.normalize_coordinate_units | Normalize coordinate units | Converts supported CMIP6 coordinate units to xMIP target units, currently lev to meters. | metadata, coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.normalize_lon_lat_bounds | Normalize lon/lat bounds | Normalizes lon/lat bounds shape and naming, including vertex-style bounds. | structure, coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.rename_cmip6_axes | Rename CMIP6 axes | Normalizes common CMIP6 dimension and coordinate names to x, y, lev, lon, lat, and bounds names. | structure | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.replace_xy_with_nominal_lon_lat | Replace x/y with nominal lon/lat | Approximates x and y coordinate values from representative lon/lat slices and sorts the grid. | coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
+| xmip.sort_vertex_order | Sort vertex order | Sorts grid-cell vertices into a consistent lower-left, upper-left, upper-right, lower-right order. | coordinates | CMIP6 | 42 | plugin:woodpecker_xmip_plugin |
