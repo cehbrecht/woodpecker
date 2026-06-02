@@ -10,9 +10,9 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://github.com/cehbrecht/woodpecker/blob/main/pyproject.toml)
 
 Woodpecker is a lightweight, code-based catalog of common dataset fixes for
-climate processing. It brings repair scripts, workarounds, plugins, and fix
-plans under one API for checking, applying, composing, and discovering climate
-data fixes.
+climate processing. It brings repair scripts, workarounds, plugins, and recipes
+under one API for checking, applying, composing, and discovering climate data
+fixes.
 
 Like a woodpecker finding bugs in a tree, Woodpecker looks for known data
 issues and applies focused repairs before they spread through a workflow.
@@ -26,12 +26,12 @@ The MkDocs site is the main documentation entry point:
 - [Home](https://cehbrecht.github.io/woodpecker/)
 - [Overview](https://cehbrecht.github.io/woodpecker/OVERVIEW/)
 - [Concepts](https://cehbrecht.github.io/woodpecker/concepts/)
-- [Discovered Fix Plans](https://cehbrecht.github.io/woodpecker/plans/)
+- [Discovered Recipes](https://cehbrecht.github.io/woodpecker/recipes/)
 - [CLI](https://cehbrecht.github.io/woodpecker/cli/)
 - [Plugins](https://cehbrecht.github.io/woodpecker/plugins/)
 - [Examples](https://cehbrecht.github.io/woodpecker/examples/)
 - [Generated Fixes Reference](https://cehbrecht.github.io/woodpecker/FIXES/)
-- [Generated Fix Plans Reference](https://cehbrecht.github.io/woodpecker/FIX_PLANS/)
+- [Generated Recipes Reference](https://cehbrecht.github.io/woodpecker/recipe-reference/)
 - [Interactive Fix Browser](https://cehbrecht.github.io/woodpecker/fixes/)
 - [Contributing Guide](https://cehbrecht.github.io/woodpecker/CONTRIBUTING_GUIDE/)
 - [Docs Development](https://cehbrecht.github.io/woodpecker/docs-development/)
@@ -45,19 +45,19 @@ conda env create -f environment.yml
 conda activate woodpecker
 make dev
 woodpecker list-fixes
-woodpecker list-plans
+woodpecker list-recipes
 ```
 
-Run a discovered fix plan:
+Run a discovered recipe:
 
 ```python
 import woodpecker
 
-plan = woodpecker.plan.get("cmip6.core_units")
-findings = woodpecker.plan.check(dataset, plan)
+recipe = woodpecker.recipe.get("cmip6.core_units")
+findings = woodpecker.recipe.check(dataset, recipe)
 
 if findings:
-    woodpecker.plan.fix(dataset, plan, dry_run=False)
+    woodpecker.recipe.fix(dataset, recipe, dry_run=False)
 ```
 
 Run a known fix directly:
@@ -74,7 +74,7 @@ findings = woodpecker.check(
 From the command line:
 
 ```bash
-woodpecker check ./data --plan-id cmip6.core_units
+woodpecker check ./data --recipe-id cmip6.core_units
 woodpecker fix ./data --select cmip6_decadal.time_metadata --dry-run
 ```
 
@@ -101,7 +101,7 @@ pip install -e ".[docs]"
 
 ## Project Map
 
-- `woodpecker/`: core package, public API, CLI, stores, fix plans, and fixes.
+- `woodpecker/`: core package, public API, CLI, stores, recipes, and fixes.
 - `plugins/`: bundled dataset-family plugins for Atlas, CMIP6, CMIP6-decadal,
   CMIP7, and xMIP.
 - `docs/`: MkDocs source pages, generated catalogs, generated interactive page,

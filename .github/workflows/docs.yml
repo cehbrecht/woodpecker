@@ -8,7 +8,7 @@ on:
       - "plugins/**"
       - "scripts/**"
       - "docs/**"
-      - "tests/integration/plans/**"
+      - "tests/integration/recipes/**"
       - "Makefile"
       - "mkdocs.yml"
       - "pyproject.toml"
@@ -50,8 +50,8 @@ jobs:
       - name: Generate fix catalog (MD/JSON)
         run: python scripts/generate_fix_catalog.py
 
-      - name: Generate fix plan catalog (MD/JSON)
-        run: python scripts/generate_fix_plan_catalog.py
+      - name: Generate recipe catalog (MD/JSON)
+        run: python scripts/generate_recipe_catalog.py
 
       - name: Generate interactive fixes page
         run: python scripts/generate_fix_webpage.py

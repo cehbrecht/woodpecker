@@ -2,30 +2,30 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from woodpecker.fix_plans.loaders import FixPlanLoader
+from woodpecker.recipes.loaders import RecipeLoader
 
-from .auto_store import AutoFixPlanStore
-from .base import FixPlanStore
-from .duckdb_store import DuckDBFixPlanStore
-from .json_store import JsonFixPlanStore
+from .auto_store import AutoRecipeStore
+from .base import RecipeStore
+from .duckdb_store import DuckDBRecipeStore
+from .json_store import JsonRecipeStore
 
 
-def create_fix_plan_store(store_type: str, plan_location: Path | None) -> FixPlanStore:
-    """Create a FixPlanStore backend for the selected store type and location."""
+def create_recipe_store(store_type: str, recipe_location: Path | None) -> RecipeStore:
+    """Create a RecipeStore backend for the selected store type and location."""
 
     if store_type == "catalog":
-        explicit = [plan_location] if plan_location is not None else []
-        return FixPlanLoader().catalog(explicit_locations=explicit)
+        explicit = [recipe_location] if recipe_location is not None else []
+        return RecipeLoader().catalog(explicit_locations=explicit)
 
     if store_type == "auto":
-        return AutoFixPlanStore()
+        return AutoRecipeStore()
 
-    if plan_location is None:
-        raise ValueError("--plan is required when using a plan store backend.")
+    if recipe_location is None:
+        raise ValueError("--recipe is required when using a recipe store backend.")
 
     if store_type == "json":
-        return JsonFixPlanStore(plan_location)
+        return JsonRecipeStore(recipe_location)
     if store_type == "duckdb":
-        return DuckDBFixPlanStore(plan_location)
+        return DuckDBRecipeStore(recipe_location)
 
-    raise ValueError(f"Unsupported plan store type: {store_type}")
+    raise ValueError(f"Unsupported recipe store type: {store_type}")

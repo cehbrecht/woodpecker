@@ -49,7 +49,7 @@ woodpecker = "woodpecker.cli:cli"
 include = ["woodpecker*"]
 
 [tool.setuptools.package-data]
-woodpecker = ["fix_plans/plans/*.yaml", "fix_plans/plans/*.yml", "fix_plans/plans/*.json"]
+"woodpecker.recipes" = ["recipes/*.yaml", "recipes/*.yml", "recipes/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests/unit", "tests/integration"]

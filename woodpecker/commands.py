@@ -8,7 +8,7 @@ from woodpecker.runner import run_check, run_fix
 from woodpecker.selection import select_fixes
 
 if TYPE_CHECKING:
-    from woodpecker.fix_plans.resolver import RunContext
+    from woodpecker.recipes.resolver import RunContext
 
 
 class RunFixKwargs(TypedDict, total=False):
@@ -22,23 +22,23 @@ class RunFixKwargs(TypedDict, total=False):
     strict_io: bool
 
 
-def _resolve_plan_api_selection(
+def _resolve_recipe_api_selection(
     *,
-    plan_path: str | Path | None,
+    recipe_path: str | Path | None,
     inputs: Any | None,
     identifiers: Sequence[str],
-    plan_id: str | None,
+    recipe_id: str | None,
     store_type: str,
 ) -> tuple[list[DataInput], tuple[str, ...], tuple[str, ...], dict[str, dict[str, Any]]]:
-    from woodpecker.fix_plans.resolver import resolve_plan_source, resolve_selection_inputs
+    from woodpecker.recipes.resolver import resolve_recipe_source, resolve_selection_inputs
 
     resolved_inputs = inputs if inputs is not None else [Path.cwd()]
     normalized = normalize_inputs(resolved_inputs)
-    _, _, source_identifiers, source_fix_options = resolve_plan_source(
+    _, _, source_identifiers, source_fix_options = resolve_recipe_source(
         inputs=normalized,
         store_type=store_type,
-        plan_location=Path(plan_path) if plan_path is not None else None,
-        plan_id=plan_id,
+        recipe_location=Path(recipe_path) if recipe_path is not None else None,
+        recipe_id=recipe_id,
     )
     resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options = (
         resolve_selection_inputs(
@@ -102,23 +102,23 @@ def execute_fix(
     )
 
 
-def execute_check_plan(
-    plan_path: str | Path | None,
+def execute_check_recipe(
+    recipe_path: str | Path | None,
     *,
     inputs: Any | None = None,
     dataset: str | None = None,
     categories: Sequence[str] = (),
     identifiers: Sequence[str] = (),
-    plan_id: str | None = None,
+    recipe_id: str | None = None,
     store_type: str = "json",
     strict_io: bool = False,
 ) -> list[dict[str, str]]:
     normalized, resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options = (
-        _resolve_plan_api_selection(
-            plan_path=plan_path,
+        _resolve_recipe_api_selection(
+            recipe_path=recipe_path,
             inputs=inputs,
             identifiers=identifiers,
-            plan_id=plan_id,
+            recipe_id=recipe_id,
             store_type=store_type,
         )
     )
@@ -134,8 +134,8 @@ def execute_check_plan(
     )
 
 
-def execute_fix_plan(
-    plan_path: str | Path | None,
+def execute_fix_recipe(
+    recipe_path: str | Path | None,
     *,
     inputs: Any | None = None,
     dataset: str | None = None,
@@ -143,16 +143,16 @@ def execute_fix_plan(
     identifiers: Sequence[str] = (),
     dry_run: bool = True,
     output_format: str = "auto",
-    plan_id: str | None = None,
+    recipe_id: str | None = None,
     store_type: str = "json",
     strict_io: bool = False,
 ) -> dict[str, int]:
     normalized, resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options = (
-        _resolve_plan_api_selection(
-            plan_path=plan_path,
+        _resolve_recipe_api_selection(
+            recipe_path=recipe_path,
             inputs=inputs,
             identifiers=identifiers,
-            plan_id=plan_id,
+            recipe_id=recipe_id,
             store_type=store_type,
         )
     )
@@ -217,7 +217,7 @@ def execute_fix_context(
 
     if force_apply and not context.resolved_identifiers:
         raise ValueError(
-            "--force-apply requires explicit fix selection via --select or plan identifiers."
+            "--force-apply requires explicit fix selection via --select or recipe identifiers."
         )
     run_fix_kwargs = build_run_fix_kwargs(
         output_format=context.resolved_output_format,
@@ -230,29 +230,29 @@ def execute_fix_context(
     return run_fix(context.inputs, context.fixes, **run_fix_kwargs)
 
 
-def execute_load_plans(
+def execute_load_recipes(
     store_type: str,
-    plan_location: Path,
-    from_plan: Path | None,
+    recipe_location: Path,
+    from_recipe: Path | None,
     from_store: str,
-    plan_id: str | None = None,
+    recipe_id: str | None = None,
 ) -> dict:
-    """Load plans into a target store from a source store location."""
-    from woodpecker.fix_plans.resolver import resolve_load_source_plans
-    from woodpecker.stores.helpers import create_fix_plan_store
+    """Load recipes into a target store from a source store location."""
+    from woodpecker.recipes.resolver import resolve_load_source_recipes
+    from woodpecker.stores.helpers import create_recipe_store
 
-    target_store = create_fix_plan_store(store_type, plan_location)
-    plans = resolve_load_source_plans(
-        from_plan=from_plan,
+    target_store = create_recipe_store(store_type, recipe_location)
+    recipes = resolve_load_source_recipes(
+        from_recipe=from_recipe,
         from_store_type=from_store,
-        plan_id=plan_id,
+        recipe_id=recipe_id,
     )
-    for plan in plans:
-        target_store.save_plan(plan)
-    plan_ids = [plan.id or "<unnamed>" for plan in plans]
+    for recipe in recipes:
+        target_store.save_recipe(recipe)
+    recipe_ids = [recipe.id or "<unnamed>" for recipe in recipes]
     return {
-        "loaded": len(plans),
+        "loaded": len(recipes),
         "target_store": store_type,
-        "target_path": str(plan_location),
-        "plan_ids": plan_ids,
+        "target_path": str(recipe_location),
+        "recipe_ids": recipe_ids,
     }

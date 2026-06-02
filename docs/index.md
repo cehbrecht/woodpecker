@@ -1,7 +1,7 @@
 # Woodpecker Documentation
 
 Woodpecker helps climate-data workflows check, select, and apply known dataset
-fixes through a small Python API, a CLI, and discoverable fix plans.
+fixes through a small Python API, a CLI, and discoverable recipes.
 
 Use this documentation site as a map. The [Overview](OVERVIEW.md) is the short
 project introduction; the pages below are organized by what you want to do next.
@@ -10,11 +10,11 @@ project introduction; the pages below are organized by what you want to do next.
 
 Start here when you have a dataset and want to check or repair it.
 
-- [Concepts](concepts.md): learn the vocabulary for fixes, plans, stores,
+- [Concepts](concepts.md): learn the vocabulary for fixes, recipes, stores,
   catalogs, plugins, and identifiers.
-- [Discovered Fix Plans](plans.md): run an ordered workflow from core, plugin,
-  user, or system plan sources.
-- [CLI](cli.md): inspect fixes and plans, check datasets, apply fixes, and use
+- [Discovered Recipes](recipes.md): run an ordered workflow from core, plugin,
+  user, or system recipe sources.
+- [CLI](cli.md): inspect fixes and recipes, check datasets, apply fixes, and use
   output or safety flags from the terminal.
 - [Examples](examples.md): open executed notebooks using deterministic synthetic
   datasets.
@@ -24,23 +24,23 @@ Start here when you have a dataset and want to check or repair it.
   selection.
 - [Interactive Fix Browser](fixes.html): search fix ids and copy stable anchors.
 
-Typical plan-based usage:
+Typical recipe-based usage:
 
 ```python
 import woodpecker
 
-plan = woodpecker.plan.get("cmip6.core_units")
-findings = woodpecker.plan.check(dataset, plan)
+recipe = woodpecker.recipe.get("cmip6.core_units")
+findings = woodpecker.recipe.check(dataset, recipe)
 
 if findings:
-    woodpecker.plan.fix(dataset, plan, dry_run=False)
+    woodpecker.recipe.fix(dataset, recipe, dry_run=False)
 ```
 
 Typical CLI usage:
 
 ```bash
-woodpecker list-plans
-woodpecker check ./data --plan-id cmip6.core_units
+woodpecker list-recipes
+woodpecker check ./data --recipe-id cmip6.core_units
 ```
 
 See [CLI](cli.md) for direct fix selection, store backends, dry runs,
@@ -48,11 +48,11 @@ provenance, strict I/O, and output formats.
 
 ## If You Are Choosing A Workflow
 
-Start with [Discovered Fix Plans](plans.md) when you want Woodpecker to select a
+Start with [Discovered Recipes](recipes.md) when you want Woodpecker to select a
 curated recipe by id or matching rules.
 
-Use the [Generated Fix Plans Reference](FIX_PLANS.md) when you want a generated
-table of currently discovered plans, their match rules, steps, and source files.
+Use the [Generated Recipes Reference](recipe-reference.md) when you want a generated
+table of currently discovered recipes, their match rules, steps, and source files.
 
 Use the [Generated Fixes Reference](FIXES.md) when you already know you need a
 single fix function id or want to inspect all registered fix functions.
@@ -60,16 +60,16 @@ single fix function id or want to inspect all registered fix functions.
 ## If You Are Working With Plugins
 
 Start with [Plugins](plugins.md) for bundled plugin status, namespace prefixes,
-fix counts, and plan coverage.
+fix counts, and recipe coverage.
 
-Plugins can register fix functions and may bundle fix-plan documents in package
-`plans/` resources. Installed plugin plans are discovered through the same
-catalog APIs as core plans.
+Plugins can register fix functions and may bundle recipe documents in package
+`recipes/` resources. Installed plugin recipes are discovered through the same
+catalog APIs as core recipes.
 
 ## If You Are Contributing
 
 Use the [Contributing Guide](CONTRIBUTING_GUIDE.md) for local setup, fix
-authoring, plan-file schema details, plugin guidance, and testing conventions.
+authoring, recipe-file schema details, plugin guidance, and testing conventions.
 Use [Docs Development](docs-development.md) when you are editing or regenerating
 the documentation site.
 
@@ -89,8 +89,8 @@ make docs
 ## Reference Pages
 
 - [Generated Fixes Reference](FIXES.md): generated table of registered fix functions.
-- [Generated Fix Plans Reference](FIX_PLANS.md): generated table of discovered
-  plans.
+- [Generated Recipes Reference](recipe-reference.md): generated table of discovered
+  recipes.
 - [Interactive Fix Browser](fixes.html): searchable fix ids with stable anchors.
 
 The xMIP plugin is currently a demo plugin that translates xMIP-style CMIP6

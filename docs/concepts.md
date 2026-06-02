@@ -9,19 +9,19 @@ that select and order that logic.
 flowchart LR
   Dataset["Dataset or path"] --> Selection["Fix selection"]
   Selection --> Direct["Direct fix function ids"]
-  Selection --> Catalog["FixPlanCatalog"]
-  Loader["FixPlanLoader"] --> Catalog
-  Core["Core plans"] --> Loader
-  Local["User/system/explicit plans"] --> Loader
-  Plugins["Installed plugin plans"] --> Loader
-  Catalog --> Plan["FixPlan"]
+  Selection --> Catalog["RecipeCatalog"]
+  Loader["RecipeLoader"] --> Catalog
+  Core["Core recipes"] --> Loader
+  Local["User/system/explicit recipes"] --> Loader
+  Plugins["Installed plugin recipes"] --> Loader
+  Catalog --> Recipe["Recipe"]
   Direct --> FixFunctions["Fix functions"]
-  Plan --> FixFunctions
+  Recipe --> FixFunctions
   FixFunctions --> Result["Findings or repaired dataset"]
 ```
 
 Direct fix function ids are useful when you already know exactly what to run.
-Fix plans are useful when a workflow should carry ordered steps, options,
+Recipes are useful when a workflow should carry ordered steps, options,
 matching rules, and links to background material.
 
 ## Fix Function
@@ -46,75 +46,75 @@ findings = woodpecker.check(
 )
 ```
 
-In a fix plan, a fix is a fix function plus optional runtime options. The
+In a recipe, a fix is a fix function plus optional runtime options. The
 [Generated Fixes Reference](FIXES.md) lists registered fix functions.
 
 Fix functions may declare a non-negative `priority` for default discovery
 ordering. The default priority is `-1`, which means unprioritized. Explicit fix
-plans keep their own step order.
+recipes keep their own step order.
 
-## Fix Plan
+## Recipe
 
-A fix plan is a user-facing recipe. It contains an ordered list of fixes and may
+A recipe is an ordered repair workflow. It contains one or more fixes and may
 also include matching rules, aliases, and links to background material.
 
-Use plans when you want Woodpecker to run a known workflow by id:
+Use recipes when you want Woodpecker to run a known workflow by id:
 
 ```python
-plan = woodpecker.plan.get("cmip6.core_units")
-findings = woodpecker.plan.check(dataset, plan)
+recipe = woodpecker.recipe.get("cmip6.core_units")
+findings = woodpecker.recipe.check(dataset, recipe)
 ```
 
-The [Generated Fix Plans Reference](FIX_PLANS.md) lists discovered plans.
+The [Generated Recipes Reference](recipe-reference.md) lists discovered recipes.
 
 ## Matching
 
-Plans can describe when they apply to a dataset. Matching rules may inspect:
+Recipes can describe when they apply to a dataset. Matching rules may inspect:
 
 - dataset attributes,
 - dataset identity metadata,
 - input paths.
 
-Matching helps shared plans stay reusable across automated workflows. Explicit
-ids still work when a user wants to choose a plan directly.
+Matching helps shared recipes stay reusable across automated workflows. Explicit
+ids still work when a user wants to choose a recipe directly.
 
-## Fix Plan Store
+## Recipe Store
 
-A fix plan store is a lookup layer for plan definitions. Stores can list plans,
-load a plan by id, and find plans that match a dataset.
+A recipe store is a lookup layer for recipe definitions. Stores can list
+recipes, load a recipe by id, and find recipes that match a dataset.
 
 Woodpecker supports stores for:
 
 - discovered catalog sources,
 - JSON or YAML documents,
 - DuckDB-backed catalogs,
-- auto-generated one-step plans from registered fix functions.
+- auto-generated one-step recipes from registered fix functions.
 
-## Fix Plan Loader
+## Recipe Loader
 
-`FixPlanLoader` discovers plan documents from common locations:
+`RecipeLoader` discovers recipe documents from common locations:
 
 - explicit files or directories,
-- `WOODPECKER_FIX_PLAN_PATH`,
+- `WOODPECKER_RECIPE_PATH`,
 - user configuration directories,
 - system configuration directories,
 - core package resources,
-- installed plugin package `plans/` resources.
+- installed plugin package `recipes/` resources.
 
-See [Discovered Fix Plans](plans.md) for the discovery order and examples.
+See [Discovered Recipes](recipes.md) for the discovery order and examples.
 
-## Fix Plan Catalog
+## Recipe Catalog
 
-`FixPlanCatalog` aggregates one or more plan sources behind a single lookup
-surface. It can list plans, resolve ids and aliases, find matching plans, and
-deduplicate results by plan id.
+`RecipeCatalog` aggregates one or more recipe sources behind a single lookup
+surface. It can list recipes, resolve ids and aliases, find matching recipes,
+and deduplicate results by recipe id.
 
 Catalog-backed lookup is the default path for shared core and plugin workflows.
 
 ## Plugins
 
 Plugins keep dataset-family behavior outside the core package. A plugin can
-register fix functions and may bundle plan documents in a package `plans/`
+register fix functions and may bundle recipe documents in a package `recipes/`
 directory.
 
 Each plugin owns a namespace prefix, for example:
@@ -127,18 +127,18 @@ Each plugin owns a namespace prefix, for example:
 | `woodpecker-cmip7-plugin` | `cmip7` |
 | `woodpecker-xmip-plugin` | `xmip` |
 
-See [Plugins](plugins.md) for bundled plugin status and plan coverage.
+See [Plugins](plugins.md) for bundled plugin status and recipe coverage.
 
 ## Identifiers
 
-Fixes and plans use stable ids in the form:
+Fixes and recipes use stable ids in the form:
 
 ```text
 prefix.suffix
 ```
 
-The prefix names the owning package or plugin. The suffix names the fix or plan
-within that namespace. Use full ids in examples, plans, and automation so
+The prefix names the owning package or plugin. The suffix names the fix or
+recipe within that namespace. Use full ids in examples, recipes, and automation so
 references stay explicit.
 
 Aliases can provide extra names for the same suffix, but canonical ids are the

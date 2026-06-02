@@ -28,6 +28,6 @@ def integration_root_dir(start: str | Path | None = None) -> Path:
     return testing_root_dir(start) / "integration"
 
 
-def integration_plan_path(filename: str, *, start: str | Path | None = None) -> Path:
-    """Return a plan document from ``tests/integration/plans``."""
-    return integration_root_dir(start) / "plans" / filename
+def integration_recipe_path(filename: str, *, start: str | Path | None = None) -> Path:
+    """Return a recipe document from ``tests/integration/recipes``."""
+    return integration_root_dir(start) / "recipes" / filename

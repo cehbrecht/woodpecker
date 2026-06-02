@@ -16,16 +16,16 @@ from woodpecker.io.runtime import warn_once
 def format_provenance_source(
     context: Any,
     store_type: str,
-    plan_location: Path | None,
+    recipe_location: Path | None,
 ) -> str | None:
     """Return a concise provenance source description for selected store input."""
 
     if context.source == "store":
-        plan_ids = [selected.id for selected in context.selected_plans if selected.id]
-        selected_text = ", ".join(plan_ids) if plan_ids else "<unnamed>"
-        if plan_location is None:
-            return f"store type={store_type} plans={selected_text}"
-        return f"store type={store_type} location={plan_location} plans={selected_text}"
+        recipe_ids = [selected.id for selected in context.selected_recipes if selected.id]
+        selected_text = ", ".join(recipe_ids) if recipe_ids else "<unnamed>"
+        if recipe_location is None:
+            return f"store type={store_type} recipes={selected_text}"
+        return f"store type={store_type} location={recipe_location} recipes={selected_text}"
 
     return None
 
@@ -38,11 +38,11 @@ def build_prov_document(
     inputs: Iterable[DataInput],
     selected_fix_ids: list[str],
     selected_fixes: Iterable[Any] | None,
-    selected_plans: Iterable[Any] | None,
+    selected_recipes: Iterable[Any] | None,
     stats: dict[str, int],
     mode: str,
     output_format: str,
-    plan: str | None = None,
+    recipe: str | None = None,
     run_id: str | None = None,
 ) -> dict[str, Any]:
     run_id = run_id or f"woodpecker-run-{uuid.uuid4()}"
@@ -56,7 +56,7 @@ def build_prov_document(
     providers: list[dict[str, str]] = []
     seen_providers: set[str] = set()
 
-    for selected_plan in list(selected_plans or []):
+    for selected_plan in list(selected_recipes or []):
         runtime_metadata = getattr(selected_plan, "runtime_metadata", None)
         provider = getattr(runtime_metadata, "provider", None)
         provider_name = str(getattr(provider, "name", "") or "").strip()
@@ -101,8 +101,8 @@ def build_prov_document(
         "providers": json.dumps(providers, sort_keys=True),
         "stats": json.dumps(stats, sort_keys=True),
     }
-    if plan:
-        activity_attrs["plan"] = plan
+    if recipe:
+        activity_attrs["recipe"] = recipe
 
     doc.activity(activity_id, None, None, activity_attrs)
     agent_id = "agent-woodpecker"
@@ -150,20 +150,20 @@ def write_fix_provenance(
     stats: dict[str, int],
     dry_run: bool,
     store_type: str,
-    plan_location: Path | None,
+    recipe_location: Path | None,
     provenance_path: Path,
 ) -> None:
     """Write a provenance document for a check/fix run context."""
 
-    provenance_source = format_provenance_source(context, store_type, plan_location)
+    provenance_source = format_provenance_source(context, store_type, recipe_location)
     document = build_prov_document(
         inputs=context.inputs,
         selected_fix_ids=[getattr(fix, "id", "") for fix in context.fixes],
         selected_fixes=context.fixes,
-        selected_plans=context.selected_plans,
+        selected_recipes=context.selected_recipes,
         stats=stats,
         mode="dry-run" if dry_run else "write",
         output_format=context.resolved_output_format,
-        plan=provenance_source,
+        recipe=provenance_source,
     )
     write_prov_document(document, provenance_path)

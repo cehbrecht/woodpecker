@@ -3,7 +3,7 @@ from pathlib import Path
 import xarray as xr
 
 from woodpecker.testing import (
-    integration_plan_path,
+    integration_recipe_path,
     integration_root_dir,
     make_atlas,
     make_cmip6,
@@ -161,4 +161,4 @@ def test_testing_paths_point_to_integration_assets():
 
     assert _testing_root_dir(start=Path(__file__)).name == "tests"
     assert integration_root.name == "integration"
-    assert integration_plan_path("cmip6_core_plan.yaml", start=Path(__file__)).is_file()
+    assert integration_recipe_path("cmip6_core_recipe.yaml", start=Path(__file__)).is_file()

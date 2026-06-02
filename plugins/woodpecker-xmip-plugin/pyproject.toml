@@ -30,7 +30,7 @@ where = ["src"]
 include = ["woodpecker_xmip_plugin*"]
 
 [tool.setuptools.package-data]
-woodpecker_xmip_plugin = ["plans/*.yaml"]
+woodpecker_xmip_plugin = ["recipes/*.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

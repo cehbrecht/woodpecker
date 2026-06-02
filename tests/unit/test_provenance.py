@@ -11,34 +11,34 @@ from woodpecker.testing import make_cmip6
 
 
 @pytest.mark.parametrize(
-    ("context", "store_type", "plan_location", "expected"),
+    ("context", "store_type", "recipe_location", "expected"),
     [
         (
             SimpleNamespace(
                 source="store",
-                selected_plans=[SimpleNamespace(id="alpha"), SimpleNamespace(id="beta")],
+                selected_recipes=[SimpleNamespace(id="alpha"), SimpleNamespace(id="beta")],
             ),
             "auto",
             None,
-            "store type=auto plans=alpha, beta",
+            "store type=auto recipes=alpha, beta",
         ),
         (
             SimpleNamespace(
                 source="store",
-                selected_plans=[SimpleNamespace(id="alpha"), SimpleNamespace(id="beta")],
+                selected_recipes=[SimpleNamespace(id="alpha"), SimpleNamespace(id="beta")],
             ),
             "json",
-            Path("plans.json"),
-            "store type=json location=plans.json plans=alpha, beta",
+            Path("recipes.json"),
+            "store type=json location=recipes.json recipes=alpha, beta",
         ),
-        (SimpleNamespace(source="direct", selected_plans=[]), "json", Path("plans.json"), None),
+        (SimpleNamespace(source="direct", selected_recipes=[]), "json", Path("recipes.json"), None),
     ],
 )
-def test_format_provenance_source(context, store_type, plan_location, expected):
+def test_format_provenance_source(context, store_type, recipe_location, expected):
     output = format_provenance_source(
         context,
         store_type=store_type,
-        plan_location=plan_location,
+        recipe_location=recipe_location,
     )
 
     assert output == expected
@@ -46,12 +46,12 @@ def test_format_provenance_source(context, store_type, plan_location, expected):
 
 def test_write_fix_provenance_writes_run_document(tmp_path: Path):
     fix = SimpleNamespace(id="woodpecker.example")
-    plan = SimpleNamespace(id="woodpecker.plan")
+    recipe = SimpleNamespace(id="woodpecker.recipe")
     context = SimpleNamespace(
         source="store",
         inputs=[XarrayInput(payload=make_cmip6())],
         fixes=[fix],
-        selected_plans=[plan],
+        selected_recipes=[recipe],
         resolved_output_format="auto",
     )
     stats = {
@@ -68,7 +68,7 @@ def test_write_fix_provenance_writes_run_document(tmp_path: Path):
         stats,
         dry_run=True,
         store_type="json",
-        plan_location=Path("plans.json"),
+        recipe_location=Path("recipes.json"),
         provenance_path=output_path,
     )
 
@@ -77,7 +77,7 @@ def test_write_fix_provenance_writes_run_document(tmp_path: Path):
 
     assert activity["mode"] == "dry-run"
     assert activity["output_format"] == "auto"
-    assert activity["plan"] == "store type=json location=plans.json plans=woodpecker.plan"
+    assert activity["recipe"] == "store type=json location=recipes.json recipes=woodpecker.recipe"
     assert json.loads(activity["selected_fix_ids"]) == ["woodpecker.example"]
     assert json.loads(activity["stats"]) == stats
 
@@ -100,7 +100,7 @@ def test_write_fix_provenance_warns_and_falls_back_on_invalid_target_reference(
         source="store",
         inputs=[NetCDFInput(source_path=Path("cmip6_case.nc"), name="cmip6_case.nc")],
         fixes=[fix],
-        selected_plans=[],
+        selected_recipes=[],
         resolved_output_format="netcdf",
     )
     stats = {
@@ -118,7 +118,7 @@ def test_write_fix_provenance_warns_and_falls_back_on_invalid_target_reference(
             stats,
             dry_run=True,
             store_type="json",
-            plan_location=None,
+            recipe_location=None,
             provenance_path=output_path,
         )
 

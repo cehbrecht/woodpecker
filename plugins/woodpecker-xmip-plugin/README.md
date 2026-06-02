@@ -16,19 +16,19 @@ This plugin registers small, composable fixes:
 - `xmip.fix_known_cmip6_metadata`
 - `xmip.drop_helper_grid_coords`
 
-It also ships a plan:
+It also ships a recipe:
 
 - `xmip.cmip6_preprocessing`
 - `xmip.cmip6_preprocessing_nominal_xy`
 
-Core-owned replacements used by the plan:
+Core-owned replacements used by the recipe:
 
 - `woodpecker.promote_missing_dimension_coords`
 - `woodpecker.normalize_longitude_convention`
 
 The implementation is adapted from the original xMIP `combined_preprocessing`
 pipeline at `/Users/pingu/Documents/GitHub/misc/xMIP`, but expressed in a more
-Woodpecker-native way: one readable fix per concern, composed by a fix plan.
+Woodpecker-native way: one readable fix per concern, composed by a recipe.
 It focuses on Woodpecker-compatible structural and metadata cleanup:
 
 - normalize common CMIP6 dimension and coordinate names
@@ -60,5 +60,5 @@ woodpecker list-fixes --dataset CMIP6
 pytest
 ```
 
-You should see `xmip.*` fixes after installation. The plan lives at
-`src/woodpecker_xmip_plugin/plans/cmip6_preprocessing.yaml`.
+You should see `xmip.*` fixes after installation. The recipe lives at
+`src/woodpecker_xmip_plugin/recipes/cmip6_preprocessing.yaml`.

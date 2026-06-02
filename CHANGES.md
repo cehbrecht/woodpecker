@@ -4,15 +4,15 @@
 
 ## 0.4.0 (2026-05-26)
 
-- Renamed the internal `woodpecker.plans` package to `woodpecker.fix_plans`.
-- Simplified the public Python API to direct `woodpecker.check/fix(..., fixes=...)` and plan-backed `woodpecker.plan.check/fix(...)`.
-- Added a read-only auto fix-plan store that exposes registered fixes as single-step plans.
-- Added API, CLI, and integration examples for auto plans.
-- Added a prototype `FixPlanCatalog` for querying multiple fix-plan sources together.
-- Added notebook examples for the auto store and `FixPlanCatalog`.
-- Added `FixPlanLoader` discovery for core, plugin, user, system, environment, and explicit plan sources.
-- Added the bundled xMIP demo plugin for inspectable CMIP6 preprocessing fixes and plans.
-- Added generated MkDocs reference pages for registered fixes and discovered fix plans.
+- Renamed the internal `woodpecker.recipes` package to `woodpecker.recipes`.
+- Simplified the public Python API to direct `woodpecker.check/fix(..., fixes=...)` and recipe-backed `woodpecker.recipe.check/fix(...)`.
+- Added a read-only auto recipe store that exposes registered fixes as single-step recipes.
+- Added API, CLI, and integration examples for auto recipes.
+- Added a prototype `RecipeCatalog` for querying multiple recipe sources together.
+- Added notebook examples for the auto store and `RecipeCatalog`.
+- Added `RecipeLoader` discovery for core, plugin, user, system, environment, and explicit recipe sources.
+- Added the bundled xMIP demo plugin for inspectable CMIP6 preprocessing fixes and recipes.
+- Added generated MkDocs reference pages for registered fixes and discovered recipes.
 - Added an interactive fix browser with searchable fix ids and stable anchors.
 - Added dedicated Concepts, CLI, and Docs Development pages.
 - Refined the README and MkDocs homepage so the README is a compact project entry point and the docs homepage is task-oriented.
@@ -20,20 +20,20 @@
 
 ## 0.3.0 (2026-05-11)
 
-- Introduced `prefix.suffix` identifiers for fixes and fix plans with alias support. Simplified plan lookup and shared identifier handling across the codebase.
+- Introduced `prefix.suffix` identifiers for fixes and recipes with alias support. Simplified recipe lookup and shared identifier handling across the codebase.
 - Simplified identifier metadata to `prefix`, `suffix`, `id`, and `aliases`.
-- Added prefix/suffix based authoring for fix-plan identifiers.
-- Restored alias resolution for fix-plan lookup and added a core fix alias example.
+- Added prefix/suffix based authoring for recipe identifiers.
+- Restored alias resolution for recipe lookup and added a core fix alias example.
 - Added synthetic climate test data.
-- Added public API integration tests for fix plans, including CMIP6, Atlas, and ESA CCI/CMIP7 examples.
-- Added a CMIP6-decadal full fix plan and removed the legacy `GroupFix` recipe abstraction.
-- Kept one source format per example fix plan, with the CMIP6 core plan using YAML.
-- Added a generated MkDocs fix-plan catalog from the integration-test plans.
-- Added notebook examples for direct fixes and fix-plan workflows.
-- Added a DuckDB fix-plan store notebook showing how to load and query plan documents.
-- Added design notes for fixes, fix plans, plan documents, stores, and catalogs.
-- Added dataset id wildcard patterns to fix-plan matching.
-- Added an integration guard that shared fix plans resolve registered core and plugin fixes.
+- Added public API integration tests for recipes, including CMIP6, Atlas, and ESA CCI/CMIP7 examples.
+- Added a CMIP6-decadal full recipe and removed the legacy `GroupFix` recipe abstraction.
+- Kept one source format per example recipe, with the CMIP6 core recipe using YAML.
+- Added a generated MkDocs recipe catalog from the integration-test recipes.
+- Added notebook examples for direct fixes and recipe workflows.
+- Added a DuckDB recipe store notebook showing how to load and query recipe documents.
+- Added design notes for fixes, recipes, recipe documents, stores, and catalogs.
+- Added dataset id wildcard patterns to recipe matching.
+- Added an integration guard that shared recipes resolve registered core and plugin fixes.
 - Render notebook examples as executed pages in the MkDocs documentation.
 - Added a docs examples overview with links to rendered notebooks and nbviewer.
 
@@ -41,14 +41,14 @@
 
 - Added minimal entry-point plugin support (`woodpecker.plugins`) for external fix discovery.
 - Moved dataset-specific fixes out of core and into external plugin packages, keeping only common fixes in `woodpecker`.
-- Added a lightweight FixPlan abstraction (`FixRef`, `FixPlan`, `apply_plan`, `load_fix_plan`) for JSON/YAML-defined fix sequences.
-- Added `FixPlanStore` backends for JSON files and DuckDB.
-- Merged workflow specification/loading into `fix_plan.py`, removed `workflow.py`, and switched CLI/API usage to plan-first semantics (`--plan`, `check_plan`, `fix_plan`).
+- Added a lightweight Recipe abstraction (`FixRef`, `Recipe`, `apply_plan`, `load_recipe`) for JSON/YAML-defined fix sequences.
+- Added `RecipeStore` backends for JSON files and DuckDB.
+- Merged workflow specification/loading into `fix_recipe.py`, removed `workflow.py`, and switched CLI/API usage to recipe-first semantics (`--recipe`, `check_plan`, `fix_plan`).
 
 ## 0.1.0 (2026-04-15)
 
 - Moved dataset I/O into `woodpecker.io` and wired API, CLI, and runner to use it.
-- Added fix plan workflow support to drive fix selection/options from JSON or YAML.
+- Added recipe workflow support to drive fix selection/options from JSON or YAML.
 - Added optional backend support (`io` and `zarr` extras) with `io-status` reporting and safe fallbacks.
 - Improved fix reporting with persistence stats and JSON output.
 - Expanded tooling and tests (Ruff, `uv` workflow, CI profiles, backend-aware tests).

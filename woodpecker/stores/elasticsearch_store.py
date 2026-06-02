@@ -1,10 +1,10 @@
-"""Placeholder Elasticsearch-backed FixPlanStore.
+"""Placeholder Elasticsearch-backed RecipeStore.
 
 This module is intentionally documentation-by-code only.
 
 Why this exists:
 - It captures the intended interface and design direction for an
-  Elasticsearch-backed `FixPlanStore`.
+  Elasticsearch-backed `RecipeStore`.
 - It keeps future work discoverable without changing current runtime behavior.
 
 Current status:
@@ -14,14 +14,14 @@ Current status:
 
 Future implementation outline:
 - Connect to Elasticsearch using the official Python client.
-- Store each `FixPlan` as one document in a dedicated index.
-- Use `plan.id` as the document id when available.
-- Implement `list_plans()` via a search/scan query over the plan index.
-- Implement `save_plan()` via indexing/upsert.
+- Store each `Recipe` as one document in a dedicated index.
+- Use `recipe.id` as the document id when available.
+- Implement `list_recipes()` via a search/scan query over the recipe index.
+- Implement `save_recipe()` via indexing/upsert.
 - Implement `lookup(dataset, path=...)` by translating dataset metadata and
   optional path hints into Elasticsearch queries.
-- Optionally validate candidate results locally with existing plan matching
-  logic (`plan_matches_dataset`) as a safety layer.
+- Optionally validate candidate results locally with existing recipe matching
+  logic (`recipe_matches_dataset`) as a safety layer.
 
 Suggested stored document shape:
 - id
@@ -42,12 +42,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from ..fix_plans.models import FixPlan
-from .base import FixPlanStore
+from ..recipes.models import Recipe
+from .base import RecipeStore
 
 
-class ElasticsearchFixPlanStore(FixPlanStore):
-    """Design stub for a future Elasticsearch-backed plan store.
+class ElasticsearchRecipeStore(RecipeStore):
+    """Design stub for a future Elasticsearch-backed recipe store.
 
     The shape of this class mirrors other store implementations (for example,
     the DuckDB-backed store) so future wiring can be straightforward.
@@ -55,7 +55,7 @@ class ElasticsearchFixPlanStore(FixPlanStore):
     Parameters
     ----------
     index
-        Elasticsearch index name intended for fix plan documents.
+        Elasticsearch index name intended for recipe documents.
     hosts
         Optional Elasticsearch host(s) configuration to use when constructing
         a client in a future implementation.
@@ -67,7 +67,7 @@ class ElasticsearchFixPlanStore(FixPlanStore):
 
     def __init__(
         self,
-        index: str = "woodpecker-fix-plans",
+        index: str = "woodpecker-recipes",
         hosts: list[str] | None = None,
         api_key: str | None = None,
         ca_certs: str | Path | None = None,
@@ -90,7 +90,7 @@ class ElasticsearchFixPlanStore(FixPlanStore):
             import elasticsearch
         except ImportError as exc:  # pragma: no cover - env-dependent
             raise RuntimeError(
-                "ElasticsearchFixPlanStore requires optional dependency "
+                "ElasticsearchRecipeStore requires optional dependency "
                 "'elasticsearch'. Install with: pip install elasticsearch"
             ) from exc
         return elasticsearch
@@ -106,42 +106,42 @@ class ElasticsearchFixPlanStore(FixPlanStore):
 
         self._import_elasticsearch()
         raise NotImplementedError(
-            "ElasticsearchFixPlanStore is a placeholder. Client creation is not implemented yet."
+            "ElasticsearchRecipeStore is a placeholder. Client creation is not implemented yet."
         )
 
-    def list_plans(self) -> list[FixPlan]:
-        """List all stored `FixPlan` documents.
+    def list_recipes(self) -> list[Recipe]:
+        """List all stored `Recipe` documents.
 
         Future behavior may execute a search/scan query and decode each hit
-        into a `FixPlan` instance.
+        into a `Recipe` instance.
         """
 
         raise NotImplementedError(
-            "ElasticsearchFixPlanStore is a placeholder. list_plans() is not implemented yet."
+            "ElasticsearchRecipeStore is a placeholder. list_recipes() is not implemented yet."
         )
 
-    def save_plan(self, plan: FixPlan) -> None:
-        """Persist a `FixPlan` document.
+    def save_recipe(self, recipe: Recipe) -> None:
+        """Persist a `Recipe` document.
 
-        Future behavior may index or upsert the plan document, using `plan.id`
+        Future behavior may index or upsert the recipe document, using `recipe.id`
         as the Elasticsearch document id when present.
         """
 
-        _ = plan
+        _ = recipe
         raise NotImplementedError(
-            "ElasticsearchFixPlanStore is a placeholder. save_plan() is not implemented yet."
+            "ElasticsearchRecipeStore is a placeholder. save_recipe() is not implemented yet."
         )
 
-    def lookup(self, dataset: Any, path: str | None = None) -> list[FixPlan]:
-        """Return plans likely matching a dataset and optional file path.
+    def lookup(self, dataset: Any, path: str | None = None) -> list[Recipe]:
+        """Return recipes likely matching a dataset and optional file path.
 
         Future behavior may:
         - build Elasticsearch queries from dataset attrs/path signals,
-        - fetch candidate plans,
-        - optionally run local `plan_matches_dataset` validation for safety.
+        - fetch candidate recipes,
+        - optionally run local `recipe_matches_dataset` validation for safety.
         """
 
         _ = (dataset, path)
         raise NotImplementedError(
-            "ElasticsearchFixPlanStore is a placeholder. lookup() is not implemented yet."
+            "ElasticsearchRecipeStore is a placeholder. lookup() is not implemented yet."
         )

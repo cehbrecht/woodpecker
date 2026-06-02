@@ -5,13 +5,13 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
-from ..fix_plans.matcher import plan_matches_dataset
-from ..fix_plans.models import DatasetMatcher, FixPlan, FixRef
-from .base import FixPlanStore
-from .index import FixPlanIndex
+from ..recipes.matcher import recipe_matches_dataset
+from ..recipes.models import DatasetMatcher, FixRef, Recipe
+from .base import RecipeStore
+from .index import RecipeIndex
 
 
-class DuckDBFixPlanStore(FixPlanStore):
+class DuckDBRecipeStore(RecipeStore):
     def __init__(self, path: str | Path | None = None):
         # Use an in-memory database when no path is provided.
         self._is_in_memory = path is None or str(path) == ":memory:"
@@ -26,7 +26,7 @@ class DuckDBFixPlanStore(FixPlanStore):
             import duckdb
         except ImportError as exc:  # pragma: no cover - exercised in environments without duckdb
             raise RuntimeError(
-                "DuckDBFixPlanStore requires optional dependency 'duckdb'. Install with: pip install duckdb (or pip install 'woodpecker[full]')"
+                "DuckDBRecipeStore requires optional dependency 'duckdb'. Install with: pip install duckdb (or pip install 'woodpecker[full]')"
             ) from exc
         return duckdb
 
@@ -59,7 +59,7 @@ class DuckDBFixPlanStore(FixPlanStore):
         with self._connection() as con:
             con.execute(
                 """
-                CREATE TABLE IF NOT EXISTS fix_plans (
+                CREATE TABLE IF NOT EXISTS recipes (
                     id TEXT PRIMARY KEY,
                     aliases_json TEXT,
                     description TEXT,
@@ -68,22 +68,22 @@ class DuckDBFixPlanStore(FixPlanStore):
                 )
                 """
             )
-            con.execute("ALTER TABLE fix_plans ADD COLUMN IF NOT EXISTS aliases_json TEXT")
+            con.execute("ALTER TABLE recipes ADD COLUMN IF NOT EXISTS aliases_json TEXT")
 
-    def list_plans(self) -> list[FixPlan]:
+    def list_recipes(self) -> list[Recipe]:
         with self._connection() as con:
             rows = con.execute(
-                "SELECT id, aliases_json, description, match_json, steps_json FROM fix_plans ORDER BY id"
+                "SELECT id, aliases_json, description, match_json, steps_json FROM recipes ORDER BY id"
             ).fetchall()
 
-        plans: list[FixPlan] = []
-        for plan_id, aliases_json, description, match_json, steps_json in rows:
+        recipes: list[Recipe] = []
+        for recipe_id, aliases_json, description, match_json, steps_json in rows:
             aliases_payload = json.loads(aliases_json) if aliases_json else []
             match_payload = json.loads(match_json) if match_json else None
             steps_payload = json.loads(steps_json) if steps_json else []
-            plans.append(
-                FixPlan(
-                    id=str(plan_id),
+            recipes.append(
+                Recipe(
+                    id=str(recipe_id),
                     aliases=list(aliases_payload) if isinstance(aliases_payload, list) else [],
                     description=str(description or ""),
                     match=DatasetMatcher.model_validate(match_payload)
@@ -92,21 +92,21 @@ class DuckDBFixPlanStore(FixPlanStore):
                     steps=[FixRef.model_validate(item) for item in steps_payload],
                 )
             )
-        return plans
+        return recipes
 
-    def save_plan(self, plan: FixPlan) -> None:
-        aliases_json = json.dumps(list(plan.aliases))
-        match_json = json.dumps(plan.match.model_dump()) if plan.match is not None else None
-        steps_json = json.dumps([item.model_dump() for item in plan.steps])
-        plan_id = FixPlanIndex.plan_id(plan)
+    def save_recipe(self, recipe: Recipe) -> None:
+        aliases_json = json.dumps(list(recipe.aliases))
+        match_json = json.dumps(recipe.match.model_dump()) if recipe.match is not None else None
+        steps_json = json.dumps([item.model_dump() for item in recipe.steps])
+        recipe_id = RecipeIndex.recipe_id(recipe)
 
         with self._connection() as con:
             con.execute(
                 """
-                INSERT OR REPLACE INTO fix_plans (id, aliases_json, description, match_json, steps_json)
+                INSERT OR REPLACE INTO recipes (id, aliases_json, description, match_json, steps_json)
                 VALUES (?, ?, ?, ?, ?)
                 """,
-                [plan_id, aliases_json, plan.description, match_json, steps_json],
+                [recipe_id, aliases_json, recipe.description, match_json, steps_json],
             )
 
     @staticmethod
@@ -124,9 +124,9 @@ class DuckDBFixPlanStore(FixPlanStore):
         return [FixRef.model_validate(item) for item in steps_payload]
 
     def _candidate_query(self, dataset: Any) -> tuple[str, list[Any]]:
-        """Build a coarse SQL prefilter; exact plan matching is done in Python."""
+        """Build a coarse SQL prefilter; exact recipe matching is done in Python."""
 
-        sql = "SELECT id, aliases_json, description, match_json, steps_json FROM fix_plans"
+        sql = "SELECT id, aliases_json, description, match_json, steps_json FROM recipes"
         dataset_attrs = getattr(dataset, "attrs", None)
         if not isinstance(dataset_attrs, dict):
             dataset_attrs = dict(dataset_attrs or {})
@@ -151,27 +151,27 @@ class DuckDBFixPlanStore(FixPlanStore):
         sql += " ORDER BY id"
         return sql, params
 
-    def lookup(self, dataset: Any, path: str | None = None) -> list[FixPlan]:
+    def lookup(self, dataset: Any, path: str | None = None) -> list[Recipe]:
         sql, params = self._candidate_query(dataset)
         with self._connection() as con:
             rows = con.execute(sql, params).fetchall()
 
-        matched: list[FixPlan] = []
-        for plan_id, aliases_json, description, match_json, steps_json in rows:
+        matched: list[Recipe] = []
+        for recipe_id, aliases_json, description, match_json, steps_json in rows:
             aliases_payload = json.loads(aliases_json) if aliases_json else []
             matcher = self._parse_matcher(match_json)
-            candidate = FixPlan(
-                id=str(plan_id),
+            candidate = Recipe(
+                id=str(recipe_id),
                 aliases=list(aliases_payload) if isinstance(aliases_payload, list) else [],
                 description=str(description or ""),
                 match=matcher,
                 steps=[],
             )
-            if not plan_matches_dataset(candidate, dataset, path=path):
+            if not recipe_matches_dataset(candidate, dataset, path=path):
                 continue
 
             matched.append(
-                FixPlan(
+                Recipe(
                     id=candidate.id,
                     aliases=candidate.aliases,
                     description=candidate.description,

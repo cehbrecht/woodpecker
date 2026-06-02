@@ -55,12 +55,12 @@ woodpecker fix . --select cmip6_decadal.time_metadata --dry-run
 woodpecker fix . --select cmip6_decadal.time_metadata --force-apply
 woodpecker check . --select woodpecker.normalize_tas_units_to_kelvin --strict-io
 woodpecker fix . --select woodpecker.normalize_tas_units_to_kelvin --strict-io
-woodpecker fix --plan plan.json
+woodpecker fix --recipe recipe.json
 ```
 
 Notes:
 - In write mode, JSON output exits with status 1 if any persistence operation fails.
-- `--force-apply` bypasses `matches()` prefiltering and requires explicit fix selection (`--select` or plan-provided identifiers).
+- `--force-apply` bypasses `matches()` prefiltering and requires explicit fix selection (`--select` or recipe-provided identifiers).
 - `--strict-io` changes input loading to fail fast instead of warning and falling back when a backend is unavailable or a read fails.
 
 ## Core Concepts
@@ -74,21 +74,21 @@ at runtime, including through plugin entry points.
 ### Design Overview
 
 Woodpecker separates executable fix functions from user-facing fixes and fix
-plans.
+recipes.
 
 - A **fix function** is implementation code and can be selected directly via API/CLI.
 - A **fix** is a fix function plus optional runtime options.
-- A **fix plan** is a recipe for users: ordered steps, options, matching rules, and links.
-- A **fix-plan document** serializes one or more plans in JSON or YAML.
-- A **fix-plan store** is a query backend for plans (list/load/save/get-by-id/match).
-- `FixPlanLoader` coordinates fix-plan documents from explicit paths,
-  `WOODPECKER_FIX_PLAN_PATH`, user config directories, system directories,
-  core package resources, and installed plugin `plans/` resources.
-- `AutoFixPlanStore` is the read-only store that exposes registered fix functions as implicit one-step plans.
-- A **fix-plan catalog** aggregates one or more plan sources behind one surface.
+- A **recipe** is a user workflow with ordered steps, options, matching rules, and links.
+- A **recipe document** serializes one or more recipes in JSON or YAML.
+- A **recipe store** is a query backend for recipes (list/load/save/get-by-id/match).
+- `RecipeLoader` coordinates recipe documents from explicit paths,
+  `WOODPECKER_RECIPE_PATH`, user config directories, system directories,
+  core package resources, and installed plugin `recipes/` resources.
+- `AutoRecipeStore` is the read-only store that exposes registered fix functions as implicit one-step recipes.
+- A **recipe catalog** aggregates one or more recipe sources behind one surface.
 
-The current `FixPlanCatalog` prototype can list plans, find matching plans,
-resolve ids and aliases, and deduplicate by plan id using source order.
+The current `RecipeCatalog` prototype can list recipes, find matching recipes,
+resolve ids and aliases, and deduplicate by recipe id using source order.
 
 Default plugin prefix behavior:
 
@@ -98,11 +98,11 @@ Default plugin prefix behavior:
 Identifier spaces are intentionally separate:
 
 - fix lookup uses `fix_id`
-- plan lookup uses `plan_id`
+- recipe lookup uses `recipe_id`
 
 Use these labels consistently in APIs and docs to avoid ambiguity.
 
-Plan matching is extensible and currently AND-based across available rule types:
+Recipe matching is extensible and currently AND-based across available rule types:
 
 - `attrs`: exact metadata key/value constraints
 - `dataset_id_patterns`: wildcard patterns matched against dataset identity metadata
@@ -110,12 +110,12 @@ Plan matching is extensible and currently AND-based across available rule types:
 
 Discovery direction:
 
-- Prefer explicit fix plans for user workflows because they carry matching,
+- Prefer explicit recipes for user workflows because they carry matching,
   options, links, and step ordering.
-- Auto-store one-step plans from registered fix functions remain useful for lightweight
+- Auto-store one-step recipes from registered fix functions remain useful for lightweight
   discovery and early development.
-- Plugins may ship only fix functions; if they later ship plans, those plans should be
-  placed in the package `plans/` resource directory and reference plugin fixes
+- Plugins may ship only fix functions; if they later ship recipes, those recipes should be
+  placed in the package `recipes/` resource directory and reference plugin fixes
   by normal `prefix.suffix` ids.
 
 ## Adding or Updating Fix Functions
@@ -137,7 +137,7 @@ Use existing fixes as examples and keep behavior deterministic.
 
 ### Fix Function Identifiers
 
-Every fix function and plan has a stable, scoped identifier:
+Every fix function and recipe has a stable, scoped identifier:
 
 - `prefix`: owning namespace, for example `cmip6_decadal`, `atlas`, `woodpecker`
 - `suffix`: snake_case identifier unique within that prefix
@@ -149,8 +149,8 @@ Examples:
 - `atlas.encoding_cleanup`
 - `woodpecker.normalize_tas_units_to_kelvin`
 
-Ids are stored in plans, used on the CLI, and resolved through the identifier
-resolver. Use full ids (`prefix.suffix`) in plans and examples.
+Ids are stored in recipes, used on the CLI, and resolved through the identifier
+resolver. Use full ids (`prefix.suffix`) in recipes and examples.
 
 Aliases are additional suffix names. They resolve to the same id and do not
 change the prefix.
@@ -176,31 +176,31 @@ The registry validates these and derives:
 id = "cmip6_decadal.time_metadata"
 ```
 
-## Fix Plan Files
+## Recipe Files
 
-Woodpecker uses one schema for both plan files and plan stores:
+Woodpecker uses one schema for both recipe files and recipe stores:
 
-- `FixPlanDocument`: top-level container with `plans: [...]`.
-- `FixPlan`: plan entry with `id`, `description`, optional `match`, ordered `steps`, optional `links`.
+- `RecipeDocument`: top-level container with `recipes: [...]`.
+- `Recipe`: recipe entry with `id`, `description`, optional `match`, ordered `steps`, optional `links`.
 - `FixRef`: each step entry (`id`, optional `options`, optional `links`).
 
-Common `FixPlan` fields:
+Common `Recipe` fields:
 
-- `id`: plan identifier, for example `atlas.basic`.
+- `id`: recipe identifier, for example `atlas.basic`.
 - `description`: optional human-readable description.
 - `match.attrs`: key/value attribute matcher for dataset metadata.
 - `match.path_patterns`: optional fnmatch-style path patterns.
 - `steps`: ordered list of fix refs. Each item can be a string id or object with `id` and `options`.
 - `links`: optional list of `{rel, href, title?}` references (errata/issues/docs).
 
-Minimal `FixPlanDocument` example:
+Minimal `RecipeDocument` example:
 
 ```json
 {
-  "plans": [
+  "recipes": [
     {
       "id": "atlas.basic",
-      "description": "ATLAS plan",
+      "description": "ATLAS recipe",
       "match": {
         "path_patterns": ["*atlas*.nc"]
       },
@@ -211,7 +211,7 @@ Minimal `FixPlanDocument` example:
     },
     {
       "id": "cmip7.esa_cci_zarr",
-      "description": "Default ESA CCI zarr plan",
+      "description": "Default ESA CCI zarr recipe",
       "match": {
         "path_patterns": ["*ESACCI-WATERVAPOUR-*.zarr"]
       },
@@ -227,62 +227,62 @@ Minimal `FixPlanDocument` example:
 Python authoring helpers can generate the same document schema:
 
 ```python
-from woodpecker.fix_plans import fix, plan
+from woodpecker.recipes import fix, recipe
 
 atlas_basic = (
-    plan("atlas.basic", fix("atlas.encoding_cleanup"))
+    recipe("atlas.basic", fix("atlas.encoding_cleanup"))
     .match(path_patterns=["*atlas*.nc"])
 )
 
-atlas_basic.to_yaml("atlas_basic_plan.yaml")
+atlas_basic.to_yaml("atlas_basic_recipe.yaml")
 ```
 
-Single-plan shorthand is also supported by the loader: a top-level object
-with `steps` is treated as a one-plan document.
+Single-recipe shorthand is also supported by the loader: a top-level object
+with `steps` is treated as a one-recipe document.
 
 CLI override rule:
 
-- Explicit CLI options (for example `--select`, `--dataset`, `--category`) take precedence over plan-derived defaults.
+- Explicit CLI options (for example `--select`, `--dataset`, `--category`) take precedence over recipe-derived defaults.
 
 Load and run from file:
 
 ```bash
-woodpecker check --plan plan.json
-woodpecker fix --plan plan.json --dry-run
+woodpecker check --recipe recipe.json
+woodpecker fix --recipe recipe.json --dry-run
 ```
 
-## Fix Plan Stores
+## Recipe Stores
 
-A fix plan store is a lookup layer that returns matching `FixPlan`s for a
-dataset. Plans can be retrieved by id or alias.
+A recipe store is a lookup layer that returns matching `Recipe`s for a dataset.
+Recipes can be retrieved by id or alias.
 
 Current backends:
 
-- Catalog (`FixPlanLoader` discovery, read-only)
+- Catalog (`RecipeLoader` discovery, read-only)
 - JSON
 - DuckDB
-- Auto (`AutoFixPlanStore`, read-only)
+- Auto (`AutoRecipeStore`, read-only)
 
-Plans are accessed through the CLI:
+Recipes are accessed through the CLI:
 
 - `--store`: backend type (`catalog`, `json`, `duckdb`, or `auto`; default: `json` for check/fix)
-- `--plan`: store location or an extra catalog file/directory
-- `--plan-id`: optionally select a specific plan by id
+- `--recipe`: store location or an extra catalog file/directory
+- `--recipe-id`: optionally select a specific recipe by id
 
-When `--store catalog` or `--store auto` is used, `--plan` is not required.
-`woodpecker check . --plan-id ...` also uses the discovered catalog when no
-explicit `--plan` is provided.
+When `--store catalog` or `--store auto` is used, `--recipe` is not required.
+`woodpecker check . --recipe-id ...` also uses the discovered catalog when no
+explicit `--recipe` is provided.
 
 Examples:
 
 ```bash
-woodpecker check --store json --plan plans.json
-woodpecker check --plan-id cmip6.core_units
-woodpecker list-plans
-woodpecker check --store duckdb --plan plans.duckdb
-woodpecker check --store auto --plan-id woodpecker.normalize_tas_units_to_kelvin
-woodpecker fix --plan plans.json --plan-id atlas.encoding_cleanup_suite
-woodpecker list-plans --store duckdb --plan plans.duckdb --format json
+woodpecker check --store json --recipe recipes.json
+woodpecker check --recipe-id cmip6.core_units
+woodpecker list-recipes
+woodpecker check --store duckdb --recipe recipes.duckdb
+woodpecker check --store auto --recipe-id woodpecker.normalize_tas_units_to_kelvin
+woodpecker fix --recipe recipes.json --recipe-id atlas.encoding_cleanup_suite
+woodpecker list-recipes --store duckdb --recipe recipes.duckdb --format json
 ```
 
 ## Plugins
@@ -365,9 +365,9 @@ assert result.changed >= 0
 strict_findings = woodpecker.check(ds, fixes="atlas.encoding_cleanup", strict_io=True)
 strict_result = woodpecker.fix(ds, fixes="atlas.encoding_cleanup", dry_run=False, strict_io=True)
 
-# Fix plan helpers
-findings_plan = woodpecker.plan.check(["./data"], "plan.json")
-result_plan = woodpecker.plan.fix(ds, "plan.json", dry_run=False)
+# Recipe helpers
+findings_recipe = woodpecker.recipe.check(["./data"], "recipe.json")
+result_recipe = woodpecker.recipe.fix(ds, "recipe.json", dry_run=False)
 
 # Path input works as well
 findings_from_paths = woodpecker.check(
@@ -384,7 +384,7 @@ like executable examples and use synthetic climate datasets where possible.
 Interim plugin-testing policy (current state):
 
 - Keep cross-plugin integration tests in core under `tests/integration` until
-  plugin interfaces and plan contracts are stable.
+  plugin interfaces and recipe contracts are stable.
 - Keep plugin-local unit tests in each plugin package under
   `plugins/*/tests`.
 - Revisit moving integration coverage into plugin repositories when plugin

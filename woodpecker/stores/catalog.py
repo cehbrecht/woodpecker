@@ -2,53 +2,53 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
-from ..fix_plans.models import FixPlan
-from .base import FixPlanStore
-from .index import FixPlanIndex
+from ..recipes.models import Recipe
+from .base import RecipeStore
+from .index import RecipeIndex
 
 
-class FixPlanCatalog(FixPlanStore):
-    """Aggregate multiple fix-plan sources into one read-only query surface."""
+class RecipeCatalog(RecipeStore):
+    """Aggregate multiple recipe sources into one read-only query surface."""
 
-    def __init__(self, sources: Iterable[FixPlanStore]):
+    def __init__(self, sources: Iterable[RecipeStore]):
         self.sources = list(sources)
 
     @staticmethod
-    def _deduplicate(plans: Iterable[FixPlan]) -> list[FixPlan]:
-        out: list[FixPlan] = []
+    def _deduplicate(recipes: Iterable[Recipe]) -> list[Recipe]:
+        out: list[Recipe] = []
         positions: dict[str, int] = {}
-        for plan in plans:
-            plan_id = FixPlanIndex.plan_id(plan)
-            if plan_id in positions:
-                idx = positions[plan_id]
+        for recipe in recipes:
+            recipe_id = RecipeIndex.recipe_id(recipe)
+            if recipe_id in positions:
+                idx = positions[recipe_id]
                 existing = out[idx]
                 aliases = list(existing.aliases)
-                for alias in plan.aliases:
+                for alias in recipe.aliases:
                     if alias not in aliases:
                         aliases.append(alias)
                 payload = existing.model_dump()
                 payload["aliases"] = aliases
-                out[idx] = FixPlan.model_validate(payload)
+                out[idx] = Recipe.model_validate(payload)
                 continue
-            positions[plan_id] = len(out)
-            out.append(plan)
+            positions[recipe_id] = len(out)
+            out.append(recipe)
         return out
 
-    def list_plans(self) -> list[FixPlan]:
-        plans: list[FixPlan] = []
+    def list_recipes(self) -> list[Recipe]:
+        recipes: list[Recipe] = []
         for source in self.sources:
-            plans.extend(source.list_plans())
-        return self._deduplicate(plans)
+            recipes.extend(source.list_recipes())
+        return self._deduplicate(recipes)
 
-    def lookup(self, dataset: Any, path: str | None = None) -> list[FixPlan]:
-        plans: list[FixPlan] = []
+    def lookup(self, dataset: Any, path: str | None = None) -> list[Recipe]:
+        recipes: list[Recipe] = []
         for source in self.sources:
-            plans.extend(source.lookup(dataset, path=path))
-        return self._deduplicate(plans)
+            recipes.extend(source.lookup(dataset, path=path))
+        return self._deduplicate(recipes)
 
-    def get_plan(self, identifier: str) -> FixPlan:
-        return FixPlanIndex(self.list_plans()).get(identifier)
+    def get_recipe(self, identifier: str) -> Recipe:
+        return RecipeIndex(self.list_recipes()).get(identifier)
 
-    def save_plan(self, plan: FixPlan) -> None:
-        _ = plan
-        raise NotImplementedError("FixPlanCatalog is read-only.")
+    def save_recipe(self, recipe: Recipe) -> None:
+        _ = recipe
+        raise NotImplementedError("RecipeCatalog is read-only.")

@@ -32,7 +32,7 @@ def test_identifier_rules_derive_suffix_from_name_uses_domain_class_names():
         IdentifierRules.derive_suffix_from_name("NormalizeTasUnitsToKelvin")
         == "normalize_tas_units_to_kelvin"
     )
-    assert IdentifierRules.derive_suffix_from_name("AtlasMonitoringPlan") == "atlas_monitoring"
+    assert IdentifierRules.derive_suffix_from_name("AtlasMonitoringRecipe") == "atlas_monitoring"
 
 
 def test_identifier_rules_expand_aliases_for_suffix_and_qualified_values():
@@ -114,7 +114,7 @@ def test_coerce_scoped_identifier_builds_identifier_set_from_id():
         id="atlas.basic",
         suffix="",
         prefix="",
-        id_label="FixPlan.id",
+        id_label="Recipe.id",
     )
 
     assert resolved.id == "atlas.basic"
