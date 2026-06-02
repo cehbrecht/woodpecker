@@ -97,6 +97,8 @@ def test_recipe_api_catalog_selector_resolves_plugin_recipe():
         }
     )
 
-    findings = woodpecker.recipe.check(dataset, woodpecker.recipe.catalog("xmip.cmip6_preprocessing"))
+    findings = woodpecker.recipe.check(
+        dataset, woodpecker.recipe.catalog("xmip.cmip6_preprocessing")
+    )
 
     assert "xmip.fix_known_cmip6_metadata" in findings.fix_ids

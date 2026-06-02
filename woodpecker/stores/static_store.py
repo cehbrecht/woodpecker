@@ -17,7 +17,9 @@ class StaticRecipeStore(RecipeStore):
         return list(self._plans)
 
     def lookup(self, dataset: Any, path: str | None = None) -> list[Recipe]:
-        return [recipe for recipe in self._plans if recipe_matches_dataset(recipe, dataset, path=path)]
+        return [
+            recipe for recipe in self._plans if recipe_matches_dataset(recipe, dataset, path=path)
+        ]
 
     def save_recipe(self, recipe: Recipe) -> None:
         _ = recipe

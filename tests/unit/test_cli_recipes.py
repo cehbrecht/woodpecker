@@ -336,7 +336,9 @@ def test_load_recipes_from_auto_store_without_source_plan(
 
     assert result.exit_code == 0
     payload = json.loads(Path("target.json").read_text(encoding="utf-8"))
-    assert [item["id"] for item in payload["recipes"]] == ["woodpecker.normalize_tas_units_to_kelvin"]
+    assert [item["id"] for item in payload["recipes"]] == [
+        "woodpecker.normalize_tas_units_to_kelvin"
+    ]
 
 
 def test_load_recipes_requires_source_recipe_location(

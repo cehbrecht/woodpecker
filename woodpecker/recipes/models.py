@@ -309,12 +309,18 @@ class RecipeDocument(BaseModel):
         schema_version = _coerce_schema_version(payload.get("schema_version", 1))
         raw_recipes = payload.get("recipes")
         if raw_recipes is None:
-            recipe_payload = {key: value for key, value in payload.items() if key != "schema_version"}
-            return cls(schema_version=schema_version, recipes=[Recipe.model_validate(recipe_payload)])
+            recipe_payload = {
+                key: value for key, value in payload.items() if key != "schema_version"
+            }
+            return cls(
+                schema_version=schema_version, recipes=[Recipe.model_validate(recipe_payload)]
+            )
         raw_recipes = _list_or_empty(raw_recipes, label="RecipeDocument 'recipes'")
         return cls(
             schema_version=schema_version,
-            recipes=[Recipe.model_validate(item) for item in raw_recipes if isinstance(item, Mapping)],
+            recipes=[
+                Recipe.model_validate(item) for item in raw_recipes if isinstance(item, Mapping)
+            ],
         )
 
     @classmethod

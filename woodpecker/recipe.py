@@ -46,7 +46,9 @@ def get(recipe_id: str, recipe: str | Path | None = None) -> Recipe:
 
 def list_recipes(recipe: str | Path | None = None) -> list[Recipe]:
     """List discovered recipes."""
-    return create_recipe_store("catalog", Path(recipe) if recipe is not None else None).list_recipes()
+    return create_recipe_store(
+        "catalog", Path(recipe) if recipe is not None else None
+    ).list_recipes()
 
 
 def _normalize_fixes(fixes: str | Sequence[str] | None) -> tuple[str, ...]:

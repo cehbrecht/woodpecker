@@ -88,7 +88,9 @@ def test_generate_recipe_catalog_can_load_discovered_recipe_sources():
     generator = _load_generator_module()
 
     recipes = generator.load_discovered_recipes()
-    recipe_by_id = {recipe.id: (recipe, source_files, source) for recipe, source_files, source in recipes}
+    recipe_by_id = {
+        recipe.id: (recipe, source_files, source) for recipe, source_files, source in recipes
+    }
 
     assert "cmip6.core_units" in recipe_by_id
     _, source_files, source = recipe_by_id["cmip6.core_units"]

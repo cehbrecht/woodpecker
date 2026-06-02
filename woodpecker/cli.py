@@ -128,7 +128,9 @@ def list_recipes(store_type: str, recipe_location: Path | None, fmt: str):
     show_default=True,
     help="Source RecipeStore backend for --from-recipe location.",
 )
-@click.option("--recipe-id", "recipe_id", default=None, help="Load only this recipe id from source.")
+@click.option(
+    "--recipe-id", "recipe_id", default=None, help="Load only this recipe id from source."
+)
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def load_recipes(
     store_type: str,

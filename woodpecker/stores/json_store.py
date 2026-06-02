@@ -83,5 +83,7 @@ class JsonRecipeStore(RecipeStore):
 
     def lookup(self, dataset: Any, path: str | None = None) -> list[Recipe]:
         return [
-            recipe for recipe in self.list_recipes() if recipe_matches_dataset(recipe, dataset, path=path)
+            recipe
+            for recipe in self.list_recipes()
+            if recipe_matches_dataset(recipe, dataset, path=path)
         ]

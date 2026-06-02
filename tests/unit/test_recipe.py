@@ -452,7 +452,9 @@ def test_cmip7_plan_document_uses_plugin_fix_codes_in_order(tmp_path):
 
     ds = xr.Dataset()
     target = "/tmp/CMIP7.CMIP.synthetic.case.zarr"
-    matched = [recipe for recipe in document.recipes if recipe_matches_dataset(recipe, ds, path=target)]
+    matched = [
+        recipe for recipe in document.recipes if recipe_matches_dataset(recipe, ds, path=target)
+    ]
 
     assert matched
     recipe = matched[0]
