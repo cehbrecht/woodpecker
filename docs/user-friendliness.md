@@ -4,6 +4,34 @@ This page collects product and documentation ideas that could make Woodpecker
 easier to understand, trust, and use. These are recommendations for later work,
 not current feature guarantees.
 
+## Lead With Recipes
+
+Users often think in workflows rather than implementation concepts. Make
+`recipe` the main user-facing word for curated, reusable repair workflows.
+
+Example:
+
+```bash
+woodpecker fix file.nc --recipe xmip.cmip6_preprocessing
+```
+
+Possible recipe names could be oriented around user goals:
+
+- prepare CMIP6 for xarray,
+- clean CMIP6 before publishing,
+- normalize xMIP-style CMIP6 preprocessing,
+- clean C3S Atlas output.
+
+Internally these recipes can still be fix plans. In user documentation, CLI
+messages, and notebooks, prefer `recipe` when the object represents a
+ready-to-run workflow. Keep `fix plan` for contributor docs, schemas, storage
+backends, and API internals.
+
+ESMValTool already uses the word recipe for configured analysis workflows. That
+can help users understand the idea quickly, as long as Woodpecker documentation
+is explicit that these are repair recipes for checking and fixing datasets, not
+ESMValTool diagnostic recipes.
+
 ## Explain Fixes In Plain Language
 
 Add an explanation surface for each fix function, for example through
@@ -55,9 +83,9 @@ Useful preview sections could include:
 
 The preview should be available from both Python and the CLI.
 
-## Expand Pythonic Plan Builder Examples
+## Expand Pythonic Recipe Examples
 
-Continue developing copy-pasteable examples for the Python plan builder. Many
+Continue developing copy-pasteable examples for the Python builder. Many
 users will be more comfortable writing a small Python recipe than editing JSON
 or YAML by hand.
 
@@ -73,27 +101,7 @@ cmip6 = plan("cmip6.cleanup").steps(
 ```
 
 These examples should show how to generate JSON or YAML when users need a
-shareable plan file.
-
-## Introduce Recipes Or Profiles
-
-Users often think in workflows rather than implementation concepts. Consider
-using user-facing terms such as recipes or profiles for curated plans.
-
-Example:
-
-```bash
-woodpecker fix file.nc --recipe xmip.cmip6_preprocessing
-```
-
-Possible recipe names could be oriented around user goals:
-
-- prepare CMIP6 for xarray,
-- clean CMIP6 before publishing,
-- normalize xMIP-style CMIP6 preprocessing,
-- clean C3S Atlas output.
-
-Internally these recipes can still be fix plans.
+shareable recipe file or contributor-facing plan document.
 
 ## Add Confidence Or Risk Labels
 
@@ -117,7 +125,6 @@ prefer simpler user-facing words in everyday workflows:
 
 - check,
 - fix,
-- plan,
 - recipe,
 - preview.
 
@@ -137,6 +144,7 @@ previews are rich enough to support informed decisions.
 
 ## Highest-Impact Recommendation
 
-The strongest next usability investment is excellent preview and diff output.
-If users can see exactly what Woodpecker will do before it changes anything,
-they can build trust in the tool much faster.
+The strongest next usability investment is to lead with recipes and pair them
+with excellent preview and diff output. Recipes give users the right mental
+model for reusable workflows; previews show exactly what Woodpecker will do
+before it changes anything.
