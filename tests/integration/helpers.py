@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from woodpecker import check, fix, plan
+from woodpecker import check, fix, recipe
 
 CORE_FIX_IDS = {
     "woodpecker.normalize_tas_units_to_kelvin",
@@ -11,8 +11,8 @@ CORE_FIX_IDS = {
 }
 
 
-def write_plan_document(path: Path, plans: list[dict]) -> Path:
-    path.write_text(json.dumps({"plans": plans}), encoding="utf-8")
+def write_recipe_document(path: Path, recipes: list[dict]) -> Path:
+    path.write_text(json.dumps({"recipes": recipes}), encoding="utf-8")
     return path
 
 
@@ -83,29 +83,29 @@ def assert_check_fix_cycle(
 
 
 def assert_plan_check_fix_cycle(
-    plan_source,
+    recipe_source,
     dataset,
     *,
     expected_fix_ids: tuple[str, ...],
     expected_changed: int,
     assert_fixed,
     assert_unchanged=None,
-    plan_id: str | None = None,
+    recipe_id: str | None = None,
 ) -> None:
-    """Exercise the plan API from finding through dry-run, write, and re-check."""
-    findings = plan.check(dataset, plan_source, plan_id=plan_id)
+    """Exercise the recipe API from finding through dry-run, write, and re-check."""
+    findings = recipe.check(dataset, recipe_source, recipe_id=recipe_id)
 
     assert unique_in_order(findings.fix_ids) == expected_fix_ids
 
-    preview = plan.fix(dataset, plan_source, dry_run=True, plan_id=plan_id)
+    preview = recipe.fix(dataset, recipe_source, dry_run=True, recipe_id=recipe_id)
     assert preview.changed == expected_changed
     assert preview.persisted == 0
     if assert_unchanged is not None:
         assert_unchanged(dataset)
 
-    write = plan.fix(dataset, plan_source, dry_run=False, plan_id=plan_id)
+    write = recipe.fix(dataset, recipe_source, dry_run=False, recipe_id=recipe_id)
     assert write.changed == expected_changed
     assert write.persisted == 1
     assert_fixed(dataset)
 
-    assert not plan.check(dataset, plan_source, plan_id=plan_id)
+    assert not recipe.check(dataset, recipe_source, recipe_id=recipe_id)

@@ -1,19 +1,19 @@
-"""Fix plan stores (lookup/persistence only)."""
+"""Recipe stores (lookup/persistence only)."""
 
-from .auto_store import AutoFixPlanStore
-from .base import FixPlanStore
-from .catalog import FixPlanCatalog
-from .duckdb_store import DuckDBFixPlanStore
-from .index import FixPlanIndex
-from .json_store import JsonFixPlanStore
-from .static_store import StaticFixPlanStore
+from .auto_store import AutoRecipeStore
+from .base import RecipeStore
+from .catalog import RecipeCatalog
+from .duckdb_store import DuckDBRecipeStore
+from .index import RecipeIndex
+from .json_store import JsonRecipeStore
+from .static_store import StaticRecipeStore
 
 __all__ = [
-    "AutoFixPlanStore",
-    "FixPlanCatalog",
-    "FixPlanStore",
-    "FixPlanIndex",
-    "JsonFixPlanStore",
-    "StaticFixPlanStore",
-    "DuckDBFixPlanStore",
+    "AutoRecipeStore",
+    "RecipeCatalog",
+    "RecipeStore",
+    "RecipeIndex",
+    "JsonRecipeStore",
+    "StaticRecipeStore",
+    "DuckDBRecipeStore",
 ]

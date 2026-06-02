@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from woodpecker import check, fix, plan
+from woodpecker import check, fix, recipe
 
 
 def check_finding_ids(dataset, fix_id: str) -> set[str]:
@@ -40,7 +40,7 @@ def unique_in_order(values) -> tuple[str, ...]:
 
 
 def assert_plan_check_fix_cycle(
-    plan_path: Path,
+    recipe_path: Path,
     dataset,
     *,
     expected_fix_ids: tuple[str, ...],
@@ -49,20 +49,20 @@ def assert_plan_check_fix_cycle(
     assert_fixed,
     assert_unchanged=None,
 ) -> None:
-    findings = plan.check(dataset, plan_path)
+    findings = recipe.check(dataset, recipe_path)
     assert unique_in_order(findings.fix_ids) == expected_fix_ids
 
-    preview = plan.fix(dataset, plan_path, dry_run=True)
+    preview = recipe.fix(dataset, recipe_path, dry_run=True)
     assert preview.changed == expected_changed
     assert preview.persisted == 0
     if assert_unchanged is not None:
         assert_unchanged(dataset)
 
-    write = plan.fix(dataset, plan_path, dry_run=False)
+    write = recipe.fix(dataset, recipe_path, dry_run=False)
     assert write.changed == (
         expected_changed if expected_write_changed is None else expected_write_changed
     )
     assert write.persisted == 1
     assert_fixed(dataset)
 
-    assert not plan.check(dataset, plan_path)
+    assert not recipe.check(dataset, recipe_path)

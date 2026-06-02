@@ -1,0 +1,72 @@
+{
+  "recipes": [
+    {
+      "id": "cmip6_decadal.full",
+      "description": "Full CMIP6-decadal recipe for NetCDF hindcast datasets",
+      "links": [
+        {
+          "rel": "self",
+          "href": "https://github.com/cehbrecht/woodpecker/blob/main/plugins/woodpecker-cmip6-decadal-plugin/tests/recipes/cmip6_decadal_full_recipe.json",
+          "title": "Source recipe document"
+        }
+      ],
+      "match": {
+        "dataset_id_patterns": [
+          "CMIP6.DCPP.*.dcppA-hindcast.*"
+        ],
+        "attrs": {
+          "project_id": "CMIP6",
+          "activity_id": "DCPP",
+          "experiment_id": "dcppA-hindcast"
+        }
+      },
+      "steps": [
+        {
+          "id": "cmip6_decadal.time_metadata"
+        },
+        {
+          "id": "cmip6_decadal.calendar_normalization"
+        },
+        {
+          "id": "cmip6_decadal.realization_variable"
+        },
+        {
+          "id": "cmip6_decadal.coordinates_encoding_cleanup"
+        },
+        {
+          "id": "cmip6_decadal.realization_comment_normalization"
+        },
+        {
+          "id": "cmip6_decadal.realization_dtype_normalization"
+        },
+        {
+          "id": "cmip6_decadal.fillvalue_encoding_cleanup"
+        },
+        {
+          "id": "cmip6_decadal.further_info_url_normalization"
+        },
+        {
+          "id": "cmip6_decadal.start_token_normalization"
+        },
+        {
+          "id": "cmip6_decadal.realization_long_name_normalization"
+        },
+        {
+          "id": "cmip6_decadal.realization_index_normalization"
+        },
+        {
+          "id": "cmip6_decadal.leadtime_metadata_normalization"
+        },
+        {
+          "id": "cmip6_decadal.model_global_attributes"
+        },
+        {
+          "id": "cmip6_decadal.reftime_coordinate"
+        },
+        {
+          "id": "cmip6_decadal.leadtime_coordinate"
+        }
+      ]
+    }
+  ]
+}

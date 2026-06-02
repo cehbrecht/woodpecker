@@ -12,7 +12,7 @@ EXPECTED_FIX_IDS = {
     "cmip7.rename_temp_variable_to_tas",
 }
 ESA_CCI_SOURCE_NAME = "ESACCI-WATERVAPOUR-L3C-TCWV-meris-005deg-2002-2017-fv3.2.zarr"
-PLAN = woodpecker.plan.get("cmip7.esa_cci_water_vapour_zarr")
+PLAN = woodpecker.recipe.get("cmip7.esa_cci_water_vapour_zarr")
 
 
 def test_plugin_registers_expected_fixes():

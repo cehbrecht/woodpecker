@@ -54,7 +54,7 @@ woodpecker list-recipes --store auto
 configuration directories, environment paths, and optional extra paths passed
 with `--recipe`.
 
-Use the [Generated Recipes Reference](FIX_PLANS.md) for the generated table of
+Use the [Generated Recipes Reference](recipe-reference.md) for the generated table of
 currently discovered recipes.
 
 ## Check Datasets

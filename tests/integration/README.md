@@ -21,7 +21,7 @@ Files are grouped by dataset family or example role:
 - `test_api_usage_examples.py`: minimal, plain public API examples for direct
   fixes, fix recipes, and auto recipes.
 - `test_api_fixes_*.py`: family-specific fix behavior against synthetic data.
-- `test_api_plans_*.py`: family-specific fix-recipe behavior against synthetic
+- `test_api_recipes_*.py`: family-specific fix-recipe behavior against synthetic
   data.
 - `recipes/*.json` and `recipes/*.yaml`: recipe documents used by recipe integration
   tests, notebooks, and the generated fix-recipe docs catalog.

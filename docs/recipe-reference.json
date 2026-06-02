@@ -1,0 +1,723 @@
+[
+  {
+    "id": "atlas.basic",
+    "aliases": [],
+    "description": "Concrete Atlas recipe for atlas*.nc files",
+    "match": {
+      "attrs": {},
+      "dataset_id_patterns": [],
+      "path_patterns": [
+        "*atlas*.nc"
+      ]
+    },
+    "steps": [
+      {
+        "id": "atlas.encoding_cleanup",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "atlas.project_id_normalization",
+        "options": {},
+        "links": []
+      }
+    ],
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/plugins/woodpecker-atlas-plugin/src/woodpecker_atlas_plugin/recipes/atlas_basic_recipe.json",
+        "title": "Source recipe document"
+      }
+    ],
+    "prefix": "atlas",
+    "suffix": "basic",
+    "source": "plugin:woodpecker_atlas_plugin",
+    "source_files": [
+      "plugins/woodpecker-atlas-plugin/src/woodpecker_atlas_plugin/recipes/atlas_basic_recipe.json"
+    ],
+    "step_ids": [
+      "atlas.encoding_cleanup",
+      "atlas.project_id_normalization"
+    ]
+  },
+  {
+    "id": "cmip6.core_units",
+    "aliases": [],
+    "description": "",
+    "match": {
+      "attrs": {
+        "project_id": "CMIP6",
+        "activity_id": "CMIP"
+      },
+      "dataset_id_patterns": [
+        "CMIP6.CMIP.*.Amon.tas.*"
+      ],
+      "path_patterns": []
+    },
+    "steps": [
+      {
+        "id": "woodpecker.normalize_tas_units_to_kelvin",
+        "options": {},
+        "links": []
+      }
+    ],
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/woodpecker/recipes/recipes/cmip6_core_recipe.yaml",
+        "title": "Source recipe document"
+      }
+    ],
+    "prefix": "cmip6",
+    "suffix": "core_units",
+    "source": "core",
+    "source_files": [
+      "woodpecker/recipes/recipes/cmip6_core_recipe.yaml"
+    ],
+    "step_ids": [
+      "woodpecker.normalize_tas_units_to_kelvin"
+    ]
+  },
+  {
+    "id": "cmip6_decadal.full",
+    "aliases": [],
+    "description": "Full CMIP6-decadal recipe for NetCDF hindcast datasets",
+    "match": {
+      "attrs": {
+        "project_id": "CMIP6",
+        "activity_id": "DCPP",
+        "experiment_id": "dcppA-hindcast"
+      },
+      "dataset_id_patterns": [
+        "CMIP6.DCPP.*.dcppA-hindcast.*"
+      ],
+      "path_patterns": []
+    },
+    "steps": [
+      {
+        "id": "cmip6_decadal.time_metadata",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.calendar_normalization",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.realization_variable",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.coordinates_encoding_cleanup",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.realization_comment_normalization",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.realization_dtype_normalization",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.fillvalue_encoding_cleanup",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.further_info_url_normalization",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.start_token_normalization",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.realization_long_name_normalization",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.realization_index_normalization",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.leadtime_metadata_normalization",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.model_global_attributes",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.reftime_coordinate",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "cmip6_decadal.leadtime_coordinate",
+        "options": {},
+        "links": []
+      }
+    ],
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/plugins/woodpecker-cmip6-decadal-plugin/src/woodpecker_cmip6_decadal_plugin/recipes/cmip6_decadal_full_recipe.json",
+        "title": "Source recipe document"
+      }
+    ],
+    "prefix": "cmip6_decadal",
+    "suffix": "full",
+    "source": "plugin:woodpecker_cmip6_decadal_plugin",
+    "source_files": [
+      "plugins/woodpecker-cmip6-decadal-plugin/src/woodpecker_cmip6_decadal_plugin/recipes/cmip6_decadal_full_recipe.json"
+    ],
+    "step_ids": [
+      "cmip6_decadal.time_metadata",
+      "cmip6_decadal.calendar_normalization",
+      "cmip6_decadal.realization_variable",
+      "cmip6_decadal.coordinates_encoding_cleanup",
+      "cmip6_decadal.realization_comment_normalization",
+      "cmip6_decadal.realization_dtype_normalization",
+      "cmip6_decadal.fillvalue_encoding_cleanup",
+      "cmip6_decadal.further_info_url_normalization",
+      "cmip6_decadal.start_token_normalization",
+      "cmip6_decadal.realization_long_name_normalization",
+      "cmip6_decadal.realization_index_normalization",
+      "cmip6_decadal.leadtime_metadata_normalization",
+      "cmip6_decadal.model_global_attributes",
+      "cmip6_decadal.reftime_coordinate",
+      "cmip6_decadal.leadtime_coordinate"
+    ]
+  },
+  {
+    "id": "cmip7.esa_cci_water_vapour_dotname",
+    "aliases": [],
+    "description": "CMIP7/ESA CCI dot-name inputs",
+    "match": {
+      "attrs": {},
+      "dataset_id_patterns": [],
+      "path_patterns": [
+        "esacci.WATERVAPOUR.*"
+      ]
+    },
+    "steps": [
+      {
+        "id": "woodpecker.merge_equivalent_dimensions",
+        "options": {
+          "dims": [
+            "bnds",
+            "nv"
+          ]
+        },
+        "links": []
+      },
+      {
+        "id": "cmip7.configurable_reformat_bridge",
+        "options": {
+          "realm": "atmos",
+          "branded_variable": "prw_tavg-u-hxy-u",
+          "variable_map": {
+            "prw": "tcwv"
+          },
+          "keep_global_attrs": true
+        },
+        "links": []
+      },
+      {
+        "id": "woodpecker.ensure_latitude_is_increasing",
+        "options": {},
+        "links": []
+      }
+    ],
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/plugins/woodpecker-cmip7-plugin/src/woodpecker_cmip7_plugin/recipes/esa_cci_water_vapour_recipe.json",
+        "title": "Source recipe document"
+      }
+    ],
+    "prefix": "cmip7",
+    "suffix": "esa_cci_water_vapour_dotname",
+    "source": "plugin:woodpecker_cmip7_plugin",
+    "source_files": [
+      "plugins/woodpecker-cmip7-plugin/src/woodpecker_cmip7_plugin/recipes/esa_cci_water_vapour_recipe.json"
+    ],
+    "step_ids": [
+      "woodpecker.merge_equivalent_dimensions",
+      "cmip7.configurable_reformat_bridge",
+      "woodpecker.ensure_latitude_is_increasing"
+    ]
+  },
+  {
+    "id": "cmip7.esa_cci_water_vapour_zarr",
+    "aliases": [],
+    "description": "CMIP7/ESA CCI zarr-style inputs",
+    "match": {
+      "attrs": {},
+      "dataset_id_patterns": [],
+      "path_patterns": [
+        "*ESACCI-WATERVAPOUR-*.zarr"
+      ]
+    },
+    "steps": [
+      {
+        "id": "cmip7.configurable_reformat_bridge",
+        "options": {
+          "realm": "atmos",
+          "branded_variable": "prw_tavg-u-hxy-u",
+          "dim_map": {
+            "bnds": "nv"
+          },
+          "variable_map": {
+            "prw": "tcwv"
+          },
+          "keep_global_attrs": true
+        },
+        "links": []
+      },
+      {
+        "id": "woodpecker.ensure_latitude_is_increasing",
+        "options": {},
+        "links": []
+      }
+    ],
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://github.com/cehbrecht/woodpecker/blob/main/plugins/woodpecker-cmip7-plugin/src/woodpecker_cmip7_plugin/recipes/esa_cci_water_vapour_recipe.json",
+        "title": "Source recipe document"
+      },
+      {
+        "rel": "issue",
+        "href": "https://github.com/cehbrecht/woodpecker/issues",
+        "title": "Track ESA CCI fix discussions"
+      }
+    ],
+    "prefix": "cmip7",
+    "suffix": "esa_cci_water_vapour_zarr",
+    "source": "plugin:woodpecker_cmip7_plugin",
+    "source_files": [
+      "plugins/woodpecker-cmip7-plugin/src/woodpecker_cmip7_plugin/recipes/esa_cci_water_vapour_recipe.json"
+    ],
+    "step_ids": [
+      "cmip7.configurable_reformat_bridge",
+      "woodpecker.ensure_latitude_is_increasing"
+    ]
+  },
+  {
+    "id": "xmip.cmip6_preprocessing",
+    "aliases": [],
+    "description": "Woodpecker-native xMIP-style CMIP6 preprocessing. This recipe composes small, inspectable fixes instead of hiding the workflow in one monolithic preprocessing function.",
+    "match": {
+      "attrs": {
+        "project_id": "CMIP6"
+      },
+      "dataset_id_patterns": [],
+      "path_patterns": []
+    },
+    "steps": [
+      {
+        "id": "woodpecker.rename_variables",
+        "options": {
+          "mapping": {
+            "x": [
+              "i",
+              "ni",
+              "xh",
+              "nlon"
+            ],
+            "y": [
+              "j",
+              "nj",
+              "yh",
+              "nlat"
+            ],
+            "lev": [
+              "deptht",
+              "olevel",
+              "zlev",
+              "olev",
+              "depth"
+            ],
+            "bnds": [
+              "bnds",
+              "axis_nbounds",
+              "d2"
+            ],
+            "vertex": [
+              "vertex",
+              "nvertex",
+              "vertices",
+              "nvertices"
+            ],
+            "lon": [
+              "longitude",
+              "nav_lon"
+            ],
+            "lat": [
+              "latitude",
+              "nav_lat"
+            ],
+            "lev_bounds": [
+              "deptht_bounds",
+              "lev_bnds",
+              "olevel_bounds",
+              "zlev_bnds"
+            ],
+            "lon_bounds": [
+              "bounds_lon",
+              "bounds_nav_lon",
+              "lon_bnds",
+              "x_bnds",
+              "vertices_longitude",
+              "longitude_bnds"
+            ],
+            "lat_bounds": [
+              "bounds_lat",
+              "bounds_nav_lat",
+              "lat_bnds",
+              "y_bnds",
+              "vertices_latitude",
+              "latitude_bnds"
+            ],
+            "time_bounds": [
+              "time_bnds"
+            ]
+          }
+        },
+        "links": []
+      },
+      {
+        "id": "woodpecker.promote_missing_dimension_coords",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "woodpecker.set_coordinate_variables",
+        "options": {
+          "coordinates": [
+            "x",
+            "y",
+            "lon",
+            "lat",
+            "lev",
+            "bnds",
+            "lev_bounds",
+            "lon_bounds",
+            "lat_bounds",
+            "time_bounds",
+            "lat_verticies",
+            "lon_verticies"
+          ]
+        },
+        "links": []
+      },
+      {
+        "id": "xmip.broadcast_lon_lat",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "woodpecker.normalize_longitude_convention",
+        "options": {
+          "coordinate": "lon",
+          "target": "0_360",
+          "bounds": [
+            "lon_bounds"
+          ],
+          "mask_abs_gt": 1000
+        },
+        "links": []
+      },
+      {
+        "id": "woodpecker.convert_units",
+        "options": {
+          "units": {
+            "lev": "m"
+          },
+          "overrides": {
+            "so": null
+          }
+        },
+        "links": []
+      },
+      {
+        "id": "xmip.normalize_lon_lat_bounds",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.sort_vertex_order",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.convert_bounds_to_vertices",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.convert_vertices_to_bounds",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.fix_known_cmip6_metadata",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "woodpecker.drop_variables",
+        "options": {
+          "variables": [
+            "bnds",
+            "vertex"
+          ],
+          "errors": "ignore"
+        },
+        "links": []
+      }
+    ],
+    "links": [
+      {
+        "rel": "source",
+        "href": "https://github.com/jbusecke/xMIP",
+        "title": "Original xMIP project"
+      }
+    ],
+    "prefix": "xmip",
+    "suffix": "cmip6_preprocessing",
+    "source": "plugin:woodpecker_xmip_plugin",
+    "source_files": [
+      "plugins/woodpecker-xmip-plugin/src/woodpecker_xmip_plugin/recipes/cmip6_preprocessing.yaml"
+    ],
+    "step_ids": [
+      "woodpecker.rename_variables",
+      "woodpecker.promote_missing_dimension_coords",
+      "woodpecker.set_coordinate_variables",
+      "xmip.broadcast_lon_lat",
+      "woodpecker.normalize_longitude_convention",
+      "woodpecker.convert_units",
+      "xmip.normalize_lon_lat_bounds",
+      "xmip.sort_vertex_order",
+      "xmip.convert_bounds_to_vertices",
+      "xmip.convert_vertices_to_bounds",
+      "xmip.fix_known_cmip6_metadata",
+      "woodpecker.drop_variables"
+    ]
+  },
+  {
+    "id": "xmip.cmip6_preprocessing_nominal_xy",
+    "aliases": [],
+    "description": "Extended CMIP6 preprocessing that also replaces x/y coordinate values with nominal longitude/latitude values derived from the grid.",
+    "match": {
+      "attrs": {
+        "project_id": "CMIP6"
+      },
+      "dataset_id_patterns": [],
+      "path_patterns": []
+    },
+    "steps": [
+      {
+        "id": "woodpecker.rename_variables",
+        "options": {
+          "mapping": {
+            "x": [
+              "i",
+              "ni",
+              "xh",
+              "nlon"
+            ],
+            "y": [
+              "j",
+              "nj",
+              "yh",
+              "nlat"
+            ],
+            "lev": [
+              "deptht",
+              "olevel",
+              "zlev",
+              "olev",
+              "depth"
+            ],
+            "bnds": [
+              "bnds",
+              "axis_nbounds",
+              "d2"
+            ],
+            "vertex": [
+              "vertex",
+              "nvertex",
+              "vertices",
+              "nvertices"
+            ],
+            "lon": [
+              "longitude",
+              "nav_lon"
+            ],
+            "lat": [
+              "latitude",
+              "nav_lat"
+            ],
+            "lev_bounds": [
+              "deptht_bounds",
+              "lev_bnds",
+              "olevel_bounds",
+              "zlev_bnds"
+            ],
+            "lon_bounds": [
+              "bounds_lon",
+              "bounds_nav_lon",
+              "lon_bnds",
+              "x_bnds",
+              "vertices_longitude",
+              "longitude_bnds"
+            ],
+            "lat_bounds": [
+              "bounds_lat",
+              "bounds_nav_lat",
+              "lat_bnds",
+              "y_bnds",
+              "vertices_latitude",
+              "latitude_bnds"
+            ],
+            "time_bounds": [
+              "time_bnds"
+            ]
+          }
+        },
+        "links": []
+      },
+      {
+        "id": "woodpecker.promote_missing_dimension_coords",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "woodpecker.set_coordinate_variables",
+        "options": {
+          "coordinates": [
+            "x",
+            "y",
+            "lon",
+            "lat",
+            "lev",
+            "bnds",
+            "lev_bounds",
+            "lon_bounds",
+            "lat_bounds",
+            "time_bounds",
+            "lat_verticies",
+            "lon_verticies"
+          ]
+        },
+        "links": []
+      },
+      {
+        "id": "xmip.broadcast_lon_lat",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "woodpecker.normalize_longitude_convention",
+        "options": {
+          "coordinate": "lon",
+          "target": "0_360",
+          "bounds": [
+            "lon_bounds"
+          ],
+          "mask_abs_gt": 1000
+        },
+        "links": []
+      },
+      {
+        "id": "xmip.replace_xy_with_nominal_lon_lat",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "woodpecker.convert_units",
+        "options": {
+          "units": {
+            "lev": "m"
+          },
+          "overrides": {
+            "so": null
+          }
+        },
+        "links": []
+      },
+      {
+        "id": "xmip.normalize_lon_lat_bounds",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.sort_vertex_order",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.convert_bounds_to_vertices",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.convert_vertices_to_bounds",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "xmip.fix_known_cmip6_metadata",
+        "options": {},
+        "links": []
+      },
+      {
+        "id": "woodpecker.drop_variables",
+        "options": {
+          "variables": [
+            "bnds",
+            "vertex"
+          ],
+          "errors": "ignore"
+        },
+        "links": []
+      }
+    ],
+    "links": [],
+    "prefix": "xmip",
+    "suffix": "cmip6_preprocessing_nominal_xy",
+    "source": "plugin:woodpecker_xmip_plugin",
+    "source_files": [
+      "plugins/woodpecker-xmip-plugin/src/woodpecker_xmip_plugin/recipes/cmip6_preprocessing.yaml"
+    ],
+    "step_ids": [
+      "woodpecker.rename_variables",
+      "woodpecker.promote_missing_dimension_coords",
+      "woodpecker.set_coordinate_variables",
+      "xmip.broadcast_lon_lat",
+      "woodpecker.normalize_longitude_convention",
+      "xmip.replace_xy_with_nominal_lon_lat",
+      "woodpecker.convert_units",
+      "xmip.normalize_lon_lat_bounds",
+      "xmip.sort_vertex_order",
+      "xmip.convert_bounds_to_vertices",
+      "xmip.convert_vertices_to_bounds",
+      "xmip.fix_known_cmip6_metadata",
+      "woodpecker.drop_variables"
+    ]
+  }
+]

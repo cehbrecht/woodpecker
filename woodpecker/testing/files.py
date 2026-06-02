@@ -14,6 +14,6 @@ def write_json(path: str | Path, payload: Any) -> Path:
     return target
 
 
-def write_plan_document(path: str | Path, plans: list[dict[str, Any]]) -> Path:
-    """Write a fix-plan document with a top-level ``plans`` key."""
-    return write_json(path, {"plans": plans})
+def write_recipe_document(path: str | Path, recipes: list[dict[str, Any]]) -> Path:
+    """Write a recipe document with a top-level ``recipes`` key."""
+    return write_json(path, {"recipes": recipes})

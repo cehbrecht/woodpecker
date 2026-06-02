@@ -42,7 +42,7 @@ DECADAL_FULL_FIX_IDS = (
     "cmip6_decadal.model_global_attributes",
     "cmip6_decadal.reftime_coordinate",
 )
-PLAN = woodpecker.plan.get("cmip6_decadal.full")
+PLAN = woodpecker.recipe.get("cmip6_decadal.full")
 
 
 def _decadal_dataset(**overrides):

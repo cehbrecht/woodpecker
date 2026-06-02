@@ -2,65 +2,65 @@ from __future__ import annotations
 
 from woodpecker.fixes.identifiers import IdentifierResolver
 
-from ..fix_plans.models import FixPlan
+from ..recipes.models import Recipe
 
 
-class FixPlanIndex:
-    """Index a collection of ``FixPlan`` objects for fast identifier-based retrieval.
+class RecipeIndex:
+    """Index a collection of ``Recipe`` objects for fast identifier-based retrieval.
 
-    On construction, plans are keyed by their id and an ``IdentifierResolver``
-    is built so plans can be looked up by id or declared alias.
+    On construction, recipes are keyed by their id and an ``IdentifierResolver``
+    is built so recipes can be looked up by id or declared alias.
     Duplicate ids raise immediately.
     """
 
-    def __init__(self, plans: list[FixPlan]):
-        self._plans = list(plans)
-        self._plans_by_id = self._index_plans_by_id(self._plans)
-        self._resolver = self._build_plan_identifier_resolver(self._plans_by_id)
+    def __init__(self, recipes: list[Recipe]):
+        self._plans = list(recipes)
+        self._recipes_by_id = self._index_recipes_by_id(self._plans)
+        self._resolver = self._build_recipe_identifier_resolver(self._recipes_by_id)
 
     @staticmethod
-    def plan_id(plan: FixPlan) -> str:
-        """Return normalized id for *plan*."""
-        if plan.identifier_set is not None:
-            return plan.identifier_set.id
-        return str(plan.id).strip().lower()
+    def recipe_id(recipe: Recipe) -> str:
+        """Return normalized id for *recipe*."""
+        if recipe.identifier_set is not None:
+            return recipe.identifier_set.id
+        return str(recipe.id).strip().lower()
 
     @classmethod
-    def _index_plans_by_id(cls, plans: list[FixPlan]) -> dict[str, FixPlan]:
+    def _index_recipes_by_id(cls, recipes: list[Recipe]) -> dict[str, Recipe]:
         """Build an id-keyed dict, raising on duplicate ids."""
-        indexed: dict[str, FixPlan] = {}
-        for plan in plans:
-            plan_id = cls.plan_id(plan)
-            if not plan_id:
-                raise ValueError("Encountered plan with empty identifier.")
-            if plan_id in indexed:
-                raise ValueError(f"Duplicate plan id detected: {plan_id}")
-            indexed[plan_id] = plan
+        indexed: dict[str, Recipe] = {}
+        for recipe in recipes:
+            recipe_id = cls.recipe_id(recipe)
+            if not recipe_id:
+                raise ValueError("Encountered recipe with empty identifier.")
+            if recipe_id in indexed:
+                raise ValueError(f"Duplicate recipe id detected: {recipe_id}")
+            indexed[recipe_id] = recipe
         return indexed
 
     @staticmethod
-    def _build_plan_identifier_resolver(
-        plans_by_id: dict[str, FixPlan],
+    def _build_recipe_identifier_resolver(
+        recipes_by_id: dict[str, Recipe],
     ) -> IdentifierResolver:
-        """Build a resolver seeded with every plan id and alias in the index."""
-        resolver = IdentifierResolver(index={plan_id: plan_id for plan_id in plans_by_id})
-        for plan in plans_by_id.values():
-            if plan.identifier_set is not None:
-                resolver.register(plan.identifier_set)
+        """Build a resolver seeded with every recipe id and alias in the index."""
+        resolver = IdentifierResolver(index={recipe_id: recipe_id for recipe_id in recipes_by_id})
+        for recipe in recipes_by_id.values():
+            if recipe.identifier_set is not None:
+                resolver.register(recipe.identifier_set)
         return resolver
 
-    def get(self, identifier: str) -> FixPlan:
-        """Return the plan matching *identifier* (id or alias).
+    def get(self, identifier: str) -> Recipe:
+        """Return the recipe matching *identifier* (id or alias).
 
         Raises ``ValueError`` for unknown or ambiguous identifiers.
         """
         try:
             resolved_id = self._resolver.resolve(identifier)
         except KeyError as exc:
-            raise ValueError(f"Unknown plan identifier: {identifier}") from exc
+            raise ValueError(f"Unknown recipe identifier: {identifier}") from exc
 
-        return self._plans_by_id[resolved_id]
+        return self._recipes_by_id[resolved_id]
 
-    def list(self) -> list[FixPlan]:
-        """Return all plans in insertion order."""
+    def list(self) -> list[Recipe]:
+        """Return all recipes in insertion order."""
         return list(self._plans)

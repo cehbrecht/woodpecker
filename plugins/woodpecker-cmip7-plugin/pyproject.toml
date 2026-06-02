@@ -26,7 +26,7 @@ where = ["src"]
 include = ["woodpecker_cmip7_plugin*"]
 
 [tool.setuptools.package-data]
-woodpecker_cmip7_plugin = ["plans/*.json", "plans/*.yaml", "plans/*.yml"]
+woodpecker_cmip7_plugin = ["recipes/*.json", "recipes/*.yaml", "recipes/*.yml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -44,8 +44,8 @@ These files are generated and should be updated through their scripts:
 | -------- | --------- |
 | `docs/FIXES.md` | `scripts/generate_fix_catalog.py` |
 | `docs/FIXES.json` | `scripts/generate_fix_catalog.py` |
-| `docs/FIX_PLANS.md` | `scripts/generate_fix_plan_catalog.py` |
-| `docs/FIX_PLANS.json` | `scripts/generate_fix_plan_catalog.py` |
+| `docs/recipe-reference.md` | `scripts/generate_recipe_catalog.py` |
+| `docs/recipe-reference.json` | `scripts/generate_recipe_catalog.py` |
 | `docs/fixes.html` | `scripts/generate_fix_webpage.py` |
 
 The interactive fixes page uses the Jinja template at

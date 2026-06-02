@@ -65,7 +65,7 @@ recipe = woodpecker.recipe.get("cmip6.core_units")
 findings = woodpecker.recipe.check(dataset, recipe)
 ```
 
-The [Generated Recipes Reference](FIX_PLANS.md) lists discovered recipes.
+The [Generated Recipes Reference](recipe-reference.md) lists discovered recipes.
 
 ## Matching
 

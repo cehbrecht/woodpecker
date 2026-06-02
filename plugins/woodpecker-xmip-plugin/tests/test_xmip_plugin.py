@@ -1,7 +1,7 @@
 """xMIP plugin tests.
 
 The parity-style tests below adapt cases from xMIP's preprocessing tests while
-running them through Woodpecker fix functions and plans:
+running them through Woodpecker fix functions and recipes:
 https://github.com/jbusecke/xMIP/blob/main/tests/test_preprocessing.py
 
 The corresponding original implementation lives in:
@@ -32,7 +32,7 @@ EXPECTED_FIX_IDS = {
     "xmip.rename_cmip6_axes",
     "xmip.sort_vertex_order",
 }
-PLAN = woodpecker.plan.get("xmip.cmip6_preprocessing")
+PLAN = woodpecker.recipe.get("xmip.cmip6_preprocessing")
 
 
 def _raw_cmip6_dataset() -> xr.Dataset:
@@ -415,13 +415,13 @@ def test_xmip_metadata_fix_ignores_non_cmip6():
 def test_xmip_cmip6_preprocessing_plan_checks_and_fixes_dataset():
     dataset = _raw_cmip6_dataset()
 
-    findings = woodpecker.plan.check(dataset, PLAN)
+    findings = woodpecker.recipe.check(dataset, PLAN)
     assert set(findings.fix_ids) == {
         "woodpecker.rename_variables",
         "xmip.fix_known_cmip6_metadata",
     }
 
-    preview = woodpecker.plan.fix(
+    preview = woodpecker.recipe.fix(
         dataset,
         PLAN,
         dry_run=True,
@@ -430,7 +430,7 @@ def test_xmip_cmip6_preprocessing_plan_checks_and_fixes_dataset():
     assert "i" in dataset.dims
     assert "branch_time_in_parent" not in dataset.attrs
 
-    write = woodpecker.plan.fix(
+    write = woodpecker.recipe.fix(
         dataset,
         PLAN,
         dry_run=False,
@@ -442,7 +442,7 @@ def test_xmip_cmip6_preprocessing_plan_checks_and_fixes_dataset():
     assert "lat" in dataset.coords
     assert float(dataset["lon"].min()) >= 0
     assert dataset.attrs["branch_time_in_parent"] == 91250
-    assert not woodpecker.plan.check(dataset, PLAN)
+    assert not woodpecker.recipe.check(dataset, PLAN)
 
 
 def test_xmip_cmip6_preprocessing_plan_drops_helper_coords():
@@ -453,7 +453,7 @@ def test_xmip_cmip6_preprocessing_plan_drops_helper_coords():
         bnds=np.arange(2),
     )
 
-    write = woodpecker.plan.fix(
+    write = woodpecker.recipe.fix(
         dataset,
         PLAN,
         dry_run=False,
@@ -464,8 +464,8 @@ def test_xmip_cmip6_preprocessing_plan_drops_helper_coords():
 
 
 def test_xmip_nominal_xy_plan_includes_nominal_coordinate_replacement():
-    plan = woodpecker.plan.get("xmip.cmip6_preprocessing_nominal_xy")
-    step_ids = [step.id for step in plan.steps]
+    recipe = woodpecker.recipe.get("xmip.cmip6_preprocessing_nominal_xy")
+    step_ids = [step.id for step in recipe.steps]
 
     assert "xmip.replace_xy_with_nominal_lon_lat" in step_ids
     assert step_ids.index("xmip.replace_xy_with_nominal_lon_lat") > step_ids.index(

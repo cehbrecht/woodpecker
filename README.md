@@ -31,7 +31,7 @@ The MkDocs site is the main documentation entry point:
 - [Plugins](https://cehbrecht.github.io/woodpecker/plugins/)
 - [Examples](https://cehbrecht.github.io/woodpecker/examples/)
 - [Generated Fixes Reference](https://cehbrecht.github.io/woodpecker/FIXES/)
-- [Generated Recipes Reference](https://cehbrecht.github.io/woodpecker/FIX_PLANS/)
+- [Generated Recipes Reference](https://cehbrecht.github.io/woodpecker/recipe-reference/)
 - [Interactive Fix Browser](https://cehbrecht.github.io/woodpecker/fixes/)
 - [Contributing Guide](https://cehbrecht.github.io/woodpecker/CONTRIBUTING_GUIDE/)
 - [Docs Development](https://cehbrecht.github.io/woodpecker/docs-development/)

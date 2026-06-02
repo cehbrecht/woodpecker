@@ -29,4 +29,4 @@ recipe = woodpecker.recipe.get("xmip.cmip6_preprocessing")
 ```
 
 Use the [Generated Fixes Reference](FIXES.md) and
-[Generated Recipes Reference](FIX_PLANS.md) for the full registered reference.
+[Generated Recipes Reference](recipe-reference.md) for the full registered reference.

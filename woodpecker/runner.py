@@ -9,7 +9,7 @@ from woodpecker.io import DataInput, get_output_adapter
 from woodpecker.io.runtime import strict_io_mode
 
 if TYPE_CHECKING:
-    from woodpecker.fix_plans.models import FixPlan
+    from woodpecker.recipes.models import Recipe
 
 
 def run_check(
@@ -139,13 +139,13 @@ def _instantiate_fix(registry: Any, fix_id: str) -> Any:
     return instantiate(fix_id)
 
 
-def apply_fix_plan(ds: Any, plan: "FixPlan", registry: Any) -> Any:
-    """Resolve plan fix identifiers and apply fixes in order."""
+def apply_recipe(ds: Any, recipe: "Recipe", registry: Any) -> Any:
+    """Resolve recipe fix identifiers and apply fixes in order."""
 
     identity = resolve_dataset_identity(ds)
 
-    for ref in plan.steps:
-        resolved_fix_id = plan.resolve_fix_identifier(ref)
+    for ref in recipe.steps:
+        resolved_fix_id = recipe.resolve_fix_identifier(ref)
         fix = _instantiate_fix(registry, resolved_fix_id)
 
         if hasattr(fix, "configure"):

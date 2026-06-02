@@ -2,23 +2,23 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
-from ..fix_plans.matcher import plan_matches_dataset
-from ..fix_plans.models import FixPlan
-from .base import FixPlanStore
+from ..recipes.matcher import recipe_matches_dataset
+from ..recipes.models import Recipe
+from .base import RecipeStore
 
 
-class StaticFixPlanStore(FixPlanStore):
-    """Read-only FixPlanStore backed by an in-memory plan list."""
+class StaticRecipeStore(RecipeStore):
+    """Read-only RecipeStore backed by an in-memory recipe list."""
 
-    def __init__(self, plans: Iterable[FixPlan]):
-        self._plans = list(plans)
+    def __init__(self, recipes: Iterable[Recipe]):
+        self._plans = list(recipes)
 
-    def list_plans(self) -> list[FixPlan]:
+    def list_recipes(self) -> list[Recipe]:
         return list(self._plans)
 
-    def lookup(self, dataset: Any, path: str | None = None) -> list[FixPlan]:
-        return [plan for plan in self._plans if plan_matches_dataset(plan, dataset, path=path)]
+    def lookup(self, dataset: Any, path: str | None = None) -> list[Recipe]:
+        return [recipe for recipe in self._plans if recipe_matches_dataset(recipe, dataset, path=path)]
 
-    def save_plan(self, plan: FixPlan) -> None:
-        _ = plan
-        raise NotImplementedError("StaticFixPlanStore is read-only.")
+    def save_recipe(self, recipe: Recipe) -> None:
+        _ = recipe
+        raise NotImplementedError("StaticRecipeStore is read-only.")

@@ -51,7 +51,7 @@ provenance, strict I/O, and output formats.
 Start with [Discovered Recipes](recipes.md) when you want Woodpecker to select a
 curated recipe by id or matching rules.
 
-Use the [Generated Recipes Reference](FIX_PLANS.md) when you want a generated
+Use the [Generated Recipes Reference](recipe-reference.md) when you want a generated
 table of currently discovered recipes, their match rules, steps, and source files.
 
 Use the [Generated Fixes Reference](FIXES.md) when you already know you need a
@@ -89,7 +89,7 @@ make docs
 ## Reference Pages
 
 - [Generated Fixes Reference](FIXES.md): generated table of registered fix functions.
-- [Generated Recipes Reference](FIX_PLANS.md): generated table of discovered
+- [Generated Recipes Reference](recipe-reference.md): generated table of discovered
   recipes.
 - [Interactive Fix Browser](fixes.html): searchable fix ids with stable anchors.
 

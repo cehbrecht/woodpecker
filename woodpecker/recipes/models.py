@@ -1,0 +1,330 @@
+from __future__ import annotations
+
+import json
+from functools import cached_property
+from typing import Any, Mapping
+
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+)
+
+from woodpecker.fixes.identifiers import IdentifierRules, IdentifierSet
+
+
+def _string_or_empty(value: object) -> str:
+    return "" if value is None else str(value)
+
+
+def _dict_or_empty(value: object, *, label: str) -> dict[str, Any]:
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        raise ValueError(f"{label} must be a mapping/object")
+    return dict(value)
+
+
+def _list_or_empty(value: object, *, label: str) -> list[Any]:
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise ValueError(f"{label} must be a list")
+    return list(value)
+
+
+def _coerce_schema_version(value: object) -> int:
+    if value in (None, ""):
+        return 1
+    try:
+        schema_version = int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("RecipeDocument 'schema_version' must be an integer") from exc
+    if schema_version < 1:
+        raise ValueError("RecipeDocument 'schema_version' must be >= 1")
+    return schema_version
+
+
+class Link(BaseModel):
+    """Link metadata."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    rel: str
+    href: str
+    title: str | None = None
+
+
+class FixRef(BaseModel):
+    """Fix reference with optional options and links."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    options: dict[str, Any] = Field(default_factory=dict)
+    links: list[Link] = Field(default_factory=list)
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def _normalize_and_validate_id(cls, v: object) -> str:
+        normalized = IdentifierRules.normalize(v)
+        if not normalized:
+            raise ValueError("FixRef.id must be a non-empty string")
+        if "." in normalized:
+            IdentifierRules.validate_id("FixRef.id", normalized)
+        else:
+            IdentifierRules.validate_suffix("FixRef.id", normalized)
+        return normalized
+
+    @field_validator("options", mode="before")
+    @classmethod
+    def _coerce_options(cls, v: object) -> dict[str, Any]:
+        return _dict_or_empty(v, label="FixRef.options")
+
+    @field_validator("links", mode="before")
+    @classmethod
+    def _coerce_links(cls, v: object) -> list[Any]:
+        return _list_or_empty(v, label="FixRef.links")
+
+
+class DatasetMatcher(BaseModel):
+    """Dataset match criteria."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    attrs: dict[str, Any] = Field(default_factory=dict)
+    dataset_id_patterns: list[str] = Field(default_factory=list)
+    path_patterns: list[str] = Field(default_factory=list)
+
+    @field_validator("attrs", mode="before")
+    @classmethod
+    def _coerce_attrs(cls, v: object) -> dict[str, Any]:
+        return _dict_or_empty(v, label="DatasetMatcher.attrs")
+
+    @field_validator("dataset_id_patterns", mode="before")
+    @classmethod
+    def _coerce_dataset_id_patterns(cls, v: object) -> list[str]:
+        return [str(item) for item in _list_or_empty(v, label="DatasetMatcher.dataset_id_patterns")]
+
+    @field_validator("path_patterns", mode="before")
+    @classmethod
+    def _coerce_path_patterns(cls, v: object) -> list[str]:
+        return [str(item) for item in _list_or_empty(v, label="DatasetMatcher.path_patterns")]
+
+
+class ProviderMetadata(BaseModel):
+    """Runtime provider metadata."""
+
+    model_config = ConfigDict(frozen=True)
+
+    name: str
+    version: str | None = None
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def _coerce_name(cls, v: object) -> str:
+        return str(v or "").strip()
+
+    @field_validator("version", mode="before")
+    @classmethod
+    def _coerce_version(cls, v: object) -> str | None:
+        if v is None:
+            return None
+        stripped = str(v).strip()
+        return stripped or None
+
+
+class RecipeRuntimeMetadata(BaseModel):
+    """Runtime-only recipe metadata."""
+
+    model_config = ConfigDict(frozen=True)
+
+    provider: ProviderMetadata | None = None
+
+
+def parse_fix_ref(item: Any) -> FixRef:
+    if isinstance(item, str):
+        return FixRef(id=item)
+    if not isinstance(item, Mapping):
+        raise ValueError("Each fix entry must be a string or object")
+    return FixRef.model_validate(dict(item))
+
+
+class Recipe(BaseModel):
+    """Recipe with scoped fix references."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    aliases: list[str] = Field(default_factory=list)
+    description: str = ""
+    match: DatasetMatcher | None = None
+    steps: list[FixRef] = Field(default_factory=list)
+    links: list[Link] = Field(default_factory=list)
+    runtime_metadata: RecipeRuntimeMetadata | None = Field(default=None, repr=False, exclude=True)
+
+    @field_validator("description", mode="before")
+    @classmethod
+    def _coerce_description(cls, v: object) -> str:
+        return _string_or_empty(v)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_identity(cls, data: object) -> object:
+        if not isinstance(data, Mapping):
+            return data
+
+        payload = dict(data)
+        raw_id = IdentifierRules.normalize(payload.get("id", ""))
+        raw_prefix = IdentifierRules.normalize(payload.pop("prefix", ""))
+        raw_suffix = IdentifierRules.normalize(payload.pop("suffix", ""))
+        prefix = raw_prefix
+        suffix = raw_suffix
+
+        if raw_id:
+            IdentifierRules.validate_id("Recipe.id", raw_id)
+            parsed_prefix, parsed_suffix = raw_id.split(".", 1)
+            if prefix and prefix != parsed_prefix:
+                raise ValueError("Recipe prefix does not match id prefix")
+            if suffix and suffix != parsed_suffix:
+                raise ValueError("Recipe suffix does not match id suffix")
+            prefix = parsed_prefix
+            suffix = parsed_suffix
+
+        if prefix:
+            IdentifierRules.validate_suffix("Recipe prefix", prefix)
+        if suffix:
+            IdentifierRules.validate_suffix("Recipe suffix", suffix)
+
+        if prefix and suffix:
+            payload["id"] = f"{prefix}.{suffix}"
+        elif raw_id:
+            payload["id"] = raw_id
+
+        return payload
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def _normalize_and_validate_id(cls, v: object) -> str:
+        normalized = IdentifierRules.normalize(v)
+        if not normalized:
+            raise ValueError("Recipe.id must be a non-empty identifier")
+        IdentifierRules.validate_id("Recipe.id", normalized)
+        return normalized
+
+    @field_validator("aliases", mode="before")
+    @classmethod
+    def _coerce_aliases(cls, v: object) -> list[str]:
+        if v is None:
+            return []
+        if isinstance(v, str):
+            return [v]
+        if not isinstance(v, list):
+            raise ValueError("Recipe.aliases must be a list of strings")
+        return list(v)
+
+    @field_validator("steps", mode="before")
+    @classmethod
+    def _parse_fix_refs(cls, v: object) -> list[Any]:
+        items = _list_or_empty(v, label="Recipe 'steps'")
+        return [parse_fix_ref(item) if not isinstance(item, FixRef) else item for item in items]
+
+    @field_validator("links", mode="before")
+    @classmethod
+    def _coerce_links(cls, v: object) -> list[Any]:
+        return _list_or_empty(v, label="Recipe.links")
+
+    @model_validator(mode="after")
+    def _scope_fix_refs(self) -> Recipe:
+        """Scope local fix refs to this recipe prefix."""
+        self.aliases = list(
+            IdentifierRules.expand_aliases(
+                self.prefix,
+                self.id,
+                self.aliases,
+            )
+        )
+        self.steps = [
+            FixRef(id=self.resolve_fix_identifier(ref), options=ref.options, links=ref.links)
+            for ref in self.steps
+        ]
+        return self
+
+    @property
+    def prefix(self) -> str:
+        return self.id.split(".", 1)[0]
+
+    @property
+    def suffix(self) -> str:
+        return self.id.split(".", 1)[1]
+
+    @cached_property
+    def identifier_set(self) -> IdentifierSet:
+        """Cached identifier set for recipe identity."""
+        return IdentifierRules.build(self.prefix, self.suffix, aliases=self.aliases)
+
+    def resolve_fix_identifier(self, ref: FixRef) -> str:
+        token = IdentifierRules.normalize(ref.id)
+        if not token:
+            return token
+        if "." in token:
+            return token
+        return f"{self.prefix}.{token}"
+
+    def step_identifiers_and_options(self) -> tuple[tuple[str, ...], dict[str, dict[str, Any]]]:
+        """Return ordered step ids and per-step options."""
+
+        identifiers = tuple(self.resolve_fix_identifier(ref) for ref in self.steps)
+        options = {self.resolve_fix_identifier(ref): dict(ref.options) for ref in self.steps}
+        return identifiers, options
+
+    def runtime_metadata_dump(self) -> dict[str, Any] | None:
+        """Return optional runtime metadata for provenance/output contexts."""
+        if self.runtime_metadata is None:
+            return None
+        payload: dict[str, Any] = {}
+        provider = self.runtime_metadata.provider
+        if provider is not None and provider.name:
+            payload["provider"] = provider.model_dump(exclude_none=True)
+        return payload or None
+
+
+class RecipeDocument(BaseModel):
+    """Versioned collection of recipes."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: int = 1
+    recipes: list[Recipe] = Field(default_factory=list)
+
+    @field_validator("schema_version", mode="before")
+    @classmethod
+    def _validate_schema_version(cls, v: object) -> int:
+        return _coerce_schema_version(v)
+
+    @classmethod
+    def from_payload(cls, payload: Mapping[str, Any]) -> RecipeDocument:
+        schema_version = _coerce_schema_version(payload.get("schema_version", 1))
+        raw_recipes = payload.get("recipes")
+        if raw_recipes is None:
+            recipe_payload = {key: value for key, value in payload.items() if key != "schema_version"}
+            return cls(schema_version=schema_version, recipes=[Recipe.model_validate(recipe_payload)])
+        raw_recipes = _list_or_empty(raw_recipes, label="RecipeDocument 'recipes'")
+        return cls(
+            schema_version=schema_version,
+            recipes=[Recipe.model_validate(item) for item in raw_recipes if isinstance(item, Mapping)],
+        )
+
+    @classmethod
+    def from_json(cls, payload: str) -> RecipeDocument:
+        data = json.loads(payload)
+        if isinstance(data, list):
+            return cls(
+                schema_version=1,
+                recipes=[Recipe.model_validate(item) for item in data if isinstance(item, Mapping)],
+            )
+        if not isinstance(data, Mapping):
+            raise ValueError("RecipeDocument JSON payload must decode to an object or list")
+        return cls.from_payload(data)

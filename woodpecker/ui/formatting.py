@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 from typing import Sequence
 
-from ..fix_plans.models import FixPlan
 from ..fixes.registry import UNPRIORITIZED
+from ..recipes.models import Recipe
 
 
 def _priority_value(fix: object) -> int:
@@ -99,19 +99,19 @@ def format_fix_stats(
     )
 
 
-def format_plans(plans: Sequence[FixPlan], fmt: str) -> str:
-    """Format stored plans for CLI output."""
+def format_recipes(recipes: Sequence[Recipe], fmt: str) -> str:
+    """Format stored recipes for CLI output."""
 
     if fmt == "json":
-        return json.dumps([plan.model_dump() for plan in plans], indent=2)
+        return json.dumps([recipe.model_dump() for recipe in recipes], indent=2)
 
-    if not plans:
-        return "No plans found."
+    if not recipes:
+        return "No recipes found."
 
     lines: list[str] = []
-    for plan in plans:
-        plan_id = plan.id or "<unnamed>"
-        step_count = len(plan.steps)
+    for recipe in recipes:
+        recipe_id = recipe.id or "<unnamed>"
+        step_count = len(recipe.steps)
         label = "step" if step_count == 1 else "steps"
-        lines.append(f"{plan_id}: {step_count} {label}")
+        lines.append(f"{recipe_id}: {step_count} {label}")
     return "\n".join(lines)

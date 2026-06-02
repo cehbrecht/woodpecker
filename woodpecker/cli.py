@@ -11,14 +11,14 @@ import woodpecker.fixes  # noqa: F401
 from woodpecker.commands import (
     execute_check_context,
     execute_fix_context,
-    execute_load_plans,
+    execute_load_recipes,
 )
-from woodpecker.fix_plans.resolver import RunContext, resolve_run_context
 from woodpecker.fixes.registry import FixFunctionRegistry
 from woodpecker.io import get_io_availability
 from woodpecker.provenance import write_fix_provenance
-from woodpecker.stores.helpers import create_fix_plan_store
-from woodpecker.ui.formatting import format_findings, format_fix_stats, format_fixes, format_plans
+from woodpecker.recipes.resolver import RunContext, resolve_run_context
+from woodpecker.stores.helpers import create_recipe_store
+from woodpecker.ui.formatting import format_findings, format_fix_stats, format_fixes, format_recipes
 
 T = TypeVar("T")
 STORE_CHOICES = ["catalog", "json", "duckdb", "auto"]
@@ -58,18 +58,18 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
     click.echo(format_fixes(fixes, fmt))
 
 
-@cli.command("list-plans")
+@cli.command("list-recipes")
 @click.option(
     "--store",
     "store_type",
     type=click.Choice(STORE_CHOICES),
     default="catalog",
     show_default=True,
-    help="FixPlanStore backend.",
+    help="RecipeStore backend.",
 )
 @click.option(
-    "--plan",
-    "plan_location",
+    "--recipe",
+    "recipe_location",
     type=click.Path(path_type=Path),
     required=False,
     help=(
@@ -78,31 +78,31 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
     ),
 )
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
-def list_plans(store_type: str, plan_location: Path | None, fmt: str):
-    """List FixPlan entries from a configured store backend.
+def list_recipes(store_type: str, recipe_location: Path | None, fmt: str):
+    """List Recipe entries from a configured store backend.
 
-    Catalog mode discovers plans from package resources, user config, system
-    locations, and optional `--plan` paths.
+    Catalog mode discovers recipes from package resources, user config, system
+    locations, and optional `--recipe` paths.
     """
 
-    store = _with_click_errors(lambda: create_fix_plan_store(store_type, plan_location))
-    plans = _with_click_errors(store.list_plans)
+    store = _with_click_errors(lambda: create_recipe_store(store_type, recipe_location))
+    recipes = _with_click_errors(store.list_recipes)
 
-    click.echo(format_plans(plans, fmt))
+    click.echo(format_recipes(recipes, fmt))
 
 
-@cli.command("load-plans")
+@cli.command("load-recipes")
 @click.option(
     "--store",
     "store_type",
     type=click.Choice(WRITABLE_STORE_CHOICES),
     default="json",
     show_default=True,
-    help="Target FixPlanStore backend.",
+    help="Target RecipeStore backend.",
 )
 @click.option(
-    "--plan",
-    "plan_location",
+    "--recipe",
+    "recipe_location",
     type=click.Path(path_type=Path),
     required=True,
     help=(
@@ -111,12 +111,12 @@ def list_plans(store_type: str, plan_location: Path | None, fmt: str):
     ),
 )
 @click.option(
-    "--from-plan",
-    "from_plan",
+    "--from-recipe",
+    "from_recipe",
     type=click.Path(path_type=Path),
     required=False,
     help=(
-        "Source plan location interpreted by --from-store "
+        "Source recipe location interpreted by --from-store "
         "(catalog: extra file/directory, JSON: local file, DuckDB: database file; not needed for auto)."
     ),
 )
@@ -126,34 +126,34 @@ def list_plans(store_type: str, plan_location: Path | None, fmt: str):
     type=click.Choice(STORE_CHOICES),
     default="json",
     show_default=True,
-    help="Source FixPlanStore backend for --from-plan location.",
+    help="Source RecipeStore backend for --from-recipe location.",
 )
-@click.option("--plan-id", "plan_id", default=None, help="Load only this plan id from source.")
+@click.option("--recipe-id", "recipe_id", default=None, help="Load only this recipe id from source.")
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
-def load_plans(
+def load_recipes(
     store_type: str,
-    plan_location: Path,
-    from_plan: Path | None,
+    recipe_location: Path,
+    from_recipe: Path | None,
     from_store: str,
-    plan_id: str | None,
+    recipe_id: str | None,
     fmt: str,
 ):
-    """Load plans into a target store from a source store location."""
+    """Load recipes into a target store from a source store location."""
     result = _with_click_errors(
-        lambda: execute_load_plans(
+        lambda: execute_load_recipes(
             store_type=store_type,
-            plan_location=plan_location,
-            from_plan=from_plan,
+            recipe_location=recipe_location,
+            from_recipe=from_recipe,
             from_store=from_store,
-            plan_id=plan_id,
+            recipe_id=recipe_id,
         )
     )
     if fmt == "json":
         click.echo(json.dumps(result, indent=2))
     else:
         click.echo(
-            f"Loaded {result['loaded']} plan(s) into {result['target_store']} store at {result['target_path']}: "
-            + ", ".join(result["plan_ids"])
+            f"Loaded {result['loaded']} recipe(s) into {result['target_store']} store at {result['target_path']}: "
+            + ", ".join(result["recipe_ids"])
         )
 
 
@@ -165,11 +165,11 @@ def load_plans(
     type=click.Choice(STORE_CHOICES),
     default="json",
     show_default=True,
-    help="FixPlanStore backend (default: json).",
+    help="RecipeStore backend (default: json).",
 )
 @click.option(
-    "--plan",
-    "plan",
+    "--recipe",
+    "recipe",
     type=click.Path(path_type=Path),
     default=None,
     help=(
@@ -177,7 +177,7 @@ def load_plans(
         "(catalog: extra file/directory, JSON: local file, DuckDB: database file; not needed for auto)."
     ),
 )
-@click.option("--plan-id", "plan_id", default=None, help="Select a specific stored plan id.")
+@click.option("--recipe-id", "recipe_id", default=None, help="Select a specific stored recipe id.")
 @click.option("--dataset", default=None, help="Filter fixes by dataset.")
 @click.option(
     "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
@@ -198,8 +198,8 @@ def load_plans(
 def check_cmd(
     paths: tuple[Path, ...],
     store_type: str,
-    plan: Path | None,
-    plan_id: str | None,
+    recipe: Path | None,
+    recipe_id: str | None,
     dataset: str | None,
     categories: tuple[str, ...],
     identifiers: tuple[str, ...],
@@ -211,8 +211,8 @@ def check_cmd(
         lambda: resolve_run_context(
             paths=paths,
             store_type=store_type,
-            plan_location=plan,
-            plan_id=plan_id,
+            recipe_location=recipe,
+            recipe_id=recipe_id,
             dataset=dataset,
             categories=categories,
             identifiers=identifiers,
@@ -254,11 +254,11 @@ def io_status(fmt: str):
     type=click.Choice(STORE_CHOICES),
     default="json",
     show_default=True,
-    help="FixPlanStore backend (default: json).",
+    help="RecipeStore backend (default: json).",
 )
 @click.option(
-    "--plan",
-    "plan",
+    "--recipe",
+    "recipe",
     type=click.Path(path_type=Path),
     default=None,
     help=(
@@ -266,7 +266,7 @@ def io_status(fmt: str):
         "(catalog: extra file/directory, JSON: local file, DuckDB: database file; not needed for auto)."
     ),
 )
-@click.option("--plan-id", "plan_id", default=None, help="Select a specific stored plan id.")
+@click.option("--recipe-id", "recipe_id", default=None, help="Select a specific stored recipe id.")
 @click.option("--dataset", default=None, help="Filter fixes by dataset.")
 @click.option(
     "--category", "categories", multiple=True, help="Filter fixes by category (repeatable)"
@@ -325,8 +325,8 @@ def io_status(fmt: str):
 def fix_cmd(
     paths: tuple[Path, ...],
     store_type: str,
-    plan: Path | None,
-    plan_id: str | None,
+    recipe: Path | None,
+    recipe_id: str | None,
     dataset: str | None,
     categories: tuple[str, ...],
     identifiers: tuple[str, ...],
@@ -345,8 +345,8 @@ def fix_cmd(
         context = resolve_run_context(
             paths=paths,
             store_type=store_type,
-            plan_location=plan,
-            plan_id=plan_id,
+            recipe_location=recipe,
+            recipe_id=recipe_id,
             dataset=dataset,
             categories=categories,
             identifiers=identifiers,
@@ -374,7 +374,7 @@ def fix_cmd(
                 stats,
                 dry_run=dry_run,
                 store_type=store_type,
-                plan_location=plan,
+                recipe_location=recipe,
                 provenance_path=provenance_path,
             )
         )
