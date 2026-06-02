@@ -22,10 +22,10 @@ Possible recipe names could be oriented around user goals:
 - normalize xMIP-style CMIP6 preprocessing,
 - clean C3S Atlas output.
 
-Internally these recipes can still be fix plans. In user documentation, CLI
-messages, and notebooks, prefer `recipe` when the object represents a
-ready-to-run workflow. Keep `fix plan` for contributor docs, schemas, storage
-backends, and API internals.
+In user documentation, CLI messages, and notebooks, prefer `recipe` when the
+object represents a ready-to-run workflow. Contributor docs, schemas, storage
+backends, and API internals should move to the same vocabulary once the code
+rename lands.
 
 ESMValTool already uses the word recipe for configured analysis workflows. That
 can help users understand the idea quickly, as long as Woodpecker documentation
@@ -92,16 +92,16 @@ or YAML by hand.
 Example direction:
 
 ```python
-from woodpecker.fix_plans import fix, plan
+from woodpecker.recipes import fix, recipe
 
-cmip6 = plan("cmip6.cleanup").steps(
+cmip6 = recipe("cmip6.cleanup").steps(
     fix("woodpecker.rename_variables", mapping={"x": ["i"], "y": ["j"]}),
     fix("woodpecker.convert_units", units={"lev": "m"}),
 )
 ```
 
 These examples should show how to generate JSON or YAML when users need a
-shareable recipe file or contributor-facing plan document.
+shareable recipe file or contributor-facing recipe document.
 
 ## Add Confidence Or Risk Labels
 
@@ -115,8 +115,8 @@ Possible labels:
 - careful: coordinate interpolation,
 - careful: value transformation.
 
-Risk labels would be useful in check output, dry-run previews, plan references,
-and interactive workflows.
+Risk labels would be useful in check output, dry-run previews, recipe
+references, and interactive workflows.
 
 ## Keep User-Facing Names Simple
 

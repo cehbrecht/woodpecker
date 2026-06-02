@@ -1,10 +1,10 @@
 # Plugins
 
 Woodpecker keeps dataset-family behavior in plugins. Each plugin registers fixes
-under a stable namespace prefix, and plugins may also bundle discovered fix
-plans in a package `plans/` directory.
+under a stable namespace prefix, and plugins may also bundle discovered recipes
+in a package `recipes/` directory.
 
-| Plugin package | Prefix | Fixes | Plans | Status |
+| Plugin package | Prefix | Fixes | Recipes | Status |
 | -------------- | ------ | ----: | ----: | ------ |
 | `woodpecker-atlas-plugin` | `atlas` | 2 | 1 | bundled |
 | `woodpecker-cmip6-plugin` | `cmip6` | 1 | 0 | bundled |
@@ -12,21 +12,21 @@ plans in a package `plans/` directory.
 | `woodpecker-cmip7-plugin` | `cmip7` | 3 | 2 | bundled |
 | `woodpecker-xmip-plugin` | `xmip` | 13 | 2 | demo |
 
-## Using Plugin Plans
+## Using Plugin Recipes
 
-Installed plugin plans are available through the same API as core plans:
+Installed plugin recipes are available through the same API as core recipes:
 
 ```python
-plan = woodpecker.plan.get("atlas.basic")
-findings = woodpecker.plan.check(dataset, plan)
+recipe = woodpecker.recipe.get("atlas.basic")
+findings = woodpecker.recipe.check(dataset, recipe)
 ```
 
-The xMIP plugin is currently a demo of an xMIP-style CMIP6 preprocessing plan
+The xMIP plugin is currently a demo of an xMIP-style CMIP6 preprocessing recipe
 expressed as small Woodpecker fixes:
 
 ```python
-plan = woodpecker.plan.get("xmip.cmip6_preprocessing")
+recipe = woodpecker.recipe.get("xmip.cmip6_preprocessing")
 ```
 
 Use the [Generated Fixes Reference](FIXES.md) and
-[Generated Fix Plans Reference](FIX_PLANS.md) for the full registered reference.
+[Generated Recipes Reference](FIX_PLANS.md) for the full registered reference.
