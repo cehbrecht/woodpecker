@@ -39,7 +39,7 @@ def build_prov_document(
     selected_fix_ids: list[str],
     selected_fixes: Iterable[Any] | None,
     selected_recipes: Iterable[Any] | None,
-    stats: dict[str, int],
+    stats: dict[str, Any],
     mode: str,
     output_format: str,
     recipe: str | None = None,
@@ -147,7 +147,7 @@ def write_prov_document(document: dict[str, Any], path: Path) -> None:
 
 def write_fix_provenance(
     context: Any,
-    stats: dict[str, int],
+    stats: dict[str, Any],
     dry_run: bool,
     store_type: str,
     recipe_location: Path | None,

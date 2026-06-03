@@ -57,6 +57,8 @@ recipe = woodpecker.recipe.get("cmip6.core_units")
 findings = woodpecker.recipe.check(dataset, recipe)
 
 if findings:
+    result = woodpecker.recipe.fix(dataset, recipe, dry_run=True)
+    result.preview
     woodpecker.recipe.fix(dataset, recipe, dry_run=False)
 ```
 

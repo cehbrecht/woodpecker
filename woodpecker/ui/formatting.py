@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Mapping, Sequence
 
 from ..fixes.registry import UNPRIORITIZED
 from ..recipes.models import Recipe
@@ -65,7 +65,7 @@ def format_findings(findings: list[dict[str, str]], fmt: str) -> str:
 
 
 def format_fix_stats(
-    stats: dict[str, int],
+    stats: Mapping[str, Any],
     *,
     fmt: str,
     dry_run: bool,
@@ -87,16 +87,24 @@ def format_fix_stats(
         return json.dumps(payload, indent=2)
 
     mode = "dry-run" if dry_run else "write"
+    preview = list(stats.get("preview", ()))
     if not dry_run:
         return (
             f"Fix run complete ({mode}): {stats['attempted']} fix applications attempted, "
             f"{stats['changed']} files changed, {stats['persisted']} persisted, "
             f"{stats['persist_failed']} failed to persist."
         )
-    return (
+    lines = [
         f"Fix run complete ({mode}): {stats['attempted']} fix applications attempted, "
         f"{stats['changed']} files changed."
-    )
+    ]
+    if preview:
+        lines.append("Preview:")
+        for item in preview:
+            outcome = "would change" if item.get("changed") else "no change"
+            name = item.get("name") or item.get("fix_id", "")
+            lines.append(f"  {item.get('path', '')}: {item.get('fix_id', '')} ({name}) - {outcome}")
+    return "\n".join(lines)
 
 
 def format_recipes(recipes: Sequence[Recipe], fmt: str) -> str:

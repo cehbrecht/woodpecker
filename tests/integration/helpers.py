@@ -40,25 +40,24 @@ def assert_no_core_fixes_reported(dataset) -> None:
 def assert_fix_dry_run_reports_change(dataset, fix_id: str, *, fix_options=None) -> None:
     result = fix(dataset, fixes=fix_id, options=fix_options, dry_run=True)
 
-    assert result.stats == {
-        "attempted": 1,
-        "changed": 1,
-        "persist_attempted": 0,
-        "persisted": 0,
-        "persist_failed": 0,
-    }
+    assert result.attempted == 1
+    assert result.changed == 1
+    assert result.persist_attempted == 0
+    assert result.persisted == 0
+    assert result.failed == 0
+    assert len(result.preview) == 1
+    assert result.preview[0]["fix_id"] == fix_id
+    assert result.preview[0]["changed"] is True
 
 
 def assert_fix_write_reports_change(dataset, fix_id: str, *, fix_options=None) -> None:
     result = fix(dataset, fixes=fix_id, options=fix_options, dry_run=False)
 
-    assert result.stats == {
-        "attempted": 1,
-        "changed": 1,
-        "persist_attempted": 1,
-        "persisted": 1,
-        "persist_failed": 0,
-    }
+    assert result.attempted == 1
+    assert result.changed == 1
+    assert result.persist_attempted == 1
+    assert result.persisted == 1
+    assert result.failed == 0
 
 
 def assert_check_fix_cycle(

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Any, Iterable
+from typing import TYPE_CHECKING, Any, Iterable, TypedDict
 
 from woodpecker.identity import dataset_type_matches_declared, resolve_dataset_identity
 from woodpecker.io import DataInput, get_output_adapter
@@ -10,6 +10,26 @@ from woodpecker.io.runtime import strict_io_mode
 
 if TYPE_CHECKING:
     from woodpecker.recipes.models import Recipe
+
+
+class FixPreview(TypedDict):
+    """Per-input fix application preview emitted by run_fix."""
+
+    path: str
+    fix_id: str
+    name: str
+    changed: bool
+
+
+class FixRunStats(TypedDict):
+    """Structured stats emitted by run_fix."""
+
+    attempted: int
+    changed: int
+    persist_attempted: int
+    persisted: int
+    persist_failed: int
+    preview: list[FixPreview]
 
 
 def run_check(
@@ -54,12 +74,13 @@ def run_fix(
     embed_provenance_metadata: bool = False,
     provenance_run_id: str | None = None,
     strict_io: bool = False,
-) -> dict[str, int]:
+) -> FixRunStats:
     changed = 0
     attempted = 0
     persist_attempted = 0
     persisted = 0
     persist_failed = 0
+    preview: list[FixPreview] = []
     output_adapter = get_output_adapter(output_format)
     with strict_io_mode(strict_io):
         for data_input in inputs:
@@ -79,6 +100,14 @@ def run_fix(
                 )
                 if attempted_fix:
                     attempted += 1
+                    preview.append(
+                        {
+                            "path": data_input.reference,
+                            "fix_id": fix_id,
+                            "name": getattr(fix, "name", ""),
+                            "changed": changed_fix,
+                        }
+                    )
                 if changed_fix:
                     changed += 1
                     dataset_changed = True
@@ -108,6 +137,7 @@ def run_fix(
         "persist_attempted": persist_attempted,
         "persisted": persisted,
         "persist_failed": persist_failed,
+        "preview": preview,
     }
 
 

@@ -98,6 +98,10 @@ Preview changes first:
 woodpecker fix ./data --recipe-id cmip6.core_units --dry-run
 ```
 
+Dry-run output includes a preview section with the input path, selected fix id,
+fix name, and whether that fix would change the dataset. Use `--format json`
+to consume the same preview entries programmatically.
+
 Apply a discovered recipe:
 
 ```bash

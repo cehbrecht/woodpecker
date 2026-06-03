@@ -9,6 +9,7 @@ from woodpecker.selection import select_fixes
 
 if TYPE_CHECKING:
     from woodpecker.recipes.resolver import RunContext
+    from woodpecker.runner import FixRunStats
 
 
 class RunFixKwargs(TypedDict, total=False):
@@ -83,7 +84,7 @@ def execute_fix(
     fix_options: dict[str, dict[str, Any]] | None = None,
     ordered_identifiers: Sequence[str] = (),
     strict_io: bool = False,
-) -> dict[str, int]:
+) -> "FixRunStats":
     normalized = normalize_inputs(inputs)
     fixes = select_fixes(
         dataset=dataset,
@@ -146,7 +147,7 @@ def execute_fix_recipe(
     recipe_id: str | None = None,
     store_type: str = "json",
     strict_io: bool = False,
-) -> dict[str, int]:
+) -> "FixRunStats":
     normalized, resolved_identifiers, resolved_ordered_identifiers, resolved_fix_options = (
         _resolve_recipe_api_selection(
             recipe_path=recipe_path,
@@ -212,7 +213,7 @@ def execute_fix_context(
     embed_provenance_metadata: bool,
     provenance_run_id: str | None,
     strict_io: bool = False,
-) -> dict[str, int]:
+) -> "FixRunStats":
     """Run fix execution from a pre-resolved run context."""
 
     if force_apply and not context.resolved_identifiers:

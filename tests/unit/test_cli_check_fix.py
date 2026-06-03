@@ -19,13 +19,21 @@ def _finding(message: str = "synthetic finding") -> dict[str, str]:
     }
 
 
-def _fix_stats(*, persisted: int = 1, persist_failed: int = 0) -> dict[str, int]:
+def _fix_stats(*, persisted: int = 1, persist_failed: int = 0) -> dict[str, object]:
     return {
         "attempted": 1,
         "changed": 1,
         "persist_attempted": 1,
         "persisted": persisted,
         "persist_failed": persist_failed,
+        "preview": [
+            {
+                "path": "cmip6_case.nc",
+                "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
+                "name": "Normalize units",
+                "changed": True,
+            }
+        ],
     }
 
 
@@ -100,6 +108,7 @@ def test_fix_json_output_contains_write_report(
     assert payload["persisted"] == stats["persisted"]
     assert payload["persist_failed"] == stats["persist_failed"]
     assert payload["force_apply"] is False
+    assert payload["preview"][0]["path"] == "cmip6_case.nc"
 
 
 def test_check_unknown_fix_code_returns_click_error(
