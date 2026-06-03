@@ -32,6 +32,7 @@ class DecadalFillValueEncodingCleanup(FixFunction):
     categories = ["encoding", "metadata"]
     priority = 16
     dataset = "CMIP6-decadal"
+    risk = "safe: encoding metadata"
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return is_cmip6_decadal_netcdf(dataset)

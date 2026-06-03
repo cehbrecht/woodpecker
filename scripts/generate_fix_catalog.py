@@ -20,13 +20,14 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
         "",
     ]
     json_list = []
-    grouped_rows: dict[str, list[tuple[str, str, str, str, str, int, str]]] = {"core": []}
+    grouped_rows: dict[str, list[tuple[str, str, str, str, str, int, str, str]]] = {"core": []}
 
     for f in fixes:
         cats = ", ".join(getattr(f, "categories", []) or [])
         source = FixFunctionRegistry.source_label(f)
+        risk = getattr(f, "risk", "")
         fix_id = f.id
-        row = (fix_id, f.name, f.description, cats, f.dataset or "", f.priority, source)
+        row = (fix_id, f.name, f.description, cats, f.dataset or "", f.priority, risk, source)
         if source == "core":
             grouped_rows["core"].append(row)
         else:
@@ -42,6 +43,7 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
             "categories": getattr(f, "categories", []) or [],
             "dataset": f.dataset,
             "priority": f.priority,
+            "risk": risk,
         }
         entry["source"] = source
         json_list.append(entry)
@@ -56,13 +58,13 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
             [
                 heading,
                 "",
-                "| ID | Name | Description | Categories | Dataset | Priority | Source |",
-                "|----|------|-------------|------------|---------|---------|--------|",
+                "| ID | Name | Description | Categories | Dataset | Priority | Risk | Source |",
+                "|----|------|-------------|------------|---------|---------|------|--------|",
             ]
         )
-        for fix_id, name, description, cats, dataset, priority, source in rows:
+        for fix_id, name, description, cats, dataset, priority, risk, source in rows:
             md_lines.append(
-                f"| {fix_id} | {name} | {description} | {cats} | {dataset} | {priority} | {source} |"
+                f"| {fix_id} | {name} | {description} | {cats} | {dataset} | {priority} | {risk} | {source} |"
             )
         md_lines.append("")
 

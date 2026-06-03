@@ -77,6 +77,7 @@ class ConfigurableCmip7ReformatBridge(FixFunction):
     categories = ["structure", "metadata"]
     priority = 43
     dataset = "CMIP7"
+    risk = "careful: workflow transformation"
 
     def _config(self) -> dict[str, Any]:
         return getattr(self, "config", {}) or {}

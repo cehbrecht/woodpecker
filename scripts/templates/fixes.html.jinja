@@ -59,6 +59,7 @@
         <th>Categories</th>
         <th>Dataset</th>
         <th>Priority</th>
+        <th>Risk</th>
         <th>Source</th>
       </tr>
     </thead>
@@ -71,6 +72,7 @@
         <td>{{ (f.categories or []) | join(', ') }}</td>
         <td>{{ f.dataset or '' }}</td>
         <td>{{ f.priority }}</td>
+        <td>{{ f.risk }}</td>
         <td>
           {% if f.source_kind == 'core' %}
             <span class="source-badge source-core">core</span>

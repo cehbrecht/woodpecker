@@ -29,8 +29,8 @@ def format_fixes(fixes: list[object], fmt: str) -> str:
 
     if fmt == "md":
         lines = [
-            "| ID | Name | Description | Categories | Dataset | Priority |",
-            "|----|------|-------------|------------|---------|---------|",
+            "| ID | Name | Description | Categories | Dataset | Priority | Risk |",
+            "|----|------|-------------|------------|---------|---------|------|",
         ]
         for fix in fixes:
             cats = ", ".join(getattr(fix, "categories", []) or [])
@@ -41,7 +41,8 @@ def format_fixes(fixes: list[object], fmt: str) -> str:
                 f"{getattr(fix, 'description', '')} | "
                 f"{cats} | "
                 f"{getattr(fix, 'dataset', None) or ''} | "
-                f"{_priority_value(fix)} |"
+                f"{_priority_value(fix)} | "
+                f"{getattr(fix, 'risk', '')} |"
             )
         return "\n".join(lines)
 
@@ -51,7 +52,7 @@ def format_fixes(fixes: list[object], fmt: str) -> str:
         lines.append(
             f"{getattr(fix, 'id', '')}: {getattr(fix, 'description', '')} "
             f"(cats: {cats}; dataset: {getattr(fix, 'dataset', None) or '-'}; "
-            f"priority: {_priority_value(fix)})"
+            f"priority: {_priority_value(fix)}; risk: {getattr(fix, 'risk', '')})"
         )
     return "\n".join(lines)
 
@@ -61,7 +62,10 @@ def format_findings(findings: list[dict[str, str]], fmt: str) -> str:
 
     if fmt == "json":
         return json.dumps(findings, indent=2)
-    return "\n".join(f"{item['path']}: {item['fix_id']} {item['message']}" for item in findings)
+    return "\n".join(
+        f"{item['path']}: {item['fix_id']} [{item.get('risk', '')}] {item['message']}"
+        for item in findings
+    )
 
 
 def format_fix_stats(
@@ -103,7 +107,11 @@ def format_fix_stats(
         for item in preview:
             outcome = "would change" if item.get("changed") else "no change"
             name = item.get("name") or item.get("fix_id", "")
-            lines.append(f"  {item.get('path', '')}: {item.get('fix_id', '')} ({name}) - {outcome}")
+            risk = item.get("risk", "")
+            lines.append(
+                f"  {item.get('path', '')}: {item.get('fix_id', '')} "
+                f"({name}; {risk}) - {outcome}"
+            )
     return "\n".join(lines)
 
 

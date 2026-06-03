@@ -15,6 +15,7 @@ def _finding(message: str = "synthetic finding") -> dict[str, str]:
         "path": "cmip6_bad.nc",
         "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
         "name": "Common check",
+        "risk": "careful: value transformation",
         "message": message,
     }
 
@@ -31,6 +32,7 @@ def _fix_stats(*, persisted: int = 1, persist_failed: int = 0) -> dict[str, obje
                 "path": "cmip6_case.nc",
                 "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Normalize units",
+                "risk": "careful: value transformation",
                 "changed": True,
             }
         ],
@@ -59,8 +61,9 @@ def test_check_json_output_structure(
     payload = json.loads(result.output)
     assert isinstance(payload, list)
     assert payload
-    assert {"path", "fix_id", "name", "message"}.issubset(payload[0].keys())
+    assert {"path", "fix_id", "name", "risk", "message"}.issubset(payload[0].keys())
     assert payload[0]["fix_id"] == "woodpecker.normalize_tas_units_to_kelvin"
+    assert payload[0]["risk"] == "careful: value transformation"
 
 
 @pytest.mark.parametrize(
@@ -109,6 +112,7 @@ def test_fix_json_output_contains_write_report(
     assert payload["persist_failed"] == stats["persist_failed"]
     assert payload["force_apply"] is False
     assert payload["preview"][0]["path"] == "cmip6_case.nc"
+    assert payload["preview"][0]["risk"] == "careful: value transformation"
 
 
 def test_check_unknown_fix_code_returns_click_error(

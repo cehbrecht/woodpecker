@@ -131,9 +131,12 @@ class FixFunctionRegistry:
         name = str(getattr(fix, "name", "") or "").strip()
         categories = getattr(fix, "categories", []) or []
         priority = getattr(fix, "priority", UNPRIORITIZED)
+        risk = str(getattr(fix, "risk", "") or "").strip()
 
         if not name:
             raise ValueError(f"Fix function {fix_cls.__name__} must define a non-empty 'name'")
+        if not risk:
+            raise ValueError(f"Fix function {fix_cls.__name__} must define a non-empty 'risk'")
         if not isinstance(priority, int):
             raise ValueError(
                 f"Fix function {fix_cls.__name__} must define 'priority' as an integer"
@@ -245,6 +248,7 @@ class FixFunctionRegistry:
                     "categories": list(getattr(f, "categories", []) or []),
                     "dataset": getattr(f, "dataset", None),
                     "priority": getattr(f, "priority", UNPRIORITIZED),
+                    "risk": getattr(f, "risk", ""),
                 }
             )
 

@@ -64,6 +64,7 @@ class RenameCmip6Axes(XmipCmip6Transform):
     name = "Rename CMIP6 axes"
     description = "Normalizes common CMIP6 dimension and coordinate names to x, y, lev, lon, lat, and bounds names."
     categories = ["structure"]
+    risk = "safe: reversible rename"
     message = "CMIP6 axes and coordinate names can be normalized"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -76,6 +77,7 @@ class MarkSpatialCoords(XmipCmip6Transform):
     name = "Mark spatial coordinates"
     description = "Moves known spatial, vertical, and bounds variables into the coordinate set."
     categories = ["structure", "metadata"]
+    risk = "safe: metadata only"
     message = "known spatial and bounds variables can be marked as coordinates"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -88,6 +90,7 @@ class BroadcastLonLat(XmipCmip6Transform):
     name = "Broadcast lon/lat coordinates"
     description = "Ensures lon and lat coordinates are available as two-dimensional grid coordinates when possible."
     categories = ["structure"]
+    risk = "careful: coordinate creation"
     message = "lon/lat coordinates can be broadcast to the model grid"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -102,6 +105,7 @@ class NormalizeCoordinateUnits(XmipCmip6Transform):
         "Converts supported CMIP6 coordinate units to xMIP target units, currently lev to meters."
     )
     categories = ["metadata", "coordinates"]
+    risk = "careful: coordinate transformation"
     message = "supported coordinate units can be normalized"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -114,6 +118,7 @@ class ReplaceXYWithNominalLonLat(XmipCmip6Transform):
     name = "Replace x/y with nominal lon/lat"
     description = "Approximates x and y coordinate values from representative lon/lat slices and sorts the grid."
     categories = ["coordinates"]
+    risk = "careful: coordinate transformation"
     message = "x/y coordinates can be replaced with nominal lon/lat values"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -126,6 +131,7 @@ class NormalizeLonLatBounds(XmipCmip6Transform):
     name = "Normalize lon/lat bounds"
     description = "Normalizes lon/lat bounds shape and naming, including vertex-style bounds."
     categories = ["structure", "coordinates"]
+    risk = "careful: coordinate transformation"
     message = "lon/lat bounds can be normalized"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -138,6 +144,7 @@ class SortVertexOrder(XmipCmip6Transform):
     name = "Sort vertex order"
     description = "Sorts grid-cell vertices into a consistent lower-left, upper-left, upper-right, lower-right order."
     categories = ["coordinates"]
+    risk = "careful: coordinate transformation"
     message = "vertex order can be normalized"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -150,6 +157,7 @@ class ConvertBoundsToVertices(XmipCmip6Transform):
     name = "Convert bounds to vertices"
     description = "Creates rectangular lon/lat vertex coordinates from lon/lat bounds when vertices are missing."
     categories = ["structure", "coordinates"]
+    risk = "careful: coordinate creation"
     message = "lon/lat vertices can be derived from bounds"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -164,6 +172,7 @@ class ConvertVerticesToBounds(XmipCmip6Transform):
         "Creates lon/lat bounds from vertex-style lon/lat coordinates when bounds are missing."
     )
     categories = ["structure", "coordinates"]
+    risk = "careful: coordinate creation"
     message = "lon/lat bounds can be derived from vertices"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -176,6 +185,7 @@ class KnownCmip6Metadata(XmipCmip6Transform):
     name = "Fix known CMIP6 metadata"
     description = "Applies selected known CMIP6 metadata corrections from xMIP preprocessing."
     categories = ["metadata"]
+    risk = "safe: metadata only"
     message = "known CMIP6 metadata corrections can be applied"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -188,6 +198,7 @@ class DropHelperGridCoords(XmipCmip6Transform):
     name = "Drop helper grid coordinates"
     description = "Drops helper bnds and vertex coordinate variables after bounds and vertices are normalized."
     categories = ["structure"]
+    risk = "careful: variable removal"
     message = "helper grid coordinates can be dropped"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:

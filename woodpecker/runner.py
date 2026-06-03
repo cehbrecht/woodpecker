@@ -18,6 +18,7 @@ class FixPreview(TypedDict):
     path: str
     fix_id: str
     name: str
+    risk: str
     changed: bool
 
 
@@ -56,6 +57,7 @@ def run_check(
                             "path": data_input.reference,
                             "fix_id": getattr(fix, "id", ""),
                             "name": fix.name,
+                            "risk": getattr(fix, "risk", ""),
                             "message": message,
                         }
                     )
@@ -105,6 +107,7 @@ def run_fix(
                             "path": data_input.reference,
                             "fix_id": fix_id,
                             "name": getattr(fix, "name", ""),
+                            "risk": getattr(fix, "risk", ""),
                             "changed": changed_fix,
                         }
                     )

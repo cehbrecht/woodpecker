@@ -23,6 +23,7 @@ def test_registry_rejects_invalid_suffix_pattern():
             categories = ["metadata"]
             priority = 10
             dataset = None
+            risk = "safe: metadata only"
 
         FixFunctionRegistry.register(_InvalidCode)
 
@@ -38,6 +39,22 @@ def test_registry_rejects_missing_name():
             dataset = None
 
         FixFunctionRegistry.register(_MissingName)
+
+
+def test_registry_rejects_missing_risk():
+    with pytest.raises(ValueError, match="non-empty 'risk'"):
+
+        class _MissingRisk:
+            prefix = "test"
+            suffix = "missing_risk"
+            name = "Missing risk"
+            description = ""
+            categories = ["metadata"]
+            priority = 10
+            dataset = None
+            risk = ""
+
+        FixFunctionRegistry.register(_MissingRisk)
 
 
 def test_registry_rejects_priority_below_unprioritized_sentinel():
@@ -65,6 +82,7 @@ def test_register_fix_function_decorator_registers_class():
         categories = ["metadata"]
         priority = 10
         dataset = None
+        risk = "safe: metadata only"
 
     registered = register_fix_function(_Alias)
     assert registered is _Alias
@@ -179,6 +197,7 @@ def test_registry_suffix_derivation_falls_back_to_class_name_snake_case():
         categories = ["metadata"]
         priority = 10
         dataset = None
+        risk = "safe: metadata only"
 
     register_fix_function(FallbackFromClassName)
     assert FallbackFromClassName.id == "test.fallback_from_class_name"
@@ -253,6 +272,7 @@ def test_registry_resolves_ids_and_aliases_for_known_fixes():
 def test_registry_instantiate_returns_fix_for_id():
     fix = FixFunctionRegistry.instantiate("woodpecker.normalize_tas_units_to_kelvin")
     assert getattr(fix, "id", "") == "woodpecker.normalize_tas_units_to_kelvin"
+    assert getattr(fix, "risk", "") == "careful: value transformation"
 
 
 def test_registry_instantiate_returns_fresh_instance_each_time():

@@ -30,6 +30,7 @@ class EnsureProjectIdIsPresent(FixFunction):
     categories = ["metadata"]
     priority = 41
     dataset = "CMIP7"
+    risk = "safe: metadata only"
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _needs_project_id(dataset)

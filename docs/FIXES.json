@@ -11,6 +11,7 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 10,
+    "risk": "safe: metadata only",
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -26,6 +27,7 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 11,
+    "risk": "safe: metadata only",
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -40,6 +42,7 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 12,
+    "risk": "careful: variable creation",
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -55,6 +58,7 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 13,
+    "risk": "safe: encoding metadata",
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -69,6 +73,7 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 14,
+    "risk": "safe: metadata only",
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -84,6 +89,7 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 15,
+    "risk": "careful: dtype transformation",
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -99,6 +105,7 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 16,
+    "risk": "safe: encoding metadata",
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -113,6 +120,7 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 17,
+    "risk": "safe: metadata only",
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -127,6 +135,7 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 18,
+    "risk": "safe: metadata only",
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -141,6 +150,7 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 19,
+    "risk": "safe: metadata only",
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -155,6 +165,7 @@
     ],
     "dataset": "ATLAS",
     "priority": 20,
+    "risk": "safe: encoding metadata",
     "source": "plugin:woodpecker_atlas_plugin"
   },
   {
@@ -169,6 +180,7 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 20,
+    "risk": "safe: metadata only",
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -183,6 +195,7 @@
     ],
     "dataset": "ATLAS",
     "priority": 21,
+    "risk": "safe: metadata only",
     "source": "plugin:woodpecker_atlas_plugin"
   },
   {
@@ -197,6 +210,7 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 21,
+    "risk": "safe: metadata only",
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -211,6 +225,7 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 22,
+    "risk": "safe: metadata only",
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -226,6 +241,7 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 23,
+    "risk": "careful: coordinate creation",
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -241,6 +257,7 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 24,
+    "risk": "careful: coordinate transformation",
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -258,6 +275,7 @@
     ],
     "dataset": null,
     "priority": 30,
+    "risk": "careful: value transformation",
     "source": "core"
   },
   {
@@ -272,6 +290,7 @@
     ],
     "dataset": null,
     "priority": 32,
+    "risk": "careful: dimension remapping",
     "source": "core"
   },
   {
@@ -286,6 +305,7 @@
     ],
     "dataset": null,
     "priority": 33,
+    "risk": "careful: coordinate reordering",
     "source": "core"
   },
   {
@@ -300,6 +320,7 @@
     ],
     "dataset": null,
     "priority": 33,
+    "risk": "safe: reversible rename",
     "source": "core"
   },
   {
@@ -314,6 +335,7 @@
     ],
     "dataset": null,
     "priority": 34,
+    "risk": "safe: coordinate creation",
     "source": "core"
   },
   {
@@ -329,6 +351,7 @@
     ],
     "dataset": null,
     "priority": 34,
+    "risk": "safe: metadata only",
     "source": "core"
   },
   {
@@ -344,6 +367,7 @@
     ],
     "dataset": null,
     "priority": 35,
+    "risk": "safe: metadata only",
     "source": "core"
   },
   {
@@ -359,6 +383,7 @@
     ],
     "dataset": null,
     "priority": 36,
+    "risk": "careful: value transformation",
     "source": "core"
   },
   {
@@ -373,6 +398,7 @@
     ],
     "dataset": null,
     "priority": 37,
+    "risk": "careful: coordinate transformation",
     "source": "core"
   },
   {
@@ -387,6 +413,7 @@
     ],
     "dataset": null,
     "priority": 38,
+    "risk": "careful: variable removal",
     "source": "core"
   },
   {
@@ -401,6 +428,7 @@
     ],
     "dataset": "cmip6",
     "priority": 40,
+    "risk": "safe: metadata only",
     "source": "plugin:woodpecker_cmip6_plugin"
   },
   {
@@ -415,6 +443,7 @@
     ],
     "dataset": "CMIP7",
     "priority": 41,
+    "risk": "safe: metadata only",
     "source": "plugin:woodpecker_cmip7_plugin"
   },
   {
@@ -430,6 +459,7 @@
     ],
     "dataset": "CMIP7",
     "priority": 42,
+    "risk": "safe: reversible rename",
     "source": "plugin:woodpecker_cmip7_plugin"
   },
   {
@@ -444,6 +474,7 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
+    "risk": "careful: coordinate creation",
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -459,6 +490,7 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
+    "risk": "careful: coordinate creation",
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -474,6 +506,7 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
+    "risk": "careful: coordinate creation",
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -488,6 +521,7 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
+    "risk": "careful: variable removal",
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -502,6 +536,7 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
+    "risk": "safe: metadata only",
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -517,6 +552,7 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
+    "risk": "safe: metadata only",
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -532,6 +568,7 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
+    "risk": "careful: coordinate transformation",
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -547,6 +584,7 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
+    "risk": "careful: coordinate transformation",
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -561,6 +599,7 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
+    "risk": "safe: reversible rename",
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -575,6 +614,7 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
+    "risk": "careful: coordinate transformation",
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -589,6 +629,7 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
+    "risk": "careful: coordinate transformation",
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -604,6 +645,7 @@
     ],
     "dataset": "CMIP7",
     "priority": 43,
+    "risk": "careful: workflow transformation",
     "source": "plugin:woodpecker_cmip7_plugin"
   }
 ]

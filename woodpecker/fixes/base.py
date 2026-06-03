@@ -23,6 +23,7 @@ class FixFunction:
     categories: ClassVar[list[str]] = []
     priority: ClassVar[int] = -1
     dataset: ClassVar[Optional[str]] = None
+    risk: ClassVar[str] = "careful: review before applying"
     metadata_fields: ClassVar[tuple[str, ...]] = (
         "prefix",
         "suffix",
@@ -34,6 +35,7 @@ class FixFunction:
         "categories",
         "priority",
         "dataset",
+        "risk",
     )
 
     def __init__(self) -> None:
