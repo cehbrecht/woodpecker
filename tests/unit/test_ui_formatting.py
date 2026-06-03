@@ -49,3 +49,64 @@ def test_format_fix_stats_json_includes_execution_context():
     assert payload["force_apply"] is True
     assert payload["output_format"] == "netcdf"
     assert payload["provenance"] == "woodpecker.prov.json"
+
+
+def test_format_fix_stats_json_includes_preview_entries():
+    payload = json.loads(
+        format_fix_stats(
+            {
+                "attempted": 1,
+                "changed": 1,
+                "persist_attempted": 0,
+                "persisted": 0,
+                "persist_failed": 0,
+                "preview": [
+                    {
+                        "path": "cmip6_bad.nc",
+                        "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
+                        "name": "Normalize units",
+                        "changed": True,
+                    }
+                ],
+            },
+            fmt="json",
+            dry_run=True,
+            force_apply=False,
+            resolved_output_format="auto",
+            provenance=False,
+            provenance_path=Path("woodpecker.prov.json"),
+        )
+    )
+
+    assert payload["preview"][0]["path"] == "cmip6_bad.nc"
+    assert payload["preview"][0]["changed"] is True
+
+
+def test_format_fix_stats_text_includes_dry_run_preview():
+    output = format_fix_stats(
+        {
+            "attempted": 1,
+            "changed": 1,
+            "persist_attempted": 0,
+            "persisted": 0,
+            "persist_failed": 0,
+            "preview": [
+                {
+                    "path": "cmip6_bad.nc",
+                    "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
+                    "name": "Normalize units",
+                    "changed": True,
+                }
+            ],
+        },
+        fmt="text",
+        dry_run=True,
+        force_apply=False,
+        resolved_output_format="auto",
+        provenance=False,
+        provenance_path=Path("woodpecker.prov.json"),
+    )
+
+    assert "Preview:" in output
+    assert "cmip6_bad.nc: woodpecker.normalize_tas_units_to_kelvin" in output
+    assert "would change" in output

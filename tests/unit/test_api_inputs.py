@@ -52,6 +52,8 @@ def test_fix_exposes_stats_as_properties():
     assert result.persist_attempted == 1
     assert result.persisted == 1
     assert result.failed == 0
+    assert result.preview[0]["fix_id"] == "woodpecker.normalize_tas_units_to_kelvin"
+    assert result.preview[0]["changed"] is True
     assert str(result) == "1 change, 1 attempt, 1 persisted"
     assert ds["tas"].attrs["units"] == "K"
 

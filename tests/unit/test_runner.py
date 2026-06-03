@@ -77,6 +77,14 @@ def test_run_fix_reports_failed_persistence():
     assert stats["persist_attempted"] == 1
     assert stats["persisted"] == 0
     assert stats["persist_failed"] == 1
+    assert stats["preview"] == [
+        {
+            "path": "dummy",
+            "fix_id": "",
+            "name": "Dummy fix",
+            "changed": True,
+        }
+    ]
 
 
 def test_run_fix_skips_fixes_for_other_dataset_types():
@@ -130,3 +138,17 @@ def test_run_fix_force_apply_controls_non_matching_fixes(
 
     assert stats["attempted"] == expected_attempted
     assert stats["changed"] == expected_changed
+
+
+def test_run_fix_preview_omits_nonmatching_fixes():
+    ds = xr.Dataset(attrs={"source_name": "dummy.nc"})
+    data_input = DummyInput(dataset=ds, save_ok=True)
+
+    stats = run_fix(
+        [data_input],
+        [NonMatchingFunction()],
+        dry_run=True,
+        output_format="auto",
+    )
+
+    assert stats["preview"] == []

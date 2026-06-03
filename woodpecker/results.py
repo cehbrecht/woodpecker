@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Mapping
+from typing import Any, Mapping
 
 
 @dataclass(frozen=True)
@@ -38,7 +38,7 @@ class CheckResult:
 class FixResult:
     """Structured result returned by ``woodpecker.fix()``."""
 
-    stats: Mapping[str, int]
+    stats: Mapping[str, Any]
 
     def __bool__(self) -> bool:
         return self.changed > 0
@@ -80,3 +80,9 @@ class FixResult:
     @property
     def failed(self) -> int:
         return self.stats.get("persist_failed", 0)
+
+    @property
+    def preview(self) -> tuple[Mapping[str, Any], ...]:
+        """Per-input fix applications reported by dry-run/write execution."""
+
+        return tuple(self.stats.get("preview", ()))
