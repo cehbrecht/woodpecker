@@ -15,17 +15,16 @@ def _finding(message: str = "synthetic finding") -> dict[str, str]:
         "path": "cmip6_bad.nc",
         "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
         "name": "Common check",
-        "risk": "risk.careful.value_transformation",
-        "risk_label": "careful: value transformation",
-        "risk_metadata": {
-            "id": "risk.careful.value_transformation",
-            "title": "careful: value transformation",
-            "description": "Transforms data or coordinate values.",
-            "category": "risk",
-        },
-        "labels": [],
-        "label_titles": [],
-        "label_metadata": [],
+        "labels": ["risk.careful.value_transformation"],
+        "label_titles": ["careful: value transformation"],
+        "label_metadata": [
+            {
+                "id": "risk.careful.value_transformation",
+                "title": "careful: value transformation",
+                "description": "Transforms data or coordinate values.",
+                "category": "risk",
+            }
+        ],
         "message": message,
     }
 
@@ -42,17 +41,16 @@ def _fix_stats(*, persisted: int = 1, persist_failed: int = 0) -> dict[str, obje
                 "path": "cmip6_case.nc",
                 "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Normalize units",
-                "risk": "risk.careful.value_transformation",
-                "risk_label": "careful: value transformation",
-                "risk_metadata": {
-                    "id": "risk.careful.value_transformation",
-                    "title": "careful: value transformation",
-                    "description": "Transforms data or coordinate values.",
-                    "category": "risk",
-                },
-                "labels": [],
-                "label_titles": [],
-                "label_metadata": [],
+                "labels": ["risk.careful.value_transformation"],
+                "label_titles": ["careful: value transformation"],
+                "label_metadata": [
+                    {
+                        "id": "risk.careful.value_transformation",
+                        "title": "careful: value transformation",
+                        "description": "Transforms data or coordinate values.",
+                        "category": "risk",
+                    }
+                ],
                 "changed": True,
             }
         ],
@@ -85,18 +83,15 @@ def test_check_json_output_structure(
         "path",
         "fix_id",
         "name",
-        "risk",
-        "risk_label",
-        "risk_metadata",
         "labels",
         "label_titles",
         "label_metadata",
         "message",
     }.issubset(payload[0].keys())
     assert payload[0]["fix_id"] == "woodpecker.normalize_tas_units_to_kelvin"
-    assert payload[0]["risk"] == "risk.careful.value_transformation"
-    assert payload[0]["risk_label"] == "careful: value transformation"
-    assert payload[0]["risk_metadata"]["category"] == "risk"
+    assert payload[0]["labels"] == ["risk.careful.value_transformation"]
+    assert payload[0]["label_titles"] == ["careful: value transformation"]
+    assert payload[0]["label_metadata"][0]["category"] == "risk"
 
 
 @pytest.mark.parametrize(
@@ -145,9 +140,9 @@ def test_fix_json_output_contains_write_report(
     assert payload["persist_failed"] == stats["persist_failed"]
     assert payload["force_apply"] is False
     assert payload["preview"][0]["path"] == "cmip6_case.nc"
-    assert payload["preview"][0]["risk"] == "risk.careful.value_transformation"
-    assert payload["preview"][0]["risk_label"] == "careful: value transformation"
-    assert payload["preview"][0]["risk_metadata"]["category"] == "risk"
+    assert payload["preview"][0]["labels"] == ["risk.careful.value_transformation"]
+    assert payload["preview"][0]["label_titles"] == ["careful: value transformation"]
+    assert payload["preview"][0]["label_metadata"][0]["category"] == "risk"
 
 
 def test_check_unknown_fix_code_returns_click_error(

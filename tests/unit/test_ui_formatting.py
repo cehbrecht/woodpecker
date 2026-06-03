@@ -17,7 +17,7 @@ class _RiskyFix(FixFunction):
     description = "Does a risky thing"
     categories = ["metadata"]
     priority = 1
-    risk = "risk.careful.value_transformation"
+    labels = ["risk.careful.value_transformation"]
 
 
 def test_format_recipes_text_uses_step_wording():
@@ -41,7 +41,7 @@ def test_format_recipes_json_uses_model_payloads():
     assert payload[0]["steps"][0]["id"] == "woodpecker.one"
 
 
-def test_format_fixes_text_includes_risk_label():
+def test_format_fixes_text_includes_risk_category_label():
     output = format_fixes([_RiskyFix()], "text")
 
     assert "risk: careful: value transformation" in output
@@ -54,14 +54,23 @@ def test_format_fixes_markdown_includes_risk_column():
     assert "careful: value transformation" in output
 
 
-def test_format_findings_text_includes_risk_label():
+def test_format_findings_text_includes_risk_category_label():
     output = format_findings(
         [
             {
                 "path": "case.nc",
                 "fix_id": "tests.risky",
                 "name": "Risky fix",
-                "risk": "risk.careful.value_transformation",
+                "labels": ["risk.careful.value_transformation"],
+                "label_titles": ["careful: value transformation"],
+                "label_metadata": [
+                    {
+                        "id": "risk.careful.value_transformation",
+                        "title": "careful: value transformation",
+                        "description": "Transforms data or coordinate values.",
+                        "category": "risk",
+                    }
+                ],
                 "message": "something can be changed",
             }
         ],
@@ -110,17 +119,16 @@ def test_format_fix_stats_json_includes_preview_entries():
                         "path": "cmip6_bad.nc",
                         "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                         "name": "Normalize units",
-                        "risk": "risk.careful.value_transformation",
-                        "risk_label": "careful: value transformation",
-                        "risk_metadata": {
-                            "id": "risk.careful.value_transformation",
-                            "title": "careful: value transformation",
-                            "description": "Transforms data or coordinate values.",
-                            "category": "risk",
-                        },
-                        "labels": [],
-                        "label_titles": [],
-                        "label_metadata": [],
+                        "labels": ["risk.careful.value_transformation"],
+                        "label_titles": ["careful: value transformation"],
+                        "label_metadata": [
+                            {
+                                "id": "risk.careful.value_transformation",
+                                "title": "careful: value transformation",
+                                "description": "Transforms data or coordinate values.",
+                                "category": "risk",
+                            }
+                        ],
                         "changed": True,
                     }
                 ],
@@ -135,9 +143,9 @@ def test_format_fix_stats_json_includes_preview_entries():
     )
 
     assert payload["preview"][0]["path"] == "cmip6_bad.nc"
-    assert payload["preview"][0]["risk"] == "risk.careful.value_transformation"
-    assert payload["preview"][0]["risk_label"] == "careful: value transformation"
-    assert payload["preview"][0]["risk_metadata"]["category"] == "risk"
+    assert payload["preview"][0]["labels"] == ["risk.careful.value_transformation"]
+    assert payload["preview"][0]["label_titles"] == ["careful: value transformation"]
+    assert payload["preview"][0]["label_metadata"][0]["category"] == "risk"
     assert payload["preview"][0]["changed"] is True
 
 
@@ -154,8 +162,16 @@ def test_format_fix_stats_text_includes_dry_run_preview():
                     "path": "cmip6_bad.nc",
                     "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                     "name": "Normalize units",
-                    "risk": "risk.careful.value_transformation",
-                    "risk_label": "careful: value transformation",
+                    "labels": ["risk.careful.value_transformation"],
+                    "label_titles": ["careful: value transformation"],
+                    "label_metadata": [
+                        {
+                            "id": "risk.careful.value_transformation",
+                            "title": "careful: value transformation",
+                            "description": "Transforms data or coordinate values.",
+                            "category": "risk",
+                        }
+                    ],
                     "changed": True,
                 }
             ],

@@ -70,7 +70,7 @@ class MergeEquivalentDimensions(FixFunction):
     categories = ["structure"]
     priority = 32
     dataset = None
-    risk = "risk.careful.dimension_remapping"
+    labels = ["risk.careful.dimension_remapping"]
 
     def _dims(self) -> tuple[str, ...]:
         config = getattr(self, "config", {}) or {}

@@ -5,8 +5,24 @@ from pathlib import Path
 
 # Import fixes to ensure registration
 import woodpecker.fixes  # noqa: F401
-from woodpecker.fixes.labels import FixLabelRegistry
+from woodpecker.fixes.labels import LabelRegistry
 from woodpecker.fixes.registry import FixFunctionRegistry
+
+
+def _risk_titles(label_ids: list[str]) -> list[str]:
+    return [
+        metadata["title"]
+        for label_id in label_ids
+        if (metadata := LabelRegistry.metadata(label_id))["category"] == "risk"
+    ]
+
+
+def _non_risk_titles(label_ids: list[str]) -> list[str]:
+    return [
+        metadata["title"]
+        for label_id in label_ids
+        if (metadata := LabelRegistry.metadata(label_id))["category"] != "risk"
+    ]
 
 
 def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXES.json"):
@@ -28,10 +44,10 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
     for f in fixes:
         cats = ", ".join(getattr(f, "categories", []) or [])
         source = FixFunctionRegistry.source_label(f)
-        risk = getattr(f, "risk", "")
-        risk_label = FixLabelRegistry.title(risk)
         labels = list(getattr(f, "labels", []) or [])
-        label_titles = [FixLabelRegistry.title(label) for label in labels]
+        label_titles = [LabelRegistry.title(label) for label in labels]
+        risk_titles = _risk_titles(labels)
+        other_label_titles = _non_risk_titles(labels)
         fix_id = f.id
         row = (
             fix_id,
@@ -40,8 +56,8 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
             cats,
             f.dataset or "",
             f.priority,
-            risk_label,
-            ", ".join(label_titles),
+            ", ".join(risk_titles),
+            ", ".join(other_label_titles),
             source,
         )
         if source == "core":
@@ -59,12 +75,9 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
             "categories": getattr(f, "categories", []) or [],
             "dataset": f.dataset,
             "priority": f.priority,
-            "risk": risk,
-            "risk_label": risk_label,
-            "risk_metadata": FixLabelRegistry.metadata(risk),
             "labels": labels,
             "label_titles": label_titles,
-            "label_metadata": [FixLabelRegistry.metadata(label) for label in labels],
+            "label_metadata": [LabelRegistry.metadata(label) for label in labels],
         }
         entry["source"] = source
         json_list.append(entry)
@@ -83,9 +96,9 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
                 "|----|------|-------------|------------|---------|---------|------|--------|--------|",
             ]
         )
-        for fix_id, name, description, cats, dataset, priority, risk, labels, source in rows:
+        for fix_id, name, description, cats, dataset, priority, risk_titles, labels, source in rows:
             md_lines.append(
-                f"| {fix_id} | {name} | {description} | {cats} | {dataset} | {priority} | {risk} | {labels} | {source} |"
+                f"| {fix_id} | {name} | {description} | {cats} | {dataset} | {priority} | {risk_titles} | {labels} | {source} |"
             )
         md_lines.append("")
 

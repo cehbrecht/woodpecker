@@ -4,8 +4,8 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class FixLabel:
-    """User-facing informational label for fix metadata."""
+class Label:
+    """User-facing informational metadata label."""
 
     id: str
     title: str
@@ -22,7 +22,7 @@ class FixLabel:
 
 
 class RiskLabels:
-    """Predefined risk labels used by core fixes and bundled plugins."""
+    """Predefined label ids in the risk category."""
 
     REVIEW_BEFORE_APPLYING = "risk.careful.review"
     METADATA_ONLY = "risk.safe.metadata_only"
@@ -40,14 +40,14 @@ class RiskLabels:
     WORKFLOW_TRANSFORMATION = "risk.careful.workflow_transformation"
 
 
-class FixLabelRegistry:
-    """Extensible registry for user-facing fix labels.
+class LabelRegistry:
+    """Extensible registry for user-facing labels.
 
     Labels are informational metadata. They are not used for selection,
     priority, recipe matching, or automation decisions.
     """
 
-    _labels: dict[str, FixLabel] = {}
+    _labels: dict[str, Label] = {}
 
     @classmethod
     def register(
@@ -58,8 +58,8 @@ class FixLabelRegistry:
         description: str = "",
         category: str = "info",
         override: bool = False,
-    ) -> FixLabel:
-        label = FixLabel(
+    ) -> Label:
+        label = Label(
             id=str(label_id).strip(),
             title=str(title).strip(),
             description=str(description or "").strip(),
@@ -75,7 +75,7 @@ class FixLabelRegistry:
         return label
 
     @classmethod
-    def get(cls, label_id: str) -> FixLabel | None:
+    def get(cls, label_id: str) -> Label | None:
         return cls._labels.get(str(label_id).strip())
 
     @classmethod
@@ -91,28 +91,36 @@ class FixLabelRegistry:
         key = str(label_id).strip()
         label = cls.get(key)
         if label is None:
-            return FixLabel(id=key, title=key, category="info").to_dict()
+            return Label(id=key, title=key, category="info").to_dict()
         return label.to_dict()
 
     @classmethod
-    def list_labels(cls, *, category: str | None = None) -> list[FixLabel]:
+    def list_labels(cls, *, category: str | None = None) -> list[Label]:
         labels = cls._labels.values()
         if category is not None:
             labels = [label for label in labels if label.category == category]
         return sorted(labels, key=lambda label: label.id)
 
+    @classmethod
+    def labels_with_category(cls, label_ids: list[str], category: str) -> list[Label]:
+        return [
+            label
+            for label_id in label_ids
+            if (label := cls.get(label_id)) is not None and label.category == category
+        ]
 
-def register_fix_label(
+
+def register_label(
     label_id: str,
     title: str,
     *,
     description: str = "",
     category: str = "info",
     override: bool = False,
-) -> FixLabel:
-    """Register a custom informational label for fixes or plugins."""
+) -> Label:
+    """Register a custom informational label."""
 
-    return FixLabelRegistry.register(
+    return LabelRegistry.register(
         label_id,
         title,
         description=description,
@@ -191,7 +199,7 @@ def _register_builtin_labels() -> None:
         ),
     ]
     for label_id, title, description in builtins:
-        FixLabelRegistry.register(label_id, title, description=description, category="risk")
+        LabelRegistry.register(label_id, title, description=description, category="risk")
 
 
 _register_builtin_labels()

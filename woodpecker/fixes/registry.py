@@ -4,7 +4,7 @@ import json
 from typing import Any, Optional, Type
 
 from woodpecker.fixes.identifiers import IdentifierResolver, IdentifierRules
-from woodpecker.fixes.labels import FixLabelRegistry
+from woodpecker.fixes.labels import LabelRegistry
 
 from .base import FixFunction
 
@@ -132,13 +132,10 @@ class FixFunctionRegistry:
         name = str(getattr(fix, "name", "") or "").strip()
         categories = getattr(fix, "categories", []) or []
         priority = getattr(fix, "priority", UNPRIORITIZED)
-        risk = str(getattr(fix, "risk", "") or "").strip()
         labels = getattr(fix, "labels", []) or []
 
         if not name:
             raise ValueError(f"Fix function {fix_cls.__name__} must define a non-empty 'name'")
-        if not risk:
-            raise ValueError(f"Fix function {fix_cls.__name__} must define a non-empty 'risk'")
         if not isinstance(priority, int):
             raise ValueError(
                 f"Fix function {fix_cls.__name__} must define 'priority' as an integer"
@@ -160,6 +157,10 @@ class FixFunctionRegistry:
             raise ValueError(
                 f"Fix function {fix_cls.__name__} must define "
                 "'labels' as a list of non-empty strings"
+            )
+        if not LabelRegistry.labels_with_category([str(label) for label in labels], "risk"):
+            raise ValueError(
+                f"Fix function {fix_cls.__name__} must define at least one risk label"
             )
 
     @classmethod
@@ -245,7 +246,6 @@ class FixFunctionRegistry:
         fixes = cls.discover()
         data = []
         for f in fixes:
-            risk = getattr(f, "risk", "")
             labels = list(getattr(f, "labels", []) or [])
             data.append(
                 {
@@ -259,10 +259,9 @@ class FixFunctionRegistry:
                     "categories": list(getattr(f, "categories", []) or []),
                     "dataset": getattr(f, "dataset", None),
                     "priority": getattr(f, "priority", UNPRIORITIZED),
-                    "risk": risk,
-                    "risk_label": FixLabelRegistry.title(risk),
                     "labels": labels,
-                    "label_titles": [FixLabelRegistry.title(label) for label in labels],
+                    "label_titles": [LabelRegistry.title(label) for label in labels],
+                    "label_metadata": [LabelRegistry.metadata(label) for label in labels],
                 }
             )
 

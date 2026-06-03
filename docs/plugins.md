@@ -31,30 +31,30 @@ recipe = woodpecker.recipe.get("xmip.cmip6_preprocessing")
 Use the [Generated Fixes Reference](FIXES.md) and
 [Generated Recipes Reference](recipe-reference.md) for the full registered reference.
 
-## Plugin Labels
+## Labels
 
-Fix labels are user-facing metadata with an id, title, description, and category.
+Labels are user-facing metadata with an id, title, description, and category.
 They help users understand a fix, but they do not affect recipes, priority,
-matching, or automation. Predefined risk labels use category `risk`; custom
+matching, or automation. Some predefined labels use category `risk`; custom
 labels default to category `info`, and plugins may also use category `warning`
 for labels that deserve extra attention.
 
-Plugins can use predefined risk labels:
+Plugins can use predefined risk-category labels:
 
 ```python
 from woodpecker.fixes import FixFunction, RiskLabels
 
 
 class RenameTempVariable(FixFunction):
-    risk = RiskLabels.REVERSIBLE_RENAME
+    labels = [RiskLabels.REVERSIBLE_RENAME]
 ```
 
-Plugins can also register custom informational labels:
+Plugins can also register custom labels:
 
 ```python
-from woodpecker.fixes import register_fix_label
+from woodpecker.fixes import register_label
 
-register_fix_label(
+register_label(
     "my_plugin.experimental",
     "experimental",
     description="Early plugin fix that should be reviewed carefully.",

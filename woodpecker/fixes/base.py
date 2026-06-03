@@ -5,7 +5,7 @@ from typing import Any, ClassVar, Optional
 
 import xarray as xr
 
-from woodpecker.fixes.labels import FixLabelRegistry, RiskLabels
+from woodpecker.fixes.labels import LabelRegistry, RiskLabels
 
 
 class FixFunction:
@@ -25,8 +25,7 @@ class FixFunction:
     categories: ClassVar[list[str]] = []
     priority: ClassVar[int] = -1
     dataset: ClassVar[Optional[str]] = None
-    risk: ClassVar[str] = RiskLabels.REVIEW_BEFORE_APPLYING
-    labels: ClassVar[list[str]] = []
+    labels: ClassVar[list[str]] = [RiskLabels.REVIEW_BEFORE_APPLYING]
     metadata_fields: ClassVar[tuple[str, ...]] = (
         "prefix",
         "suffix",
@@ -38,7 +37,6 @@ class FixFunction:
         "categories",
         "priority",
         "dataset",
-        "risk",
         "labels",
     )
 
@@ -84,12 +82,9 @@ class FixFunction:
                 payload[field] = dict(value)
             else:
                 payload[field] = value
-        risk = str(payload.get("risk", "") or "")
         labels = [str(item) for item in payload.get("labels", []) or []]
-        payload["risk_label"] = FixLabelRegistry.title(risk)
-        payload["risk_metadata"] = FixLabelRegistry.metadata(risk)
-        payload["label_titles"] = [FixLabelRegistry.title(label) for label in labels]
-        payload["label_metadata"] = [FixLabelRegistry.metadata(label) for label in labels]
+        payload["label_titles"] = [LabelRegistry.title(label) for label in labels]
+        payload["label_metadata"] = [LabelRegistry.metadata(label) for label in labels]
         return payload
 
     def metadata(self) -> dict[str, Any]:

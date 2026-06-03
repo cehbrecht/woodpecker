@@ -12,7 +12,7 @@ class _BaseMetadata(FixFunction):
     categories = ["metadata"]
     priority = 7
     dataset = "cmip6"
-    risk = "risk.safe.metadata_only"
+    labels = ["risk.safe.metadata_only"]
 
 
 def test_fix_metadata_is_class_level_and_config_is_instance_runtime_state():
@@ -34,9 +34,9 @@ def test_fix_metadata_accessor_returns_copied_mutable_fields():
 
     assert meta["id"] == "test.base_metadata"
     assert meta["aliases"] == ["base_metadata_alias"]
-    assert meta["risk"] == "risk.safe.metadata_only"
-    assert meta["risk_label"] == "safe: metadata only"
-    assert meta["risk_metadata"]["category"] == "risk"
+    assert meta["labels"] == ["risk.safe.metadata_only"]
+    assert meta["label_titles"] == ["safe: metadata only"]
+    assert meta["label_metadata"][0]["category"] == "risk"
 
     meta["aliases"].append("new_alias")
     assert _BaseMetadata.aliases == ["base_metadata_alias"]
@@ -56,11 +56,11 @@ def test_fix_function_default_priority_is_unprioritized():
     assert ExampleMetadata.priority == -1
 
 
-def test_fix_function_default_risk_requires_review():
+def test_fix_function_default_labels_require_review():
     class ExampleMetadata(FixFunction):
         pass
 
-    assert ExampleMetadata.risk == "risk.careful.review"
+    assert ExampleMetadata.labels == ["risk.careful.review"]
 
 
 def test_fix_metadata_includes_general_labels():

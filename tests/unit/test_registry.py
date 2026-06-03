@@ -23,7 +23,7 @@ def test_registry_rejects_invalid_suffix_pattern():
             categories = ["metadata"]
             priority = 10
             dataset = None
-            risk = "risk.safe.metadata_only"
+            labels = ["risk.safe.metadata_only"]
 
         FixFunctionRegistry.register(_InvalidCode)
 
@@ -41,8 +41,8 @@ def test_registry_rejects_missing_name():
         FixFunctionRegistry.register(_MissingName)
 
 
-def test_registry_rejects_missing_risk():
-    with pytest.raises(ValueError, match="non-empty 'risk'"):
+def test_registry_rejects_missing_risk_label():
+    with pytest.raises(ValueError, match="at least one risk label"):
 
         class _MissingRisk:
             prefix = "test"
@@ -52,7 +52,7 @@ def test_registry_rejects_missing_risk():
             categories = ["metadata"]
             priority = 10
             dataset = None
-            risk = ""
+            labels = ["plugin.info_only"]
 
         FixFunctionRegistry.register(_MissingRisk)
 
@@ -82,7 +82,7 @@ def test_register_fix_function_decorator_registers_class():
         categories = ["metadata"]
         priority = 10
         dataset = None
-        risk = "risk.safe.metadata_only"
+        labels = ["risk.safe.metadata_only"]
 
     registered = register_fix_function(_Alias)
     assert registered is _Alias
@@ -197,7 +197,7 @@ def test_registry_suffix_derivation_falls_back_to_class_name_snake_case():
         categories = ["metadata"]
         priority = 10
         dataset = None
-        risk = "risk.safe.metadata_only"
+        labels = ["risk.safe.metadata_only"]
 
     register_fix_function(FallbackFromClassName)
     assert FallbackFromClassName.id == "test.fallback_from_class_name"
@@ -272,7 +272,7 @@ def test_registry_resolves_ids_and_aliases_for_known_fixes():
 def test_registry_instantiate_returns_fix_for_id():
     fix = FixFunctionRegistry.instantiate("woodpecker.normalize_tas_units_to_kelvin")
     assert getattr(fix, "id", "") == "woodpecker.normalize_tas_units_to_kelvin"
-    assert getattr(fix, "risk", "") == "risk.careful.value_transformation"
+    assert "risk.careful.value_transformation" in getattr(fix, "labels", [])
 
 
 def test_registry_instantiate_returns_fresh_instance_each_time():
