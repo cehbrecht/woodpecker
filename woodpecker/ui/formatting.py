@@ -103,9 +103,7 @@ def format_fix_stats(
         for item in preview:
             outcome = "would change" if item.get("changed") else "no change"
             name = item.get("name") or item.get("fix_id", "")
-            lines.append(
-                f"  {item.get('path', '')}: {item.get('fix_id', '')} ({name}) - {outcome}"
-            )
+            lines.append(f"  {item.get('path', '')}: {item.get('fix_id', '')} ({name}) - {outcome}")
     return "\n".join(lines)
 
 
