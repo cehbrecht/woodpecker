@@ -41,7 +41,7 @@ class DecadalRealizationVariable(FixFunction):
     categories = ["metadata"]
     priority = 12
     dataset = "CMIP6-decadal"
-    risk = "careful: variable creation"
+    risk = "risk.careful.variable_creation"
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return is_cmip6_decadal_netcdf(dataset)

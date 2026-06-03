@@ -140,7 +140,7 @@ class RenameVariables(DatasetTransform):
     categories = ["structure"]
     priority = 33
     dataset = None
-    risk = "safe: reversible rename"
+    risk = "risk.safe.reversible_rename"
     message = "variables, coordinates, or dimensions can be renamed"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -155,7 +155,7 @@ class PromoteMissingDimensionCoords(DatasetTransform):
     categories = ["structure"]
     priority = 34
     dataset = None
-    risk = "safe: coordinate creation"
+    risk = "risk.safe.coordinate_creation"
     message = "dimensions without coordinate variables can be promoted"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -177,7 +177,7 @@ class SetCoordinateVariables(DatasetTransform):
     categories = ["structure", "metadata"]
     priority = 35
     dataset = None
-    risk = "safe: metadata only"
+    risk = "risk.safe.metadata_only"
     message = "configured variables can be marked as coordinates"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -240,7 +240,7 @@ class ConvertUnits(DatasetTransform):
     categories = ["metadata", "units"]
     priority = 36
     dataset = None
-    risk = "careful: value transformation"
+    risk = "risk.careful.value_transformation"
     message = "configured variable units can be converted"
 
     def _target_units(self) -> dict[str, str]:
@@ -315,7 +315,7 @@ class NormalizeLongitudeConvention(DatasetTransform):
     categories = ["coordinates"]
     priority = 37
     dataset = None
-    risk = "careful: coordinate transformation"
+    risk = "risk.careful.coordinate_transformation"
     message = "longitudes can be wrapped to the configured convention"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -354,7 +354,7 @@ class DropVariables(DatasetTransform):
     categories = ["structure"]
     priority = 38
     dataset = None
-    risk = "careful: variable removal"
+    risk = "risk.careful.variable_removal"
     message = "configured variables can be dropped"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:

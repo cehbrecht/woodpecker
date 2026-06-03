@@ -5,6 +5,7 @@ from pathlib import Path
 
 # Import fixes to ensure registration
 import woodpecker.fixes  # noqa: F401
+from woodpecker.fixes.labels import FixLabelRegistry
 from woodpecker.fixes.registry import FixFunctionRegistry
 
 
@@ -20,14 +21,29 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
         "",
     ]
     json_list = []
-    grouped_rows: dict[str, list[tuple[str, str, str, str, str, int, str, str]]] = {"core": []}
+    grouped_rows: dict[str, list[tuple[str, str, str, str, str, int, str, str, str]]] = {
+        "core": []
+    }
 
     for f in fixes:
         cats = ", ".join(getattr(f, "categories", []) or [])
         source = FixFunctionRegistry.source_label(f)
         risk = getattr(f, "risk", "")
+        risk_label = FixLabelRegistry.title(risk)
+        labels = list(getattr(f, "labels", []) or [])
+        label_titles = [FixLabelRegistry.title(label) for label in labels]
         fix_id = f.id
-        row = (fix_id, f.name, f.description, cats, f.dataset or "", f.priority, risk, source)
+        row = (
+            fix_id,
+            f.name,
+            f.description,
+            cats,
+            f.dataset or "",
+            f.priority,
+            risk_label,
+            ", ".join(label_titles),
+            source,
+        )
         if source == "core":
             grouped_rows["core"].append(row)
         else:
@@ -44,6 +60,9 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
             "dataset": f.dataset,
             "priority": f.priority,
             "risk": risk,
+            "risk_label": risk_label,
+            "labels": labels,
+            "label_titles": label_titles,
         }
         entry["source"] = source
         json_list.append(entry)
@@ -58,13 +77,13 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
             [
                 heading,
                 "",
-                "| ID | Name | Description | Categories | Dataset | Priority | Risk | Source |",
-                "|----|------|-------------|------------|---------|---------|------|--------|",
+                "| ID | Name | Description | Categories | Dataset | Priority | Risk | Labels | Source |",
+                "|----|------|-------------|------------|---------|---------|------|--------|--------|",
             ]
         )
-        for fix_id, name, description, cats, dataset, priority, risk, source in rows:
+        for fix_id, name, description, cats, dataset, priority, risk, labels, source in rows:
             md_lines.append(
-                f"| {fix_id} | {name} | {description} | {cats} | {dataset} | {priority} | {risk} | {source} |"
+                f"| {fix_id} | {name} | {description} | {cats} | {dataset} | {priority} | {risk} | {labels} | {source} |"
             )
         md_lines.append("")
 

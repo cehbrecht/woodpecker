@@ -17,7 +17,7 @@ class _RiskyFix(FixFunction):
     description = "Does a risky thing"
     categories = ["metadata"]
     priority = 1
-    risk = "careful: value transformation"
+    risk = "risk.careful.value_transformation"
 
 
 def test_format_recipes_text_uses_step_wording():
@@ -50,7 +50,7 @@ def test_format_fixes_text_includes_risk_label():
 def test_format_fixes_markdown_includes_risk_column():
     output = format_fixes([_RiskyFix()], "md")
 
-    assert "| ID | Name | Description | Categories | Dataset | Priority | Risk |" in output
+    assert "| ID | Name | Description | Categories | Dataset | Priority | Risk | Labels |" in output
     assert "careful: value transformation" in output
 
 
@@ -61,7 +61,7 @@ def test_format_findings_text_includes_risk_label():
                 "path": "case.nc",
                 "fix_id": "tests.risky",
                 "name": "Risky fix",
-                "risk": "careful: value transformation",
+                "risk": "risk.careful.value_transformation",
                 "message": "something can be changed",
             }
         ],
@@ -110,7 +110,8 @@ def test_format_fix_stats_json_includes_preview_entries():
                         "path": "cmip6_bad.nc",
                         "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                         "name": "Normalize units",
-                        "risk": "careful: value transformation",
+                        "risk": "risk.careful.value_transformation",
+                        "risk_label": "careful: value transformation",
                         "changed": True,
                     }
                 ],
@@ -125,7 +126,8 @@ def test_format_fix_stats_json_includes_preview_entries():
     )
 
     assert payload["preview"][0]["path"] == "cmip6_bad.nc"
-    assert payload["preview"][0]["risk"] == "careful: value transformation"
+    assert payload["preview"][0]["risk"] == "risk.careful.value_transformation"
+    assert payload["preview"][0]["risk_label"] == "careful: value transformation"
     assert payload["preview"][0]["changed"] is True
 
 
@@ -142,7 +144,8 @@ def test_format_fix_stats_text_includes_dry_run_preview():
                     "path": "cmip6_bad.nc",
                     "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                     "name": "Normalize units",
-                    "risk": "careful: value transformation",
+                    "risk": "risk.careful.value_transformation",
+                    "risk_label": "careful: value transformation",
                     "changed": True,
                 }
             ],

@@ -26,7 +26,7 @@ class DummyInput(DataInput):
 class DummyFunction:
     code = "DUMMY01"
     name = "Dummy fix"
-    risk = "safe: metadata only"
+    risk = "risk.safe.metadata_only"
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return True
@@ -83,7 +83,10 @@ def test_run_fix_reports_failed_persistence():
             "path": "dummy",
             "fix_id": "",
             "name": "Dummy fix",
-            "risk": "safe: metadata only",
+            "risk": "risk.safe.metadata_only",
+            "risk_label": "safe: metadata only",
+            "labels": [],
+            "label_titles": [],
             "changed": True,
         }
     ]

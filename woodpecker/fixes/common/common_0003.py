@@ -26,7 +26,7 @@ class RemoveCoordinateFillValueEncodings(FixFunction):
     categories = ["metadata", "structure"]
     priority = 34
     dataset = None
-    risk = "safe: metadata only"
+    risk = "risk.safe.metadata_only"
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _needs_coord_fillvalue_cleanup(dataset)

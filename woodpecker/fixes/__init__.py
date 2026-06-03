@@ -9,6 +9,12 @@ import woodpecker.identity  # noqa: F401
 
 # Import built-in core fixes.
 from . import common  # noqa: F401
+from .labels import (  # noqa: F401
+    FixLabel,
+    FixLabelRegistry,
+    RiskLabels,
+    register_fix_label,
+)
 from .plugins import load_plugins
 from .registry import (  # noqa: F401
     UNPRIORITIZED,

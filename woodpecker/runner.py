@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Iterable, TypedDict
 
+from woodpecker.fixes.labels import FixLabelRegistry
 from woodpecker.identity import dataset_type_matches_declared, resolve_dataset_identity
 from woodpecker.io import DataInput, get_output_adapter
 from woodpecker.io.runtime import strict_io_mode
@@ -19,6 +20,9 @@ class FixPreview(TypedDict):
     fix_id: str
     name: str
     risk: str
+    risk_label: str
+    labels: list[str]
+    label_titles: list[str]
     changed: bool
 
 
@@ -52,12 +56,17 @@ def run_check(
                 if not fix.matches(dataset):
                     continue
                 for message in fix.check(dataset):
+                    labels = _fix_labels(fix)
+                    risk = _fix_risk(fix)
                     findings.append(
                         {
                             "path": data_input.reference,
                             "fix_id": getattr(fix, "id", ""),
                             "name": fix.name,
-                            "risk": getattr(fix, "risk", ""),
+                            "risk": risk,
+                            "risk_label": FixLabelRegistry.title(risk),
+                            "labels": labels,
+                            "label_titles": [FixLabelRegistry.title(label) for label in labels],
                             "message": message,
                         }
                     )
@@ -102,12 +111,17 @@ def run_fix(
                 )
                 if attempted_fix:
                     attempted += 1
+                    labels = _fix_labels(fix)
+                    risk = _fix_risk(fix)
                     preview.append(
                         {
                             "path": data_input.reference,
                             "fix_id": fix_id,
                             "name": getattr(fix, "name", ""),
-                            "risk": getattr(fix, "risk", ""),
+                            "risk": risk,
+                            "risk_label": FixLabelRegistry.title(risk),
+                            "labels": labels,
+                            "label_titles": [FixLabelRegistry.title(label) for label in labels],
                             "changed": changed_fix,
                         }
                     )
@@ -163,6 +177,17 @@ def apply_configured_fix(
         raise TypeError(f"Fix function '{fix_id}' does not implement apply()")
 
     return True, bool(fix.apply(dataset, dry_run=dry_run))
+
+
+def _fix_risk(fix: Any) -> str:
+    return str(getattr(fix, "risk", "") or "")
+
+
+def _fix_labels(fix: Any) -> list[str]:
+    labels = getattr(fix, "labels", []) or []
+    if not isinstance(labels, list):
+        return []
+    return [str(label) for label in labels]
 
 
 def _instantiate_fix(registry: Any, fix_id: str) -> Any:

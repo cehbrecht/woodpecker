@@ -4,6 +4,7 @@ import json
 from typing import Any, Optional, Type
 
 from woodpecker.fixes.identifiers import IdentifierResolver, IdentifierRules
+from woodpecker.fixes.labels import FixLabelRegistry
 
 from .base import FixFunction
 
@@ -132,6 +133,7 @@ class FixFunctionRegistry:
         categories = getattr(fix, "categories", []) or []
         priority = getattr(fix, "priority", UNPRIORITIZED)
         risk = str(getattr(fix, "risk", "") or "").strip()
+        labels = getattr(fix, "labels", []) or []
 
         if not name:
             raise ValueError(f"Fix function {fix_cls.__name__} must define a non-empty 'name'")
@@ -151,6 +153,13 @@ class FixFunctionRegistry:
             raise ValueError(
                 f"Fix function {fix_cls.__name__} must define "
                 "'categories' as a list of non-empty strings"
+            )
+        if not isinstance(labels, list) or any(
+            (not isinstance(item, str) or not item.strip()) for item in labels
+        ):
+            raise ValueError(
+                f"Fix function {fix_cls.__name__} must define "
+                "'labels' as a list of non-empty strings"
             )
 
     @classmethod
@@ -236,6 +245,8 @@ class FixFunctionRegistry:
         fixes = cls.discover()
         data = []
         for f in fixes:
+            risk = getattr(f, "risk", "")
+            labels = list(getattr(f, "labels", []) or [])
             data.append(
                 {
                     "id": getattr(f, "id", ""),
@@ -248,7 +259,10 @@ class FixFunctionRegistry:
                     "categories": list(getattr(f, "categories", []) or []),
                     "dataset": getattr(f, "dataset", None),
                     "priority": getattr(f, "priority", UNPRIORITIZED),
-                    "risk": getattr(f, "risk", ""),
+                    "risk": risk,
+                    "risk_label": FixLabelRegistry.title(risk),
+                    "labels": labels,
+                    "label_titles": [FixLabelRegistry.title(label) for label in labels],
                 }
             )
 

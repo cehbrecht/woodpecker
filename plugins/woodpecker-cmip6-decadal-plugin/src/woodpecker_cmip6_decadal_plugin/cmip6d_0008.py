@@ -41,7 +41,7 @@ class DecadalFurtherInfoUrlNormalization(FixFunction):
     categories = ["metadata"]
     priority = 17
     dataset = "CMIP6-decadal"
-    risk = "safe: metadata only"
+    risk = "risk.safe.metadata_only"
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return is_cmip6_decadal_netcdf(dataset)

@@ -11,7 +11,10 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 10,
-    "risk": "safe: metadata only",
+    "risk": "risk.safe.metadata_only",
+    "risk_label": "safe: metadata only",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -27,7 +30,10 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 11,
-    "risk": "safe: metadata only",
+    "risk": "risk.safe.metadata_only",
+    "risk_label": "safe: metadata only",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -42,7 +48,10 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 12,
-    "risk": "careful: variable creation",
+    "risk": "risk.careful.variable_creation",
+    "risk_label": "careful: variable creation",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -58,7 +67,10 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 13,
-    "risk": "safe: encoding metadata",
+    "risk": "risk.safe.encoding_metadata",
+    "risk_label": "safe: encoding metadata",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -73,7 +85,10 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 14,
-    "risk": "safe: metadata only",
+    "risk": "risk.safe.metadata_only",
+    "risk_label": "safe: metadata only",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -89,7 +104,10 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 15,
-    "risk": "careful: dtype transformation",
+    "risk": "risk.careful.dtype_transformation",
+    "risk_label": "careful: dtype transformation",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -105,7 +123,10 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 16,
-    "risk": "safe: encoding metadata",
+    "risk": "risk.safe.encoding_metadata",
+    "risk_label": "safe: encoding metadata",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -120,7 +141,10 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 17,
-    "risk": "safe: metadata only",
+    "risk": "risk.safe.metadata_only",
+    "risk_label": "safe: metadata only",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -135,7 +159,10 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 18,
-    "risk": "safe: metadata only",
+    "risk": "risk.safe.metadata_only",
+    "risk_label": "safe: metadata only",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -150,7 +177,10 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 19,
-    "risk": "safe: metadata only",
+    "risk": "risk.safe.metadata_only",
+    "risk_label": "safe: metadata only",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -165,7 +195,10 @@
     ],
     "dataset": "ATLAS",
     "priority": 20,
-    "risk": "safe: encoding metadata",
+    "risk": "risk.safe.encoding_metadata",
+    "risk_label": "safe: encoding metadata",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_atlas_plugin"
   },
   {
@@ -180,7 +213,10 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 20,
-    "risk": "safe: metadata only",
+    "risk": "risk.safe.metadata_only",
+    "risk_label": "safe: metadata only",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -195,7 +231,10 @@
     ],
     "dataset": "ATLAS",
     "priority": 21,
-    "risk": "safe: metadata only",
+    "risk": "risk.safe.metadata_only",
+    "risk_label": "safe: metadata only",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_atlas_plugin"
   },
   {
@@ -210,7 +249,10 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 21,
-    "risk": "safe: metadata only",
+    "risk": "risk.safe.metadata_only",
+    "risk_label": "safe: metadata only",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -225,7 +267,10 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 22,
-    "risk": "safe: metadata only",
+    "risk": "risk.safe.metadata_only",
+    "risk_label": "safe: metadata only",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -241,7 +286,10 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 23,
-    "risk": "careful: coordinate creation",
+    "risk": "risk.careful.coordinate_creation",
+    "risk_label": "careful: coordinate creation",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -257,7 +305,10 @@
     ],
     "dataset": "CMIP6-decadal",
     "priority": 24,
-    "risk": "careful: coordinate transformation",
+    "risk": "risk.careful.coordinate_transformation",
+    "risk_label": "careful: coordinate transformation",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
   },
   {
@@ -275,7 +326,10 @@
     ],
     "dataset": null,
     "priority": 30,
-    "risk": "careful: value transformation",
+    "risk": "risk.careful.value_transformation",
+    "risk_label": "careful: value transformation",
+    "labels": [],
+    "label_titles": [],
     "source": "core"
   },
   {
@@ -290,7 +344,10 @@
     ],
     "dataset": null,
     "priority": 32,
-    "risk": "careful: dimension remapping",
+    "risk": "risk.careful.dimension_remapping",
+    "risk_label": "careful: dimension remapping",
+    "labels": [],
+    "label_titles": [],
     "source": "core"
   },
   {
@@ -305,7 +362,10 @@
     ],
     "dataset": null,
     "priority": 33,
-    "risk": "careful: coordinate reordering",
+    "risk": "risk.careful.coordinate_reordering",
+    "risk_label": "careful: coordinate reordering",
+    "labels": [],
+    "label_titles": [],
     "source": "core"
   },
   {
@@ -320,7 +380,10 @@
     ],
     "dataset": null,
     "priority": 33,
-    "risk": "safe: reversible rename",
+    "risk": "risk.safe.reversible_rename",
+    "risk_label": "safe: reversible rename",
+    "labels": [],
+    "label_titles": [],
     "source": "core"
   },
   {
@@ -335,7 +398,10 @@
     ],
     "dataset": null,
     "priority": 34,
-    "risk": "safe: coordinate creation",
+    "risk": "risk.safe.coordinate_creation",
+    "risk_label": "safe: coordinate creation",
+    "labels": [],
+    "label_titles": [],
     "source": "core"
   },
   {
@@ -351,7 +417,10 @@
     ],
     "dataset": null,
     "priority": 34,
-    "risk": "safe: metadata only",
+    "risk": "risk.safe.metadata_only",
+    "risk_label": "safe: metadata only",
+    "labels": [],
+    "label_titles": [],
     "source": "core"
   },
   {
@@ -367,7 +436,10 @@
     ],
     "dataset": null,
     "priority": 35,
-    "risk": "safe: metadata only",
+    "risk": "risk.safe.metadata_only",
+    "risk_label": "safe: metadata only",
+    "labels": [],
+    "label_titles": [],
     "source": "core"
   },
   {
@@ -383,7 +455,10 @@
     ],
     "dataset": null,
     "priority": 36,
-    "risk": "careful: value transformation",
+    "risk": "risk.careful.value_transformation",
+    "risk_label": "careful: value transformation",
+    "labels": [],
+    "label_titles": [],
     "source": "core"
   },
   {
@@ -398,7 +473,10 @@
     ],
     "dataset": null,
     "priority": 37,
-    "risk": "careful: coordinate transformation",
+    "risk": "risk.careful.coordinate_transformation",
+    "risk_label": "careful: coordinate transformation",
+    "labels": [],
+    "label_titles": [],
     "source": "core"
   },
   {
@@ -413,7 +491,10 @@
     ],
     "dataset": null,
     "priority": 38,
-    "risk": "careful: variable removal",
+    "risk": "risk.careful.variable_removal",
+    "risk_label": "careful: variable removal",
+    "labels": [],
+    "label_titles": [],
     "source": "core"
   },
   {
@@ -428,7 +509,10 @@
     ],
     "dataset": "cmip6",
     "priority": 40,
-    "risk": "safe: metadata only",
+    "risk": "risk.safe.metadata_only",
+    "risk_label": "safe: metadata only",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip6_plugin"
   },
   {
@@ -443,7 +527,10 @@
     ],
     "dataset": "CMIP7",
     "priority": 41,
-    "risk": "safe: metadata only",
+    "risk": "risk.safe.metadata_only",
+    "risk_label": "safe: metadata only",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip7_plugin"
   },
   {
@@ -459,7 +546,10 @@
     ],
     "dataset": "CMIP7",
     "priority": 42,
-    "risk": "safe: reversible rename",
+    "risk": "risk.safe.reversible_rename",
+    "risk_label": "safe: reversible rename",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip7_plugin"
   },
   {
@@ -474,7 +564,10 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
-    "risk": "careful: coordinate creation",
+    "risk": "risk.careful.coordinate_creation",
+    "risk_label": "careful: coordinate creation",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -490,7 +583,10 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
-    "risk": "careful: coordinate creation",
+    "risk": "risk.careful.coordinate_creation",
+    "risk_label": "careful: coordinate creation",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -506,7 +602,10 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
-    "risk": "careful: coordinate creation",
+    "risk": "risk.careful.coordinate_creation",
+    "risk_label": "careful: coordinate creation",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -521,7 +620,10 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
-    "risk": "careful: variable removal",
+    "risk": "risk.careful.variable_removal",
+    "risk_label": "careful: variable removal",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -536,7 +638,10 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
-    "risk": "safe: metadata only",
+    "risk": "risk.safe.metadata_only",
+    "risk_label": "safe: metadata only",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -552,7 +657,10 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
-    "risk": "safe: metadata only",
+    "risk": "risk.safe.metadata_only",
+    "risk_label": "safe: metadata only",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -568,7 +676,10 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
-    "risk": "careful: coordinate transformation",
+    "risk": "risk.careful.coordinate_transformation",
+    "risk_label": "careful: coordinate transformation",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -584,7 +695,10 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
-    "risk": "careful: coordinate transformation",
+    "risk": "risk.careful.coordinate_transformation",
+    "risk_label": "careful: coordinate transformation",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -599,7 +713,10 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
-    "risk": "safe: reversible rename",
+    "risk": "risk.safe.reversible_rename",
+    "risk_label": "safe: reversible rename",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -614,7 +731,10 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
-    "risk": "careful: coordinate transformation",
+    "risk": "risk.careful.coordinate_transformation",
+    "risk_label": "careful: coordinate transformation",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -629,7 +749,10 @@
     ],
     "dataset": "CMIP6",
     "priority": 42,
-    "risk": "careful: coordinate transformation",
+    "risk": "risk.careful.coordinate_transformation",
+    "risk_label": "careful: coordinate transformation",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_xmip_plugin"
   },
   {
@@ -645,7 +768,10 @@
     ],
     "dataset": "CMIP7",
     "priority": 43,
-    "risk": "careful: workflow transformation",
+    "risk": "risk.careful.workflow_transformation",
+    "risk_label": "careful: workflow transformation",
+    "labels": [],
+    "label_titles": [],
     "source": "plugin:woodpecker_cmip7_plugin"
   }
 ]

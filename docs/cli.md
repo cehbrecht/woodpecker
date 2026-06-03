@@ -29,8 +29,12 @@ woodpecker list-fixes --format json
 woodpecker list-fixes --format md
 ```
 
-Fix listings include a risk label so users can distinguish metadata-only
-cleanup from operations that transform values, coordinates, or structure.
+Fix listings include a predefined risk label so users can distinguish
+metadata-only cleanup from operations that transform values, coordinates, or
+structure. JSON output includes the stable risk id, such as
+`risk.safe.metadata_only`, plus the display title. Fixes can also advertise
+general informational labels; these labels are not used for recipe selection,
+priority, or automation decisions.
 
 Use the [Generated Fixes Reference](FIXES.md) or
 [Interactive Fix Browser](fixes.html) when you want to browse the same

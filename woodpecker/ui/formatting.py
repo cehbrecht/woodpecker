@@ -4,12 +4,27 @@ import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from ..fixes.labels import FixLabelRegistry
 from ..fixes.registry import UNPRIORITIZED
 from ..recipes.models import Recipe
 
 
 def _priority_value(fix: object) -> int:
     return int(getattr(fix, "priority", UNPRIORITIZED))
+
+
+def _risk_title(fix: object) -> str:
+    return str(getattr(fix, "risk_label", "") or FixLabelRegistry.title(getattr(fix, "risk", "")))
+
+
+def _label_titles(fix: object) -> list[str]:
+    metadata_titles = getattr(fix, "label_titles", None)
+    if isinstance(metadata_titles, list):
+        return [str(item) for item in metadata_titles]
+    labels = getattr(fix, "labels", []) or []
+    if not isinstance(labels, list):
+        return []
+    return [FixLabelRegistry.title(str(label)) for label in labels]
 
 
 def _fix_json_payload(fix: object) -> dict[str, object]:
@@ -29,11 +44,12 @@ def format_fixes(fixes: list[object], fmt: str) -> str:
 
     if fmt == "md":
         lines = [
-            "| ID | Name | Description | Categories | Dataset | Priority | Risk |",
-            "|----|------|-------------|------------|---------|---------|------|",
+            "| ID | Name | Description | Categories | Dataset | Priority | Risk | Labels |",
+            "|----|------|-------------|------------|---------|---------|------|--------|",
         ]
         for fix in fixes:
             cats = ", ".join(getattr(fix, "categories", []) or [])
+            labels = ", ".join(_label_titles(fix))
             lines.append(
                 "| "
                 f"{getattr(fix, 'id', '')} | "
@@ -42,7 +58,8 @@ def format_fixes(fixes: list[object], fmt: str) -> str:
                 f"{cats} | "
                 f"{getattr(fix, 'dataset', None) or ''} | "
                 f"{_priority_value(fix)} | "
-                f"{getattr(fix, 'risk', '')} |"
+                f"{_risk_title(fix)} | "
+                f"{labels} |"
             )
         return "\n".join(lines)
 
@@ -52,7 +69,8 @@ def format_fixes(fixes: list[object], fmt: str) -> str:
         lines.append(
             f"{getattr(fix, 'id', '')}: {getattr(fix, 'description', '')} "
             f"(cats: {cats}; dataset: {getattr(fix, 'dataset', None) or '-'}; "
-            f"priority: {_priority_value(fix)}; risk: {getattr(fix, 'risk', '')})"
+            f"priority: {_priority_value(fix)}; risk: {_risk_title(fix)}"
+            f"{'; labels: ' + ', '.join(_label_titles(fix)) if _label_titles(fix) else ''})"
         )
     return "\n".join(lines)
 
@@ -63,7 +81,9 @@ def format_findings(findings: list[dict[str, str]], fmt: str) -> str:
     if fmt == "json":
         return json.dumps(findings, indent=2)
     return "\n".join(
-        f"{item['path']}: {item['fix_id']} [{item.get('risk', '')}] {item['message']}"
+        f"{item['path']}: {item['fix_id']} "
+        f"[{item.get('risk_label') or FixLabelRegistry.title(item.get('risk', ''))}] "
+        f"{item['message']}"
         for item in findings
     )
 
@@ -107,10 +127,12 @@ def format_fix_stats(
         for item in preview:
             outcome = "would change" if item.get("changed") else "no change"
             name = item.get("name") or item.get("fix_id", "")
-            risk = item.get("risk", "")
+            risk = item.get("risk_label") or FixLabelRegistry.title(item.get("risk", ""))
+            label_titles = list(item.get("label_titles", []) or [])
+            labels = f"; labels: {', '.join(label_titles)}" if label_titles else ""
             lines.append(
                 f"  {item.get('path', '')}: {item.get('fix_id', '')} "
-                f"({name}; {risk}) - {outcome}"
+                f"({name}; {risk}{labels}) - {outcome}"
             )
     return "\n".join(lines)
 
