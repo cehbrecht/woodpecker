@@ -33,8 +33,11 @@ Use the [Generated Fixes Reference](FIXES.md) and
 
 ## Plugin Labels
 
-Fix labels are user-facing metadata. They help users understand a fix, but they
-do not affect recipes, priority, matching, or automation.
+Fix labels are user-facing metadata with an id, title, description, and category.
+They help users understand a fix, but they do not affect recipes, priority,
+matching, or automation. Predefined risk labels use category `risk`; custom
+labels default to category `info`, and plugins may also use category `warning`
+for labels that deserve extra attention.
 
 Plugins can use predefined risk labels:
 
@@ -55,5 +58,6 @@ register_fix_label(
     "my_plugin.experimental",
     "experimental",
     description="Early plugin fix that should be reviewed carefully.",
+    category="warning",
 )
 ```

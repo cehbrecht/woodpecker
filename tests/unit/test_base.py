@@ -36,6 +36,7 @@ def test_fix_metadata_accessor_returns_copied_mutable_fields():
     assert meta["aliases"] == ["base_metadata_alias"]
     assert meta["risk"] == "risk.safe.metadata_only"
     assert meta["risk_label"] == "safe: metadata only"
+    assert meta["risk_metadata"]["category"] == "risk"
 
     meta["aliases"].append("new_alias")
     assert _BaseMetadata.aliases == ["base_metadata_alias"]
@@ -70,3 +71,4 @@ def test_fix_metadata_includes_general_labels():
 
     assert meta["labels"] == ["user.visible"]
     assert meta["label_titles"] == ["user.visible"]
+    assert meta["label_metadata"][0]["category"] == "info"

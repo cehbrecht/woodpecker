@@ -21,8 +21,10 @@ class FixPreview(TypedDict):
     name: str
     risk: str
     risk_label: str
+    risk_metadata: dict[str, str]
     labels: list[str]
     label_titles: list[str]
+    label_metadata: list[dict[str, str]]
     changed: bool
 
 
@@ -65,8 +67,12 @@ def run_check(
                             "name": fix.name,
                             "risk": risk,
                             "risk_label": FixLabelRegistry.title(risk),
+                            "risk_metadata": FixLabelRegistry.metadata(risk),
                             "labels": labels,
                             "label_titles": [FixLabelRegistry.title(label) for label in labels],
+                            "label_metadata": [
+                                FixLabelRegistry.metadata(label) for label in labels
+                            ],
                             "message": message,
                         }
                     )
@@ -120,8 +126,12 @@ def run_fix(
                             "name": getattr(fix, "name", ""),
                             "risk": risk,
                             "risk_label": FixLabelRegistry.title(risk),
+                            "risk_metadata": FixLabelRegistry.metadata(risk),
                             "labels": labels,
                             "label_titles": [FixLabelRegistry.title(label) for label in labels],
+                            "label_metadata": [
+                                FixLabelRegistry.metadata(label) for label in labels
+                            ],
                             "changed": changed_fix,
                         }
                     )

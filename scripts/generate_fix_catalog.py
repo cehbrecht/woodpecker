@@ -61,8 +61,10 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
             "priority": f.priority,
             "risk": risk,
             "risk_label": risk_label,
+            "risk_metadata": FixLabelRegistry.metadata(risk),
             "labels": labels,
             "label_titles": label_titles,
+            "label_metadata": [FixLabelRegistry.metadata(label) for label in labels],
         }
         entry["source"] = source
         json_list.append(entry)

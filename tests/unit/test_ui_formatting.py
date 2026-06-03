@@ -112,6 +112,15 @@ def test_format_fix_stats_json_includes_preview_entries():
                         "name": "Normalize units",
                         "risk": "risk.careful.value_transformation",
                         "risk_label": "careful: value transformation",
+                        "risk_metadata": {
+                            "id": "risk.careful.value_transformation",
+                            "title": "careful: value transformation",
+                            "description": "Transforms data or coordinate values.",
+                            "category": "risk",
+                        },
+                        "labels": [],
+                        "label_titles": [],
+                        "label_metadata": [],
                         "changed": True,
                     }
                 ],
@@ -128,6 +137,7 @@ def test_format_fix_stats_json_includes_preview_entries():
     assert payload["preview"][0]["path"] == "cmip6_bad.nc"
     assert payload["preview"][0]["risk"] == "risk.careful.value_transformation"
     assert payload["preview"][0]["risk_label"] == "careful: value transformation"
+    assert payload["preview"][0]["risk_metadata"]["category"] == "risk"
     assert payload["preview"][0]["changed"] is True
 
 

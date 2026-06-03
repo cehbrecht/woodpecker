@@ -85,8 +85,15 @@ def test_run_fix_reports_failed_persistence():
             "name": "Dummy fix",
             "risk": "risk.safe.metadata_only",
             "risk_label": "safe: metadata only",
+            "risk_metadata": {
+                "id": "risk.safe.metadata_only",
+                "title": "safe: metadata only",
+                "description": "Changes metadata without changing data values.",
+                "category": "risk",
+            },
             "labels": [],
             "label_titles": [],
+            "label_metadata": [],
             "changed": True,
         }
     ]

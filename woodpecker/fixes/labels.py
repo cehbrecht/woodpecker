@@ -10,14 +10,14 @@ class FixLabel:
     id: str
     title: str
     description: str = ""
-    group: str = "tag"
+    category: str = "info"
 
     def to_dict(self) -> dict[str, str]:
         return {
             "id": self.id,
             "title": self.title,
             "description": self.description,
-            "group": self.group,
+            "category": self.category,
         }
 
 
@@ -56,14 +56,14 @@ class FixLabelRegistry:
         title: str,
         *,
         description: str = "",
-        group: str = "tag",
+        category: str = "info",
         override: bool = False,
     ) -> FixLabel:
         label = FixLabel(
             id=str(label_id).strip(),
             title=str(title).strip(),
             description=str(description or "").strip(),
-            group=str(group or "tag").strip(),
+            category=str(category or "info").strip(),
         )
         if not label.id:
             raise ValueError("Label id must be non-empty")
@@ -91,14 +91,14 @@ class FixLabelRegistry:
         key = str(label_id).strip()
         label = cls.get(key)
         if label is None:
-            return FixLabel(id=key, title=key, group="custom").to_dict()
+            return FixLabel(id=key, title=key, category="info").to_dict()
         return label.to_dict()
 
     @classmethod
-    def list_labels(cls, *, group: str | None = None) -> list[FixLabel]:
+    def list_labels(cls, *, category: str | None = None) -> list[FixLabel]:
         labels = cls._labels.values()
-        if group is not None:
-            labels = [label for label in labels if label.group == group]
+        if category is not None:
+            labels = [label for label in labels if label.category == category]
         return sorted(labels, key=lambda label: label.id)
 
 
@@ -107,7 +107,7 @@ def register_fix_label(
     title: str,
     *,
     description: str = "",
-    group: str = "tag",
+    category: str = "info",
     override: bool = False,
 ) -> FixLabel:
     """Register a custom informational label for fixes or plugins."""
@@ -116,7 +116,7 @@ def register_fix_label(
         label_id,
         title,
         description=description,
-        group=group,
+        category=category,
         override=override,
     )
 
@@ -191,7 +191,7 @@ def _register_builtin_labels() -> None:
         ),
     ]
     for label_id, title, description in builtins:
-        FixLabelRegistry.register(label_id, title, description=description, group="risk")
+        FixLabelRegistry.register(label_id, title, description=description, category="risk")
 
 
 _register_builtin_labels()
