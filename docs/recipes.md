@@ -12,6 +12,7 @@ import woodpecker
 recipe = woodpecker.recipe.get("xmip.cmip6_preprocessing")
 findings = woodpecker.recipe.check(dataset, recipe)
 preview = woodpecker.recipe.fix(dataset, recipe, dry_run=True)
+preview.preview
 ```
 
 The same id works from the CLI:
