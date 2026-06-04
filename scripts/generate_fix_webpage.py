@@ -6,6 +6,7 @@ from jinja2 import Environment, FileSystemLoader
 
 # Import fixes to ensure registration
 import woodpecker.fixes  # noqa: F401
+from woodpecker.fixes.labels import LabelCategories, LabelRegistry
 from woodpecker.fixes.registry import FixFunctionRegistry
 
 
@@ -31,8 +32,20 @@ def main():
             core_count += 1
 
         aliases = list(entry.get("aliases", []) or [])
+        labels = list(entry.get("labels", []) or [])
         entry["code"] = entry["id"]
         entry["aliases"] = aliases
+        entry["severity_titles"] = [
+            metadata["title"]
+            for label_id in labels
+            if (metadata := LabelRegistry.metadata(label_id))["category"] in LabelCategories.RISK
+        ]
+        entry["other_label_titles"] = [
+            metadata["title"]
+            for label_id in labels
+            if (metadata := LabelRegistry.metadata(label_id))["category"]
+            not in LabelCategories.RISK
+        ]
         entry["source"] = source
         entry["source_kind"] = source_kind
         entry["source_package"] = source_package

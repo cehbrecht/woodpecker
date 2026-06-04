@@ -59,6 +59,8 @@
         <th>Categories</th>
         <th>Dataset</th>
         <th>Priority</th>
+        <th>Severity</th>
+        <th>Labels</th>
         <th>Source</th>
       </tr>
     </thead>
@@ -71,6 +73,8 @@
         <td>{{ (f.categories or []) | join(', ') }}</td>
         <td>{{ f.dataset or '' }}</td>
         <td>{{ f.priority }}</td>
+        <td>{{ (f.severity_titles or []) | join(', ') }}</td>
+        <td>{{ (f.other_label_titles or []) | join(', ') }}</td>
         <td>
           {% if f.source_kind == 'core' %}
             <span class="source-badge source-core">core</span>

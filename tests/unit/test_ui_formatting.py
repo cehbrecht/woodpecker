@@ -1,8 +1,24 @@
 import json
 from pathlib import Path
 
+from woodpecker.fixes.base import FixFunction
+from woodpecker.fixes.labels import Labels
 from woodpecker.recipes.models import FixRef, Recipe
-from woodpecker.ui.formatting import format_fix_stats, format_recipes
+from woodpecker.ui.formatting import (
+    format_findings,
+    format_fix_stats,
+    format_fixes,
+    format_recipes,
+)
+
+
+class _RiskyFix(FixFunction):
+    id = "tests.risky"
+    name = "Risky fix"
+    description = "Does a risky thing"
+    categories = ["metadata"]
+    priority = 1
+    labels = [Labels.RISK_VALUE_TRANSFORMATION]
 
 
 def test_format_recipes_text_uses_step_wording():
@@ -24,6 +40,48 @@ def test_format_recipes_json_uses_model_payloads():
 
     assert payload[0]["id"] == "tests.one"
     assert payload[0]["steps"][0]["id"] == "woodpecker.one"
+
+
+def test_format_fixes_text_includes_severity_label():
+    output = format_fixes([_RiskyFix()], "text")
+
+    assert "severity: careful: value transformation" in output
+
+
+def test_format_fixes_markdown_includes_severity_column():
+    output = format_fixes([_RiskyFix()], "md")
+
+    assert (
+        "| ID | Name | Description | Categories | Dataset | Priority | Severity | Labels |"
+        in output
+    )
+    assert "careful: value transformation" in output
+
+
+def test_format_findings_text_includes_severity_label():
+    output = format_findings(
+        [
+            {
+                "path": "case.nc",
+                "fix_id": "tests.risky",
+                "name": "Risky fix",
+                "labels": ["risk.value_transformation"],
+                "label_titles": ["careful: value transformation"],
+                "label_metadata": [
+                    {
+                        "id": "risk.value_transformation",
+                        "title": "careful: value transformation",
+                        "description": "Transforms data or coordinate values.",
+                        "category": "risk-medium",
+                    }
+                ],
+                "message": "something can be changed",
+            }
+        ],
+        "text",
+    )
+
+    assert "tests.risky [careful: value transformation] something can be changed" in output
 
 
 def test_format_fix_stats_json_includes_execution_context():
@@ -65,6 +123,16 @@ def test_format_fix_stats_json_includes_preview_entries():
                         "path": "cmip6_bad.nc",
                         "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                         "name": "Normalize units",
+                        "labels": ["risk.value_transformation"],
+                        "label_titles": ["careful: value transformation"],
+                        "label_metadata": [
+                            {
+                                "id": "risk.value_transformation",
+                                "title": "careful: value transformation",
+                                "description": "Transforms data or coordinate values.",
+                                "category": "risk-medium",
+                            }
+                        ],
                         "changed": True,
                     }
                 ],
@@ -79,6 +147,9 @@ def test_format_fix_stats_json_includes_preview_entries():
     )
 
     assert payload["preview"][0]["path"] == "cmip6_bad.nc"
+    assert payload["preview"][0]["labels"] == ["risk.value_transformation"]
+    assert payload["preview"][0]["label_titles"] == ["careful: value transformation"]
+    assert payload["preview"][0]["label_metadata"][0]["category"] == "risk-medium"
     assert payload["preview"][0]["changed"] is True
 
 
@@ -95,6 +166,16 @@ def test_format_fix_stats_text_includes_dry_run_preview():
                     "path": "cmip6_bad.nc",
                     "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                     "name": "Normalize units",
+                    "labels": ["risk.value_transformation"],
+                    "label_titles": ["careful: value transformation"],
+                    "label_metadata": [
+                        {
+                            "id": "risk.value_transformation",
+                            "title": "careful: value transformation",
+                            "description": "Transforms data or coordinate values.",
+                            "category": "risk-medium",
+                        }
+                    ],
                     "changed": True,
                 }
             ],
@@ -109,4 +190,5 @@ def test_format_fix_stats_text_includes_dry_run_preview():
 
     assert "Preview:" in output
     assert "cmip6_bad.nc: woodpecker.normalize_tas_units_to_kelvin" in output
+    assert "careful: value transformation" in output
     assert "would change" in output

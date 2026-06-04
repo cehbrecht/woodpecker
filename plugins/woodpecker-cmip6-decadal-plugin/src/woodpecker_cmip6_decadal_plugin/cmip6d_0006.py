@@ -3,6 +3,7 @@ from __future__ import annotations
 import numpy as np
 import xarray as xr
 
+from woodpecker.fixes.labels import Labels
 from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import is_cmip6_decadal_netcdf
@@ -33,6 +34,7 @@ class DecadalRealizationDtypeNormalization(FixFunction):
     categories = ["metadata", "structure"]
     priority = 15
     dataset = "CMIP6-decadal"
+    labels = [Labels.RISK_DTYPE_TRANSFORMATION]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return is_cmip6_decadal_netcdf(dataset)

@@ -4,7 +4,12 @@ def test_public_import_surfaces_are_available():
         UNPRIORITIZED,
         FixFunction,
         FixFunctionRegistry,
+        Label,
+        LabelCategories,
+        LabelRegistry,
+        Labels,
         register_fix_function,
+        register_label,
     )
     from woodpecker.recipes import FixRef, Recipe, load_recipe
     from woodpecker.recipes import document as build_document
@@ -28,7 +33,12 @@ def test_public_import_surfaces_are_available():
     assert FixResult.__name__ == "FixResult"
     assert FixFunction.__name__ == "FixFunction"
     assert FixFunctionRegistry.__name__ == "FixFunctionRegistry"
+    assert Label.__name__ == "Label"
+    assert LabelCategories.RISK_MEDIUM == "risk-medium"
+    assert LabelRegistry.__name__ == "LabelRegistry"
+    assert Labels.RISK_METADATA_ONLY == "risk.metadata_only"
     assert UNPRIORITIZED == -1
+    assert callable(register_label)
     assert callable(register_fix_function)
     assert callable(load_recipe)
     assert callable(build_fix)

@@ -4,6 +4,7 @@ import re
 
 import xarray as xr
 
+from woodpecker.fixes.labels import Labels
 from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import is_cmip6_decadal_netcdf
@@ -41,6 +42,7 @@ class DecadalFurtherInfoUrlNormalization(FixFunction):
     categories = ["metadata"]
     priority = 17
     dataset = "CMIP6-decadal"
+    labels = [Labels.RISK_METADATA_ONLY]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return is_cmip6_decadal_netcdf(dataset)

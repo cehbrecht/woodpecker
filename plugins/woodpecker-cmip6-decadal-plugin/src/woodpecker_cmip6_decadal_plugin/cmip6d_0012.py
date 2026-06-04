@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
+from woodpecker.fixes.labels import Labels
 from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import apply_leadtime_metadata, is_cmip6_decadal_netcdf, leadtime_metadata_invalid
@@ -28,6 +29,7 @@ class DecadalLeadtimeMetadataNormalization(FixFunction):
     categories = ["metadata"]
     priority = 21
     dataset = "CMIP6-decadal"
+    labels = [Labels.RISK_METADATA_ONLY]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return is_cmip6_decadal_netcdf(dataset)

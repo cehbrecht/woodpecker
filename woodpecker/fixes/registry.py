@@ -4,6 +4,7 @@ import json
 from typing import Any, Optional, Type
 
 from woodpecker.fixes.identifiers import IdentifierResolver, IdentifierRules
+from woodpecker.fixes.labels import LabelCategories, LabelRegistry
 
 from .base import FixFunction
 
@@ -131,6 +132,7 @@ class FixFunctionRegistry:
         name = str(getattr(fix, "name", "") or "").strip()
         categories = getattr(fix, "categories", []) or []
         priority = getattr(fix, "priority", UNPRIORITIZED)
+        labels = getattr(fix, "labels", []) or []
 
         if not name:
             raise ValueError(f"Fix function {fix_cls.__name__} must define a non-empty 'name'")
@@ -148,6 +150,21 @@ class FixFunctionRegistry:
             raise ValueError(
                 f"Fix function {fix_cls.__name__} must define "
                 "'categories' as a list of non-empty strings"
+            )
+        if not isinstance(labels, list) or any(
+            (not isinstance(item, str) or not item.strip()) for item in labels
+        ):
+            raise ValueError(
+                f"Fix function {fix_cls.__name__} must define "
+                "'labels' as a list of non-empty strings"
+            )
+        label_ids = [str(label) for label in labels]
+        if not any(
+            LabelRegistry.labels_with_category(label_ids, category)
+            for category in LabelCategories.RISK
+        ):
+            raise ValueError(
+                f"Fix function {fix_cls.__name__} must define at least one severity label"
             )
 
     @classmethod
@@ -233,6 +250,7 @@ class FixFunctionRegistry:
         fixes = cls.discover()
         data = []
         for f in fixes:
+            labels = list(getattr(f, "labels", []) or [])
             data.append(
                 {
                     "id": getattr(f, "id", ""),
@@ -245,6 +263,9 @@ class FixFunctionRegistry:
                     "categories": list(getattr(f, "categories", []) or []),
                     "dataset": getattr(f, "dataset", None),
                     "priority": getattr(f, "priority", UNPRIORITIZED),
+                    "labels": labels,
+                    "label_titles": [LabelRegistry.title(label) for label in labels],
+                    "label_metadata": [LabelRegistry.metadata(label) for label in labels],
                 }
             )
 

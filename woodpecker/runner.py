@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Iterable, TypedDict
 
+from woodpecker.fixes.labels import LabelRegistry
 from woodpecker.identity import dataset_type_matches_declared, resolve_dataset_identity
 from woodpecker.io import DataInput, get_output_adapter
 from woodpecker.io.runtime import strict_io_mode
@@ -18,6 +19,9 @@ class FixPreview(TypedDict):
     path: str
     fix_id: str
     name: str
+    labels: list[str]
+    label_titles: list[str]
+    label_metadata: list[dict[str, str]]
     changed: bool
 
 
@@ -51,11 +55,15 @@ def run_check(
                 if not fix.matches(dataset):
                     continue
                 for message in fix.check(dataset):
+                    labels = _fix_labels(fix)
                     findings.append(
                         {
                             "path": data_input.reference,
                             "fix_id": getattr(fix, "id", ""),
                             "name": fix.name,
+                            "labels": labels,
+                            "label_titles": [LabelRegistry.title(label) for label in labels],
+                            "label_metadata": [LabelRegistry.metadata(label) for label in labels],
                             "message": message,
                         }
                     )
@@ -100,11 +108,15 @@ def run_fix(
                 )
                 if attempted_fix:
                     attempted += 1
+                    labels = _fix_labels(fix)
                     preview.append(
                         {
                             "path": data_input.reference,
                             "fix_id": fix_id,
                             "name": getattr(fix, "name", ""),
+                            "labels": labels,
+                            "label_titles": [LabelRegistry.title(label) for label in labels],
+                            "label_metadata": [LabelRegistry.metadata(label) for label in labels],
                             "changed": changed_fix,
                         }
                     )
@@ -160,6 +172,13 @@ def apply_configured_fix(
         raise TypeError(f"Fix function '{fix_id}' does not implement apply()")
 
     return True, bool(fix.apply(dataset, dry_run=dry_run))
+
+
+def _fix_labels(fix: Any) -> list[str]:
+    labels = getattr(fix, "labels", []) or []
+    if not isinstance(labels, list):
+        return []
+    return [str(label) for label in labels]
 
 
 def _instantiate_fix(registry: Any, fix_id: str) -> Any:

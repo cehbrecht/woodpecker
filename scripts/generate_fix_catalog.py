@@ -5,7 +5,24 @@ from pathlib import Path
 
 # Import fixes to ensure registration
 import woodpecker.fixes  # noqa: F401
+from woodpecker.fixes.labels import LabelCategories, LabelRegistry
 from woodpecker.fixes.registry import FixFunctionRegistry
+
+
+def _severity_titles(label_ids: list[str]) -> list[str]:
+    return [
+        metadata["title"]
+        for label_id in label_ids
+        if (metadata := LabelRegistry.metadata(label_id))["category"] in LabelCategories.RISK
+    ]
+
+
+def _non_severity_titles(label_ids: list[str]) -> list[str]:
+    return [
+        metadata["title"]
+        for label_id in label_ids
+        if (metadata := LabelRegistry.metadata(label_id))["category"] not in LabelCategories.RISK
+    ]
 
 
 def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXES.json"):
@@ -20,13 +37,27 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
         "",
     ]
     json_list = []
-    grouped_rows: dict[str, list[tuple[str, str, str, str, str, int, str]]] = {"core": []}
+    grouped_rows: dict[str, list[tuple[str, str, str, str, str, int, str, str, str]]] = {"core": []}
 
     for f in fixes:
         cats = ", ".join(getattr(f, "categories", []) or [])
         source = FixFunctionRegistry.source_label(f)
+        labels = list(getattr(f, "labels", []) or [])
+        label_titles = [LabelRegistry.title(label) for label in labels]
+        severity_titles = _severity_titles(labels)
+        other_label_titles = _non_severity_titles(labels)
         fix_id = f.id
-        row = (fix_id, f.name, f.description, cats, f.dataset or "", f.priority, source)
+        row = (
+            fix_id,
+            f.name,
+            f.description,
+            cats,
+            f.dataset or "",
+            f.priority,
+            ", ".join(severity_titles),
+            ", ".join(other_label_titles),
+            source,
+        )
         if source == "core":
             grouped_rows["core"].append(row)
         else:
@@ -42,6 +73,9 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
             "categories": getattr(f, "categories", []) or [],
             "dataset": f.dataset,
             "priority": f.priority,
+            "labels": labels,
+            "label_titles": label_titles,
+            "label_metadata": [LabelRegistry.metadata(label) for label in labels],
         }
         entry["source"] = source
         json_list.append(entry)
@@ -56,13 +90,23 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
             [
                 heading,
                 "",
-                "| ID | Name | Description | Categories | Dataset | Priority | Source |",
-                "|----|------|-------------|------------|---------|---------|--------|",
+                "| ID | Name | Description | Categories | Dataset | Priority | Severity | Labels | Source |",
+                "|----|------|-------------|------------|---------|---------|------|--------|--------|",
             ]
         )
-        for fix_id, name, description, cats, dataset, priority, source in rows:
+        for (
+            fix_id,
+            name,
+            description,
+            cats,
+            dataset,
+            priority,
+            severity_titles,
+            labels,
+            source,
+        ) in rows:
             md_lines.append(
-                f"| {fix_id} | {name} | {description} | {cats} | {dataset} | {priority} | {source} |"
+                f"| {fix_id} | {name} | {description} | {cats} | {dataset} | {priority} | {severity_titles} | {labels} | {source} |"
             )
         md_lines.append("")
 

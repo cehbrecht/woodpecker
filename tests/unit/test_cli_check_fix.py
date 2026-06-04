@@ -15,6 +15,16 @@ def _finding(message: str = "synthetic finding") -> dict[str, str]:
         "path": "cmip6_bad.nc",
         "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
         "name": "Common check",
+        "labels": ["risk.value_transformation"],
+        "label_titles": ["careful: value transformation"],
+        "label_metadata": [
+            {
+                "id": "risk.value_transformation",
+                "title": "careful: value transformation",
+                "description": "Transforms data or coordinate values.",
+                "category": "risk-medium",
+            }
+        ],
         "message": message,
     }
 
@@ -31,6 +41,16 @@ def _fix_stats(*, persisted: int = 1, persist_failed: int = 0) -> dict[str, obje
                 "path": "cmip6_case.nc",
                 "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                 "name": "Normalize units",
+                "labels": ["risk.value_transformation"],
+                "label_titles": ["careful: value transformation"],
+                "label_metadata": [
+                    {
+                        "id": "risk.value_transformation",
+                        "title": "careful: value transformation",
+                        "description": "Transforms data or coordinate values.",
+                        "category": "risk-medium",
+                    }
+                ],
                 "changed": True,
             }
         ],
@@ -59,8 +79,19 @@ def test_check_json_output_structure(
     payload = json.loads(result.output)
     assert isinstance(payload, list)
     assert payload
-    assert {"path", "fix_id", "name", "message"}.issubset(payload[0].keys())
+    assert {
+        "path",
+        "fix_id",
+        "name",
+        "labels",
+        "label_titles",
+        "label_metadata",
+        "message",
+    }.issubset(payload[0].keys())
     assert payload[0]["fix_id"] == "woodpecker.normalize_tas_units_to_kelvin"
+    assert payload[0]["labels"] == ["risk.value_transformation"]
+    assert payload[0]["label_titles"] == ["careful: value transformation"]
+    assert payload[0]["label_metadata"][0]["category"] == "risk-medium"
 
 
 @pytest.mark.parametrize(
@@ -109,6 +140,9 @@ def test_fix_json_output_contains_write_report(
     assert payload["persist_failed"] == stats["persist_failed"]
     assert payload["force_apply"] is False
     assert payload["preview"][0]["path"] == "cmip6_case.nc"
+    assert payload["preview"][0]["labels"] == ["risk.value_transformation"]
+    assert payload["preview"][0]["label_titles"] == ["careful: value transformation"]
+    assert payload["preview"][0]["label_metadata"][0]["category"] == "risk-medium"
 
 
 def test_check_unknown_fix_code_returns_click_error(

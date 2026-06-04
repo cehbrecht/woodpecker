@@ -29,6 +29,14 @@ woodpecker list-fixes --format json
 woodpecker list-fixes --format md
 ```
 
+Fix listings include labels so users can distinguish metadata-only cleanup from
+operations that transform values, coordinates, or structure. Severity is
+represented through ordinary labels whose categories are `risk-low`,
+`risk-medium`, or `risk-high`; for example `risk.metadata_only`. JSON
+output includes `labels`, `label_titles`, and `label_metadata` for the same
+label ids. Labels are not used for recipe selection, priority, or automation
+decisions.
+
 Use the [Generated Fixes Reference](FIXES.md) or
 [Interactive Fix Browser](fixes.html) when you want to browse the same
 registered ids in the documentation.
@@ -88,7 +96,8 @@ woodpecker check ./data --category metadata
 ```
 
 `check` exits with status `1` when findings are reported and `0` when no issues
-are found.
+are found. Text findings show the selected fix severity label. JSON findings
+include the complete label metadata.
 
 ## Apply Fixes
 
@@ -99,8 +108,8 @@ woodpecker fix ./data --recipe-id cmip6.core_units --dry-run
 ```
 
 Dry-run output includes a preview section with the input path, selected fix id,
-fix name, and whether that fix would change the dataset. Use `--format json`
-to consume the same preview entries programmatically.
+fix name, severity label, and whether that fix would change the dataset. Use
+`--format json` to consume the same preview entries programmatically.
 
 Apply a discovered recipe:
 

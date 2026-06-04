@@ -1,6 +1,7 @@
 import pytest
 import xarray as xr
 
+from woodpecker.fixes.labels import Labels
 from woodpecker.io import DataInput
 from woodpecker.runner import run_fix
 from woodpecker.testing import make_atlas
@@ -26,6 +27,7 @@ class DummyInput(DataInput):
 class DummyFunction:
     code = "DUMMY01"
     name = "Dummy fix"
+    labels = [Labels.RISK_METADATA_ONLY]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return True
@@ -82,6 +84,16 @@ def test_run_fix_reports_failed_persistence():
             "path": "dummy",
             "fix_id": "",
             "name": "Dummy fix",
+            "labels": ["risk.metadata_only"],
+            "label_titles": ["safe: metadata only"],
+            "label_metadata": [
+                {
+                    "id": "risk.metadata_only",
+                    "title": "safe: metadata only",
+                    "description": "Changes metadata without changing data values.",
+                    "category": "risk-low",
+                }
+            ],
             "changed": True,
         }
     ]

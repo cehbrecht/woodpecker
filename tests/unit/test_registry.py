@@ -1,5 +1,6 @@
 import pytest
 
+from woodpecker.fixes.labels import Labels
 from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry, register_fix_function
 
 
@@ -23,6 +24,7 @@ def test_registry_rejects_invalid_suffix_pattern():
             categories = ["metadata"]
             priority = 10
             dataset = None
+            labels = [Labels.RISK_METADATA_ONLY]
 
         FixFunctionRegistry.register(_InvalidCode)
 
@@ -38,6 +40,22 @@ def test_registry_rejects_missing_name():
             dataset = None
 
         FixFunctionRegistry.register(_MissingName)
+
+
+def test_registry_rejects_missing_severity_label():
+    with pytest.raises(ValueError, match="at least one severity label"):
+
+        class _MissingSeverity:
+            prefix = "test"
+            suffix = "missing_severity"
+            name = "Missing severity"
+            description = ""
+            categories = ["metadata"]
+            priority = 10
+            dataset = None
+            labels = ["plugin.info_only"]
+
+        FixFunctionRegistry.register(_MissingSeverity)
 
 
 def test_registry_rejects_priority_below_unprioritized_sentinel():
@@ -65,6 +83,7 @@ def test_register_fix_function_decorator_registers_class():
         categories = ["metadata"]
         priority = 10
         dataset = None
+        labels = [Labels.RISK_METADATA_ONLY]
 
     registered = register_fix_function(_Alias)
     assert registered is _Alias
@@ -179,6 +198,7 @@ def test_registry_suffix_derivation_falls_back_to_class_name_snake_case():
         categories = ["metadata"]
         priority = 10
         dataset = None
+        labels = [Labels.RISK_METADATA_ONLY]
 
     register_fix_function(FallbackFromClassName)
     assert FallbackFromClassName.id == "test.fallback_from_class_name"
@@ -253,6 +273,7 @@ def test_registry_resolves_ids_and_aliases_for_known_fixes():
 def test_registry_instantiate_returns_fix_for_id():
     fix = FixFunctionRegistry.instantiate("woodpecker.normalize_tas_units_to_kelvin")
     assert getattr(fix, "id", "") == "woodpecker.normalize_tas_units_to_kelvin"
+    assert "risk.value_transformation" in getattr(fix, "labels", [])
 
 
 def test_registry_instantiate_returns_fresh_instance_each_time():
