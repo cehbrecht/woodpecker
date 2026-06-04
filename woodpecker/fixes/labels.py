@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 
 
 @dataclass(frozen=True)
@@ -21,7 +22,12 @@ class Label:
         }
 
 
-class LabelCategories:
+class _StringEnum(str, Enum):
+    def __str__(self) -> str:
+        return self.value
+
+
+class LabelCategories(_StringEnum):
     """Predefined label categories."""
 
     INFO = "info"
@@ -29,10 +35,8 @@ class LabelCategories:
     RISK_MEDIUM = "risk-medium"
     RISK_HIGH = "risk-high"
 
-    RISK = (RISK_LOW, RISK_MEDIUM, RISK_HIGH)
 
-
-class Labels:
+class Labels(_StringEnum):
     """Predefined label ids."""
 
     RISK_REVIEW_BEFORE_APPLYING = "risk.review_before_applying"
@@ -49,6 +53,13 @@ class Labels:
     RISK_DTYPE_TRANSFORMATION = "risk.dtype_transformation"
     RISK_DERIVED_COORDINATE_CREATION = "risk.derived_coordinate_creation"
     RISK_WORKFLOW_TRANSFORMATION = "risk.workflow_transformation"
+
+
+LabelCategories.RISK = (
+    LabelCategories.RISK_LOW,
+    LabelCategories.RISK_MEDIUM,
+    LabelCategories.RISK_HIGH,
+)
 
 
 class LabelRegistry:
