@@ -273,7 +273,7 @@ def test_registry_resolves_ids_and_aliases_for_known_fixes():
 def test_registry_instantiate_returns_fix_for_id():
     fix = FixFunctionRegistry.instantiate("woodpecker.normalize_tas_units_to_kelvin")
     assert getattr(fix, "id", "") == "woodpecker.normalize_tas_units_to_kelvin"
-    assert "risk.careful.value_transformation" in getattr(fix, "labels", [])
+    assert "label.value_transformation" in getattr(fix, "labels", [])
 
 
 def test_registry_instantiate_returns_fresh_instance_each_time():

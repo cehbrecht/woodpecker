@@ -62,11 +62,11 @@ def test_format_findings_text_includes_severity_label():
                 "path": "case.nc",
                 "fix_id": "tests.risky",
                 "name": "Risky fix",
-                "labels": ["risk.careful.value_transformation"],
+                "labels": ["label.value_transformation"],
                 "label_titles": ["careful: value transformation"],
                 "label_metadata": [
                     {
-                        "id": "risk.careful.value_transformation",
+                        "id": "label.value_transformation",
                         "title": "careful: value transformation",
                         "description": "Transforms data or coordinate values.",
                         "category": "risk-medium",
@@ -120,11 +120,11 @@ def test_format_fix_stats_json_includes_preview_entries():
                         "path": "cmip6_bad.nc",
                         "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                         "name": "Normalize units",
-                        "labels": ["risk.careful.value_transformation"],
+                        "labels": ["label.value_transformation"],
                         "label_titles": ["careful: value transformation"],
                         "label_metadata": [
                             {
-                                "id": "risk.careful.value_transformation",
+                                "id": "label.value_transformation",
                                 "title": "careful: value transformation",
                                 "description": "Transforms data or coordinate values.",
                                 "category": "risk-medium",
@@ -144,7 +144,7 @@ def test_format_fix_stats_json_includes_preview_entries():
     )
 
     assert payload["preview"][0]["path"] == "cmip6_bad.nc"
-    assert payload["preview"][0]["labels"] == ["risk.careful.value_transformation"]
+    assert payload["preview"][0]["labels"] == ["label.value_transformation"]
     assert payload["preview"][0]["label_titles"] == ["careful: value transformation"]
     assert payload["preview"][0]["label_metadata"][0]["category"] == "risk-medium"
     assert payload["preview"][0]["changed"] is True
@@ -163,11 +163,11 @@ def test_format_fix_stats_text_includes_dry_run_preview():
                     "path": "cmip6_bad.nc",
                     "fix_id": "woodpecker.normalize_tas_units_to_kelvin",
                     "name": "Normalize units",
-                    "labels": ["risk.careful.value_transformation"],
+                    "labels": ["label.value_transformation"],
                     "label_titles": ["careful: value transformation"],
                     "label_metadata": [
                         {
-                            "id": "risk.careful.value_transformation",
+                            "id": "label.value_transformation",
                             "title": "careful: value transformation",
                             "description": "Transforms data or coordinate values.",
                             "category": "risk-medium",

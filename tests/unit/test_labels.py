@@ -7,7 +7,7 @@ def test_builtin_labels_have_stable_ids_titles_and_categories():
     label = LabelRegistry.get(Labels.VALUE_TRANSFORMATION)
 
     assert label is not None
-    assert label.id == "risk.careful.value_transformation"
+    assert label.id == "label.value_transformation"
     assert label.title == "careful: value transformation"
     assert label.category == LabelCategories.RISK_MEDIUM
 

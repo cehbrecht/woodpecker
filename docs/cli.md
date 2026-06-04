@@ -32,7 +32,7 @@ woodpecker list-fixes --format md
 Fix listings include labels so users can distinguish metadata-only cleanup from
 operations that transform values, coordinates, or structure. Severity is
 represented through ordinary labels whose categories are `risk-low`,
-`risk-medium`, or `risk-high`; for example `risk.safe.metadata_only`. JSON
+`risk-medium`, or `risk-high`; for example `label.metadata_only`. JSON
 output includes `labels`, `label_titles`, and `label_metadata` for the same
 label ids. Labels are not used for recipe selection, priority, or automation
 decisions.
