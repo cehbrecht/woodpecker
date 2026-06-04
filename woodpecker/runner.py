@@ -63,9 +63,7 @@ def run_check(
                             "name": fix.name,
                             "labels": labels,
                             "label_titles": [LabelRegistry.title(label) for label in labels],
-                            "label_metadata": [
-                                LabelRegistry.metadata(label) for label in labels
-                            ],
+                            "label_metadata": [LabelRegistry.metadata(label) for label in labels],
                             "message": message,
                         }
                     )
@@ -118,9 +116,7 @@ def run_fix(
                             "name": getattr(fix, "name", ""),
                             "labels": labels,
                             "label_titles": [LabelRegistry.title(label) for label in labels],
-                            "label_metadata": [
-                                LabelRegistry.metadata(label) for label in labels
-                            ],
+                            "label_metadata": [LabelRegistry.metadata(label) for label in labels],
                             "changed": changed_fix,
                         }
                     )

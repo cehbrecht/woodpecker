@@ -37,9 +37,7 @@ def generate_catalog(md_path: str = "docs/FIXES.md", json_path: str = "docs/FIXE
         "",
     ]
     json_list = []
-    grouped_rows: dict[str, list[tuple[str, str, str, str, str, int, str, str, str]]] = {
-        "core": []
-    }
+    grouped_rows: dict[str, list[tuple[str, str, str, str, str, int, str, str, str]]] = {"core": []}
 
     for f in fixes:
         cats = ", ".join(getattr(f, "categories", []) or [])

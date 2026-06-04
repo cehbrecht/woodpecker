@@ -110,9 +110,7 @@ def format_findings(findings: list[dict[str, str]], fmt: str) -> str:
     if fmt == "json":
         return json.dumps(findings, indent=2)
     return "\n".join(
-        f"{item['path']}: {item['fix_id']} "
-        f"[{_severity_text(item)}] "
-        f"{item['message']}"
+        f"{item['path']}: {item['fix_id']} [{_severity_text(item)}] {item['message']}"
         for item in findings
     )
 

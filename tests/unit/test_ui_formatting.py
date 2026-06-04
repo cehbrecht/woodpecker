@@ -51,7 +51,10 @@ def test_format_fixes_text_includes_severity_label():
 def test_format_fixes_markdown_includes_severity_column():
     output = format_fixes([_RiskyFix()], "md")
 
-    assert "| ID | Name | Description | Categories | Dataset | Priority | Severity | Labels |" in output
+    assert (
+        "| ID | Name | Description | Categories | Dataset | Priority | Severity | Labels |"
+        in output
+    )
     assert "careful: value transformation" in output
 
 
