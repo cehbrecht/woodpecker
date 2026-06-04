@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
+from woodpecker.fixes.labels import RiskLabels
 from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import is_cmip6_decadal_netcdf
@@ -41,7 +42,7 @@ class DecadalRealizationVariable(FixFunction):
     categories = ["metadata"]
     priority = 12
     dataset = "CMIP6-decadal"
-    risk = "risk.careful.variable_creation"
+    labels = [RiskLabels.VARIABLE_CREATION]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return is_cmip6_decadal_netcdf(dataset)

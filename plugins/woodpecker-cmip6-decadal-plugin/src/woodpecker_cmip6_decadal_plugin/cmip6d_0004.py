@@ -3,6 +3,7 @@ from __future__ import annotations
 import xarray as xr
 
 from woodpecker.fixes.common.helpers import remove_encoding_key, vars_with_encoding_key
+from woodpecker.fixes.labels import RiskLabels
 from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import is_cmip6_decadal_netcdf
@@ -32,7 +33,7 @@ class DecadalCoordinatesEncodingCleanup(FixFunction):
     categories = ["encoding", "metadata"]
     priority = 13
     dataset = "CMIP6-decadal"
-    risk = "risk.safe.encoding_metadata"
+    labels = [RiskLabels.ENCODING_METADATA]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return is_cmip6_decadal_netcdf(dataset)

@@ -8,6 +8,7 @@ from woodpecker.fixes.common.helpers import (
     vars_with_compression_above_level,
     vars_with_encoding_key,
 )
+from woodpecker.fixes.labels import RiskLabels
 from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 
@@ -84,7 +85,7 @@ class AtlasEncodingCleanup(FixFunction):
     categories = ["encoding"]
     priority = 20
     dataset = "ATLAS"
-    risk = "risk.safe.encoding_metadata"
+    labels = [RiskLabels.ENCODING_METADATA]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         source = lower_source_name(dataset)

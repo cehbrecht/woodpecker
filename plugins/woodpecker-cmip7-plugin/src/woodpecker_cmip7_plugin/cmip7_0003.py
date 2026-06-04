@@ -4,6 +4,7 @@ from typing import Any
 
 import xarray as xr
 
+from woodpecker.fixes.labels import RiskLabels
 from woodpecker.fixes.registry import FixFunction, register_fix_function
 
 
@@ -77,7 +78,7 @@ class ConfigurableCmip7ReformatBridge(FixFunction):
     categories = ["structure", "metadata"]
     priority = 43
     dataset = "CMIP7"
-    risk = "risk.careful.workflow_transformation"
+    labels = [RiskLabels.WORKFLOW_TRANSFORMATION]
 
     def _config(self) -> dict[str, Any]:
         return getattr(self, "config", {}) or {}

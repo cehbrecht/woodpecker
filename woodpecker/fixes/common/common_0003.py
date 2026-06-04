@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
+from ..labels import RiskLabels
 from ..registry import FixFunction, FixFunctionRegistry
 from .helpers import remove_encoding_key, vars_with_encoding_key
 
@@ -26,7 +27,7 @@ class RemoveCoordinateFillValueEncodings(FixFunction):
     categories = ["metadata", "structure"]
     priority = 34
     dataset = None
-    labels = ["risk.safe.metadata_only"]
+    labels = [RiskLabels.METADATA_ONLY]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _needs_coord_fillvalue_cleanup(dataset)

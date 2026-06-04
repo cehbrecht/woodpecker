@@ -6,6 +6,7 @@ from typing import Any
 
 import xarray as xr
 
+from ..labels import RiskLabels
 from ..registry import FixFunction, FixFunctionRegistry
 
 
@@ -140,7 +141,7 @@ class RenameVariables(DatasetTransform):
     categories = ["structure"]
     priority = 33
     dataset = None
-    labels = ["risk.safe.reversible_rename"]
+    labels = [RiskLabels.REVERSIBLE_RENAME]
     message = "variables, coordinates, or dimensions can be renamed"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -155,7 +156,7 @@ class PromoteMissingDimensionCoords(DatasetTransform):
     categories = ["structure"]
     priority = 34
     dataset = None
-    labels = ["risk.safe.coordinate_creation"]
+    labels = [RiskLabels.SAFE_COORDINATE_CREATION]
     message = "dimensions without coordinate variables can be promoted"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -177,7 +178,7 @@ class SetCoordinateVariables(DatasetTransform):
     categories = ["structure", "metadata"]
     priority = 35
     dataset = None
-    labels = ["risk.safe.metadata_only"]
+    labels = [RiskLabels.METADATA_ONLY]
     message = "configured variables can be marked as coordinates"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -240,7 +241,7 @@ class ConvertUnits(DatasetTransform):
     categories = ["metadata", "units"]
     priority = 36
     dataset = None
-    labels = ["risk.careful.value_transformation"]
+    labels = [RiskLabels.VALUE_TRANSFORMATION]
     message = "configured variable units can be converted"
 
     def _target_units(self) -> dict[str, str]:
@@ -315,7 +316,7 @@ class NormalizeLongitudeConvention(DatasetTransform):
     categories = ["coordinates"]
     priority = 37
     dataset = None
-    labels = ["risk.careful.coordinate_transformation"]
+    labels = [RiskLabels.COORDINATE_TRANSFORMATION]
     message = "longitudes can be wrapped to the configured convention"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:
@@ -354,7 +355,7 @@ class DropVariables(DatasetTransform):
     categories = ["structure"]
     priority = 38
     dataset = None
-    labels = ["risk.careful.variable_removal"]
+    labels = [RiskLabels.VARIABLE_REMOVAL]
     message = "configured variables can be dropped"
 
     def transform(self, dataset: xr.Dataset) -> xr.Dataset:

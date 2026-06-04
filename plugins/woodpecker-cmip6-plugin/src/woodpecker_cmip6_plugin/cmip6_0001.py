@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
+from woodpecker.fixes.labels import RiskLabels
 from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 
@@ -18,7 +19,7 @@ class Cmip6DummyPlaceholder(FixFunction):
     categories = ["metadata"]
     priority = 40
     dataset = "cmip6"
-    risk = "risk.safe.metadata_only"
+    labels = [RiskLabels.METADATA_ONLY]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _is_cmip6_non_decadal(dataset)
