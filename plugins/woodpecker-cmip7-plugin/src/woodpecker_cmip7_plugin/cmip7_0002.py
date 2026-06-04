@@ -27,7 +27,7 @@ class RenameTempVariableToTas(FixFunction):
     categories = ["structure", "metadata"]
     priority = 42
     dataset = "CMIP7"
-    labels = [Labels.REVERSIBLE_RENAME]
+    labels = [Labels.RISK_REVERSIBLE_RENAME]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _needs_temp_to_tas_rename(dataset)

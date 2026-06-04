@@ -59,7 +59,7 @@ class EnsureLatitudeIsIncreasing(FixFunction):
     categories = ["structure"]
     priority = 33
     dataset = None
-    labels = [Labels.COORDINATE_REORDERING]
+    labels = [Labels.RISK_COORDINATE_REORDERING]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _needs_lat_flip(dataset)

@@ -4,10 +4,10 @@ from woodpecker.fixes.labels import LabelCategories, LabelRegistry, Labels, regi
 
 
 def test_builtin_labels_have_stable_ids_titles_and_categories():
-    label = LabelRegistry.get(Labels.VALUE_TRANSFORMATION)
+    label = LabelRegistry.get(Labels.RISK_VALUE_TRANSFORMATION)
 
     assert label is not None
-    assert label.id == "label.value_transformation"
+    assert label.id == "risk.value_transformation"
     assert label.title == "careful: value transformation"
     assert label.category == LabelCategories.RISK_MEDIUM
 
@@ -44,7 +44,7 @@ def test_labels_can_be_filtered_by_category():
     }
 
     assert "plugin.example.filterable" in info_ids
-    assert Labels.VALUE_TRANSFORMATION in severity_ids
+    assert Labels.RISK_VALUE_TRANSFORMATION in severity_ids
 
 
 def test_duplicate_custom_labels_require_override():

@@ -25,7 +25,7 @@ class FixFunction:
     categories: ClassVar[list[str]] = []
     priority: ClassVar[int] = -1
     dataset: ClassVar[Optional[str]] = None
-    labels: ClassVar[list[str]] = [Labels.REVIEW_BEFORE_APPLYING]
+    labels: ClassVar[list[str]] = [Labels.RISK_REVIEW_BEFORE_APPLYING]
     metadata_fields: ClassVar[tuple[str, ...]] = (
         "prefix",
         "suffix",

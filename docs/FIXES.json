@@ -12,14 +12,14 @@
     "dataset": "CMIP6-decadal",
     "priority": 10,
     "labels": [
-      "label.metadata_only"
+      "risk.metadata_only"
     ],
     "label_titles": [
       "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "label.metadata_only",
+        "id": "risk.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
         "category": "risk-low"
@@ -41,14 +41,14 @@
     "dataset": "CMIP6-decadal",
     "priority": 11,
     "labels": [
-      "label.metadata_only"
+      "risk.metadata_only"
     ],
     "label_titles": [
       "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "label.metadata_only",
+        "id": "risk.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
         "category": "risk-low"
@@ -69,14 +69,14 @@
     "dataset": "CMIP6-decadal",
     "priority": 12,
     "labels": [
-      "label.variable_creation"
+      "risk.variable_creation"
     ],
     "label_titles": [
       "careful: variable creation"
     ],
     "label_metadata": [
       {
-        "id": "label.variable_creation",
+        "id": "risk.variable_creation",
         "title": "careful: variable creation",
         "description": "Creates variables from existing metadata or values.",
         "category": "risk-medium"
@@ -98,14 +98,14 @@
     "dataset": "CMIP6-decadal",
     "priority": 13,
     "labels": [
-      "label.encoding_metadata"
+      "risk.encoding_metadata"
     ],
     "label_titles": [
       "safe: encoding metadata"
     ],
     "label_metadata": [
       {
-        "id": "label.encoding_metadata",
+        "id": "risk.encoding_metadata",
         "title": "safe: encoding metadata",
         "description": "Changes encoding or persistence metadata without changing data values.",
         "category": "risk-low"
@@ -126,14 +126,14 @@
     "dataset": "CMIP6-decadal",
     "priority": 14,
     "labels": [
-      "label.metadata_only"
+      "risk.metadata_only"
     ],
     "label_titles": [
       "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "label.metadata_only",
+        "id": "risk.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
         "category": "risk-low"
@@ -155,14 +155,14 @@
     "dataset": "CMIP6-decadal",
     "priority": 15,
     "labels": [
-      "label.dtype_transformation"
+      "risk.dtype_transformation"
     ],
     "label_titles": [
       "careful: dtype transformation"
     ],
     "label_metadata": [
       {
-        "id": "label.dtype_transformation",
+        "id": "risk.dtype_transformation",
         "title": "careful: dtype transformation",
         "description": "Changes variable or coordinate data types.",
         "category": "risk-medium"
@@ -184,14 +184,14 @@
     "dataset": "CMIP6-decadal",
     "priority": 16,
     "labels": [
-      "label.encoding_metadata"
+      "risk.encoding_metadata"
     ],
     "label_titles": [
       "safe: encoding metadata"
     ],
     "label_metadata": [
       {
-        "id": "label.encoding_metadata",
+        "id": "risk.encoding_metadata",
         "title": "safe: encoding metadata",
         "description": "Changes encoding or persistence metadata without changing data values.",
         "category": "risk-low"
@@ -212,14 +212,14 @@
     "dataset": "CMIP6-decadal",
     "priority": 17,
     "labels": [
-      "label.metadata_only"
+      "risk.metadata_only"
     ],
     "label_titles": [
       "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "label.metadata_only",
+        "id": "risk.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
         "category": "risk-low"
@@ -240,14 +240,14 @@
     "dataset": "CMIP6-decadal",
     "priority": 18,
     "labels": [
-      "label.metadata_only"
+      "risk.metadata_only"
     ],
     "label_titles": [
       "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "label.metadata_only",
+        "id": "risk.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
         "category": "risk-low"
@@ -268,14 +268,14 @@
     "dataset": "CMIP6-decadal",
     "priority": 19,
     "labels": [
-      "label.metadata_only"
+      "risk.metadata_only"
     ],
     "label_titles": [
       "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "label.metadata_only",
+        "id": "risk.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
         "category": "risk-low"
@@ -296,14 +296,14 @@
     "dataset": "ATLAS",
     "priority": 20,
     "labels": [
-      "label.encoding_metadata"
+      "risk.encoding_metadata"
     ],
     "label_titles": [
       "safe: encoding metadata"
     ],
     "label_metadata": [
       {
-        "id": "label.encoding_metadata",
+        "id": "risk.encoding_metadata",
         "title": "safe: encoding metadata",
         "description": "Changes encoding or persistence metadata without changing data values.",
         "category": "risk-low"
@@ -324,14 +324,14 @@
     "dataset": "CMIP6-decadal",
     "priority": 20,
     "labels": [
-      "label.metadata_only"
+      "risk.metadata_only"
     ],
     "label_titles": [
       "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "label.metadata_only",
+        "id": "risk.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
         "category": "risk-low"
@@ -352,14 +352,14 @@
     "dataset": "ATLAS",
     "priority": 21,
     "labels": [
-      "label.metadata_only"
+      "risk.metadata_only"
     ],
     "label_titles": [
       "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "label.metadata_only",
+        "id": "risk.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
         "category": "risk-low"
@@ -380,14 +380,14 @@
     "dataset": "CMIP6-decadal",
     "priority": 21,
     "labels": [
-      "label.metadata_only"
+      "risk.metadata_only"
     ],
     "label_titles": [
       "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "label.metadata_only",
+        "id": "risk.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
         "category": "risk-low"
@@ -408,14 +408,14 @@
     "dataset": "CMIP6-decadal",
     "priority": 22,
     "labels": [
-      "label.metadata_only"
+      "risk.metadata_only"
     ],
     "label_titles": [
       "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "label.metadata_only",
+        "id": "risk.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
         "category": "risk-low"
@@ -437,14 +437,14 @@
     "dataset": "CMIP6-decadal",
     "priority": 23,
     "labels": [
-      "label.derived_coordinate_creation"
+      "risk.derived_coordinate_creation"
     ],
     "label_titles": [
       "careful: coordinate creation"
     ],
     "label_metadata": [
       {
-        "id": "label.derived_coordinate_creation",
+        "id": "risk.derived_coordinate_creation",
         "title": "careful: coordinate creation",
         "description": "Creates derived coordinates or coordinate values.",
         "category": "risk-medium"
@@ -466,14 +466,14 @@
     "dataset": "CMIP6-decadal",
     "priority": 24,
     "labels": [
-      "label.coordinate_transformation"
+      "risk.coordinate_transformation"
     ],
     "label_titles": [
       "careful: coordinate transformation"
     ],
     "label_metadata": [
       {
-        "id": "label.coordinate_transformation",
+        "id": "risk.coordinate_transformation",
         "title": "careful: coordinate transformation",
         "description": "Transforms coordinate values, bounds, or geometry.",
         "category": "risk-medium"
@@ -497,14 +497,14 @@
     "dataset": null,
     "priority": 30,
     "labels": [
-      "label.value_transformation"
+      "risk.value_transformation"
     ],
     "label_titles": [
       "careful: value transformation"
     ],
     "label_metadata": [
       {
-        "id": "label.value_transformation",
+        "id": "risk.value_transformation",
         "title": "careful: value transformation",
         "description": "Transforms data or coordinate values.",
         "category": "risk-medium"
@@ -525,14 +525,14 @@
     "dataset": null,
     "priority": 32,
     "labels": [
-      "label.dimension_remapping"
+      "risk.dimension_remapping"
     ],
     "label_titles": [
       "careful: dimension remapping"
     ],
     "label_metadata": [
       {
-        "id": "label.dimension_remapping",
+        "id": "risk.dimension_remapping",
         "title": "careful: dimension remapping",
         "description": "Remaps dimensions or dimension relationships.",
         "category": "risk-medium"
@@ -553,14 +553,14 @@
     "dataset": null,
     "priority": 33,
     "labels": [
-      "label.coordinate_reordering"
+      "risk.coordinate_reordering"
     ],
     "label_titles": [
       "careful: coordinate reordering"
     ],
     "label_metadata": [
       {
-        "id": "label.coordinate_reordering",
+        "id": "risk.coordinate_reordering",
         "title": "careful: coordinate reordering",
         "description": "Reorders coordinate-dependent data.",
         "category": "risk-medium"
@@ -581,14 +581,14 @@
     "dataset": null,
     "priority": 33,
     "labels": [
-      "label.reversible_rename"
+      "risk.reversible_rename"
     ],
     "label_titles": [
       "safe: reversible rename"
     ],
     "label_metadata": [
       {
-        "id": "label.reversible_rename",
+        "id": "risk.reversible_rename",
         "title": "safe: reversible rename",
         "description": "Renames variables, coordinates, or dimensions without changing values.",
         "category": "risk-low"
@@ -609,14 +609,14 @@
     "dataset": null,
     "priority": 34,
     "labels": [
-      "label.coordinate_marker_creation"
+      "risk.coordinate_marker_creation"
     ],
     "label_titles": [
       "safe: coordinate creation"
     ],
     "label_metadata": [
       {
-        "id": "label.coordinate_marker_creation",
+        "id": "risk.coordinate_marker_creation",
         "title": "safe: coordinate creation",
         "description": "Creates coordinate markers from existing dimensions or values.",
         "category": "risk-low"
@@ -638,14 +638,14 @@
     "dataset": null,
     "priority": 34,
     "labels": [
-      "label.metadata_only"
+      "risk.metadata_only"
     ],
     "label_titles": [
       "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "label.metadata_only",
+        "id": "risk.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
         "category": "risk-low"
@@ -667,14 +667,14 @@
     "dataset": null,
     "priority": 35,
     "labels": [
-      "label.metadata_only"
+      "risk.metadata_only"
     ],
     "label_titles": [
       "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "label.metadata_only",
+        "id": "risk.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
         "category": "risk-low"
@@ -696,14 +696,14 @@
     "dataset": null,
     "priority": 36,
     "labels": [
-      "label.value_transformation"
+      "risk.value_transformation"
     ],
     "label_titles": [
       "careful: value transformation"
     ],
     "label_metadata": [
       {
-        "id": "label.value_transformation",
+        "id": "risk.value_transformation",
         "title": "careful: value transformation",
         "description": "Transforms data or coordinate values.",
         "category": "risk-medium"
@@ -724,14 +724,14 @@
     "dataset": null,
     "priority": 37,
     "labels": [
-      "label.coordinate_transformation"
+      "risk.coordinate_transformation"
     ],
     "label_titles": [
       "careful: coordinate transformation"
     ],
     "label_metadata": [
       {
-        "id": "label.coordinate_transformation",
+        "id": "risk.coordinate_transformation",
         "title": "careful: coordinate transformation",
         "description": "Transforms coordinate values, bounds, or geometry.",
         "category": "risk-medium"
@@ -752,14 +752,14 @@
     "dataset": null,
     "priority": 38,
     "labels": [
-      "label.variable_removal"
+      "risk.variable_removal"
     ],
     "label_titles": [
       "careful: variable removal"
     ],
     "label_metadata": [
       {
-        "id": "label.variable_removal",
+        "id": "risk.variable_removal",
         "title": "careful: variable removal",
         "description": "Removes variables or coordinates.",
         "category": "risk-medium"
@@ -780,14 +780,14 @@
     "dataset": "cmip6",
     "priority": 40,
     "labels": [
-      "label.metadata_only"
+      "risk.metadata_only"
     ],
     "label_titles": [
       "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "label.metadata_only",
+        "id": "risk.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
         "category": "risk-low"
@@ -808,14 +808,14 @@
     "dataset": "CMIP7",
     "priority": 41,
     "labels": [
-      "label.metadata_only"
+      "risk.metadata_only"
     ],
     "label_titles": [
       "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "label.metadata_only",
+        "id": "risk.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
         "category": "risk-low"
@@ -837,14 +837,14 @@
     "dataset": "CMIP7",
     "priority": 42,
     "labels": [
-      "label.reversible_rename"
+      "risk.reversible_rename"
     ],
     "label_titles": [
       "safe: reversible rename"
     ],
     "label_metadata": [
       {
-        "id": "label.reversible_rename",
+        "id": "risk.reversible_rename",
         "title": "safe: reversible rename",
         "description": "Renames variables, coordinates, or dimensions without changing values.",
         "category": "risk-low"
@@ -865,14 +865,14 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "label.derived_coordinate_creation"
+      "risk.derived_coordinate_creation"
     ],
     "label_titles": [
       "careful: coordinate creation"
     ],
     "label_metadata": [
       {
-        "id": "label.derived_coordinate_creation",
+        "id": "risk.derived_coordinate_creation",
         "title": "careful: coordinate creation",
         "description": "Creates derived coordinates or coordinate values.",
         "category": "risk-medium"
@@ -894,14 +894,14 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "label.derived_coordinate_creation"
+      "risk.derived_coordinate_creation"
     ],
     "label_titles": [
       "careful: coordinate creation"
     ],
     "label_metadata": [
       {
-        "id": "label.derived_coordinate_creation",
+        "id": "risk.derived_coordinate_creation",
         "title": "careful: coordinate creation",
         "description": "Creates derived coordinates or coordinate values.",
         "category": "risk-medium"
@@ -923,14 +923,14 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "label.derived_coordinate_creation"
+      "risk.derived_coordinate_creation"
     ],
     "label_titles": [
       "careful: coordinate creation"
     ],
     "label_metadata": [
       {
-        "id": "label.derived_coordinate_creation",
+        "id": "risk.derived_coordinate_creation",
         "title": "careful: coordinate creation",
         "description": "Creates derived coordinates or coordinate values.",
         "category": "risk-medium"
@@ -951,14 +951,14 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "label.variable_removal"
+      "risk.variable_removal"
     ],
     "label_titles": [
       "careful: variable removal"
     ],
     "label_metadata": [
       {
-        "id": "label.variable_removal",
+        "id": "risk.variable_removal",
         "title": "careful: variable removal",
         "description": "Removes variables or coordinates.",
         "category": "risk-medium"
@@ -979,14 +979,14 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "label.metadata_only"
+      "risk.metadata_only"
     ],
     "label_titles": [
       "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "label.metadata_only",
+        "id": "risk.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
         "category": "risk-low"
@@ -1008,14 +1008,14 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "label.metadata_only"
+      "risk.metadata_only"
     ],
     "label_titles": [
       "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "label.metadata_only",
+        "id": "risk.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
         "category": "risk-low"
@@ -1037,14 +1037,14 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "label.coordinate_transformation"
+      "risk.coordinate_transformation"
     ],
     "label_titles": [
       "careful: coordinate transformation"
     ],
     "label_metadata": [
       {
-        "id": "label.coordinate_transformation",
+        "id": "risk.coordinate_transformation",
         "title": "careful: coordinate transformation",
         "description": "Transforms coordinate values, bounds, or geometry.",
         "category": "risk-medium"
@@ -1066,14 +1066,14 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "label.coordinate_transformation"
+      "risk.coordinate_transformation"
     ],
     "label_titles": [
       "careful: coordinate transformation"
     ],
     "label_metadata": [
       {
-        "id": "label.coordinate_transformation",
+        "id": "risk.coordinate_transformation",
         "title": "careful: coordinate transformation",
         "description": "Transforms coordinate values, bounds, or geometry.",
         "category": "risk-medium"
@@ -1094,14 +1094,14 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "label.reversible_rename"
+      "risk.reversible_rename"
     ],
     "label_titles": [
       "safe: reversible rename"
     ],
     "label_metadata": [
       {
-        "id": "label.reversible_rename",
+        "id": "risk.reversible_rename",
         "title": "safe: reversible rename",
         "description": "Renames variables, coordinates, or dimensions without changing values.",
         "category": "risk-low"
@@ -1122,14 +1122,14 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "label.coordinate_transformation"
+      "risk.coordinate_transformation"
     ],
     "label_titles": [
       "careful: coordinate transformation"
     ],
     "label_metadata": [
       {
-        "id": "label.coordinate_transformation",
+        "id": "risk.coordinate_transformation",
         "title": "careful: coordinate transformation",
         "description": "Transforms coordinate values, bounds, or geometry.",
         "category": "risk-medium"
@@ -1150,14 +1150,14 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "label.coordinate_transformation"
+      "risk.coordinate_transformation"
     ],
     "label_titles": [
       "careful: coordinate transformation"
     ],
     "label_metadata": [
       {
-        "id": "label.coordinate_transformation",
+        "id": "risk.coordinate_transformation",
         "title": "careful: coordinate transformation",
         "description": "Transforms coordinate values, bounds, or geometry.",
         "category": "risk-medium"
@@ -1179,14 +1179,14 @@
     "dataset": "CMIP7",
     "priority": 43,
     "labels": [
-      "label.workflow_transformation"
+      "risk.workflow_transformation"
     ],
     "label_titles": [
       "careful: workflow transformation"
     ],
     "label_metadata": [
       {
-        "id": "label.workflow_transformation",
+        "id": "risk.workflow_transformation",
         "title": "careful: workflow transformation",
         "description": "Applies a composed workflow with structural and metadata changes.",
         "category": "risk-high"

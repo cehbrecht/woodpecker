@@ -36,7 +36,7 @@ def test_public_import_surfaces_are_available():
     assert Label.__name__ == "Label"
     assert LabelCategories.RISK_MEDIUM == "risk-medium"
     assert LabelRegistry.__name__ == "LabelRegistry"
-    assert Labels.METADATA_ONLY == "label.metadata_only"
+    assert Labels.RISK_METADATA_ONLY == "risk.metadata_only"
     assert UNPRIORITIZED == -1
     assert callable(register_label)
     assert callable(register_fix_function)

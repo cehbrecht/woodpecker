@@ -35,7 +35,7 @@ class AtlasProjectIdNormalization(FixFunction):
     categories = ["metadata"]
     priority = 21
     dataset = "ATLAS"
-    labels = [Labels.METADATA_ONLY]
+    labels = [Labels.RISK_METADATA_ONLY]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         source = lower_source_name(dataset)

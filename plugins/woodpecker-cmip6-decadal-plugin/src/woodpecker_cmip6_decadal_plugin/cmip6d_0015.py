@@ -89,7 +89,7 @@ class DecadalLeadtimeCoordinate(FixFunction):
     categories = ["metadata", "structure"]
     priority = 24
     dataset = "CMIP6-decadal"
-    labels = [Labels.COORDINATE_TRANSFORMATION]
+    labels = [Labels.RISK_COORDINATE_TRANSFORMATION]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return is_cmip6_decadal_netcdf(dataset)

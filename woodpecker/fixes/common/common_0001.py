@@ -38,7 +38,7 @@ class NormalizeTasUnitsToKelvin(FixFunction):
     categories = ["metadata", "units"]
     priority = 30
     dataset = None
-    labels = [Labels.VALUE_TRANSFORMATION]
+    labels = [Labels.RISK_VALUE_TRANSFORMATION]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _needs_kelvin_conversion(dataset)

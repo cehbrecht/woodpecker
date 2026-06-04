@@ -19,7 +19,7 @@ class Cmip6DummyPlaceholder(FixFunction):
     categories = ["metadata"]
     priority = 40
     dataset = "cmip6"
-    labels = [Labels.METADATA_ONLY]
+    labels = [Labels.RISK_METADATA_ONLY]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _is_cmip6_non_decadal(dataset)

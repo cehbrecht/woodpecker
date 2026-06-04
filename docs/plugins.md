@@ -45,7 +45,7 @@ from woodpecker.fixes import FixFunction, Labels
 
 
 class RenameTempVariable(FixFunction):
-    labels = [Labels.REVERSIBLE_RENAME]
+    labels = [Labels.RISK_REVERSIBLE_RENAME]
 ```
 
 Plugins can also register custom labels:

@@ -35,20 +35,20 @@ class LabelCategories:
 class Labels:
     """Predefined label ids."""
 
-    REVIEW_BEFORE_APPLYING = "label.review_before_applying"
-    METADATA_ONLY = "label.metadata_only"
-    ENCODING_METADATA = "label.encoding_metadata"
-    REVERSIBLE_RENAME = "label.reversible_rename"
-    SAFE_COORDINATE_CREATION = "label.coordinate_marker_creation"
-    VALUE_TRANSFORMATION = "label.value_transformation"
-    COORDINATE_REORDERING = "label.coordinate_reordering"
-    DIMENSION_REMAPPING = "label.dimension_remapping"
-    COORDINATE_TRANSFORMATION = "label.coordinate_transformation"
-    VARIABLE_REMOVAL = "label.variable_removal"
-    VARIABLE_CREATION = "label.variable_creation"
-    DTYPE_TRANSFORMATION = "label.dtype_transformation"
-    COORDINATE_CREATION = "label.derived_coordinate_creation"
-    WORKFLOW_TRANSFORMATION = "label.workflow_transformation"
+    RISK_REVIEW_BEFORE_APPLYING = "risk.review_before_applying"
+    RISK_METADATA_ONLY = "risk.metadata_only"
+    RISK_ENCODING_METADATA = "risk.encoding_metadata"
+    RISK_REVERSIBLE_RENAME = "risk.reversible_rename"
+    RISK_COORDINATE_MARKER_CREATION = "risk.coordinate_marker_creation"
+    RISK_VALUE_TRANSFORMATION = "risk.value_transformation"
+    RISK_COORDINATE_REORDERING = "risk.coordinate_reordering"
+    RISK_DIMENSION_REMAPPING = "risk.dimension_remapping"
+    RISK_COORDINATE_TRANSFORMATION = "risk.coordinate_transformation"
+    RISK_VARIABLE_REMOVAL = "risk.variable_removal"
+    RISK_VARIABLE_CREATION = "risk.variable_creation"
+    RISK_DTYPE_TRANSFORMATION = "risk.dtype_transformation"
+    RISK_DERIVED_COORDINATE_CREATION = "risk.derived_coordinate_creation"
+    RISK_WORKFLOW_TRANSFORMATION = "risk.workflow_transformation"
 
 
 class LabelRegistry:
@@ -143,85 +143,85 @@ def register_label(
 def _register_builtin_labels() -> None:
     builtins = [
         (
-            Labels.REVIEW_BEFORE_APPLYING,
+            Labels.RISK_REVIEW_BEFORE_APPLYING,
             "careful: review before applying",
             "Default label for fixes that should be reviewed before applying.",
             LabelCategories.RISK_MEDIUM,
         ),
         (
-            Labels.METADATA_ONLY,
+            Labels.RISK_METADATA_ONLY,
             "safe: metadata only",
             "Changes metadata without changing data values.",
             LabelCategories.RISK_LOW,
         ),
         (
-            Labels.ENCODING_METADATA,
+            Labels.RISK_ENCODING_METADATA,
             "safe: encoding metadata",
             "Changes encoding or persistence metadata without changing data values.",
             LabelCategories.RISK_LOW,
         ),
         (
-            Labels.REVERSIBLE_RENAME,
+            Labels.RISK_REVERSIBLE_RENAME,
             "safe: reversible rename",
             "Renames variables, coordinates, or dimensions without changing values.",
             LabelCategories.RISK_LOW,
         ),
         (
-            Labels.SAFE_COORDINATE_CREATION,
+            Labels.RISK_COORDINATE_MARKER_CREATION,
             "safe: coordinate creation",
             "Creates coordinate markers from existing dimensions or values.",
             LabelCategories.RISK_LOW,
         ),
         (
-            Labels.VALUE_TRANSFORMATION,
+            Labels.RISK_VALUE_TRANSFORMATION,
             "careful: value transformation",
             "Transforms data or coordinate values.",
             LabelCategories.RISK_MEDIUM,
         ),
         (
-            Labels.COORDINATE_REORDERING,
+            Labels.RISK_COORDINATE_REORDERING,
             "careful: coordinate reordering",
             "Reorders coordinate-dependent data.",
             LabelCategories.RISK_MEDIUM,
         ),
         (
-            Labels.DIMENSION_REMAPPING,
+            Labels.RISK_DIMENSION_REMAPPING,
             "careful: dimension remapping",
             "Remaps dimensions or dimension relationships.",
             LabelCategories.RISK_MEDIUM,
         ),
         (
-            Labels.COORDINATE_TRANSFORMATION,
+            Labels.RISK_COORDINATE_TRANSFORMATION,
             "careful: coordinate transformation",
             "Transforms coordinate values, bounds, or geometry.",
             LabelCategories.RISK_MEDIUM,
         ),
         (
-            Labels.VARIABLE_REMOVAL,
+            Labels.RISK_VARIABLE_REMOVAL,
             "careful: variable removal",
             "Removes variables or coordinates.",
             LabelCategories.RISK_MEDIUM,
         ),
         (
-            Labels.VARIABLE_CREATION,
+            Labels.RISK_VARIABLE_CREATION,
             "careful: variable creation",
             "Creates variables from existing metadata or values.",
             LabelCategories.RISK_MEDIUM,
         ),
         (
-            Labels.DTYPE_TRANSFORMATION,
+            Labels.RISK_DTYPE_TRANSFORMATION,
             "careful: dtype transformation",
             "Changes variable or coordinate data types.",
             LabelCategories.RISK_MEDIUM,
         ),
         (
-            Labels.COORDINATE_CREATION,
+            Labels.RISK_DERIVED_COORDINATE_CREATION,
             "careful: coordinate creation",
             "Creates derived coordinates or coordinate values.",
             LabelCategories.RISK_MEDIUM,
         ),
         (
-            Labels.WORKFLOW_TRANSFORMATION,
+            Labels.RISK_WORKFLOW_TRANSFORMATION,
             "careful: workflow transformation",
             "Applies a composed workflow with structural and metadata changes.",
             LabelCategories.RISK_HIGH,

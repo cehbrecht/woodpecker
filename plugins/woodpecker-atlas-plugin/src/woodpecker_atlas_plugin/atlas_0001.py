@@ -85,7 +85,7 @@ class AtlasEncodingCleanup(FixFunction):
     categories = ["encoding"]
     priority = 20
     dataset = "ATLAS"
-    labels = [Labels.ENCODING_METADATA]
+    labels = [Labels.RISK_ENCODING_METADATA]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         source = lower_source_name(dataset)
