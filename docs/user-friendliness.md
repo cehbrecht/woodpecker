@@ -1,8 +1,8 @@
-# User Friendliness Ideas
+# User-Friendliness Notes
 
 This page collects product and documentation ideas that could make Woodpecker
-easier to understand, trust, and use. These are recommendations for later work,
-not current feature guarantees.
+easier to understand, trust, and use. It reflects the current vocabulary and
+highlights useful next steps.
 
 ## Lead With Recipes
 
@@ -24,8 +24,7 @@ Possible recipe names could be oriented around user goals:
 
 In user documentation, CLI messages, and notebooks, prefer `recipe` when the
 object represents a ready-to-run workflow. Contributor docs, schemas, storage
-backends, and API internals should move to the same vocabulary once the code
-rename lands.
+backends, and API internals should use the same vocabulary.
 
 ESMValTool already uses the word recipe for configured analysis workflows. That
 can help users understand the idea quickly, as long as Woodpecker documentation
@@ -45,6 +44,41 @@ Good explanations should answer:
 - whether the change is safe to apply automatically.
 
 This would help users understand fixes without reading the plugin source code.
+
+## Use One Label Model
+
+Woodpecker has one label concept. Labels are user-facing metadata with an id,
+title, description, and category. They are informational only: labels do not
+affect recipe selection, fix priority, matching, or automation.
+
+Built-in risk-related labels use ids such as:
+
+- `risk.metadata_only`,
+- `risk.reversible_rename`,
+- `risk.value_transformation`,
+- `risk.workflow_transformation`.
+
+Their severity lives in the category, not in the id:
+
+- `info`,
+- `risk-low`,
+- `risk-medium`,
+- `risk-high`.
+
+In code, use the predefined constants instead of raw strings:
+
+```python
+from woodpecker.fixes import Labels
+
+
+class NormalizeUnits(FixFunction):
+    labels = [Labels.RISK_VALUE_TRANSFORMATION]
+```
+
+Plugins can extend the same model with their own namespaced labels, for example
+`my_plugin.info.experimental` or `my_plugin.risk.requires_domain_review`.
+User-facing tables may show a `Severity` column, but that is only a display
+view derived from label categories.
 
 ## Improve Check Output
 
@@ -102,21 +136,6 @@ cmip6 = recipe("cmip6.cleanup").steps(
 
 These examples should show how to generate JSON or YAML when users need a
 shareable recipe file or contributor-facing recipe document.
-
-## Add Confidence Or Risk Labels
-
-Fix functions could advertise a simple risk level so users know when automation
-is appropriate.
-
-Possible labels:
-
-- safe: metadata only,
-- safe: reversible rename,
-- careful: coordinate interpolation,
-- careful: value transformation.
-
-Risk labels would be useful in check output, dry-run previews, recipe
-references, and interactive workflows.
 
 ## Keep User-Facing Names Simple
 
