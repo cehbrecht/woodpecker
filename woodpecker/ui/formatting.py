@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from ..fixes.labels import LabelRegistry
+from ..fixes.labels import LabelCategories, LabelRegistry
 from ..fixes.registry import UNPRIORITIZED
 from ..recipes.models import Recipe
 
@@ -36,24 +36,24 @@ def _label_metadata(fix: object) -> list[dict[str, str]]:
     return [LabelRegistry.metadata(label) for label in _value(fix, "labels", []) or []]
 
 
-def _risk_titles(fix: object) -> list[str]:
+def _severity_titles(fix: object) -> list[str]:
     return [
         str(item.get("title", ""))
         for item in _label_metadata(fix)
-        if item.get("category") == "risk" and item.get("title")
+        if item.get("category") in LabelCategories.RISK and item.get("title")
     ]
 
 
-def _non_risk_label_titles(fix: object) -> list[str]:
+def _non_severity_label_titles(fix: object) -> list[str]:
     return [
         str(item.get("title", ""))
         for item in _label_metadata(fix)
-        if item.get("category") != "risk" and item.get("title")
+        if item.get("category") not in LabelCategories.RISK and item.get("title")
     ]
 
 
-def _risk_text(fix: object) -> str:
-    return ", ".join(_risk_titles(fix))
+def _severity_text(fix: object) -> str:
+    return ", ".join(_severity_titles(fix))
 
 
 def _fix_json_payload(fix: object) -> dict[str, object]:
@@ -73,12 +73,12 @@ def format_fixes(fixes: list[object], fmt: str) -> str:
 
     if fmt == "md":
         lines = [
-            "| ID | Name | Description | Categories | Dataset | Priority | Risk | Labels |",
+            "| ID | Name | Description | Categories | Dataset | Priority | Severity | Labels |",
             "|----|------|-------------|------------|---------|---------|------|--------|",
         ]
         for fix in fixes:
             cats = ", ".join(getattr(fix, "categories", []) or [])
-            labels = ", ".join(_non_risk_label_titles(fix))
+            labels = ", ".join(_non_severity_label_titles(fix))
             lines.append(
                 "| "
                 f"{getattr(fix, 'id', '')} | "
@@ -87,7 +87,7 @@ def format_fixes(fixes: list[object], fmt: str) -> str:
                 f"{cats} | "
                 f"{getattr(fix, 'dataset', None) or ''} | "
                 f"{_priority_value(fix)} | "
-                f"{_risk_text(fix)} | "
+                f"{_severity_text(fix)} | "
                 f"{labels} |"
             )
         return "\n".join(lines)
@@ -98,8 +98,8 @@ def format_fixes(fixes: list[object], fmt: str) -> str:
         lines.append(
             f"{getattr(fix, 'id', '')}: {getattr(fix, 'description', '')} "
             f"(cats: {cats}; dataset: {getattr(fix, 'dataset', None) or '-'}; "
-            f"priority: {_priority_value(fix)}; risk: {_risk_text(fix)}"
-            f"{'; labels: ' + ', '.join(_non_risk_label_titles(fix)) if _non_risk_label_titles(fix) else ''})"
+            f"priority: {_priority_value(fix)}; severity: {_severity_text(fix)}"
+            f"{'; labels: ' + ', '.join(_non_severity_label_titles(fix)) if _non_severity_label_titles(fix) else ''})"
         )
     return "\n".join(lines)
 
@@ -111,7 +111,7 @@ def format_findings(findings: list[dict[str, str]], fmt: str) -> str:
         return json.dumps(findings, indent=2)
     return "\n".join(
         f"{item['path']}: {item['fix_id']} "
-        f"[{_risk_text(item)}] "
+        f"[{_severity_text(item)}] "
         f"{item['message']}"
         for item in findings
     )
@@ -156,12 +156,12 @@ def format_fix_stats(
         for item in preview:
             outcome = "would change" if item.get("changed") else "no change"
             name = item.get("name") or item.get("fix_id", "")
-            risk = _risk_text(item)
-            label_titles = _non_risk_label_titles(item)
+            severity = _severity_text(item)
+            label_titles = _non_severity_label_titles(item)
             labels = f"; labels: {', '.join(label_titles)}" if label_titles else ""
             lines.append(
                 f"  {item.get('path', '')}: {item.get('fix_id', '')} "
-                f"({name}; {risk}{labels}) - {outcome}"
+                f"({name}; {severity}{labels}) - {outcome}"
             )
     return "\n".join(lines)
 

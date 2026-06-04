@@ -22,7 +22,7 @@ def _finding(message: str = "synthetic finding") -> dict[str, str]:
                 "id": "risk.careful.value_transformation",
                 "title": "careful: value transformation",
                 "description": "Transforms data or coordinate values.",
-                "category": "risk",
+                "category": "risk-medium",
             }
         ],
         "message": message,
@@ -48,7 +48,7 @@ def _fix_stats(*, persisted: int = 1, persist_failed: int = 0) -> dict[str, obje
                         "id": "risk.careful.value_transformation",
                         "title": "careful: value transformation",
                         "description": "Transforms data or coordinate values.",
-                        "category": "risk",
+                        "category": "risk-medium",
                     }
                 ],
                 "changed": True,
@@ -91,7 +91,7 @@ def test_check_json_output_structure(
     assert payload[0]["fix_id"] == "woodpecker.normalize_tas_units_to_kelvin"
     assert payload[0]["labels"] == ["risk.careful.value_transformation"]
     assert payload[0]["label_titles"] == ["careful: value transformation"]
-    assert payload[0]["label_metadata"][0]["category"] == "risk"
+    assert payload[0]["label_metadata"][0]["category"] == "risk-medium"
 
 
 @pytest.mark.parametrize(
@@ -142,7 +142,7 @@ def test_fix_json_output_contains_write_report(
     assert payload["preview"][0]["path"] == "cmip6_case.nc"
     assert payload["preview"][0]["labels"] == ["risk.careful.value_transformation"]
     assert payload["preview"][0]["label_titles"] == ["careful: value transformation"]
-    assert payload["preview"][0]["label_metadata"][0]["category"] == "risk"
+    assert payload["preview"][0]["label_metadata"][0]["category"] == "risk-medium"
 
 
 def test_check_unknown_fix_code_returns_click_error(

@@ -3,7 +3,7 @@ from __future__ import annotations
 import xarray as xr
 
 from woodpecker.fixes.common.helpers import lower_source_name
-from woodpecker.fixes.labels import RiskLabels
+from woodpecker.fixes.labels import Labels
 from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 from woodpecker.identity import resolve_dataset_identity
 
@@ -35,7 +35,7 @@ class AtlasProjectIdNormalization(FixFunction):
     categories = ["metadata"]
     priority = 21
     dataset = "ATLAS"
-    labels = [RiskLabels.METADATA_ONLY]
+    labels = [Labels.METADATA_ONLY]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         source = lower_source_name(dataset)

@@ -4,7 +4,7 @@ import json
 from typing import Any, Optional, Type
 
 from woodpecker.fixes.identifiers import IdentifierResolver, IdentifierRules
-from woodpecker.fixes.labels import LabelRegistry
+from woodpecker.fixes.labels import LabelCategories, LabelRegistry
 
 from .base import FixFunction
 
@@ -158,9 +158,13 @@ class FixFunctionRegistry:
                 f"Fix function {fix_cls.__name__} must define "
                 "'labels' as a list of non-empty strings"
             )
-        if not LabelRegistry.labels_with_category([str(label) for label in labels], "risk"):
+        label_ids = [str(label) for label in labels]
+        if not any(
+            LabelRegistry.labels_with_category(label_ids, category)
+            for category in LabelCategories.RISK
+        ):
             raise ValueError(
-                f"Fix function {fix_cls.__name__} must define at least one risk label"
+                f"Fix function {fix_cls.__name__} must define at least one severity label"
             )
 
     @classmethod

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from woodpecker.fixes.labels import RiskLabels
+from woodpecker.fixes.labels import Labels
 from woodpecker.fixes.registry import FixFunction, register_fix_function
 
 
@@ -27,7 +27,7 @@ class RenameTempVariableToTas(FixFunction):
     categories = ["structure", "metadata"]
     priority = 42
     dataset = "CMIP7"
-    labels = [RiskLabels.REVERSIBLE_RENAME]
+    labels = [Labels.REVERSIBLE_RENAME]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _needs_temp_to_tas_rename(dataset)

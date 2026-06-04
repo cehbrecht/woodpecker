@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from woodpecker.fixes.base import FixFunction
+from woodpecker.fixes.labels import Labels
 from woodpecker.recipes.models import FixRef, Recipe
 from woodpecker.ui.formatting import (
     format_findings,
@@ -17,7 +18,7 @@ class _RiskyFix(FixFunction):
     description = "Does a risky thing"
     categories = ["metadata"]
     priority = 1
-    labels = ["risk.careful.value_transformation"]
+    labels = [Labels.VALUE_TRANSFORMATION]
 
 
 def test_format_recipes_text_uses_step_wording():
@@ -41,20 +42,20 @@ def test_format_recipes_json_uses_model_payloads():
     assert payload[0]["steps"][0]["id"] == "woodpecker.one"
 
 
-def test_format_fixes_text_includes_risk_category_label():
+def test_format_fixes_text_includes_severity_label():
     output = format_fixes([_RiskyFix()], "text")
 
-    assert "risk: careful: value transformation" in output
+    assert "severity: careful: value transformation" in output
 
 
-def test_format_fixes_markdown_includes_risk_column():
+def test_format_fixes_markdown_includes_severity_column():
     output = format_fixes([_RiskyFix()], "md")
 
-    assert "| ID | Name | Description | Categories | Dataset | Priority | Risk | Labels |" in output
+    assert "| ID | Name | Description | Categories | Dataset | Priority | Severity | Labels |" in output
     assert "careful: value transformation" in output
 
 
-def test_format_findings_text_includes_risk_category_label():
+def test_format_findings_text_includes_severity_label():
     output = format_findings(
         [
             {
@@ -68,7 +69,7 @@ def test_format_findings_text_includes_risk_category_label():
                         "id": "risk.careful.value_transformation",
                         "title": "careful: value transformation",
                         "description": "Transforms data or coordinate values.",
-                        "category": "risk",
+                        "category": "risk-medium",
                     }
                 ],
                 "message": "something can be changed",
@@ -126,7 +127,7 @@ def test_format_fix_stats_json_includes_preview_entries():
                                 "id": "risk.careful.value_transformation",
                                 "title": "careful: value transformation",
                                 "description": "Transforms data or coordinate values.",
-                                "category": "risk",
+                                "category": "risk-medium",
                             }
                         ],
                         "changed": True,
@@ -145,7 +146,7 @@ def test_format_fix_stats_json_includes_preview_entries():
     assert payload["preview"][0]["path"] == "cmip6_bad.nc"
     assert payload["preview"][0]["labels"] == ["risk.careful.value_transformation"]
     assert payload["preview"][0]["label_titles"] == ["careful: value transformation"]
-    assert payload["preview"][0]["label_metadata"][0]["category"] == "risk"
+    assert payload["preview"][0]["label_metadata"][0]["category"] == "risk-medium"
     assert payload["preview"][0]["changed"] is True
 
 
@@ -169,7 +170,7 @@ def test_format_fix_stats_text_includes_dry_run_preview():
                             "id": "risk.careful.value_transformation",
                             "title": "careful: value transformation",
                             "description": "Transforms data or coordinate values.",
-                            "category": "risk",
+                            "category": "risk-medium",
                         }
                     ],
                     "changed": True,

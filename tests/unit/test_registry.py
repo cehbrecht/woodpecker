@@ -1,5 +1,6 @@
 import pytest
 
+from woodpecker.fixes.labels import Labels
 from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry, register_fix_function
 
 
@@ -23,7 +24,7 @@ def test_registry_rejects_invalid_suffix_pattern():
             categories = ["metadata"]
             priority = 10
             dataset = None
-            labels = ["risk.safe.metadata_only"]
+            labels = [Labels.METADATA_ONLY]
 
         FixFunctionRegistry.register(_InvalidCode)
 
@@ -41,20 +42,20 @@ def test_registry_rejects_missing_name():
         FixFunctionRegistry.register(_MissingName)
 
 
-def test_registry_rejects_missing_risk_label():
-    with pytest.raises(ValueError, match="at least one risk label"):
+def test_registry_rejects_missing_severity_label():
+    with pytest.raises(ValueError, match="at least one severity label"):
 
-        class _MissingRisk:
+        class _MissingSeverity:
             prefix = "test"
-            suffix = "missing_risk"
-            name = "Missing risk"
+            suffix = "missing_severity"
+            name = "Missing severity"
             description = ""
             categories = ["metadata"]
             priority = 10
             dataset = None
             labels = ["plugin.info_only"]
 
-        FixFunctionRegistry.register(_MissingRisk)
+        FixFunctionRegistry.register(_MissingSeverity)
 
 
 def test_registry_rejects_priority_below_unprioritized_sentinel():
@@ -82,7 +83,7 @@ def test_register_fix_function_decorator_registers_class():
         categories = ["metadata"]
         priority = 10
         dataset = None
-        labels = ["risk.safe.metadata_only"]
+        labels = [Labels.METADATA_ONLY]
 
     registered = register_fix_function(_Alias)
     assert registered is _Alias
@@ -197,7 +198,7 @@ def test_registry_suffix_derivation_falls_back_to_class_name_snake_case():
         categories = ["metadata"]
         priority = 10
         dataset = None
-        labels = ["risk.safe.metadata_only"]
+        labels = [Labels.METADATA_ONLY]
 
     register_fix_function(FallbackFromClassName)
     assert FallbackFromClassName.id == "test.fallback_from_class_name"

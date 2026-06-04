@@ -5,7 +5,7 @@ from typing import Any, ClassVar, Optional
 
 import xarray as xr
 
-from woodpecker.fixes.labels import LabelRegistry, RiskLabels
+from woodpecker.fixes.labels import LabelRegistry, Labels
 
 
 class FixFunction:
@@ -25,7 +25,7 @@ class FixFunction:
     categories: ClassVar[list[str]] = []
     priority: ClassVar[int] = -1
     dataset: ClassVar[Optional[str]] = None
-    labels: ClassVar[list[str]] = [RiskLabels.REVIEW_BEFORE_APPLYING]
+    labels: ClassVar[list[str]] = [Labels.REVIEW_BEFORE_APPLYING]
     metadata_fields: ClassVar[tuple[str, ...]] = (
         "prefix",
         "suffix",

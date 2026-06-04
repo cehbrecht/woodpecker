@@ -4,7 +4,7 @@ from typing import Any
 
 import xarray as xr
 
-from ..labels import RiskLabels
+from ..labels import Labels
 from ..registry import FixFunction, FixFunctionRegistry
 
 
@@ -71,7 +71,7 @@ class MergeEquivalentDimensions(FixFunction):
     categories = ["structure"]
     priority = 32
     dataset = None
-    labels = [RiskLabels.DIMENSION_REMAPPING]
+    labels = [Labels.DIMENSION_REMAPPING]
 
     def _dims(self) -> tuple[str, ...]:
         config = getattr(self, "config", {}) or {}

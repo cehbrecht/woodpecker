@@ -1,4 +1,5 @@
 from woodpecker.fixes.base import FixFunction
+from woodpecker.fixes.labels import LabelCategories, Labels
 
 
 class _BaseMetadata(FixFunction):
@@ -12,7 +13,7 @@ class _BaseMetadata(FixFunction):
     categories = ["metadata"]
     priority = 7
     dataset = "cmip6"
-    labels = ["risk.safe.metadata_only"]
+    labels = [Labels.METADATA_ONLY]
 
 
 def test_fix_metadata_is_class_level_and_config_is_instance_runtime_state():
@@ -34,9 +35,9 @@ def test_fix_metadata_accessor_returns_copied_mutable_fields():
 
     assert meta["id"] == "test.base_metadata"
     assert meta["aliases"] == ["base_metadata_alias"]
-    assert meta["labels"] == ["risk.safe.metadata_only"]
+    assert meta["labels"] == [Labels.METADATA_ONLY]
     assert meta["label_titles"] == ["safe: metadata only"]
-    assert meta["label_metadata"][0]["category"] == "risk"
+    assert meta["label_metadata"][0]["category"] == LabelCategories.RISK_LOW
 
     meta["aliases"].append("new_alias")
     assert _BaseMetadata.aliases == ["base_metadata_alias"]
@@ -60,7 +61,7 @@ def test_fix_function_default_labels_require_review():
     class ExampleMetadata(FixFunction):
         pass
 
-    assert ExampleMetadata.labels == ["risk.careful.review"]
+    assert ExampleMetadata.labels == [Labels.REVIEW_BEFORE_APPLYING]
 
 
 def test_fix_metadata_includes_general_labels():
@@ -71,4 +72,4 @@ def test_fix_metadata_includes_general_labels():
 
     assert meta["labels"] == ["user.visible"]
     assert meta["label_titles"] == ["user.visible"]
-    assert meta["label_metadata"][0]["category"] == "info"
+    assert meta["label_metadata"][0]["category"] == LabelCategories.INFO

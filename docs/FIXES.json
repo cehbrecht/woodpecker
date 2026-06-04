@@ -12,17 +12,17 @@
     "dataset": "CMIP6-decadal",
     "priority": 10,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.metadata_only"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.metadata_only",
+        "title": "safe: metadata only",
+        "description": "Changes metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
@@ -41,17 +41,17 @@
     "dataset": "CMIP6-decadal",
     "priority": 11,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.metadata_only"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.metadata_only",
+        "title": "safe: metadata only",
+        "description": "Changes metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
@@ -69,17 +69,17 @@
     "dataset": "CMIP6-decadal",
     "priority": 12,
     "labels": [
-      "risk.careful.review"
+      "risk.careful.variable_creation"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "careful: variable creation"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.careful.variable_creation",
+        "title": "careful: variable creation",
+        "description": "Creates variables from existing metadata or values.",
+        "category": "risk-medium"
       }
     ],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
@@ -98,17 +98,17 @@
     "dataset": "CMIP6-decadal",
     "priority": 13,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.encoding_metadata"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: encoding metadata"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.encoding_metadata",
+        "title": "safe: encoding metadata",
+        "description": "Changes encoding or persistence metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
@@ -126,17 +126,17 @@
     "dataset": "CMIP6-decadal",
     "priority": 14,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.metadata_only"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.metadata_only",
+        "title": "safe: metadata only",
+        "description": "Changes metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
@@ -155,17 +155,17 @@
     "dataset": "CMIP6-decadal",
     "priority": 15,
     "labels": [
-      "risk.careful.review"
+      "risk.careful.dtype_transformation"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "careful: dtype transformation"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.careful.dtype_transformation",
+        "title": "careful: dtype transformation",
+        "description": "Changes variable or coordinate data types.",
+        "category": "risk-medium"
       }
     ],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
@@ -184,17 +184,17 @@
     "dataset": "CMIP6-decadal",
     "priority": 16,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.encoding_metadata"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: encoding metadata"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.encoding_metadata",
+        "title": "safe: encoding metadata",
+        "description": "Changes encoding or persistence metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
@@ -212,17 +212,17 @@
     "dataset": "CMIP6-decadal",
     "priority": 17,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.metadata_only"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.metadata_only",
+        "title": "safe: metadata only",
+        "description": "Changes metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
@@ -240,17 +240,17 @@
     "dataset": "CMIP6-decadal",
     "priority": 18,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.metadata_only"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.metadata_only",
+        "title": "safe: metadata only",
+        "description": "Changes metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
@@ -268,17 +268,17 @@
     "dataset": "CMIP6-decadal",
     "priority": 19,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.metadata_only"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.metadata_only",
+        "title": "safe: metadata only",
+        "description": "Changes metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
@@ -296,17 +296,17 @@
     "dataset": "ATLAS",
     "priority": 20,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.encoding_metadata"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: encoding metadata"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.encoding_metadata",
+        "title": "safe: encoding metadata",
+        "description": "Changes encoding or persistence metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_atlas_plugin"
@@ -324,17 +324,17 @@
     "dataset": "CMIP6-decadal",
     "priority": 20,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.metadata_only"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.metadata_only",
+        "title": "safe: metadata only",
+        "description": "Changes metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
@@ -352,17 +352,17 @@
     "dataset": "ATLAS",
     "priority": 21,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.metadata_only"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.metadata_only",
+        "title": "safe: metadata only",
+        "description": "Changes metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_atlas_plugin"
@@ -380,17 +380,17 @@
     "dataset": "CMIP6-decadal",
     "priority": 21,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.metadata_only"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.metadata_only",
+        "title": "safe: metadata only",
+        "description": "Changes metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
@@ -408,17 +408,17 @@
     "dataset": "CMIP6-decadal",
     "priority": 22,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.metadata_only"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.metadata_only",
+        "title": "safe: metadata only",
+        "description": "Changes metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
@@ -437,17 +437,17 @@
     "dataset": "CMIP6-decadal",
     "priority": 23,
     "labels": [
-      "risk.careful.review"
+      "risk.careful.coordinate_creation"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "careful: coordinate creation"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.careful.coordinate_creation",
+        "title": "careful: coordinate creation",
+        "description": "Creates derived coordinates or coordinate values.",
+        "category": "risk-medium"
       }
     ],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
@@ -466,17 +466,17 @@
     "dataset": "CMIP6-decadal",
     "priority": 24,
     "labels": [
-      "risk.careful.review"
+      "risk.careful.coordinate_transformation"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "careful: coordinate transformation"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.careful.coordinate_transformation",
+        "title": "careful: coordinate transformation",
+        "description": "Transforms coordinate values, bounds, or geometry.",
+        "category": "risk-medium"
       }
     ],
     "source": "plugin:woodpecker_cmip6_decadal_plugin"
@@ -507,7 +507,7 @@
         "id": "risk.careful.value_transformation",
         "title": "careful: value transformation",
         "description": "Transforms data or coordinate values.",
-        "category": "risk"
+        "category": "risk-medium"
       }
     ],
     "source": "core"
@@ -535,7 +535,7 @@
         "id": "risk.careful.dimension_remapping",
         "title": "careful: dimension remapping",
         "description": "Remaps dimensions or dimension relationships.",
-        "category": "risk"
+        "category": "risk-medium"
       }
     ],
     "source": "core"
@@ -563,7 +563,7 @@
         "id": "risk.careful.coordinate_reordering",
         "title": "careful: coordinate reordering",
         "description": "Reorders coordinate-dependent data.",
-        "category": "risk"
+        "category": "risk-medium"
       }
     ],
     "source": "core"
@@ -591,7 +591,7 @@
         "id": "risk.safe.reversible_rename",
         "title": "safe: reversible rename",
         "description": "Renames variables, coordinates, or dimensions without changing values.",
-        "category": "risk"
+        "category": "risk-low"
       }
     ],
     "source": "core"
@@ -619,7 +619,7 @@
         "id": "risk.safe.coordinate_creation",
         "title": "safe: coordinate creation",
         "description": "Creates coordinate markers from existing dimensions or values.",
-        "category": "risk"
+        "category": "risk-low"
       }
     ],
     "source": "core"
@@ -648,7 +648,7 @@
         "id": "risk.safe.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
-        "category": "risk"
+        "category": "risk-low"
       }
     ],
     "source": "core"
@@ -677,7 +677,7 @@
         "id": "risk.safe.metadata_only",
         "title": "safe: metadata only",
         "description": "Changes metadata without changing data values.",
-        "category": "risk"
+        "category": "risk-low"
       }
     ],
     "source": "core"
@@ -706,7 +706,7 @@
         "id": "risk.careful.value_transformation",
         "title": "careful: value transformation",
         "description": "Transforms data or coordinate values.",
-        "category": "risk"
+        "category": "risk-medium"
       }
     ],
     "source": "core"
@@ -734,7 +734,7 @@
         "id": "risk.careful.coordinate_transformation",
         "title": "careful: coordinate transformation",
         "description": "Transforms coordinate values, bounds, or geometry.",
-        "category": "risk"
+        "category": "risk-medium"
       }
     ],
     "source": "core"
@@ -762,7 +762,7 @@
         "id": "risk.careful.variable_removal",
         "title": "careful: variable removal",
         "description": "Removes variables or coordinates.",
-        "category": "risk"
+        "category": "risk-medium"
       }
     ],
     "source": "core"
@@ -780,17 +780,17 @@
     "dataset": "cmip6",
     "priority": 40,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.metadata_only"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.metadata_only",
+        "title": "safe: metadata only",
+        "description": "Changes metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_cmip6_plugin"
@@ -808,17 +808,17 @@
     "dataset": "CMIP7",
     "priority": 41,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.metadata_only"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.metadata_only",
+        "title": "safe: metadata only",
+        "description": "Changes metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_cmip7_plugin"
@@ -837,17 +837,17 @@
     "dataset": "CMIP7",
     "priority": 42,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.reversible_rename"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: reversible rename"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.reversible_rename",
+        "title": "safe: reversible rename",
+        "description": "Renames variables, coordinates, or dimensions without changing values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_cmip7_plugin"
@@ -865,17 +865,17 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "risk.careful.review"
+      "risk.careful.coordinate_creation"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "careful: coordinate creation"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.careful.coordinate_creation",
+        "title": "careful: coordinate creation",
+        "description": "Creates derived coordinates or coordinate values.",
+        "category": "risk-medium"
       }
     ],
     "source": "plugin:woodpecker_xmip_plugin"
@@ -894,17 +894,17 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "risk.careful.review"
+      "risk.careful.coordinate_creation"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "careful: coordinate creation"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.careful.coordinate_creation",
+        "title": "careful: coordinate creation",
+        "description": "Creates derived coordinates or coordinate values.",
+        "category": "risk-medium"
       }
     ],
     "source": "plugin:woodpecker_xmip_plugin"
@@ -923,17 +923,17 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "risk.careful.review"
+      "risk.careful.coordinate_creation"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "careful: coordinate creation"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.careful.coordinate_creation",
+        "title": "careful: coordinate creation",
+        "description": "Creates derived coordinates or coordinate values.",
+        "category": "risk-medium"
       }
     ],
     "source": "plugin:woodpecker_xmip_plugin"
@@ -951,17 +951,17 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "risk.careful.review"
+      "risk.careful.variable_removal"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "careful: variable removal"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.careful.variable_removal",
+        "title": "careful: variable removal",
+        "description": "Removes variables or coordinates.",
+        "category": "risk-medium"
       }
     ],
     "source": "plugin:woodpecker_xmip_plugin"
@@ -979,17 +979,17 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.metadata_only"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.metadata_only",
+        "title": "safe: metadata only",
+        "description": "Changes metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_xmip_plugin"
@@ -1008,17 +1008,17 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.metadata_only"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: metadata only"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.metadata_only",
+        "title": "safe: metadata only",
+        "description": "Changes metadata without changing data values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_xmip_plugin"
@@ -1037,17 +1037,17 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "risk.careful.review"
+      "risk.careful.coordinate_transformation"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "careful: coordinate transformation"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.careful.coordinate_transformation",
+        "title": "careful: coordinate transformation",
+        "description": "Transforms coordinate values, bounds, or geometry.",
+        "category": "risk-medium"
       }
     ],
     "source": "plugin:woodpecker_xmip_plugin"
@@ -1066,17 +1066,17 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "risk.careful.review"
+      "risk.careful.coordinate_transformation"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "careful: coordinate transformation"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.careful.coordinate_transformation",
+        "title": "careful: coordinate transformation",
+        "description": "Transforms coordinate values, bounds, or geometry.",
+        "category": "risk-medium"
       }
     ],
     "source": "plugin:woodpecker_xmip_plugin"
@@ -1094,17 +1094,17 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "risk.careful.review"
+      "risk.safe.reversible_rename"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "safe: reversible rename"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.safe.reversible_rename",
+        "title": "safe: reversible rename",
+        "description": "Renames variables, coordinates, or dimensions without changing values.",
+        "category": "risk-low"
       }
     ],
     "source": "plugin:woodpecker_xmip_plugin"
@@ -1122,17 +1122,17 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "risk.careful.review"
+      "risk.careful.coordinate_transformation"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "careful: coordinate transformation"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.careful.coordinate_transformation",
+        "title": "careful: coordinate transformation",
+        "description": "Transforms coordinate values, bounds, or geometry.",
+        "category": "risk-medium"
       }
     ],
     "source": "plugin:woodpecker_xmip_plugin"
@@ -1150,17 +1150,17 @@
     "dataset": "CMIP6",
     "priority": 42,
     "labels": [
-      "risk.careful.review"
+      "risk.careful.coordinate_transformation"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "careful: coordinate transformation"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.careful.coordinate_transformation",
+        "title": "careful: coordinate transformation",
+        "description": "Transforms coordinate values, bounds, or geometry.",
+        "category": "risk-medium"
       }
     ],
     "source": "plugin:woodpecker_xmip_plugin"
@@ -1179,17 +1179,17 @@
     "dataset": "CMIP7",
     "priority": 43,
     "labels": [
-      "risk.careful.review"
+      "risk.careful.workflow_transformation"
     ],
     "label_titles": [
-      "careful: review before applying"
+      "careful: workflow transformation"
     ],
     "label_metadata": [
       {
-        "id": "risk.careful.review",
-        "title": "careful: review before applying",
-        "description": "Default risk label for fixes that have not declared a more specific risk.",
-        "category": "risk"
+        "id": "risk.careful.workflow_transformation",
+        "title": "careful: workflow transformation",
+        "description": "Applies a composed workflow with structural and metadata changes.",
+        "category": "risk-high"
       }
     ],
     "source": "plugin:woodpecker_cmip7_plugin"

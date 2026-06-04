@@ -5,8 +5,9 @@ def test_public_import_surfaces_are_available():
         FixFunction,
         FixFunctionRegistry,
         Label,
+        LabelCategories,
         LabelRegistry,
-        RiskLabels,
+        Labels,
         register_fix_function,
         register_label,
     )
@@ -33,8 +34,9 @@ def test_public_import_surfaces_are_available():
     assert FixFunction.__name__ == "FixFunction"
     assert FixFunctionRegistry.__name__ == "FixFunctionRegistry"
     assert Label.__name__ == "Label"
+    assert LabelCategories.RISK_MEDIUM == "risk-medium"
     assert LabelRegistry.__name__ == "LabelRegistry"
-    assert RiskLabels.METADATA_ONLY == "risk.safe.metadata_only"
+    assert Labels.METADATA_ONLY == "risk.safe.metadata_only"
     assert UNPRIORITIZED == -1
     assert callable(register_label)
     assert callable(register_fix_function)

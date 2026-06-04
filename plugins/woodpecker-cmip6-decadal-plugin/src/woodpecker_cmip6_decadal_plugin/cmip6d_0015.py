@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import xarray as xr
 
-from woodpecker.fixes.labels import RiskLabels
+from woodpecker.fixes.labels import Labels
 from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import apply_leadtime_metadata, is_cmip6_decadal_netcdf, leadtime_metadata_invalid
@@ -89,7 +89,7 @@ class DecadalLeadtimeCoordinate(FixFunction):
     categories = ["metadata", "structure"]
     priority = 24
     dataset = "CMIP6-decadal"
-    labels = [RiskLabels.COORDINATE_TRANSFORMATION]
+    labels = [Labels.COORDINATE_TRANSFORMATION]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return is_cmip6_decadal_netcdf(dataset)

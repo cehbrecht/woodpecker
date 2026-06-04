@@ -21,8 +21,19 @@ class Label:
         }
 
 
-class RiskLabels:
-    """Predefined label ids in the risk category."""
+class LabelCategories:
+    """Predefined label categories."""
+
+    INFO = "info"
+    RISK_LOW = "risk-low"
+    RISK_MEDIUM = "risk-medium"
+    RISK_HIGH = "risk-high"
+
+    RISK = (RISK_LOW, RISK_MEDIUM, RISK_HIGH)
+
+
+class Labels:
+    """Predefined label ids."""
 
     REVIEW_BEFORE_APPLYING = "risk.careful.review"
     METADATA_ONLY = "risk.safe.metadata_only"
@@ -63,7 +74,7 @@ class LabelRegistry:
             id=str(label_id).strip(),
             title=str(title).strip(),
             description=str(description or "").strip(),
-            category=str(category or "info").strip(),
+            category=str(category or LabelCategories.INFO).strip(),
         )
         if not label.id:
             raise ValueError("Label id must be non-empty")
@@ -91,7 +102,7 @@ class LabelRegistry:
         key = str(label_id).strip()
         label = cls.get(key)
         if label is None:
-            return Label(id=key, title=key, category="info").to_dict()
+            return Label(id=key, title=key, category=LabelCategories.INFO).to_dict()
         return label.to_dict()
 
     @classmethod
@@ -132,74 +143,92 @@ def register_label(
 def _register_builtin_labels() -> None:
     builtins = [
         (
-            RiskLabels.REVIEW_BEFORE_APPLYING,
+            Labels.REVIEW_BEFORE_APPLYING,
             "careful: review before applying",
-            "Default risk label for fixes that have not declared a more specific risk.",
+            "Default label for fixes that should be reviewed before applying.",
+            LabelCategories.RISK_MEDIUM,
         ),
-        (RiskLabels.METADATA_ONLY, "safe: metadata only", "Changes metadata without changing data values."),
         (
-            RiskLabels.ENCODING_METADATA,
+            Labels.METADATA_ONLY,
+            "safe: metadata only",
+            "Changes metadata without changing data values.",
+            LabelCategories.RISK_LOW,
+        ),
+        (
+            Labels.ENCODING_METADATA,
             "safe: encoding metadata",
             "Changes encoding or persistence metadata without changing data values.",
+            LabelCategories.RISK_LOW,
         ),
         (
-            RiskLabels.REVERSIBLE_RENAME,
+            Labels.REVERSIBLE_RENAME,
             "safe: reversible rename",
             "Renames variables, coordinates, or dimensions without changing values.",
+            LabelCategories.RISK_LOW,
         ),
         (
-            RiskLabels.SAFE_COORDINATE_CREATION,
+            Labels.SAFE_COORDINATE_CREATION,
             "safe: coordinate creation",
             "Creates coordinate markers from existing dimensions or values.",
+            LabelCategories.RISK_LOW,
         ),
         (
-            RiskLabels.VALUE_TRANSFORMATION,
+            Labels.VALUE_TRANSFORMATION,
             "careful: value transformation",
             "Transforms data or coordinate values.",
+            LabelCategories.RISK_MEDIUM,
         ),
         (
-            RiskLabels.COORDINATE_REORDERING,
+            Labels.COORDINATE_REORDERING,
             "careful: coordinate reordering",
             "Reorders coordinate-dependent data.",
+            LabelCategories.RISK_MEDIUM,
         ),
         (
-            RiskLabels.DIMENSION_REMAPPING,
+            Labels.DIMENSION_REMAPPING,
             "careful: dimension remapping",
             "Remaps dimensions or dimension relationships.",
+            LabelCategories.RISK_MEDIUM,
         ),
         (
-            RiskLabels.COORDINATE_TRANSFORMATION,
+            Labels.COORDINATE_TRANSFORMATION,
             "careful: coordinate transformation",
             "Transforms coordinate values, bounds, or geometry.",
+            LabelCategories.RISK_MEDIUM,
         ),
         (
-            RiskLabels.VARIABLE_REMOVAL,
+            Labels.VARIABLE_REMOVAL,
             "careful: variable removal",
             "Removes variables or coordinates.",
+            LabelCategories.RISK_MEDIUM,
         ),
         (
-            RiskLabels.VARIABLE_CREATION,
+            Labels.VARIABLE_CREATION,
             "careful: variable creation",
             "Creates variables from existing metadata or values.",
+            LabelCategories.RISK_MEDIUM,
         ),
         (
-            RiskLabels.DTYPE_TRANSFORMATION,
+            Labels.DTYPE_TRANSFORMATION,
             "careful: dtype transformation",
             "Changes variable or coordinate data types.",
+            LabelCategories.RISK_MEDIUM,
         ),
         (
-            RiskLabels.COORDINATE_CREATION,
+            Labels.COORDINATE_CREATION,
             "careful: coordinate creation",
             "Creates derived coordinates or coordinate values.",
+            LabelCategories.RISK_MEDIUM,
         ),
         (
-            RiskLabels.WORKFLOW_TRANSFORMATION,
+            Labels.WORKFLOW_TRANSFORMATION,
             "careful: workflow transformation",
             "Applies a composed workflow with structural and metadata changes.",
+            LabelCategories.RISK_HIGH,
         ),
     ]
-    for label_id, title, description in builtins:
-        LabelRegistry.register(label_id, title, description=description, category="risk")
+    for label_id, title, description, category in builtins:
+        LabelRegistry.register(label_id, title, description=description, category=category)
 
 
 _register_builtin_labels()

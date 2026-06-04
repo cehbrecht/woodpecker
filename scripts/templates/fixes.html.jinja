@@ -59,7 +59,7 @@
         <th>Categories</th>
         <th>Dataset</th>
         <th>Priority</th>
-        <th>Risk</th>
+        <th>Severity</th>
         <th>Labels</th>
         <th>Source</th>
       </tr>
@@ -73,7 +73,7 @@
         <td>{{ (f.categories or []) | join(', ') }}</td>
         <td>{{ f.dataset or '' }}</td>
         <td>{{ f.priority }}</td>
-        <td>{{ (f.risk_titles or []) | join(', ') }}</td>
+        <td>{{ (f.severity_titles or []) | join(', ') }}</td>
         <td>{{ (f.other_label_titles or []) | join(', ') }}</td>
         <td>
           {% if f.source_kind == 'core' %}

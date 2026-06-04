@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import xarray as xr
 
-from woodpecker.fixes.labels import RiskLabels
+from woodpecker.fixes.labels import Labels
 from woodpecker.fixes.registry import FixFunction, FixFunctionRegistry
 
 from .helpers import extract_start_year as _extract_start_year
@@ -103,7 +103,7 @@ class DecadalReftimeCoordinate(FixFunction):
     categories = ["metadata", "structure"]
     priority = 23
     dataset = "CMIP6-decadal"
-    labels = [RiskLabels.COORDINATE_CREATION]
+    labels = [Labels.COORDINATE_CREATION]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return is_cmip6_decadal_netcdf(dataset)

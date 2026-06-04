@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from ..labels import RiskLabels
+from ..labels import Labels
 from ..registry import FixFunction, FixFunctionRegistry
 from .helpers import get_data_unit, is_celsius_unit, target_temperature_variable
 
@@ -38,7 +38,7 @@ class NormalizeTasUnitsToKelvin(FixFunction):
     categories = ["metadata", "units"]
     priority = 30
     dataset = None
-    labels = [RiskLabels.VALUE_TRANSFORMATION]
+    labels = [Labels.VALUE_TRANSFORMATION]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _needs_kelvin_conversion(dataset)

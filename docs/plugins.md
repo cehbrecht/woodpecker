@@ -35,29 +35,28 @@ Use the [Generated Fixes Reference](FIXES.md) and
 
 Labels are user-facing metadata with an id, title, description, and category.
 They help users understand a fix, but they do not affect recipes, priority,
-matching, or automation. Some predefined labels use category `risk`; custom
-labels default to category `info`, and plugins may also use category `warning`
-for labels that deserve extra attention.
+matching, or automation. Labels default to category `info`. Built-in severity
+labels use the categories `risk-low`, `risk-medium`, and `risk-high`.
 
-Plugins can use predefined risk-category labels:
+Plugins can use predefined labels:
 
 ```python
-from woodpecker.fixes import FixFunction, RiskLabels
+from woodpecker.fixes import FixFunction, Labels
 
 
 class RenameTempVariable(FixFunction):
-    labels = [RiskLabels.REVERSIBLE_RENAME]
+    labels = [Labels.REVERSIBLE_RENAME]
 ```
 
 Plugins can also register custom labels:
 
 ```python
-from woodpecker.fixes import register_label
+from woodpecker.fixes import LabelCategories, register_label
 
 register_label(
     "my_plugin.experimental",
     "experimental",
     description="Early plugin fix that should be reviewed carefully.",
-    category="warning",
+    category=LabelCategories.RISK_HIGH,
 )
 ```

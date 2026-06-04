@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from woodpecker.fixes.labels import RiskLabels
+from woodpecker.fixes.labels import Labels
 from woodpecker.fixes.registry import FixFunction, register_fix_function
 
 from .helpers import project_id_from_dataset
@@ -31,7 +31,7 @@ class EnsureProjectIdIsPresent(FixFunction):
     categories = ["metadata"]
     priority = 41
     dataset = "CMIP7"
-    labels = [RiskLabels.METADATA_ONLY]
+    labels = [Labels.METADATA_ONLY]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _needs_project_id(dataset)

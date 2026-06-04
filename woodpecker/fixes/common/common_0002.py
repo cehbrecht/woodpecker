@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import xarray as xr
 
-from ..labels import RiskLabels
+from ..labels import Labels
 from ..registry import FixFunction, FixFunctionRegistry
 
 
@@ -59,7 +59,7 @@ class EnsureLatitudeIsIncreasing(FixFunction):
     categories = ["structure"]
     priority = 33
     dataset = None
-    labels = [RiskLabels.COORDINATE_REORDERING]
+    labels = [Labels.COORDINATE_REORDERING]
 
     def matches(self, dataset: xr.Dataset) -> bool:
         return _needs_lat_flip(dataset)
