@@ -25,15 +25,15 @@ flowchart TD
 
 | If you want to... | Start with... |
 | ----------------- | ------------- |
-| Run a shared workflow | [Discovered Recipes](recipes.md) |
+| Run a shared workflow | [Recipes](recipes.md) |
 | Learn the vocabulary | [Concepts](concepts.md) |
 | Work from the terminal | [CLI](cli.md) |
-| Inspect available fixes | [Generated Fixes Reference](FIXES.md) |
+| Inspect available fixes | [Fix Reference](FIXES.md) |
 | Understand bundled dataset families | [Plugins](plugins.md) |
 
 ## Keep Reading
 
 - Use [Concepts](concepts.md) for the object model and identifiers.
-- Use [Discovered Recipes](recipes.md) for recipe lookup and discovery.
+- Use [Recipes](recipes.md) for recipe lookup and discovery.
 - Use [CLI](cli.md) for command flags, dry runs, output formats, and safety
   options.

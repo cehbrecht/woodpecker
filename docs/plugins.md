@@ -28,8 +28,8 @@ as small Woodpecker fixes:
 recipe = woodpecker.recipe.get("xmip.cmip6_preprocessing")
 ```
 
-Use [Generated Fixes Reference](FIXES.md) and
-[Generated Recipes Reference](recipe-reference.md) for the full registered list.
+Use [Fix Reference](FIXES.md) and [Recipe Reference](recipe-reference.md) for
+the full registered list.
 
 ## Labels
 

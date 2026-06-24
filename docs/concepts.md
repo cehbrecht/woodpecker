@@ -3,6 +3,12 @@
 Woodpecker separates repair logic from the workflows that select, order, and
 run that logic.
 
+## Short Version
+
+- **Fix**: one check or repair.
+- **Recipe**: ordered fixes for one workflow.
+- **Plugin**: dataset-family fixes and recipes.
+
 ## Map
 
 ```mermaid
@@ -57,7 +63,7 @@ findings = woodpecker.check(
 Notes:
 
 - Use direct fix ids when you already know exactly what to run.
-- Use [Generated Fixes Reference](FIXES.md) to inspect registered fixes.
+- Use [Fix Reference](FIXES.md) to inspect registered fixes.
 - Fix priority only affects default discovery order. Recipe steps keep their
   explicit order.
 
@@ -78,8 +84,8 @@ Recipes may include:
 - aliases,
 - links to background material.
 
-Use [Discovered Recipes](recipes.md) for discovery behavior and
-[Generated Recipes Reference](recipe-reference.md) for the current catalog.
+Use [Recipes](recipes.md) for discovery behavior and
+[Recipe Reference](recipe-reference.md) for the current catalog.
 
 ## Matching
 

@@ -184,3 +184,17 @@ flowchart LR
   changes.
 - Treat the test cleanup as a classification and duplication audit first. Delete
   or merge tests only after the important public workflows are named.
+
+## Later Human-Readable Polish
+
+- [ ] Make generated reference pages friendlier by editing the generators, not
+  the generated files:
+  - shorter page titles such as `Fix Reference` and `Recipe Reference`
+  - shorter column names where possible
+  - one first sentence that explains when to use the page
+  - clearer separation between common user-facing ids and generated metadata
+- [ ] Consider future API aliases for the recipe lifecycle:
+  - `woodpecker.recipe.preview(...)` for dry-run behavior
+  - `woodpecker.recipe.apply(...)` for mutation
+- [ ] Consider future CLI grouped commands only if they make the user model
+  clearer than the current `check` and `fix` commands.
