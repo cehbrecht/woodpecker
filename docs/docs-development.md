@@ -76,7 +76,7 @@ inside the `docs/` tree.
 
 - `mkdocs.yml`: site configuration, theme, plugins, and navigation.
 - `docs/index.md`: task-oriented documentation homepage.
-- `docs/OVERVIEW.md`: symlink to the root README for the project overview.
+- `docs/OVERVIEW.md`: short conceptual overview for the docs site.
 - `docs/*.md`: hand-written docs pages and generated references.
 - `docs/notebooks/`: executed example notebooks.
 - `scripts/`: docs generation scripts.

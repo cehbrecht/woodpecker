@@ -51,26 +51,26 @@ talkative.
 
 ## Phase 2: Docs Structure
 
-- [ ] Decide whether `docs/OVERVIEW.md` is still needed after the README rewrite.
+- [x] Decide whether `docs/OVERVIEW.md` is still needed after the README rewrite.
   If it remains, make it a short conceptual overview, not another README.
-- [ ] Simplify `docs/index.md` into a compact docs map.
-- [ ] Reduce the MkDocs "Getting Started" section to the smallest useful path:
+- [x] Simplify `docs/index.md` into a compact docs map.
+- [x] Reduce the MkDocs "Getting Started" section to the smallest useful path:
   - Overview or Start Here
   - Concepts
   - Recipes
   - CLI
   - Plugins
-- [ ] Move `docs/user-friendliness.md` out of the main getting-started path.
+- [x] Move `docs/user-friendliness.md` out of the main getting-started path.
   It is useful backlog material, but not something a new user needs first.
-- [ ] Keep generated references under Reference only.
-- [ ] Make notebooks/examples easy to find without making them part of the first
+- [x] Keep generated references under Reference only.
+- [x] Make notebooks/examples easy to find without making them part of the first
   reading path.
-- [ ] Check for repeated descriptions of fixes, recipes, plugins, stores, and
+- [x] Check for repeated descriptions of fixes, recipes, plugins, stores, and
   catalogs across `README.md`, `docs/index.md`, `docs/OVERVIEW.md`,
   `docs/concepts.md`, and `docs/recipes.md`.
-- [ ] Replace repeated explanations with short summaries plus links to the one
+- [x] Replace repeated explanations with short summaries plus links to the one
   canonical page.
-- [ ] Add one compact Mermaid diagram to show the basic flow, for example:
+- [x] Add one compact Mermaid diagram to show the basic flow, for example:
 
 ```mermaid
 flowchart LR
