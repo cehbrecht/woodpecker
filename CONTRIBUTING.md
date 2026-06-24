@@ -380,9 +380,10 @@ Interim plugin-testing policy (current state):
 
 Useful references:
 
+- `tests/README.md`: unit/integration split and duplication guidance.
 - `tests/integration/README.md`: integration test intent and style.
 - `woodpecker/testing/README.md`: synthetic climate dataset factories.
-- `tests/test_testing_factory.py`: expected shape and determinism of fixtures.
+- `tests/unit/test_testing_factory.py`: expected shape and determinism of fixtures.
 
 Keep technical details close to the module that owns them. The root README
 should stay as a thin project overview.

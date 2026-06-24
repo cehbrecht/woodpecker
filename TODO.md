@@ -102,32 +102,32 @@ flowchart LR
 
 ## Phase 4: Test Cleanup
 
-- [ ] Audit which tests are really needed before deleting or merging anything.
-- [ ] Keep the most important functional tests: public API flows that check,
+- [x] Audit which tests are really needed before deleting or merging anything.
+- [x] Keep the most important functional tests: public API flows that check,
   dry-run, apply, and verify fixes for representative dataset families.
-- [ ] Keep focused unit tests for parsing, identifiers, selection, recipes,
+- [x] Keep focused unit tests for parsing, identifiers, selection, recipes,
   stores, provenance, formatting, and other small logic that can fail in
   isolation.
-- [ ] Clearly separate test intent:
+- [x] Clearly separate test intent:
   - unit tests: small, fast, isolated behavior in `tests/unit/`
   - functional tests: end-to-end public API behavior in `tests/integration/`
-- [ ] Keep the existing `tests/integration/` directory name, but document that
+- [x] Keep the existing `tests/integration/` directory name, but document that
   these are the functional end-to-end public API tests.
-- [ ] Check for duplicated coverage between:
+- [x] Check for duplicated coverage between:
   - `tests/unit/test_cli_*.py` and API usage examples
   - `tests/unit/test_recipe*.py` and `tests/integration/test_api_recipes_*.py`
   - family-specific fix tests and recipe tests that assert the same correction
   - generated catalog tests and docs generation checks
-- [ ] Keep one plain executable example test as the preferred style reference.
-- [ ] Move broad workflow checks out of unit tests if they exercise multiple
+- [x] Keep one plain executable example test as the preferred style reference.
+- [x] Move broad workflow checks out of unit tests if they exercise multiple
   subsystems.
-- [ ] Move low-level edge cases out of functional tests if they do not need the
+- [x] Move low-level edge cases out of functional tests if they do not need the
   full public API path.
-- [ ] Remove checked-in `__pycache__/` files if they are tracked, and make sure
+- [x] Remove checked-in `__pycache__/` files if they are tracked, and make sure
   cache files stay ignored.
-- [ ] Add a short `tests/README.md` explaining the difference between unit and
+- [x] Add a short `tests/README.md` explaining the difference between unit and
   functional tests, which suite to run first, and where new tests belong.
-- [ ] Keep `tests/integration/README.md` or replace it with the new test README
+- [x] Keep `tests/integration/README.md` or replace it with the new test README
   after the structure is clear.
 
 ## Phase 5: Code Cleanup
