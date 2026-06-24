@@ -189,8 +189,6 @@ def _instantiate_fix(registry: Any, fix_id: str) -> Any:
 
 
 def apply_recipe(ds: Any, recipe: "Recipe", registry: Any) -> Any:
-    """Resolve recipe fix identifiers and apply fixes in order."""
-
     identity = resolve_dataset_identity(ds)
 
     for ref in recipe.steps:

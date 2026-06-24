@@ -34,8 +34,6 @@ class RunContext:
 
 
 def normalize_ordered_identifiers(identifiers: Sequence[str]) -> tuple[str, ...]:
-    """Normalize and deduplicate fix identifiers while preserving order."""
-
     out: list[str] = []
     seen: set[str] = set()
     for raw in identifiers:
@@ -59,8 +57,6 @@ def _finalize_matching_recipes(
     not_found_message: str,
     multiple_message_prefix: str,
 ) -> list[Recipe]:
-    """Deduplicate matched recipes, apply optional id filter, and enforce uniqueness."""
-
     unique: dict[str, Recipe] = {}
     for recipe in recipes:
         unique[_recipe_key(recipe)] = recipe
@@ -86,8 +82,6 @@ def _finalize_matching_recipes(
 
 
 def _iter_store_matches(inputs: Sequence[DataInput], store: RecipeStore) -> list[Recipe]:
-    """Collect recipes returned by store lookup across all normalized inputs."""
-
     out: list[Recipe] = []
     for data_input in inputs:
         dataset = data_input.load()
@@ -106,8 +100,6 @@ def select_matching_store_recipes(
     inputs: Sequence[DataInput],
     recipe_id: str | None,
 ) -> list[Recipe]:
-    """Select one matching recipe from store lookups with clear ambiguity handling."""
-
     return _finalize_matching_recipes(
         _iter_store_matches(inputs, store),
         store=store,
@@ -115,6 +107,29 @@ def select_matching_store_recipes(
         not_found_message="No matching recipe found for --recipe-id '{recipe_id}'.",
         multiple_message_prefix="Multiple matching recipes found; specify --recipe-id to choose one: ",
     )
+
+
+def _store_recipe_result(
+    recipe: Recipe,
+) -> tuple[Literal["store"], list[Recipe], tuple[str, ...], dict[str, dict[str, Any]]]:
+    identifiers, fix_options = recipe.step_identifiers_and_options()
+    return "store", [recipe], identifiers, fix_options
+
+
+def _resolve_store_recipe(
+    *,
+    store: RecipeStore,
+    inputs: Sequence[DataInput],
+    recipe_id: str | None,
+    empty_message: str,
+) -> tuple[Literal["store"], list[Recipe], tuple[str, ...], dict[str, dict[str, Any]]]:
+    if recipe_id:
+        return _store_recipe_result(store.get_recipe(recipe_id.strip()))
+
+    recipes = select_matching_store_recipes(store=store, inputs=inputs, recipe_id=recipe_id)
+    if not recipes:
+        raise ValueError(empty_message)
+    return _store_recipe_result(recipes[0])
 
 
 def resolve_recipe_source(
@@ -129,58 +144,38 @@ def resolve_recipe_source(
     tuple[str, ...],
     dict[str, dict[str, Any]],
 ]:
-    """Resolve recipe selection through RecipeStore with direct-mode fallback.
-
-    Returns source marker, selected recipes, resolved identifiers, and resolved fix options.
-    """
-
     if store_type == "auto":
         store = create_recipe_store(store_type, recipe_location)
-        if recipe_id:
-            selected = store.get_recipe(recipe_id.strip())
-            identifiers, fix_options = selected.step_identifiers_and_options()
-            return "store", [selected], identifiers, fix_options
-
-        recipes = select_matching_store_recipes(store=store, inputs=inputs, recipe_id=recipe_id)
-        if not recipes:
-            raise ValueError("No matching auto recipes found for selected inputs.")
-
-        selected = recipes[0]
-        identifiers, fix_options = selected.step_identifiers_and_options()
-        return "store", [selected], identifiers, fix_options
+        return _resolve_store_recipe(
+            store=store,
+            inputs=inputs,
+            recipe_id=recipe_id,
+            empty_message="No matching auto recipes found for selected inputs.",
+        )
 
     use_catalog = store_type == "catalog" or (recipe_location is None and recipe_id is not None)
     if use_catalog:
         store = create_recipe_store("catalog", recipe_location)
-        if recipe_id:
-            selected = store.get_recipe(recipe_id.strip())
-            identifiers, fix_options = selected.step_identifiers_and_options()
-            return "store", [selected], identifiers, fix_options
-
-        recipes = select_matching_store_recipes(store=store, inputs=inputs, recipe_id=recipe_id)
-        if not recipes:
-            raise ValueError("No matching discovered recipes found for selected inputs.")
-
-        selected = recipes[0]
-        identifiers, fix_options = selected.step_identifiers_and_options()
-        return "store", [selected], identifiers, fix_options
+        return _resolve_store_recipe(
+            store=store,
+            inputs=inputs,
+            recipe_id=recipe_id,
+            empty_message="No matching discovered recipes found for selected inputs.",
+        )
 
     if recipe_location is None:
         return "direct", [], (), {}
 
     store = create_recipe_store(store_type, recipe_location)
-    recipes = select_matching_store_recipes(store=store, inputs=inputs, recipe_id=recipe_id)
-    if not recipes:
-        raise ValueError("No matching recipes found in selected store for selected inputs.")
-
-    selected = recipes[0]
-    identifiers, fix_options = selected.step_identifiers_and_options()
-    return "store", [selected], identifiers, fix_options
+    return _resolve_store_recipe(
+        store=store,
+        inputs=inputs,
+        recipe_id=recipe_id,
+        empty_message="No matching recipes found in selected store for selected inputs.",
+    )
 
 
 def resolve_target_paths(paths: tuple[Path, ...]) -> list[Path]:
-    """Resolve CLI path arguments to execution inputs."""
-
     if paths:
         return list(paths)
     return [Path.cwd()]
@@ -192,8 +187,6 @@ def resolve_selection_inputs(
     source_identifiers: tuple[str, ...],
     source_fix_options: dict[str, dict[str, Any]],
 ) -> tuple[tuple[str, ...], tuple[str, ...], dict[str, dict[str, Any]]]:
-    """Resolve identifier/option precedence between CLI and recipe/store defaults."""
-
     normalized_cli_identifiers = normalize_ordered_identifiers(cli_identifiers)
     resolved_identifiers = normalized_cli_identifiers or source_identifiers
     resolved_ordered_identifiers = resolved_identifiers
@@ -212,16 +205,6 @@ def resolve_run_context(
     identifiers: tuple[str, ...],
     output_format: str,
 ) -> RunContext:
-    """Resolve inputs and fix selection for check/fix commands.
-
-    Precedence:
-        - store lookup when `--recipe` is provided
-        - direct selection otherwise
-
-    - explicit CLI filters (`--dataset`, `--category`, `--select`) override
-      store-derived defaults
-    """
-
     target_paths = resolve_target_paths(paths)
     inputs = normalize_inputs(target_paths)
 
@@ -271,8 +254,6 @@ def resolve_load_source_recipes(
     from_store_type: str | None,
     recipe_id: str | None,
 ) -> list[Recipe]:
-    """Resolve source recipes for load-recipes command."""
-
     if from_recipe is None:
         if from_store_type not in {"auto", "catalog"}:
             raise ValueError("Provide --from-recipe as the source store location.")

@@ -13,8 +13,6 @@ if TYPE_CHECKING:
 
 
 class RunFixKwargs(TypedDict, total=False):
-    """Keyword arguments accepted by run_fix for command-level orchestration."""
-
     dry_run: bool
     output_format: str
     force_apply: bool
@@ -176,8 +174,6 @@ def execute_check_context(
     *,
     strict_io: bool = False,
 ) -> list[dict[str, str]]:
-    """Run check execution from a pre-resolved run context."""
-
     return run_check(context.inputs, context.fixes, strict_io=strict_io)
 
 
@@ -190,8 +186,6 @@ def build_run_fix_kwargs(
     provenance_run_id: str | None,
     strict_io: bool,
 ) -> RunFixKwargs:
-    """Build run_fix kwargs from command-level execution flags."""
-
     run_fix_kwargs: RunFixKwargs = {
         "dry_run": dry_run,
         "output_format": output_format,
@@ -214,8 +208,6 @@ def execute_fix_context(
     provenance_run_id: str | None,
     strict_io: bool = False,
 ) -> "FixRunStats":
-    """Run fix execution from a pre-resolved run context."""
-
     if force_apply and not context.resolved_identifiers:
         raise ValueError(
             "--force-apply requires explicit fix selection via --select or recipe identifiers."
@@ -238,7 +230,6 @@ def execute_load_recipes(
     from_store: str,
     recipe_id: str | None = None,
 ) -> dict:
-    """Load recipes into a target store from a source store location."""
     from woodpecker.recipes.resolver import resolve_load_source_recipes
     from woodpecker.stores.helpers import create_recipe_store
 

@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Sequence
 
-# Importing woodpecker.fixes registers built-in fixes before API selection runs.
-import woodpecker.fixes  # noqa: F401
+import woodpecker.fixes  # noqa: F401  # registers built-in fixes
 from woodpecker.commands import execute_check, execute_fix
 from woodpecker.results import CheckResult, FixResult
 
