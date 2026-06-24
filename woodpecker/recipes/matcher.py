@@ -7,11 +7,6 @@ from .models import Recipe
 
 
 def _match_attrs(dataset: Any, expected_attrs: Mapping[str, Any]) -> bool:
-    """Return True when all expected dataset attrs match exactly.
-
-    Matching is AND-based across declared attributes.
-    """
-
     if not expected_attrs:
         return True
 
@@ -25,11 +20,6 @@ def _match_attrs(dataset: Any, expected_attrs: Mapping[str, Any]) -> bool:
 
 
 def _match_path_patterns(path: str | None, patterns: list[str]) -> bool:
-    """Return True when any pattern matches the provided path string.
-
-    Path patterns are matched against the provided `path` text (not dataset attrs).
-    """
-
     if not patterns:
         return True
     if path is None:
@@ -52,8 +42,6 @@ def _dataset_id(dataset: Any) -> str | None:
 
 
 def _match_dataset_id_patterns(dataset: Any, patterns: list[str]) -> bool:
-    """Return True when any pattern matches dataset identity metadata."""
-
     if not patterns:
         return True
 
@@ -65,14 +53,6 @@ def _match_dataset_id_patterns(dataset: Any, patterns: list[str]) -> bool:
 
 
 def recipe_matches_dataset(recipe: Recipe, dataset: Any, path: str | None = None) -> bool:
-    """Return True when dataset satisfies all declared recipe match constraints.
-
-    Semantics are AND-based:
-    - attribute constraints must all pass
-    - dataset id pattern constraints must pass when declared
-    - path pattern constraints must pass when declared
-    """
-
     matcher = recipe.match
     if matcher is None:
         return True

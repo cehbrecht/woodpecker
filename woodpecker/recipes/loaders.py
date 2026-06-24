@@ -26,8 +26,6 @@ DEFAULT_USER_DIRS = (
 
 @dataclass(frozen=True)
 class RecipeDocumentSource:
-    """Loaded recipe document plus the location it came from."""
-
     label: str
     recipes: tuple[Recipe, ...]
 
@@ -68,8 +66,6 @@ def _plugin_packages() -> tuple[str, ...]:
 
 
 class RecipeLoader:
-    """Coordinate recipe discovery across explicit, user, system, core, and plugin locations."""
-
     def __init__(
         self,
         *,
@@ -90,16 +86,12 @@ class RecipeLoader:
         self.resource_dir = resource_dir
 
     def load_document(self, location: str | Path) -> RecipeDocument:
-        """Load a single recipe document from an explicit file path."""
-
         return RecipeDocument(recipes=JsonRecipeStore(location).list_recipes())
 
     def load_documents(
         self,
         explicit_locations: Iterable[str | Path] = (),
     ) -> list[RecipeDocumentSource]:
-        """Load all discovered recipe documents in precedence order."""
-
         sources: list[RecipeDocumentSource] = []
         sources.extend(self._load_files(_iter_recipe_files_from_many(explicit_locations)))
         sources.extend(
@@ -112,8 +104,6 @@ class RecipeLoader:
         return [source for source in sources if source.recipes]
 
     def catalog(self, explicit_locations: Iterable[str | Path] = ()) -> RecipeCatalog:
-        """Return a read-only catalog over all discovered recipes."""
-
         return RecipeCatalog(
             StaticRecipeStore(source.recipes)
             for source in self.load_documents(explicit_locations=explicit_locations)

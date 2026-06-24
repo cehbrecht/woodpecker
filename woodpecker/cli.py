@@ -6,8 +6,7 @@ from typing import Callable, TypeVar
 
 import click
 
-# Importing woodpecker.fixes registers built-in fixes.
-import woodpecker.fixes  # noqa: F401
+import woodpecker.fixes  # noqa: F401  # registers built-in fixes
 from woodpecker.commands import (
     execute_check_context,
     execute_fix_context,
@@ -79,11 +78,7 @@ def list_fixes(dataset: str | None, categories: tuple[str, ...], fmt: str):
 )
 @click.option("--format", "fmt", type=click.Choice(["text", "json"]), default="text")
 def list_recipes(store_type: str, recipe_location: Path | None, fmt: str):
-    """List Recipe entries from a configured store backend.
-
-    Catalog mode discovers recipes from package resources, user config, system
-    locations, and optional `--recipe` paths.
-    """
+    """List recipes from a configured store backend."""
 
     store = _with_click_errors(lambda: create_recipe_store(store_type, recipe_location))
     recipes = _with_click_errors(store.list_recipes)

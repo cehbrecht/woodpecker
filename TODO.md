@@ -132,7 +132,7 @@ flowchart LR
 
 ## Phase 5: Code Cleanup
 
-- [ ] Scan the main modules for comments and docstrings that restate the code:
+- [x] Scan the main modules for comments and docstrings that restate the code:
   - `woodpecker/api.py`
   - `woodpecker/cli.py`
   - `woodpecker/commands.py`
@@ -141,15 +141,15 @@ flowchart LR
   - `woodpecker/selection.py`
   - `woodpecker/recipes/*.py`
   - `woodpecker/fixes/*.py`
-- [ ] Keep docstrings for public APIs, CLI-facing behavior, and non-obvious
+- [x] Keep docstrings for public APIs, CLI-facing behavior, and non-obvious
   contracts.
-- [ ] Shorten internal comments that explain simple assignments, branching, or
+- [x] Shorten internal comments that explain simple assignments, branching, or
   direct library calls.
-- [ ] Prefer clearer helper names over explanatory comments.
-- [ ] Look for verbose helper functions that can be simplified without changing
+- [x] Prefer clearer helper names over explanatory comments.
+- [x] Look for verbose helper functions that can be simplified without changing
   behavior.
-- [ ] Do not combine this cleanup with feature changes.
-- [ ] Run tests after code edits.
+- [x] Do not combine this cleanup with feature changes.
+- [x] Run tests after code edits.
 
 ## Phase 6: Validation
 

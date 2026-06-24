@@ -4,8 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
 
-# Importing woodpecker.fixes registers built-in fixes before API selection runs.
-import woodpecker.fixes  # noqa: F401
+import woodpecker.fixes  # noqa: F401  # registers built-in fixes
 from woodpecker.commands import execute_check, execute_check_recipe, execute_fix, execute_fix_recipe
 from woodpecker.recipes.models import Recipe
 from woodpecker.results import CheckResult, FixResult

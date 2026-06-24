@@ -12,24 +12,13 @@ UNPRIORITIZED = -1
 
 
 class FixFunctionRegistry:
-    """Simple in-memory registry with a pluggy-ready public API.
-
-    - Simple today: decorator registration + in-memory discovery.
-    - Future-proof: register/discover/to_json can later be backed by pluggy
-      entry points or a DB/index without changing callers.
-    """
+    """In-memory registry for fix function classes."""
 
     _registry: dict[str, Type[Any]] = {}
     _resolver: IdentifierResolver = IdentifierResolver()
 
     @classmethod
     def _infer_prefix_from_module(cls, fix_cls: Type[Any]) -> str:
-        """Infer a prefix from the fix module path.
-
-        This is intentionally isolated so registry-level prefix ownership can
-        replace module inference later without touching caller flow.
-        """
-
         module = getattr(fix_cls, "__module__", "")
         if module.startswith("woodpecker.fixes.") or module == "woodpecker.fixes":
             return "woodpecker"
@@ -51,13 +40,6 @@ class FixFunctionRegistry:
 
     @classmethod
     def _derive_fix_suffix(cls, fix_cls: Type[Any], explicit: str) -> str:
-        """Derive suffix with precedence:
-
-        1) explicit class `suffix`
-        2) optional `derived_suffix()`
-        3) class name transformed to snake_case
-        """
-
         token = IdentifierRules.normalize(explicit)
         if token:
             return token
@@ -98,12 +80,6 @@ class FixFunctionRegistry:
 
     @classmethod
     def get_fix_function(cls, id: str) -> Type[Any]:
-        """Return the registered fix function class for an id.
-
-        The input must be an id in the form
-        "<prefix>.<suffix>".
-        """
-
         key = str(id).strip()
         fix_cls = cls._registry.get(key)
         if fix_cls is None:
@@ -112,8 +88,6 @@ class FixFunctionRegistry:
 
     @classmethod
     def instantiate(cls, id: str) -> Any:
-        """Instantiate and return a fresh fix function instance from an id."""
-
         return cls._instantiate_fix(cls.get_fix_function(id))
 
     @staticmethod
@@ -187,7 +161,7 @@ class FixFunctionRegistry:
 
         cls._registry[identifier_set.id] = fix_cls
         cls._resolver.register(identifier_set)
-        return fix_cls  # decorator-friendly
+        return fix_cls
 
     @staticmethod
     def _priority_sort_key(fix: FixFunction) -> tuple[bool, int, str]:
@@ -197,12 +171,6 @@ class FixFunctionRegistry:
 
     @classmethod
     def discover(cls, filters: Optional[dict[str, Any]] = None) -> list[FixFunction]:
-        """Return instantiated fix function objects, optionally filtered.
-
-        Example:
-            FixFunctionRegistry.discover(filters={"dataset": "CMIP6-decadal"})
-            FixFunctionRegistry.discover(filters={"categories": "metadata"})
-        """
         fixes = [cls._instantiate_fix(fix_cls) for fix_cls in cls._registry.values()]
 
         if not filters:
@@ -230,13 +198,6 @@ class FixFunctionRegistry:
 
     @staticmethod
     def source_label(fix: Any) -> str:
-        """Return a human-readable source label for a fix.
-
-        Built-in fixes are labeled as "core". Third-party fixes are labeled
-        as "plugin:<package>" where package is derived from the fix class
-        module root.
-        """
-
         module = getattr(type(fix), "__module__", "")
         if module.startswith("woodpecker.fixes."):
             return "core"
@@ -246,7 +207,6 @@ class FixFunctionRegistry:
 
     @classmethod
     def to_json(cls, path: str):
-        """Export all fixes to a JSON catalog."""
         fixes = cls.discover()
         data = []
         for f in fixes:
@@ -274,17 +234,7 @@ class FixFunctionRegistry:
 
 
 def register_fix_function(fix_cls: Type[Any]) -> Type[Any]:
-    """Decorator for registering fix functions.
-
-    This keeps the plugin author API minimal:
-
-        from woodpecker.fixes.registry import FixFunction, register_fix_function
-
-        @register_fix_function
-        class MyRepair(FixFunction):
-            ...
-    """
-
+    """Register a fix function class."""
     return FixFunctionRegistry.register(fix_cls)
 
 
