@@ -35,8 +35,8 @@ and `label_metadata`.
 Labels help users understand fixes. They do not affect recipe selection,
 priority, or automation.
 
-Use [Generated Fixes Reference](FIXES.md) or
-[Interactive Fix Browser](fixes.html) to browse the same registered ids.
+Use [Fix Reference](FIXES.md) or [Interactive Fix Browser](fixes.html) to browse
+the same registered ids.
 
 ## List Recipes
 
@@ -51,8 +51,7 @@ woodpecker list-recipes --store auto
 `catalog` discovers recipes from package resources, user and system config
 directories, environment paths, and extra paths passed with `--recipe`.
 
-Use [Generated Recipes Reference](recipe-reference.md) for the generated recipe
-table.
+Use [Recipe Reference](recipe-reference.md) for the generated recipe table.
 
 ## Check
 

@@ -1,4 +1,4 @@
-# Discovered Recipes
+# Recipes
 
 Recipes are ordered repair workflows. They group fixes, options, and optional
 matching rules under a stable id.
@@ -19,8 +19,7 @@ woodpecker check ./data --recipe-id xmip.cmip6_preprocessing
 woodpecker fix ./data --recipe-id xmip.cmip6_preprocessing --dry-run
 ```
 
-Use [Generated Recipes Reference](recipe-reference.md) to inspect discovered
-recipe ids.
+Use [Recipe Reference](recipe-reference.md) to inspect discovered recipe ids.
 
 ## Discovery Order
 
