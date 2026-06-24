@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 0.5.0 (2026-06-24)
+
+- Renamed fix-plan terminology and public surfaces to recipe terminology across code, CLI, tests, docs, and bundled examples.
+- Added a Pythonic recipe builder API and example notebook.
+- Added labels for fix risks and informational metadata, including registry, formatting, and generated catalog support.
+- Added preview support for fix outputs in the API, CLI, notebooks, and xMIP plugin workflow.
+- Updated the bundled plugin packages, recipes, tests, and examples for the `0.5.x` core dependency range.
+- Expanded recipe loader, recipe builder, store, registry, runner, selection, provenance, and UI formatting tests.
+- Refreshed generated fix and recipe reference artifacts, docs navigation, notebooks, and design notes.
+- Updated the docs build workflow and local docs generation commands.
+
 ## 0.4.0 (2026-05-26)
 
 - Renamed the internal `woodpecker.recipes` package to `woodpecker.recipes`.
