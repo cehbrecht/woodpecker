@@ -83,22 +83,22 @@ flowchart LR
 
 ## Phase 3: Content Editing Pass
 
-- [ ] For each hand-written docs page, remove paragraphs that repeat the page
+- [x] For each hand-written docs page, remove paragraphs that repeat the page
   title or obvious navigation context.
-- [ ] Prefer bullets over long paragraphs when listing behavior, commands,
+- [x] Prefer bullets over long paragraphs when listing behavior, commands,
   decisions, or links.
-- [ ] Prefer short examples over multiple similar examples.
-- [ ] Keep safety-related details, dry-run behavior, provenance, strict I/O, and
+- [x] Prefer short examples over multiple similar examples.
+- [x] Keep safety-related details, dry-run behavior, provenance, strict I/O, and
   generated-reference caveats where they affect user decisions.
-- [ ] Use consistent terms:
+- [x] Use consistent terms:
   - fix
   - recipe
   - plugin
   - catalog
   - store
   - finding
-- [ ] Avoid introducing multiple names for the same thing.
-- [ ] Make every page answer one primary question.
+- [x] Avoid introducing multiple names for the same thing.
+- [x] Make every page answer one primary question.
 
 ## Phase 4: Test Cleanup
 
