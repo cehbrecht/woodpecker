@@ -1,97 +1,38 @@
 # Woodpecker Documentation
 
-Woodpecker helps climate-data workflows check, select, and apply known dataset
-fixes through a small Python API, a CLI, and discoverable recipes.
+Woodpecker checks and applies known climate-data fixes through recipes, direct
+fix selection, a Python API, and a CLI.
 
-Use this documentation site as a map. The [Overview](OVERVIEW.md) is the short
-project introduction; the pages below are organized by what you want to do next.
-
-## If You Are Running Fixes
-
-Start here when you have a dataset and want to check or repair it.
-
-- [Concepts](concepts.md): learn the vocabulary for fixes, recipes, stores,
-  catalogs, plugins, and identifiers.
-- [Discovered Recipes](recipes.md): run an ordered workflow from core, plugin,
-  user, or system recipe sources.
-- [CLI](cli.md): inspect fixes and recipes, check datasets, apply fixes, and use
-  output or safety flags from the terminal.
-- [Examples](examples.md): open executed notebooks using deterministic synthetic
-  datasets.
-- [User Friendliness Ideas](user-friendliness.md): collect future ideas for
-  clearer output, previews, recipes, and safer user workflows.
-- [Generated Fixes Reference](FIXES.md): find registered fix ids for direct
-  selection.
-- [Interactive Fix Browser](fixes.html): search fix ids and copy stable anchors.
-
-Typical recipe-based usage:
-
-```python
-import woodpecker
-
-recipe = woodpecker.recipe.get("cmip6.core_units")
-findings = woodpecker.recipe.check(dataset, recipe)
-
-if findings:
-    woodpecker.recipe.fix(dataset, recipe, dry_run=False)
+```mermaid
+flowchart LR
+    D["Dataset"] --> C["check"]
+    C --> F["findings"]
+    F --> R["recipe or fix"]
+    R --> P["dry-run preview"]
+    P --> A["apply"]
 ```
 
-Typical CLI usage:
+## Start Here
 
-```bash
-woodpecker list-recipes
-woodpecker check ./data --recipe-id cmip6.core_units
-```
+- [Overview](OVERVIEW.md): what Woodpecker is for and how the pieces fit.
+- [Concepts](concepts.md): fixes, recipes, plugins, catalogs, stores, and ids.
+- [Discovered Recipes](recipes.md): run shared workflows by recipe id.
+- [CLI](cli.md): list, check, fix, dry-run, and format results.
+- [Plugins](plugins.md): bundled dataset-family fixes and recipes.
 
-See [CLI](cli.md) for direct fix selection, store backends, dry runs,
-provenance, strict I/O, and output formats.
+## Common Tasks
 
-## If You Are Choosing A Workflow
+| Task | Page |
+| ---- | ---- |
+| Run a known workflow | [Discovered Recipes](recipes.md) |
+| Choose a fix id directly | [Generated Fixes Reference](FIXES.md) |
+| Search recipe metadata | [Generated Recipes Reference](recipe-reference.md) |
+| Try notebook examples | [Examples](examples.md) |
+| Contribute fixes or recipes | [Contributing Guide](CONTRIBUTING_GUIDE.md) |
+| Work on the docs site | [Docs Development](docs-development.md) |
 
-Start with [Discovered Recipes](recipes.md) when you want Woodpecker to select a
-curated recipe by id or matching rules.
+## Reference
 
-Use the [Generated Recipes Reference](recipe-reference.md) when you want a generated
-table of currently discovered recipes, their match rules, steps, and source files.
-
-Use the [Generated Fixes Reference](FIXES.md) when you already know you need a
-single fix function id or want to inspect all registered fix functions.
-
-## If You Are Working With Plugins
-
-Start with [Plugins](plugins.md) for bundled plugin status, namespace prefixes,
-fix counts, and recipe coverage.
-
-Plugins can register fix functions and may bundle recipe documents in package
-`recipes/` resources. Installed plugin recipes are discovered through the same
-catalog APIs as core recipes.
-
-## If You Are Contributing
-
-Use the [Contributing Guide](CONTRIBUTING_GUIDE.md) for local setup, fix
-authoring, recipe-file schema details, plugin guidance, and testing conventions.
-Use [Docs Development](docs-development.md) when you are editing or regenerating
-the documentation site.
-
-Use [User Friendliness Ideas](user-friendliness.md) when you want a lightweight
-backlog of improvements that would make Woodpecker easier to understand and
-trust.
-
-Useful local commands:
-
-```bash
-make format
-make lint
-make test
-make docs
-```
-
-## Reference Pages
-
-- [Generated Fixes Reference](FIXES.md): generated table of registered fix functions.
-- [Generated Recipes Reference](recipe-reference.md): generated table of discovered
-  recipes.
-- [Interactive Fix Browser](fixes.html): searchable fix ids with stable anchors.
-
-The xMIP plugin is currently a demo plugin that translates xMIP-style CMIP6
-preprocessing into small, inspectable Woodpecker fix functions.
+- [Generated Fixes Reference](FIXES.md)
+- [Generated Recipes Reference](recipe-reference.md)
+- [Interactive Fix Browser](fixes.html)

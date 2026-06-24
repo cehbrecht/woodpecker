@@ -1,35 +1,43 @@
 # Concepts
 
-Woodpecker separates executable repair logic from the user-facing workflows
-that select and order that logic.
+Woodpecker separates repair logic from the workflows that select, order, and
+run that logic.
 
-## How The Pieces Fit
+## Map
 
 ```mermaid
 flowchart LR
-  Dataset["Dataset or path"] --> Selection["Fix selection"]
-  Selection --> Direct["Direct fix function ids"]
-  Selection --> Catalog["RecipeCatalog"]
-  Loader["RecipeLoader"] --> Catalog
+  Dataset["Dataset or path"] --> Selection["Selection"]
+  Selection --> Direct["Fix id"]
+  Selection --> Recipe["Recipe"]
+  Loader["RecipeLoader"] --> Catalog["RecipeCatalog"]
   Core["Core recipes"] --> Loader
   Local["User/system/explicit recipes"] --> Loader
-  Plugins["Installed plugin recipes"] --> Loader
-  Catalog --> Recipe["Recipe"]
-  Direct --> FixFunctions["Fix functions"]
-  Recipe --> FixFunctions
-  FixFunctions --> Result["Findings or repaired dataset"]
+  Plugins["Plugin recipes"] --> Loader
+  Catalog --> Recipe
+  Direct --> Fixes["Fix functions"]
+  Recipe --> Fixes
+  Fixes --> Result["Findings or repaired dataset"]
 ```
 
-Direct fix function ids are useful when you already know exactly what to run.
-Recipes are useful when a workflow should carry ordered steps, options,
-matching rules, and links to background material.
+## Terms
 
-## Fix Function
+| Term | Meaning | Use when... |
+| ---- | ------- | ----------- |
+| Fix function | Python rule for one known dataset issue. | You know the exact repair id. |
+| Recipe | Ordered workflow of one or more fixes. | You want a named, reusable repair path. |
+| Matching | Rules that decide whether a recipe applies. | Recipes should be selected from dataset metadata or paths. |
+| Recipe store | Source of recipe definitions. | Recipes live in files, catalogs, package resources, or generated sources. |
+| RecipeLoader | Discovers recipe documents. | Recipes may come from several locations. |
+| RecipeCatalog | Lookup surface across recipe sources. | You need list, get, match, alias, and deduplication behavior. |
+| Plugin | Dataset-family package with fixes and recipes. | Behavior should live outside the core package. |
+| Identifier | Stable `prefix.suffix` name. | Docs, recipes, tests, and automation need explicit references. |
 
-A fix function is an executable Python rule for one known dataset issue. It can
-check whether a dataset needs attention and can optionally apply a repair.
+## Fixes
 
-Fix functions are registered with stable ids such as:
+Fix functions can check a dataset and optionally apply a repair.
+
+Examples:
 
 ```text
 woodpecker.normalize_tas_units_to_kelvin
@@ -37,7 +45,7 @@ cmip6_decadal.time_metadata
 atlas.encoding_cleanup
 ```
 
-Use direct fix function selection when you already know the exact id:
+Direct selection:
 
 ```python
 findings = woodpecker.check(
@@ -46,78 +54,60 @@ findings = woodpecker.check(
 )
 ```
 
-In a recipe, a fix is a fix function plus optional runtime options. The
-[Generated Fixes Reference](FIXES.md) lists registered fix functions.
+Notes:
 
-Fix functions may declare a non-negative `priority` for default discovery
-ordering. The default priority is `-1`, which means unprioritized. Explicit fix
-recipes keep their own step order.
+- Use direct fix ids when you already know exactly what to run.
+- Use [Generated Fixes Reference](FIXES.md) to inspect registered fixes.
+- Fix priority only affects default discovery order. Recipe steps keep their
+  explicit order.
 
-## Recipe
+## Recipes
 
-A recipe is an ordered repair workflow. It contains one or more fixes and may
-also include matching rules, aliases, and links to background material.
-
-Use recipes when you want Woodpecker to run a known workflow by id:
+Recipes turn one or more fixes into a named workflow.
 
 ```python
 recipe = woodpecker.recipe.get("cmip6.core_units")
 findings = woodpecker.recipe.check(dataset, recipe)
 ```
 
-The [Generated Recipes Reference](recipe-reference.md) lists discovered recipes.
+Recipes may include:
+
+- ordered fix steps,
+- fix options,
+- matching rules,
+- aliases,
+- links to background material.
+
+Use [Discovered Recipes](recipes.md) for discovery behavior and
+[Generated Recipes Reference](recipe-reference.md) for the current catalog.
 
 ## Matching
 
-Recipes can describe when they apply to a dataset. Matching rules may inspect:
+Recipe matching may inspect:
 
 - dataset attributes,
 - dataset identity metadata,
 - input paths.
 
-Matching helps shared recipes stay reusable across automated workflows. Explicit
-ids still work when a user wants to choose a recipe directly.
+Matching is for automatic or assisted selection. Explicit recipe ids still work
+when a user chooses a workflow directly.
 
-## Recipe Store
+## Recipe Sources
 
-A recipe store is a lookup layer for recipe definitions. Stores can list
-recipes, load a recipe by id, and find recipes that match a dataset.
-
-Woodpecker supports stores for:
-
-- discovered catalog sources,
-- JSON or YAML documents,
-- DuckDB-backed catalogs,
-- auto-generated one-step recipes from registered fix functions.
-
-## Recipe Loader
-
-`RecipeLoader` discovers recipe documents from common locations:
+`RecipeLoader` discovers recipe documents from:
 
 - explicit files or directories,
 - `WOODPECKER_RECIPE_PATH`,
 - user configuration directories,
 - system configuration directories,
 - core package resources,
-- installed plugin package `recipes/` resources.
+- installed plugin `recipes/` resources.
 
-See [Discovered Recipes](recipes.md) for the discovery order and examples.
+`RecipeCatalog` combines those sources behind one lookup API.
 
-## Recipe Catalog
+## Plugins And Prefixes
 
-`RecipeCatalog` aggregates one or more recipe sources behind a single lookup
-surface. It can list recipes, resolve ids and aliases, find matching recipes,
-and deduplicate results by recipe id.
-
-Catalog-backed lookup is the default path for shared core and plugin workflows.
-
-## Plugins
-
-Plugins keep dataset-family behavior outside the core package. A plugin can
-register fix functions and may bundle recipe documents in a package `recipes/`
-directory.
-
-Each plugin owns a namespace prefix, for example:
+Plugins own namespace prefixes:
 
 | Package | Prefix |
 | ------- | ------ |
@@ -127,19 +117,17 @@ Each plugin owns a namespace prefix, for example:
 | `woodpecker-cmip7-plugin` | `cmip7` |
 | `woodpecker-xmip-plugin` | `xmip` |
 
-See [Plugins](plugins.md) for bundled plugin status and recipe coverage.
+Use [Plugins](plugins.md) for bundled plugin status and recipe coverage.
 
 ## Identifiers
 
-Fixes and recipes use stable ids in the form:
+Fixes and recipes use:
 
 ```text
 prefix.suffix
 ```
 
-The prefix names the owning package or plugin. The suffix names the fix or
-recipe within that namespace. Use full ids in examples, recipes, and automation so
-references stay explicit.
-
-Aliases can provide extra names for the same suffix, but canonical ids are the
-preferred form in documentation.
+- `prefix`: owning package or plugin.
+- `suffix`: fix or recipe name inside that namespace.
+- canonical ids are preferred in docs, recipes, tests, and automation.
+- aliases may exist, but they should not replace canonical ids in examples.
