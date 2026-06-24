@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "woodpecker-cmip6-decadal-plugin"
-version = "0.4.0"
+version = "0.5.0"
 description = "External plugin providing CMIP6 decadal fixes for Woodpecker"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-  "woodpecker>=0.4,<0.5",
+  "woodpecker>=0.5,<0.6",
   "xarray>=2024.1.0",
 ]
 
