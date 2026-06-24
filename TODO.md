@@ -30,24 +30,24 @@ talkative.
 
 ## Phase 1: README First
 
-- [ ] Rewrite `README.md` as the single getting-started entry point.
-- [ ] Target about 60 to 80 lines instead of the current 130+ lines.
-- [ ] Keep the opening promise short:
+- [x] Rewrite `README.md` as the single getting-started entry point.
+- [x] Target about 60 to 80 lines instead of the current 130+ lines.
+- [x] Keep the opening promise short:
   `Woodpecker checks and applies known climate-data fixes through a small Python API, CLI, and recipes.`
-- [ ] Keep badges if useful, but avoid letting them dominate the first screen.
-- [ ] Replace the long documentation link list with 3 to 5 links:
+- [x] Keep badges if useful, but avoid letting them dominate the first screen.
+- [x] Replace the long documentation link list with 3 to 5 links:
   - Full docs
   - Concepts
   - Recipes
   - CLI
   - Contributing
-- [ ] Keep one install/setup block.
-- [ ] Keep one recipe-based Python example.
-- [ ] Keep one CLI example.
-- [ ] Keep a very short project map.
-- [ ] Move local docs build details and extended contributor setup to
+- [x] Keep one install/setup block.
+- [x] Keep one recipe-based Python example.
+- [x] Keep one CLI example.
+- [x] Keep a very short project map.
+- [x] Move local docs build details and extended contributor setup to
   `docs/docs-development.md` or `docs/CONTRIBUTING_GUIDE.md`.
-- [ ] Remove duplicated wording that also appears in `docs/OVERVIEW.md`.
+- [x] Remove duplicated wording that also appears in `docs/OVERVIEW.md`.
 
 ## Phase 2: Docs Structure
 
