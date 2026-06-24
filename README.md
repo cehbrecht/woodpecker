@@ -5,38 +5,21 @@
 [![CI](https://github.com/cehbrecht/woodpecker/actions/workflows/ci.yml/badge.svg)](https://github.com/cehbrecht/woodpecker/actions/workflows/ci.yml)
 [![Docs](https://github.com/cehbrecht/woodpecker/actions/workflows/docs.yml/badge.svg)](https://github.com/cehbrecht/woodpecker/actions/workflows/docs.yml)
 [![Online Docs](https://img.shields.io/badge/docs-online-blue)](https://cehbrecht.github.io/woodpecker/)
-[![nbviewer](https://img.shields.io/badge/notebooks-nbviewer-orange)](https://nbviewer.org/github/cehbrecht/woodpecker/tree/main/docs/notebooks/)
 [![License](https://img.shields.io/github/license/cehbrecht/woodpecker)](https://github.com/cehbrecht/woodpecker/blob/main/LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://github.com/cehbrecht/woodpecker/blob/main/pyproject.toml)
 
-Woodpecker is a lightweight, code-based catalog of common dataset fixes for
-climate processing. It brings repair scripts, workarounds, plugins, and recipes
-under one API for checking, applying, composing, and discovering climate data
-fixes.
+Woodpecker checks and applies known climate-data fixes through a small Python
+API, CLI, and recipe system. Use it when a dataset needs a documented repair
+before it enters a larger processing workflow.
 
-Like a woodpecker finding bugs in a tree, Woodpecker looks for known data
-issues and applies focused repairs before they spread through a workflow.
-
-Dataset-specific fix families are provided as plugins.
-
-## Documentation
-
-The MkDocs site is the main documentation entry point:
-
-- [Home](https://cehbrecht.github.io/woodpecker/)
-- [Overview](https://cehbrecht.github.io/woodpecker/OVERVIEW/)
-- [Concepts](https://cehbrecht.github.io/woodpecker/concepts/)
-- [Discovered Recipes](https://cehbrecht.github.io/woodpecker/recipes/)
-- [CLI](https://cehbrecht.github.io/woodpecker/cli/)
-- [Plugins](https://cehbrecht.github.io/woodpecker/plugins/)
-- [Examples](https://cehbrecht.github.io/woodpecker/examples/)
-- [Generated Fixes Reference](https://cehbrecht.github.io/woodpecker/FIXES/)
-- [Generated Recipes Reference](https://cehbrecht.github.io/woodpecker/recipe-reference/)
-- [Interactive Fix Browser](https://cehbrecht.github.io/woodpecker/fixes/)
-- [Contributing Guide](https://cehbrecht.github.io/woodpecker/CONTRIBUTING_GUIDE/)
-- [Docs Development](https://cehbrecht.github.io/woodpecker/docs-development/)
-
-The source pages live in `docs/` and are wired through `mkdocs.yml`.
+```mermaid
+flowchart LR
+    D["Dataset"] --> C["check"]
+    C --> F["findings"]
+    F --> R["recipe or fix"]
+    R --> P["dry-run preview"]
+    P --> A["apply"]
+```
 
 ## Quick Start
 
@@ -44,7 +27,6 @@ The source pages live in `docs/` and are wired through `mkdocs.yml`.
 conda env create -f environment.yml
 conda activate woodpecker
 make dev
-woodpecker list-fixes
 woodpecker list-recipes
 ```
 
@@ -57,67 +39,34 @@ recipe = woodpecker.recipe.get("cmip6.core_units")
 findings = woodpecker.recipe.check(dataset, recipe)
 
 if findings:
-    result = woodpecker.recipe.fix(dataset, recipe, dry_run=True)
-    result.preview
+    woodpecker.recipe.fix(dataset, recipe, dry_run=True).preview
     woodpecker.recipe.fix(dataset, recipe, dry_run=False)
-```
-
-Run a known fix directly:
-
-```python
-import woodpecker
-
-findings = woodpecker.check(
-    dataset,
-    fixes="woodpecker.normalize_tas_units_to_kelvin",
-)
 ```
 
 From the command line:
 
 ```bash
 woodpecker check ./data --recipe-id cmip6.core_units
-woodpecker fix ./data --select cmip6_decadal.time_metadata --dry-run
+woodpecker fix ./data --recipe-id cmip6.core_units --dry-run
 ```
 
-## Local Docs
+## Docs
 
-Build the generated catalogs, interactive fixes page, notebooks, and MkDocs
-site:
-
-```bash
-make docs
-```
-
-Serve the docs locally:
-
-```bash
-make docs-serve
-```
-
-The docs extras can also be installed directly:
-
-```bash
-pip install -e ".[docs]"
-```
+- [Full docs](https://cehbrecht.github.io/woodpecker/)
+- [Concepts](https://cehbrecht.github.io/woodpecker/concepts/)
+- [Recipes](https://cehbrecht.github.io/woodpecker/recipes/)
+- [CLI](https://cehbrecht.github.io/woodpecker/cli/)
+- [Contributing](https://cehbrecht.github.io/woodpecker/CONTRIBUTING_GUIDE/)
 
 ## Project Map
 
-- `woodpecker/`: core package, public API, CLI, stores, recipes, and fixes.
-- `plugins/`: bundled dataset-family plugins for Atlas, CMIP6, CMIP6-decadal,
-  CMIP7, and xMIP.
-- `docs/`: MkDocs source pages, generated catalogs, generated interactive page,
-  and executed notebooks.
-- `tests/`: unit and integration coverage.
-- `scripts/`: documentation catalog and page generators.
+- `woodpecker/`: core API, CLI, recipes, fixes, stores, and results.
+- `plugins/`: bundled dataset-family plugins.
+- `docs/`: MkDocs pages and generated references.
+- `tests/`: unit and integration tests.
+- `scripts/`: docs and catalog generators.
 
 ## Development
-
-Contributor setup, authoring rules, plugin guidance, and testing conventions
-live in the
-[Contributing Guide](https://cehbrecht.github.io/woodpecker/CONTRIBUTING_GUIDE/).
-
-Useful local commands:
 
 ```bash
 make format
@@ -126,7 +75,4 @@ make test
 make docs
 ```
 
-## License
-
-Woodpecker is licensed under the terms in the
-[project license](https://github.com/cehbrecht/woodpecker/blob/main/LICENSE).
+Woodpecker is licensed under the terms in [LICENSE](LICENSE).
