@@ -1,8 +1,8 @@
 # Plugins
 
-Woodpecker keeps dataset-family behavior in plugins. Each plugin registers fixes
-under a stable namespace prefix, and plugins may also bundle discovered recipes
-in a package `recipes/` directory.
+Woodpecker keeps dataset-family behavior in plugins. Plugins register fixes
+under a stable namespace prefix and may bundle recipes in a package `recipes/`
+directory.
 
 | Plugin package | Prefix | Fixes | Recipes | Status |
 | -------------- | ------ | ----: | ----: | ------ |
@@ -21,22 +21,29 @@ recipe = woodpecker.recipe.get("atlas.basic")
 findings = woodpecker.recipe.check(dataset, recipe)
 ```
 
-The xMIP plugin is currently a demo of an xMIP-style CMIP6 preprocessing recipe
-expressed as small Woodpecker fixes:
+The xMIP plugin is a demo of an xMIP-style CMIP6 preprocessing recipe expressed
+as small Woodpecker fixes:
 
 ```python
 recipe = woodpecker.recipe.get("xmip.cmip6_preprocessing")
 ```
 
-Use the [Generated Fixes Reference](FIXES.md) and
-[Generated Recipes Reference](recipe-reference.md) for the full registered reference.
+Use [Generated Fixes Reference](FIXES.md) and
+[Generated Recipes Reference](recipe-reference.md) for the full registered list.
 
 ## Labels
 
-Labels are user-facing metadata with an id, title, description, and category.
-They help users understand a fix, but they do not affect recipes, priority,
-matching, or automation. Labels default to category `info`. Built-in severity
-labels use the categories `risk-low`, `risk-medium`, and `risk-high`.
+Labels are user-facing metadata for fixes.
+
+| Field | Purpose |
+| ----- | ------- |
+| id | Stable label identifier. |
+| title | Short user-facing name. |
+| description | Longer explanation. |
+| category | Group such as `info`, `risk-low`, `risk-medium`, or `risk-high`. |
+
+Labels help users understand a fix. They do not affect recipes, priority,
+matching, or automation.
 
 Plugins can use predefined labels:
 

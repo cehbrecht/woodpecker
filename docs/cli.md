@@ -1,83 +1,66 @@
 # CLI
 
-The `woodpecker` command lets you inspect registered fix functions and recipes,
-check datasets, and apply selected fixes from a terminal workflow.
+Use `woodpecker` to list fixes and recipes, check datasets, preview repairs,
+and apply selected fixes from the terminal.
 
-Use `--format json` on most commands when you need machine-readable output.
+Use `--format json` when another tool needs machine-readable output.
 
-## Inspect Available Fixes
+## Common Commands
 
-List all registered fix functions:
+| Task | Command |
+| ---- | ------- |
+| List fixes | `woodpecker list-fixes` |
+| List recipes | `woodpecker list-recipes` |
+| Check with a recipe | `woodpecker check ./data --recipe-id cmip6.core_units` |
+| Preview a repair | `woodpecker fix ./data --recipe-id cmip6.core_units --dry-run` |
+| Apply a repair | `woodpecker fix ./data --recipe-id cmip6.core_units` |
+| Check one fix id | `woodpecker check ./data --select woodpecker.normalize_tas_units_to_kelvin` |
+
+`check` exits with status `1` when findings are reported and `0` when no issues
+are found.
+
+## List Fixes
 
 ```bash
 woodpecker list-fixes
-```
-
-Filter by dataset or category:
-
-```bash
 woodpecker list-fixes --dataset CMIP6-decadal
 woodpecker list-fixes --category metadata
-woodpecker list-fixes --category metadata --category structure
-```
-
-Output formats:
-
-```bash
-woodpecker list-fixes --format text
 woodpecker list-fixes --format json
-woodpecker list-fixes --format md
 ```
 
-Fix listings include labels so users can distinguish metadata-only cleanup from
-operations that transform values, coordinates, or structure. Severity is
-represented through ordinary labels whose categories are `risk-low`,
-`risk-medium`, or `risk-high`; for example `risk.metadata_only`. JSON
-output includes `labels`, `label_titles`, and `label_metadata` for the same
-label ids. Labels are not used for recipe selection, priority, or automation
-decisions.
+Fix listings include labels. Severity labels use categories such as `risk-low`,
+`risk-medium`, and `risk-high`. JSON output includes `labels`, `label_titles`,
+and `label_metadata`.
 
-Use the [Generated Fixes Reference](FIXES.md) or
-[Interactive Fix Browser](fixes.html) when you want to browse the same
-registered ids in the documentation.
+Labels help users understand fixes. They do not affect recipe selection,
+priority, or automation.
 
-## Inspect Available Recipes
+Use [Generated Fixes Reference](FIXES.md) or
+[Interactive Fix Browser](fixes.html) to browse the same registered ids.
 
-List discovered core and plugin recipes:
+## List Recipes
 
 ```bash
 woodpecker list-recipes
-```
-
-List recipes from a specific store:
-
-```bash
 woodpecker list-recipes --store catalog
 woodpecker list-recipes --store json --recipe recipes.json
 woodpecker list-recipes --store duckdb --recipe recipes.duckdb
 woodpecker list-recipes --store auto
 ```
 
-`catalog` discovers recipe documents from package resources, user and system
-configuration directories, environment paths, and optional extra paths passed
-with `--recipe`.
+`catalog` discovers recipes from package resources, user and system config
+directories, environment paths, and extra paths passed with `--recipe`.
 
-Use the [Generated Recipes Reference](recipe-reference.md) for the generated table of
-currently discovered recipes.
+Use [Generated Recipes Reference](recipe-reference.md) for the generated recipe
+table.
 
-## Check Datasets
-
-Check one path or directory:
+## Check
 
 ```bash
 woodpecker check ./data --recipe-id cmip6.core_units
-```
-
-Run selected fix ids directly:
-
-```bash
-woodpecker check ./data --select woodpecker.normalize_tas_units_to_kelvin
 woodpecker check ./data --select cmip6_decadal.time_metadata
+woodpecker check ./data --dataset CMIP6-decadal
+woodpecker check ./data --category metadata
 ```
 
 Repeat `--select` to run more than one fix:
@@ -88,58 +71,25 @@ woodpecker check ./data \
   --select woodpecker.ensure_latitude_is_increasing
 ```
 
-Filter selected fixes by dataset or category:
+Text findings show the selected fix severity label. JSON findings include the
+complete label metadata.
 
-```bash
-woodpecker check ./data --dataset CMIP6-decadal
-woodpecker check ./data --category metadata
-```
-
-`check` exits with status `1` when findings are reported and `0` when no issues
-are found. Text findings show the selected fix severity label. JSON findings
-include the complete label metadata.
-
-## Apply Fixes
-
-Preview changes first:
+## Fix
 
 ```bash
 woodpecker fix ./data --recipe-id cmip6.core_units --dry-run
-```
-
-Dry-run output includes a preview section with the input path, selected fix id,
-fix name, severity label, and whether that fix would change the dataset. Use
-`--format json` to consume the same preview entries programmatically.
-
-Apply a discovered recipe:
-
-```bash
 woodpecker fix ./data --recipe-id cmip6.core_units
-```
-
-Apply selected fix ids directly:
-
-```bash
 woodpecker fix ./data --select cmip6_decadal.time_metadata --dry-run
 woodpecker fix ./data --select cmip6_decadal.time_metadata
 ```
 
-`fix` writes W3C PROV-JSON provenance by default:
-
-```bash
-woodpecker fix ./data --recipe-id cmip6.core_units \
-  --provenance-path woodpecker.prov.json
-```
-
-Disable provenance output when it is not needed:
-
-```bash
-woodpecker fix ./data --recipe-id cmip6.core_units --no-provenance
-```
+Dry-run output shows the input path, selected fix id, fix name, severity label,
+and whether the fix would change the dataset. Use `--format json` for the same
+preview data as structured output.
 
 ## Recipe Stores
 
-Recipe-backed commands accept these store backends:
+Recipe-backed commands accept:
 
 | Store | Use |
 | ----- | --- |
@@ -158,61 +108,41 @@ woodpecker check ./data --store auto \
   --recipe-id woodpecker.normalize_tas_units_to_kelvin
 ```
 
-When no explicit `--recipe` is provided, `woodpecker check ./data --recipe-id ...`
-uses the discovered catalog.
+When no explicit `--recipe` is provided, `--recipe-id` uses the discovered
+catalog.
 
-## Load Recipes Into A Store
-
-Load recipes from one store into a writable JSON or DuckDB store:
+## Load Recipes
 
 ```bash
 woodpecker load-recipes --store json --recipe recipes.json \
   --from-store catalog --recipe-id cmip6.core_units
-```
 
-Load all recipes from a JSON document into DuckDB:
-
-```bash
 woodpecker load-recipes --store duckdb --recipe recipes.duckdb \
   --from-store json --from-recipe recipes.json
 ```
 
-## I/O Backends
+## Safety And Output
 
-Check optional runtime backend availability:
+| Need | Option |
+| ---- | ------ |
+| Preview writes | `--dry-run` |
+| Disable provenance | `--no-provenance` |
+| Write provenance elsewhere | `--provenance-path woodpecker.prov.json` |
+| Treat I/O fallback as an error | `--strict-io` |
+| Choose NetCDF output | `--output-format netcdf` |
+| Choose Zarr output | `--output-format zarr` |
 
-```bash
-woodpecker io-status
-woodpecker io-status --format json
-```
+`fix` writes W3C PROV-JSON provenance by default.
 
-Use strict I/O when a fallback should be treated as an error:
-
-```bash
-woodpecker check ./data --recipe-id cmip6.core_units --strict-io
-woodpecker fix ./data --recipe-id cmip6.core_units --strict-io --dry-run
-```
-
-## Write Controls
-
-Preview writes:
-
-```bash
-woodpecker fix ./data --recipe-id cmip6.core_units --dry-run
-```
-
-Bypass `matches()` prefiltering only when you have explicitly selected the
-fixes or recipe you want to run:
+Use `--force-apply` only with explicit fix or recipe selection:
 
 ```bash
 woodpecker fix ./data --select cmip6_decadal.time_metadata --force-apply
 ```
 
-Choose an output format when writing:
+Check optional I/O backend availability:
 
 ```bash
-woodpecker fix ./data --recipe-id cmip6.core_units --output-format netcdf
-woodpecker fix ./data --recipe-id cmip6.core_units --output-format zarr
+woodpecker io-status
+woodpecker io-status --format json
 ```
-
-`--output-format auto` is the default.

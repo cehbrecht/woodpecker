@@ -1,39 +1,43 @@
 # Discovered Recipes
 
-Recipes are ordered repair workflows. They select one or more fixes, provide
-options for those fixes, and can include matching rules for dataset metadata or
-source paths.
+Recipes are ordered repair workflows. They group fixes, options, and optional
+matching rules under a stable id.
 
-Most users should load recipes by id:
+## Run A Recipe
 
 ```python
 import woodpecker
 
 recipe = woodpecker.recipe.get("xmip.cmip6_preprocessing")
 findings = woodpecker.recipe.check(dataset, recipe)
-result = woodpecker.recipe.fix(dataset, recipe, dry_run=True)
-result.preview
+preview = woodpecker.recipe.fix(dataset, recipe, dry_run=True)
+preview.preview
 ```
-
-The same id works from the CLI:
 
 ```bash
 woodpecker check ./data --recipe-id xmip.cmip6_preprocessing
 woodpecker fix ./data --recipe-id xmip.cmip6_preprocessing --dry-run
 ```
 
-## Where Recipes Come From
+Use [Generated Recipes Reference](recipe-reference.md) to inspect discovered
+recipe ids.
 
-`RecipeLoader` coordinates recipe discovery in this order:
+## Discovery Order
 
-- explicit files or directories passed to catalog-backed APIs,
-- `WOODPECKER_RECIPE_PATH`,
-- user configuration directories such as `~/.config/woodpecker/recipes`,
-- system directories such as `/etc/woodpecker/recipes`,
-- core Woodpecker package resources,
-- installed plugin package `recipes/` resources.
+`RecipeLoader` discovers recipe documents from:
 
-Use `woodpecker list-recipes` to inspect the discovered set.
+1. explicit files or directories passed to catalog-backed APIs
+2. `WOODPECKER_RECIPE_PATH`
+3. user config, such as `~/.config/woodpecker/recipes`
+4. system config, such as `/etc/woodpecker/recipes`
+5. core package resources
+6. installed plugin package `recipes/` resources
+
+Inspect the active set:
+
+```bash
+woodpecker list-recipes
+```
 
 ## How It Fits
 
@@ -48,22 +52,21 @@ flowchart LR
   Fixes --> Result["Checked or repaired dataset"]
 ```
 
-## Direct Files
+## Choosing A Source
 
-Explicit files are still useful for local experiments, tests, and private
-workflows:
+| Source | Best for |
+| ------ | -------- |
+| Discovered recipe id | Shared core and plugin workflows. |
+| Explicit recipe file | Local experiments, tests, and private workflows. |
+| Python builder | Authoring JSON or YAML recipe documents from code. |
+
+Explicit file example:
 
 ```python
 findings = woodpecker.recipe.check(dataset, "my-recipes.yaml")
 ```
 
-Use discovered recipes for shared core and plugin workflows. Use explicit files
-when you are authoring or testing a new local recipe document.
-
 ## Python Authoring
-
-Recipe documents can be authored in Python and serialized to the same JSON/YAML
-schema used by stores and the CLI:
 
 ```python
 from woodpecker.recipes import fix, recipe
@@ -84,5 +87,5 @@ cmip6_core.to_yaml("cmip6_core_recipe.yaml")
 cmip6_core.to_json("cmip6_core_recipe.json")
 ```
 
-Use `to_model()` when you want the in-memory `Recipe`, or `to_document()` when
-you want a `RecipeDocument`.
+- `to_model()` returns an in-memory `Recipe`.
+- `to_document()` returns a serializable `RecipeDocument`.

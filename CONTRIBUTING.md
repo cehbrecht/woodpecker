@@ -1,10 +1,8 @@
 # Contributing to Woodpecker
 
-Thanks for contributing.
-
 ## Development Setup
 
-Recommended:
+Recommended local setup:
 
 ```bash
 conda env create -f environment.yml
@@ -12,38 +10,26 @@ conda activate woodpecker
 make dev
 ```
 
-Optional uv workflow:
+Other setup paths:
 
-```bash
-conda env create -f environment.yml
-conda activate woodpecker
-make dev-uv
-```
-
-Pip-only setup:
-
-```bash
-pip install -e .
-```
-
-Optional extras:
-
-```bash
-pip install -e ".[full]"     # runtime optional backends (NetCDF/Zarr/DuckDB)
-pip install -e ".[docs]"     # docs build toolchain (mkdocs/material/jinja2)
-pip install -e ".[dev,full]" # common local test setup with optional backends
-```
+| Need | Command |
+| ---- | ------- |
+| uv workflow | `make dev-uv` |
+| package only | `pip install -e .` |
+| runtime optional backends | `pip install -e ".[full]"` |
+| docs build toolchain | `pip install -e ".[docs]"` |
+| common local test setup | `pip install -e ".[dev,full]"` |
 
 ## Common Development Commands
 
-```bash
-make format      # run Ruff formatter
-make lint        # run Ruff lint checks
-make lint-fix    # auto-fix Ruff lint issues
-make test        # run pytest test suite
-make docs        # generate docs artifacts + strict mkdocs build
-make docs-serve  # generate docs artifacts + run mkdocs serve
-```
+| Task | Command |
+| ---- | ------- |
+| Format code | `make format` |
+| Lint | `make lint` |
+| Auto-fix lint | `make lint-fix` |
+| Test | `make test` |
+| Build docs | `make docs` |
+| Serve docs | `make docs-serve` |
 
 ## Useful CLI Checks
 
@@ -59,6 +45,7 @@ woodpecker fix --recipe recipe.json
 ```
 
 Notes:
+
 - In write mode, JSON output exits with status 1 if any persistence operation fails.
 - `--force-apply` bypasses `matches()` prefiltering and requires explicit fix selection (`--select` or recipe-provided identifiers).
 - `--strict-io` changes input loading to fail fast instead of warning and falling back when a backend is unavailable or a read fails.
