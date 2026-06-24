@@ -153,11 +153,11 @@ flowchart LR
 
 ## Phase 6: Validation
 
-- [ ] Run `make lint`.
-- [ ] Run `make test`.
-- [ ] Run `make docs`.
-- [ ] Skim the rendered docs navigation and first screen.
-- [ ] Confirm a new user can answer these in under two minutes:
+- [x] Run `make lint`.
+- [x] Run `make test`.
+- [x] Run `make docs`.
+- [x] Skim the rendered docs navigation and first screen.
+- [x] Confirm a new user can answer these in under two minutes:
   - What is Woodpecker?
   - How do I install or set it up locally?
   - How do I run a recipe?

@@ -44,6 +44,7 @@ nav:
       - Guide: examples.md
       - Direct CMIP6 API: notebooks/cmip6_core_api_example.ipynb
       - CMIP6 Recipe: notebooks/cmip6_core_recipe_example.ipynb
+      - Pythonic Recipe Builder: notebooks/pythonic_recipe_builder_example.ipynb
       - Auto Recipe Store: notebooks/auto_recipe_store_example.ipynb
       - RecipeCatalog: notebooks/recipe_catalog_example.ipynb
       - DuckDB Recipe Store: notebooks/duckdb_recipe_store_example.ipynb
